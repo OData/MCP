@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>NU1510</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Microsoft.OData.Mcp.AspNetCore</PackageId>
+    <Title>Microsoft OData MCP Server ASP.NET Core</Title>
+    <Description>ASP.NET Core hosting and HTTP transport for OData MCP servers with integrated authentication and dependency injection.</Description>
+    <Authors>Microsoft</Authors>
+    <PackageTags>odata;mcp;server;aspnetcore;hosting;http</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.*-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+  </ItemGroup>
+
+</Project>

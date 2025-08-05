@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
+    <NoWarn>NU1510</NoWarn>
+    <AssemblyTitle>Microsoft OData MCP Server Sidecar</AssemblyTitle>
+    <AssemblyDescription>Sidecar service for hosting OData MCP servers as standalone applications</AssemblyDescription>
+    <AssemblyCompany>Microsoft</AssemblyCompany>
+    <AssemblyProduct>Microsoft OData MCP Server</AssemblyProduct>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.*" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.*" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.*" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.*" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.*" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.*" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.*-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="10.*-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+    <ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
+  </ItemGroup>
+
+
+</Project>
