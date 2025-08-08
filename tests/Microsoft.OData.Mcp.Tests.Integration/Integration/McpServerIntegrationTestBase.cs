@@ -22,16 +22,16 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// </summary>
         public override void TestSetup()
         {
-            base.TestSetup();
 
             // Create logger for the test client  
             var loggerFactory = LoggerFactory.Create(builder =>
                 builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
+
             Logger = loggerFactory.CreateLogger<McpProtocolTestClient>();
 
             // Locate the server executable
             _serverExecutablePath = FindServerExecutable();
-            
+
             if (string.IsNullOrEmpty(_serverExecutablePath) || !File.Exists(_serverExecutablePath))
             {
                 Assert.Fail($"Could not find MCP server executable at: {_serverExecutablePath}");
@@ -39,6 +39,8 @@ namespace Microsoft.OData.Mcp.Tests.Integration
 
             // Create and start the MCP client
             McpClient = new McpProtocolTestClient(_serverExecutablePath!, Logger);
+
+            base.TestSetup();
         }
 
         /// <summary>
@@ -77,43 +79,66 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// </summary>
         protected string FindServerExecutable()
         {
-            // Look for the console app executable in various locations
-            var possiblePaths = new[]
-            {
-                // Release configuration
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Release\net10.0\Microsoft.OData.Mcp.Console.exe",
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Release\net9.0\Microsoft.OData.Mcp.Console.exe", 
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Release\net8.0\Microsoft.OData.Mcp.Console.exe",
-                
-                // Debug configuration
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Debug\net10.0\Microsoft.OData.Mcp.Console.exe",
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Debug\net9.0\Microsoft.OData.Mcp.Console.exe",
-                @"..\..\..\..\samples\Microsoft.OData.Mcp.Console\bin\Debug\net8.0\Microsoft.OData.Mcp.Console.exe",
-            };
-
-            foreach (var path in possiblePaths)
-            {
-                var fullPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, path));
-                if (File.Exists(fullPath))
-                {
-                    Logger?.LogInformation("Found MCP server executable at: {Path}", fullPath);
-                    return fullPath;
-                }
-            }
-
-            // If not found, try building the console app
+            // Since the Console project is configured as a dotnet tool,
+            // we need to run it via "dotnet run" or use the dll directly
             var solutionDir = FindSolutionDirectory();
-            if (!string.IsNullOrEmpty(solutionDir))
+            if (string.IsNullOrEmpty(solutionDir))
             {
-                var consoleProjectPath = Path.Combine(solutionDir, "samples", "Microsoft.OData.Mcp.Console");
-                if (Directory.Exists(consoleProjectPath))
+                throw new InvalidOperationException("Could not find solution directory");
+            }
+
+            var consoleProjectPath = Path.Combine(solutionDir, "src", "Microsoft.OData.Mcp.Console");
+            if (!Directory.Exists(consoleProjectPath))
+            {
+                throw new DirectoryNotFoundException($"Console project not found at: {consoleProjectPath}");
+            }
+
+            // First, try to find the built DLL
+            var targetFramework = GetTargetFramework();
+            var configuration = GetBuildConfiguration();
+            
+            var dllPath = Path.Combine(consoleProjectPath, "bin", configuration, targetFramework, "Microsoft.OData.Mcp.Console.dll");
+            
+            if (!File.Exists(dllPath))
+            {
+                Logger?.LogInformation("DLL not found at {Path}, attempting to build console app", dllPath);
+                BuildConsoleApp(consoleProjectPath, configuration, targetFramework);
+                
+                // Check again after build
+                if (!File.Exists(dllPath))
                 {
-                    Logger?.LogInformation("Attempting to build console app at: {Path}", consoleProjectPath);
-                    return BuildConsoleApp(consoleProjectPath);
+                    throw new FileNotFoundException($"Console DLL not found even after build: {dllPath}");
                 }
             }
 
-            throw new FileNotFoundException("Could not locate MCP server executable. Please ensure the console app is built.");
+            Logger?.LogInformation("Found MCP server DLL at: {Path}", dllPath);
+            return dllPath;
+        }
+
+        /// <summary>
+        /// Gets the target framework to use based on the current runtime.
+        /// </summary>
+        private string GetTargetFramework()
+        {
+            var version = Environment.Version;
+            if (version.Major >= 10)
+                return "net10.0";
+            else if (version.Major >= 9)
+                return "net9.0";
+            else
+                return "net8.0";
+        }
+
+        /// <summary>
+        /// Gets the build configuration to use.
+        /// </summary>
+        private string GetBuildConfiguration()
+        {
+#if DEBUG
+            return "Debug";
+#else
+            return "Release";
+#endif
         }
 
         /// <summary>
@@ -122,10 +147,11 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         private string? FindSolutionDirectory()
         {
             var currentDir = new DirectoryInfo(AppContext.BaseDirectory);
-            
+
             while (currentDir != null)
             {
-                if (File.Exists(Path.Combine(currentDir.FullName, "Microsoft.OData.McpServer.sln")))
+                // Check for the solution file (note the correct name)
+                if (File.Exists(Path.Combine(currentDir.FullName, "Microsoft.OData.Mcp.sln")))
                 {
                     return currentDir.FullName;
                 }
@@ -136,18 +162,19 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         }
 
         /// <summary>
-        /// Builds the console app and returns the executable path.
+        /// Builds the console app.
         /// </summary>
-        private string BuildConsoleApp(string projectPath)
+        private void BuildConsoleApp(string projectPath, string configuration, string targetFramework)
         {
-            Logger?.LogInformation("Building console app project: {ProjectPath}", projectPath);
+            Logger?.LogInformation("Building console app project: {ProjectPath} with {Configuration} {Framework}", 
+                projectPath, configuration, targetFramework);
 
             var buildProcess = new System.Diagnostics.Process
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = "build --configuration Release --framework net10.0",
+                    Arguments = $"build --configuration {configuration} --framework {targetFramework}",
                     WorkingDirectory = projectPath,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -163,20 +190,12 @@ namespace Microsoft.OData.Mcp.Tests.Integration
 
             if (buildProcess.ExitCode != 0)
             {
-                Logger?.LogError("Build failed with exit code {ExitCode}. Output: {Output}. Error: {Error}", 
+                Logger?.LogError("Build failed with exit code {ExitCode}. Output: {Output}. Error: {Error}",
                     buildProcess.ExitCode, output, error);
                 throw new InvalidOperationException($"Failed to build console app. Output: {output}. Error: {error}");
             }
 
             Logger?.LogInformation("Console app built successfully. Output: {Output}", output);
-
-            var executablePath = Path.Combine(projectPath, "bin", "Release", "net10.0", "Microsoft.OData.Mcp.Console.exe");
-            if (!File.Exists(executablePath))
-            {
-                throw new FileNotFoundException($"Built executable not found at expected path: {executablePath}");
-            }
-
-            return executablePath;
         }
 
         /// <summary>

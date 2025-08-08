@@ -67,7 +67,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Configuration
             config.Network.BasePath.Should().Be("/mcp");
             config.Network.EnableHttps.Should().BeFalse();
             
-            config.Authentication.Enabled.Should().BeTrue();
+            config.Authentication.Enabled.Should().BeFalse(); // Authentication disabled by default for simplicity
             config.Caching.Enabled.Should().BeTrue();
             config.Caching.MetadataTtl.Should().Be(TimeSpan.FromHours(1));
             config.Caching.ToolsTtl.Should().Be(TimeSpan.FromHours(2));
@@ -134,7 +134,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Configuration
             config.Network.BasePath.Should().Be("/mcp");
             config.Network.UseHostConfiguration.Should().BeTrue();
             
-            config.Authentication.Enabled.Should().BeTrue();
+            config.Authentication.Enabled.Should().BeFalse(); // Authentication disabled by default for simplicity
             config.Caching.Enabled.Should().BeTrue();
             config.Caching.MetadataTtl.Should().Be(TimeSpan.FromMinutes(30));
             config.Caching.ToolsTtl.Should().Be(TimeSpan.FromHours(1));
@@ -210,7 +210,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Configuration
 
             config.DeploymentMode.Should().Be(McpDeploymentMode.Sidecar);
             config.ODataService.BaseUrl.Should().Be("https://api.example.com");
-            config.Authentication.Enabled.Should().BeTrue();
+            config.Authentication.Enabled.Should().BeFalse(); // Authentication disabled by default for simplicity
             config.Security.RequireHttps.Should().BeTrue();
             config.Security.EnableDetailedErrors.Should().BeFalse();
             config.Security.EnableRateLimiting.Should().BeTrue();
@@ -231,7 +231,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Configuration
             var config = McpServerConfiguration.ForProduction(McpDeploymentMode.Middleware);
 
             config.DeploymentMode.Should().Be(McpDeploymentMode.Middleware);
-            config.Authentication.Enabled.Should().BeTrue();
+            config.Authentication.Enabled.Should().BeFalse(); // Authentication disabled by default for simplicity
             config.Security.RequireHttps.Should().BeTrue();
             config.Security.EnableDetailedErrors.Should().BeFalse();
             config.Security.EnableRateLimiting.Should().BeTrue();
@@ -375,7 +375,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Configuration
 
             config.ApplyEnvironmentOverrides("Production");
 
-            config.Authentication.Enabled.Should().BeTrue();
+            config.Authentication.Enabled.Should().BeFalse(); // Authentication disabled by default for simplicity
             config.Security.RequireHttps.Should().BeTrue();
             config.Security.EnableDetailedErrors.Should().BeFalse();
             config.Security.EnableRateLimiting.Should().BeTrue();

@@ -13,7 +13,7 @@ using Microsoft.OData.Mcp.Authentication.Services;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Tools;
 
-namespace Microsoft.OData.Mcp.AspNetCore.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods for configuring OData MCP server services in the dependency injection container.

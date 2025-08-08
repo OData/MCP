@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
-namespace Microsoft.OData.Mcp.Authentication.Extensions
+namespace System.Security.Claims
 {
     /// <summary>
     /// Extension methods for <see cref="ClaimsPrincipal"/> to extract user information.
@@ -189,6 +189,32 @@ namespace Microsoft.OData.Mcp.Authentication.Extensions
                 string.Equals(c.Type, "name", StringComparison.OrdinalIgnoreCase));
 
             return userNameClaim?.Value;
+        }
+
+        /// <summary>
+        /// Gets the user email from the claims principal.
+        /// </summary>
+        /// <param name="principal">The claims principal to extract the email from.</param>
+        /// <returns>The user email, or null if not found.</returns>
+        /// <remarks>
+        /// This method looks for the email in common claim types used by
+        /// different authentication providers.
+        /// </remarks>
+        public static string? GetUserEmail(this ClaimsPrincipal principal)
+        {
+            if (principal?.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+
+            // Try various common claim types for email
+            var emailClaim = principal.Claims.FirstOrDefault(c =>
+                string.Equals(c.Type, ClaimTypes.Email, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "email", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "emails", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(c.Type, "preferred_email", StringComparison.OrdinalIgnoreCase));
+
+            return emailClaim?.Value;
         }
 
         /// <summary>

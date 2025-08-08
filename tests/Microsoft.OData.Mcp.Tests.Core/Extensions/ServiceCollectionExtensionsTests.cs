@@ -1,7 +1,15 @@
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Parsing;
+using Microsoft.OData.Mcp.Core.Server;
+using Microsoft.OData.Mcp.Core.Tools;
+using Microsoft.OData.Mcp.Core.Tools.Generators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.OData.Mcp.Tests.Core.Extensions
 {
@@ -12,59 +20,63 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
     public class ServiceCollectionExtensionsTests
     {
         /// <summary>
-        /// Tests that AddMcpServer registers required services.
+        /// Tests that AddODataMcpServerCore registers required services.
         /// </summary>
         [TestMethod]
-        public void AddMcpServer_ShouldRegisterRequiredServices()
+        public void AddODataMcpServerCore_WithConfiguration_ShouldRegisterRequiredServices()
         {
             // Arrange
             var services = new ServiceCollection();
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["McpServer:ODataService:BaseUrl"] = "https://test.com",
+                    ["McpServer:ODataService:RequestTimeout"] = "00:02:00"
+                })
+                .Build();
 
             // Act
-            var builder = services.AddMcpServer();
+            services.AddODataMcpServerCore(configuration);
 
             // Assert
-            builder.Should().NotBeNull();
+            services.Should().NotBeNull();
             
             // Build service provider to verify registrations
             var serviceProvider = services.BuildServiceProvider();
             
             // Verify core services are registered
-            serviceProvider.GetService<CsdlParser>().Should().NotBeNull();
+            serviceProvider.GetService<ICsdlMetadataParser>().Should().NotBeNull();
+            serviceProvider.GetService<IMcpToolFactory>().Should().NotBeNull();
+            serviceProvider.GetService<IQueryToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<ICrudToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<INavigationToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<ODataMcpTools>().Should().NotBeNull();
+            serviceProvider.GetService<DynamicODataMcpTools>().Should().NotBeNull();
         }
 
-        /// <summary>Am I missing something
-        /// Tests that AddMcpServer returns a builder that can be chained.
+        /// <summary>
+        /// Tests that AddODataMcpServerCore with action configures services correctly.
         /// </summary>
         [TestMethod]
-        public void AddMcpServer_ShouldReturnChainableBuilder()
+        public void AddODataMcpServerCore_WithAction_ShouldConfigureServices()
         {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
-            var result = services.AddMcpServer()
-                .WithStdioServerTransport();
+            services.AddODataMcpServerCore(options =>
+            {
+                options.ODataService.BaseUrl = "https://configured.com";
+                options.ODataService.RequestTimeout = TimeSpan.FromMinutes(5);
+            });
 
             // Assert
-            result.Should().NotBeNull();
-        }
-
-        /// <summary>
-        /// Tests that multiple calls to AddMcpServer don't cause issues.
-        /// </summary>
-        [TestMethod]
-        public void AddMcpServer_CalledMultipleTimes_ShouldNotThrow()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-
-            // Act & Assert - MSTest doesn't have DoesNotThrow, so we test by not throwing
-            services.AddMcpServer();
-            services.AddMcpServer();
+            var serviceProvider = services.BuildServiceProvider();
+            var options = serviceProvider.GetRequiredService<IOptions<McpServerConfiguration>>();
             
-            // If we get here without exception, the test passes
-            Assert.IsTrue(true);
+            options.Value.ODataService.BaseUrl.Should().Be("https://configured.com");
+            options.Value.ODataService.RequestTimeout.Should().Be(TimeSpan.FromMinutes(5));
         }
+
     }
 }

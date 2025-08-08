@@ -24,25 +24,45 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// <summary>
         /// Initializes a new MCP protocol test client.
         /// </summary>
-        /// <param name="serverExecutablePath">Path to the MCP server executable.</param>
+        /// <param name="serverPath">Path to the MCP server executable or DLL.</param>
         /// <param name="logger">Logger instance.</param>
-        public McpProtocolTestClient(string serverExecutablePath, ILogger<McpProtocolTestClient> logger)
+        public McpProtocolTestClient(string serverPath, ILogger<McpProtocolTestClient> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _logger.LogInformation("Starting MCP server process: {ServerPath}", serverExecutablePath);
+            _logger.LogInformation("Starting MCP server process: {ServerPath}", serverPath);
+
+            // Determine if we're running a DLL or EXE
+            string fileName;
+            string arguments;
+            
+            if (serverPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                // Run via dotnet command for DLL
+                fileName = "dotnet";
+                // Pass "start" command with a test URL - no port means STDIO mode
+                arguments = $"\"{serverPath}\" start http://testserver/odata/$metadata";
+            }
+            else
+            {
+                // Run as executable
+                fileName = serverPath;
+                // Pass "start" command with a test URL - no port means STDIO mode
+                arguments = "start http://testserver/odata/$metadata";
+            }
 
             _serverProcess = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = serverExecutablePath,
+                    FileName = fileName,
+                    Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    WorkingDirectory = Path.GetDirectoryName(serverExecutablePath)
+                    WorkingDirectory = Path.GetDirectoryName(serverPath)
                 }
             };
 
@@ -56,7 +76,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
 
             if (!_serverProcess.Start())
             {
-                throw new InvalidOperationException($"Failed to start MCP server process: {serverExecutablePath}");
+                throw new InvalidOperationException($"Failed to start MCP server process: {serverPath}");
             }
 
             _serverProcess.BeginErrorReadLine();

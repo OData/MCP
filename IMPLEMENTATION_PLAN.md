@@ -18,17 +18,19 @@ This document outlines the implementation plan for enhancing the Microsoft OData
 MCP endpoints will be registered as siblings to OData metadata endpoints:
 
 ```
-{baseUrl}/{odataRoute}/$metadata
-{baseUrl}/{odataRoute}/$batch
-{baseUrl}/{odataRoute}/mcp         ← NEW
+{baseUrl}/{odataRoute}/$metadata (or /metadata if EnableNoDollarQueryOptions)
+{baseUrl}/{odataRoute}/$batch (or /batch if EnableNoDollarQueryOptions)
+{baseUrl}/{odataRoute}/mcp         ← NEW (always without $)
 {baseUrl}/{odataRoute}/mcp/info
 {baseUrl}/{odataRoute}/mcp/tools
 {baseUrl}/{odataRoute}/mcp/tools/execute
 ```
 
+Note: MCP endpoints never use dollar prefixes regardless of OData configuration.
+
 Examples:
 - `/api/v1/$metadata` → `/api/v1/mcp`
-- `/odata/$metadata` → `/odata/mcp`
+- `/odata/metadata` → `/odata/mcp` (when EnableNoDollarQueryOptions = true)
 - `/$metadata` → `/mcp` (empty route prefix)
 
 ### Registration Approaches
@@ -192,17 +194,20 @@ public interface IMcpEndpointRegistry
 
 ### 1. Dollar Sign Prefix Handling
 ```csharp
-public class ODataOptionsResolver
+public class ODataRouteOptionsResolver
 {
-    public bool UsesDollarPrefix(ODataOptions options)
+    private readonly IODataOptionsProvider? _optionsProvider;
+    
+    public bool UsesDollarPrefix()
     {
-        // Check if routes use $ prefix for metadata
-        return options.EnableDollarPrefix ?? true;
+        // Respects ASP.NET Core OData's EnableNoDollarQueryOptions setting
+        // If EnableNoDollarQueryOptions is true, dollar prefixes are disabled
+        return _optionsProvider == null || !_optionsProvider.EnableNoDollarQueryOptions;
     }
     
-    public string GetMetadataPath(ODataOptions options)
+    public string GetMetadataPath()
     {
-        return UsesDollarPrefix(options) ? "/$metadata" : "/metadata";
+        return UsesDollarPrefix() ? "$metadata" : "metadata";
     }
 }
 ```

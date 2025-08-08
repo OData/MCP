@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
@@ -18,8 +20,6 @@
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Middleware\Microsoft.OData.Mcp.Middleware.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Sidecar\Microsoft.OData.Mcp.Sidecar.csproj" />
   </ItemGroup>
 
 </Project>

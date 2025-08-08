@@ -185,7 +185,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
                 },
                 Authentication = new McpAuthenticationOptions
                 {
-                    Enabled = true
+                    Enabled = false // Authentication disabled by default for simplicity
                 },
                 ToolGeneration = McpToolGenerationOptions.Default(),
                 Caching = new CachingConfiguration
@@ -227,7 +227,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
                 },
                 Authentication = new McpAuthenticationOptions
                 {
-                    Enabled = true
+                    Enabled = false // Authentication disabled by default for simplicity
                 },
                 ToolGeneration = McpToolGenerationOptions.Default(),
                 Caching = new CachingConfiguration
@@ -272,7 +272,9 @@ namespace Microsoft.OData.Mcp.Core.Configuration
                 ? ForSidecar("https://api.example.com")
                 : ForMiddleware();
 
-            config.Authentication.Enabled = true;
+            // Keep authentication disabled by default for simplicity (Easy As Fuck™ philosophy)
+            // Users can enable it explicitly if needed
+            config.Authentication.Enabled = false;
             config.Security.RequireHttps = true;
             config.Security.EnableDetailedErrors = false;
             config.Security.EnableRateLimiting = true;
@@ -482,7 +484,8 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// </summary>
         private void ApplyStagingOverrides()
         {
-            Authentication.Enabled = true;
+            // Keep authentication disabled by default for simplicity
+            Authentication.Enabled = false;
             Security.RequireHttps = true;
             Security.EnableDetailedErrors = true;
             Monitoring.LogLevel = "Information";
@@ -495,7 +498,9 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// </summary>
         private void ApplyProductionOverrides()
         {
-            Authentication.Enabled = true;
+            // Keep authentication disabled by default for simplicity (Easy As Fuck™ philosophy)
+            // Users can enable it explicitly if needed
+            Authentication.Enabled = false;
             Security.RequireHttps = true;
             Security.EnableDetailedErrors = false;
             Security.EnableRateLimiting = true;

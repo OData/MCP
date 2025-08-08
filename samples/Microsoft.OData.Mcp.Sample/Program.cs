@@ -1,12 +1,14 @@
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OData.Mcp.Core.Configuration;
-using Microsoft.OData.Mcp.Middleware.Extensions;
+using Microsoft.OData.Mcp.Core.Routing;
+using Microsoft.OData.Mcp.Sample.Data;
+using Microsoft.OData.Mcp.Sample.Models;
+using Microsoft.OData.Mcp.Sample.Services;
 using Serilog;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,53 +22,94 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddOData(options =>
+    {
+        // Enable query options without dollar prefix (optional)
+        options.EnableQueryFeatures();
+        options.SetMaxTop(1000);
+        options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(1000);
+        
+        // Add route components for multiple API versions
+        options.AddRouteComponents("api/v1", SampleEdmModel.GetV1Model());
+        options.AddRouteComponents("api/v2", SampleEdmModel.GetV2Model());
+        options.AddRouteComponents("odata", SampleEdmModel.GetMainModel());
+    });
+
+// Register the in-memory data store as a singleton
+builder.Services.AddSingleton<InMemoryDataStore>();
+
+// Register the OData options provider bridge
+builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
+
+// Enable the magical OData MCP integration!
+builder.Services.AddODataMcp(options =>
+{
+    // Optional: Exclude any routes from MCP
+    // options.ExcludeRoutes = new[] { "internal" };
+    
+    // Optional: Customize tool naming
+    options.ToolNamingPattern = "{route}.{entity}.{operation}";
+    
+    // Optional: Enable dynamic models (for changing schemas)
+    options.EnableDynamicModels = false;
+    
+    // Performance settings
+    options.UseAggressiveCaching = true;
+    options.DefaultPageSize = 50;
+    options.MaxPageSize = 500;
+});
+
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen();
 
-// Configure MCP Server
-var mcpConfig = new McpServerConfiguration();
-builder.Configuration.GetSection("McpServer").Bind(mcpConfig);
-
-// Add MCP Server services based on deployment mode
-if (mcpConfig.DeploymentMode == McpDeploymentMode.Middleware)
+// Add CORS for testing
+builder.Services.AddCors(options =>
 {
-    builder.Services.AddMcpMiddleware(options =>
+    options.AddDefaultPolicy(policy =>
     {
-        builder.Configuration.GetSection("McpServer").Bind(options);
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
-}
-else
-{
-    builder.Services.AddMcpServer(options =>
-    {
-        builder.Configuration.GetSection("McpServer").Bind(options);
-    });
-}
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
-// Use MCP Server middleware if configured
-if (mcpConfig.DeploymentMode == McpDeploymentMode.Middleware)
-{
-    app.UseMcpServer();
-}
+// Enable OData routing
+app.UseRouting();
+
+// Enable OData MCP middleware
+app.UseODataMcp();
 
 app.UseAuthorization();
+
+// Map controllers with OData conventions
 app.MapControllers();
+
+// Log startup information
+Log.Information("OData MCP Sample started successfully!");
+Log.Information("OData endpoints available at:");
+Log.Information("  - https://localhost:5001/api/v1/$metadata");
+Log.Information("  - https://localhost:5001/api/v2/$metadata");
+Log.Information("  - https://localhost:5001/odata/$metadata");
+Log.Information("MCP endpoints automatically available at:");
+Log.Information("  - https://localhost:5001/api/v1/mcp");
+Log.Information("  - https://localhost:5001/api/v2/mcp");
+Log.Information("  - https://localhost:5001/odata/mcp");
 
 try
 {
-    Log.Information("Starting Microsoft.OData.Mcp.Sample");
     app.Run();
 }
 catch (Exception ex)

@@ -9,7 +9,7 @@ using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
 using Microsoft.OData.Mcp.Core.Tools.Generators;
 
-namespace Microsoft.OData.Mcp.Core.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods for configuring OData MCP Server services.

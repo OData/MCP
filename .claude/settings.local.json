@@ -4,21 +4,15 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.oasis-open.org)",
       "Bash(mkdir:*)",
-      "Bash(dotnet sln:*)",
-      "Bash(dotnet new:*)",
-      "Bash(dotnet build:*)",
+      "Bash(dotnet:*)",
       "WebFetch(domain:modelcontextprotocol.github.io)",
       "WebFetch(domain:devblogs.microsoft.com)",
       "Bash(find:*)",
-      "Bash(dotnet restore --verbosity quiet)",
-      "Bash(dotnet restore:*)",
       "Bash(mv:*)",
       "Bash(cp:*)",
       "Bash(dir)",
-      "Bash(move \"Microsoft.OData.McpServer.Core\" \"Microsoft.OData.Mcp.Core\")",
       "Bash(ls:*)",
-      "Bash(rm:*)",
-      "Bash(dotnet test:*)"
+      "Bash(rm:*)"
     ],
     "deny": []
   }

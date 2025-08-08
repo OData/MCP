@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Microsoft.OData.Northwind.Hosted": {
+      "commandName": "Project",
+      "commandLineArgs": "start https://services.odata.org/V4/Northwind/Northwind.svc/$metadata",
+      "hotReloadEnabled": true
+    }
+  }
+}

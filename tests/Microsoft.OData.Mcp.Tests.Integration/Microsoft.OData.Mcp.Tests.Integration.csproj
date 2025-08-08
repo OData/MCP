@@ -18,12 +18,15 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.*" />
     <PackageReference Include="ModelContextProtocol" Version="0.*-*" />
     <PackageReference Include="Breakdance.AspNetCore" Version="7.*-*" />
-  </ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.OData" Version="8.*" />
+	</ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Tools\Microsoft.OData.Mcp.Tools.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared\Microsoft.OData.Mcp.Tests.Shared.csproj" />
   </ItemGroup>
 
 </Project>

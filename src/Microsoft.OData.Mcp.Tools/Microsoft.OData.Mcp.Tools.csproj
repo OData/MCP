@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
+    
+    <!-- Console app settings -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    
+    <!-- Tool metadata for dotnet tool -->
+    <PackAsTool>true</PackAsTool>
+		<PackageType>McpServer</PackageType>
+    <ToolCommandName>odata-mcp</ToolCommandName>
+    
+    <!-- Package metadata -->
+    <PackageId>Microsoft.OData.Mcp.Tools</PackageId>
+    <Description>Command-line tools for running a standalone MCP server that connects to external OData APIs</Description>
+    <Authors>Microsoft</Authors>
+    <PackageTags>OData;MCP;ModelContextProtocol;Tools;CLI</PackageTags>
+    <RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include=".mcp\" />
+  </ItemGroup>
+
+</Project>
