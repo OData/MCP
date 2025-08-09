@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for retry policies in authentication operations.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class RetryPolicyOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -92,15 +94,15 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// codes include 429 (Too Many Requests), 502 (Bad Gateway), and
         /// 503 (Service Unavailable).
         /// </remarks>
-        public HashSet<int> RetryableStatusCodes { get; set; } = new()
-        {
+        public HashSet<int> RetryableStatusCodes { get; set; } =
+        [
             408, // Request Timeout
             429, // Too Many Requests
             500, // Internal Server Error
             502, // Bad Gateway
             503, // Service Unavailable
             504  // Gateway Timeout
-        };
+        ];
 
         /// <summary>
         /// Gets or sets the exception types that should trigger retries.
@@ -111,13 +113,13 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// be the full type name including namespace. This is typically used for
         /// network-related exceptions like timeouts and connection failures.
         /// </remarks>
-        public HashSet<string> RetryableExceptionTypes { get; set; } = new()
-        {
+        public HashSet<string> RetryableExceptionTypes { get; set; } =
+        [
             "System.Net.Http.HttpRequestException",
             "System.Threading.Tasks.TaskCanceledException",
             "System.Net.Sockets.SocketException",
             "System.TimeoutException"
-        };
+        ];
 
         /// <summary>
         /// Gets or sets a value indicating whether to use circuit breaker pattern.
@@ -294,14 +296,14 @@ namespace Microsoft.OData.Mcp.Authentication.Models
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Calculates exponential backoff delay with jitter.
         /// </summary>
         /// <param name="attemptNumber">The retry attempt number.</param>
         /// <returns>The calculated delay with jitter applied.</returns>
-        private TimeSpan CalculateExponentialWithJitter(int attemptNumber)
+        internal TimeSpan CalculateExponentialWithJitter(int attemptNumber)
         {
             var exponentialDelay = BaseDelay.TotalMilliseconds * Math.Pow(2, attemptNumber - 1);
             
@@ -317,31 +319,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the backoff strategies for retry delays.
-    /// </summary>
-    public enum BackoffStrategy
-    {
-        /// <summary>
-        /// Use a fixed delay between all retry attempts.
-        /// </summary>
-        Fixed,
-
-        /// <summary>
-        /// Increase delay linearly with each retry attempt.
-        /// </summary>
-        Linear,
-
-        /// <summary>
-        /// Increase delay exponentially with each retry attempt.
-        /// </summary>
-        Exponential,
-
-        /// <summary>
-        /// Use exponential backoff with random jitter to prevent thundering herd.
-        /// </summary>
-        ExponentialWithJitter
-    }
 }

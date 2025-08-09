@@ -165,7 +165,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with cache provider-specific
         /// settings that don't fit into the standard configuration properties.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 

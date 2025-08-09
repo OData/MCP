@@ -11,17 +11,17 @@ namespace Microsoft.OData.Mcp.Sample.Data
     /// </summary>
     public class InMemoryDataStore
     {
-        private readonly ConcurrentDictionary<int, Customer> _customers = new();
-        private readonly ConcurrentDictionary<int, Order> _orders = new();
-        private readonly ConcurrentDictionary<int, Product> _products = new();
-        private readonly ConcurrentDictionary<int, Category> _categories = new();
-        private readonly ConcurrentDictionary<int, OrderItem> _orderItems = new();
+        internal readonly ConcurrentDictionary<int, Customer> _customers = new();
+        internal readonly ConcurrentDictionary<int, Order> _orders = new();
+        internal readonly ConcurrentDictionary<int, Product> _products = new();
+        internal readonly ConcurrentDictionary<int, Category> _categories = new();
+        internal readonly ConcurrentDictionary<int, OrderItem> _orderItems = new();
 
-        private int _customerIdCounter = 1;
-        private int _orderIdCounter = 1;
-        private int _productIdCounter = 1;
-        private int _categoryIdCounter = 1;
-        private int _orderItemIdCounter = 1;
+        internal int _customerIdCounter = 1;
+        internal int _orderIdCounter = 1;
+        internal int _productIdCounter = 1;
+        internal int _categoryIdCounter = 1;
+        internal int _orderItemIdCounter = 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryDataStore"/> class.
@@ -189,7 +189,7 @@ namespace Microsoft.OData.Mcp.Sample.Data
 
         #region Seed Data
 
-        private void SeedData()
+        internal void SeedData()
         {
             // Seed categories
             var electronics = AddCategory(new Category 

@@ -66,7 +66,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Annotations can be used to specify additional behaviors, constraints, or metadata
         /// that are not captured by the standard OData model elements.
         /// </remarks>
-        public Dictionary<string, object> Annotations { get; set; } = new();
+        public Dictionary<string, object> Annotations { get; set; } = [];
 
         #endregion
 

@@ -93,7 +93,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Method restrictions limit the attack surface by only allowing
         /// necessary HTTP methods for the application's functionality.
         /// </remarks>
-        public List<string> AllowedHttpMethods { get; set; } = new() { "GET", "POST", "OPTIONS" };
+        public List<string> AllowedHttpMethods { get; set; } = ["GET", "POST", "OPTIONS"];
 
         /// <summary>
         /// Gets or sets the security headers configuration.
@@ -133,7 +133,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Host restrictions help prevent host header injection attacks
         /// and ensure requests are only accepted from legitimate sources.
         /// </remarks>
-        public List<string> AllowedHosts { get; set; } = new() { "*" };
+        public List<string> AllowedHosts { get; set; } = ["*"];
 
         /// <summary>
         /// Gets or sets the IP address restrictions.
@@ -163,7 +163,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with security
         /// settings specific to particular deployment environments or requirements.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 
@@ -246,7 +246,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
                 EnableDetailedErrors = true,
                 EnableRateLimiting = false,
                 MaxRequestSize = 10 * 1024 * 1024, // 10MB for development
-                AllowedHosts = new List<string> { "*" },
+                AllowedHosts = ["*"],
                 SecurityHeaders = SecurityHeadersConfiguration.ForDevelopment(),
                 InputValidation = InputValidationConfiguration.Lenient()
             };

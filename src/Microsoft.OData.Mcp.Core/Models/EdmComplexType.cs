@@ -79,7 +79,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// These properties represent the data that can be stored and retrieved for instances
         /// of this complex type. Unlike entity types, complex types do not have key properties.
         /// </remarks>
-        public List<EdmProperty> Properties { get; set; } = new();
+        public List<EdmProperty> Properties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the navigation properties of the complex type.
@@ -89,7 +89,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Navigation properties in complex types enable navigation from the complex type
         /// to related entities, but the complex type itself cannot be the target of navigation.
         /// </remarks>
-        public List<EdmNavigationProperty> NavigationProperties { get; set; } = new();
+        public List<EdmNavigationProperty> NavigationProperties { get; set; } = [];
 
         /// <summary>
         /// Gets the fully qualified name of the complex type.

@@ -88,7 +88,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// These properties represent the data that can be stored and retrieved for instances
         /// of this entity type. They include both key and non-key properties.
         /// </remarks>
-        public List<EdmProperty> Properties { get; set; } = new();
+        public List<EdmProperty> Properties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the navigation properties of the entity type.
@@ -98,7 +98,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Navigation properties enable traversal between related entities and define the
         /// relationship structure of the data model.
         /// </remarks>
-        public List<EdmNavigationProperty> NavigationProperties { get; set; } = new();
+        public List<EdmNavigationProperty> NavigationProperties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the key properties of the entity type.
@@ -108,7 +108,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Key properties uniquely identify instances of the entity type. They are used
         /// for addressing individual entities and establishing relationships.
         /// </remarks>
-        public List<string> Key { get; set; } = new();
+        public List<string> Key { get; set; } = [];
 
         /// <summary>
         /// Gets the fully qualified name of the entity type.

@@ -5,6 +5,7 @@ using System.Security.Claims;
 
 namespace System.Security.Claims
 {
+
     /// <summary>
     /// Extension methods for <see cref="ClaimsPrincipal"/> to extract user information.
     /// </summary>
@@ -12,8 +13,9 @@ namespace System.Security.Claims
     /// These extensions provide convenient methods to extract user scopes, roles, and other
     /// information from JWT tokens and other authentication schemes.
     /// </remarks>
-    public static class ClaimsPrincipalExtensions
+    public static class McpAuthentication_ClaimsPrincipalExtensions
     {
+
         #region Constants
 
         /// <summary>
@@ -78,7 +80,7 @@ namespace System.Security.Claims
                 if (!string.IsNullOrWhiteSpace(claim.Value))
                 {
                     // Scopes are often space-separated in a single claim
-                    var scopeValues = claim.Value.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    var scopeValues = claim.Value.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries)
                         .Select(s => s.Trim())
                         .Where(s => !string.IsNullOrEmpty(s));
                     
@@ -128,7 +130,7 @@ namespace System.Security.Claims
                 if (!string.IsNullOrWhiteSpace(claim.Value))
                 {
                     // Roles might be comma-separated in a single claim
-                    var roleValues = claim.Value.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    var roleValues = claim.Value.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries)
                         .Select(r => r.Trim())
                         .Where(r => !string.IsNullOrEmpty(r));
                     
@@ -250,5 +252,7 @@ namespace System.Security.Claims
         }
 
         #endregion
+
     }
+
 }

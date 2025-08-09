@@ -43,7 +43,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Gets or sets the parameters of the function.
         /// </summary>
         /// <value>A collection of parameters that the function accepts.</value>
-        public List<EdmParameter> Parameters { get; set; } = new();
+        public List<EdmParameter> Parameters { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether the function is composable.

@@ -5,6 +5,7 @@ using System.Security.Claims;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Represents the user context extracted from an authenticated request.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class UserContext
     {
+
         #region Properties
 
         /// <summary>
@@ -54,7 +56,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// These scopes are extracted from the token and determine what operations
         /// the user is authorized to perform through the MCP server.
         /// </remarks>
-        public List<string> Scopes { get; set; } = new();
+        public List<string> Scopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the user's roles.
@@ -64,7 +66,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Roles provide a higher-level grouping of permissions and are typically
         /// extracted from 'roles' or similar claims in the token.
         /// </remarks>
-        public List<string> Roles { get; set; } = new();
+        public List<string> Roles { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tenant identifier for multi-tenant scenarios.
@@ -134,7 +136,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// This contains any custom claims that are not covered by the standard
         /// properties but may be needed for authorization or business logic.
         /// </remarks>
-        public Dictionary<string, string> AdditionalClaims { get; set; } = new();
+        public Dictionary<string, string> AdditionalClaims { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the authentication method used.
@@ -404,5 +406,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

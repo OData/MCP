@@ -15,7 +15,7 @@ namespace Microsoft.OData.Mcp.Sample.Services
     /// </remarks>
     public class ODataOptionsProviderBridge : IODataOptionsProvider
     {
-        private readonly IOptions<ODataOptions> _odataOptions;
+        internal readonly IOptions<ODataOptions> _odataOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataOptionsProviderBridge"/> class.

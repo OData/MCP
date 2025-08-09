@@ -9,6 +9,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Generates query MCP tools from OData entity types.
     /// </summary>
@@ -20,9 +21,10 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public sealed class QueryToolGenerator : IQueryToolGenerator
     {
+
         #region Fields
 
-        private readonly ILogger<QueryToolGenerator> _logger;
+        internal readonly ILogger<QueryToolGenerator> _logger;
 
         #endregion
 
@@ -198,7 +200,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Formats a tool name according to the specified naming convention.
@@ -207,7 +209,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityName">The entity type name.</param>
         /// <param name="convention">The naming convention to apply.</param>
         /// <returns>The formatted tool name.</returns>
-        private static string FormatToolName(string operation, string entityName, ToolNamingConvention convention)
+        internal static string FormatToolName(string operation, string entityName, ToolNamingConvention convention)
         {
             var baseName = $"{operation}{entityName}";
 
@@ -226,7 +228,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The snake_case version of the string.</returns>
-        private static string ConvertToSnakeCase(string input)
+        internal static string ConvertToSnakeCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -245,7 +247,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The kebab-case version of the string.</returns>
-        private static string ConvertToKebabCase(string input)
+        internal static string ConvertToKebabCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -266,7 +268,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the LIST tool.</returns>
-        private static string GenerateListDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static string GenerateListDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Lists {entityType.Name} entities from the {entitySet.Name} collection with optional filtering, sorting, and paging.");
@@ -310,7 +312,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the SEARCH tool.</returns>
-        private static string GenerateSearchDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static string GenerateSearchDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Performs full-text search across {entityType.Name} entities in the {entitySet.Name} collection.");
@@ -345,7 +347,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the COUNT tool.</returns>
-        private static string GenerateCountDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static string GenerateCountDescription(EdmEntitySet entitySet, EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Gets the count of {entityType.Name} entities in the {entitySet.Name} collection with optional filtering.");
@@ -380,7 +382,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the LIST tool input.</returns>
-        private static object GenerateListInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static object GenerateListInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
 
@@ -467,7 +469,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the SEARCH tool input.</returns>
-        private static object GenerateSearchInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static object GenerateSearchInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>
             {
@@ -517,7 +519,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the COUNT tool input.</returns>
-        private static object GenerateCountInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static object GenerateCountInputSchema(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
 
@@ -545,7 +547,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A collection of sortable property names.</returns>
-        private static IEnumerable<string> GetSortableProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static IEnumerable<string> GetSortableProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var properties = entityType.Properties.AsEnumerable();
 
@@ -567,7 +569,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A collection of selectable property names.</returns>
-        private static IEnumerable<string> GetSelectableProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static IEnumerable<string> GetSelectableProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             var properties = entityType.Properties.AsEnumerable();
 
@@ -586,7 +588,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A collection of expandable navigation property names.</returns>
-        private static IEnumerable<string> GetNavigationProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
+        internal static IEnumerable<string> GetNavigationProperties(EdmEntityType entityType, QueryToolGenerationOptions options)
         {
             return entityType.NavigationProperties.Select(np => np.Name);
         }
@@ -596,7 +598,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns><c>true</c> if the property is sortable; otherwise, <c>false</c>.</returns>
-        private static bool IsSortableProperty(EdmProperty property)
+        internal static bool IsSortableProperty(EdmProperty property)
         {
             var typeName = property.TypeName?.ToLowerInvariant();
             return typeName switch
@@ -612,5 +614,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         }
 
         #endregion
+
     }
+
 }

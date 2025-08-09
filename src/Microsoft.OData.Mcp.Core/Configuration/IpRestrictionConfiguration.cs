@@ -31,7 +31,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// IP ranges should be specified in CIDR notation (e.g., "192.168.1.0/24").
         /// Individual IP addresses can be specified with /32 suffix (e.g., "192.168.1.100/32").
         /// </remarks>
-        public List<string> AllowedIpRanges { get; set; } = new();
+        public List<string> AllowedIpRanges { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of blocked IP address ranges.
@@ -41,7 +41,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Blocked IP ranges take precedence over allowed ranges. If an IP address
         /// matches both an allowed and blocked range, access will be denied.
         /// </remarks>
-        public List<string> BlockedIpRanges { get; set; } = new();
+        public List<string> BlockedIpRanges { get; set; } = [];
 
         /// <summary>
         /// Validates the IP restriction configuration.

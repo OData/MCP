@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for MCP server authentication.
     /// </summary>
@@ -14,6 +14,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class McpAuthenticationOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -166,5 +167,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

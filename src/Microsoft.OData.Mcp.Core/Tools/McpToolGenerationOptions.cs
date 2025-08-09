@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Configuration options for MCP tool generation.
     /// </summary>
@@ -14,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public sealed class McpToolGenerationOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -75,7 +76,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// If empty, tools will be generated for all entity types in the model.
         /// Entity type names should be fully qualified (e.g., "MyNamespace.Customer").
         /// </remarks>
-        public HashSet<string> IncludeEntityTypes { get; set; } = new();
+        public HashSet<string> IncludeEntityTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the entity types to exclude from tool generation.
@@ -86,7 +87,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// even if they would otherwise be included. This takes precedence
         /// over the IncludeEntityTypes setting.
         /// </remarks>
-        public HashSet<string> ExcludeEntityTypes { get; set; } = new();
+        public HashSet<string> ExcludeEntityTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the operations to include for each entity type.
@@ -96,7 +97,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This allows fine-grained control over which operations are available
         /// for each entity type. If empty, all supported operations will be included.
         /// </remarks>
-        public HashSet<McpToolOperationType> IncludeOperations { get; set; } = new();
+        public HashSet<McpToolOperationType> IncludeOperations { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the operations to exclude for each entity type.
@@ -106,7 +107,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Operations listed here will be excluded from tool generation.
         /// This takes precedence over the IncludeOperations setting.
         /// </remarks>
-        public HashSet<McpToolOperationType> ExcludeOperations { get; set; } = new();
+        public HashSet<McpToolOperationType> ExcludeOperations { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the default required scopes for generated tools.
@@ -116,7 +117,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// These scopes will be added to all generated tools unless overridden
         /// by entity-specific or operation-specific scope configurations.
         /// </remarks>
-        public List<string> DefaultRequiredScopes { get; set; } = new();
+        public List<string> DefaultRequiredScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the default required roles for generated tools.
@@ -126,7 +127,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// These roles will be added to all generated tools unless overridden
         /// by entity-specific or operation-specific role configurations.
         /// </remarks>
-        public List<string> DefaultRequiredRoles { get; set; } = new();
+        public List<string> DefaultRequiredRoles { get; set; } = [];
 
         /// <summary>
         /// Gets or sets entity-specific scope requirements.
@@ -136,7 +137,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This allows configuring different authorization requirements for different
         /// entity types. Entity type names should be fully qualified.
         /// </remarks>
-        public Dictionary<string, List<string>> EntityScopes { get; set; } = new();
+        public Dictionary<string, List<string>> EntityScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets operation-specific scope requirements.
@@ -146,7 +147,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This allows configuring different authorization requirements for different
         /// operation types (e.g., read vs. write operations).
         /// </remarks>
-        public Dictionary<McpToolOperationType, List<string>> OperationScopes { get; set; } = new();
+        public Dictionary<McpToolOperationType, List<string>> OperationScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tool name prefix.
@@ -225,7 +226,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This metadata will be added to all generated tools and can be used
         /// for custom processing or filtering logic.
         /// </remarks>
-        public Dictionary<string, object> CustomMetadata { get; set; } = new();
+        public Dictionary<string, object> CustomMetadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tool version for generated tools.
@@ -285,12 +286,12 @@ namespace Microsoft.OData.Mcp.Core.Tools
         {
             return new McpToolGenerationOptions
             {
-                IncludeOperations = new HashSet<McpToolOperationType> 
-                { 
+                IncludeOperations =
+                [
                     McpToolOperationType.Read, 
                     McpToolOperationType.Query, 
                     McpToolOperationType.Navigate 
-                },
+                ],
                 GenerateBatchTools = false
             };
         }
@@ -510,5 +511,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         #endregion
+
     }
+
 }

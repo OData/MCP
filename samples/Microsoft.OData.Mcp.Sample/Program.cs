@@ -1,7 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Mcp.Core.Routing;
@@ -10,113 +9,113 @@ using Microsoft.OData.Mcp.Sample.Models;
 using Microsoft.OData.Mcp.Sample.Services;
 using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Configure Serilog
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-
-// Add services to the container
-builder.Services.AddControllers()
-    .AddOData(options =>
+/// <summary>
+/// Program entry point for the OData MCP Sample application.
+/// </summary>
+public class Program
+{
+    /// <summary>
+    /// Main entry point.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    public static void Main(string[] args)
     {
-        // Enable query options without dollar prefix (optional)
-        options.EnableQueryFeatures();
-        options.SetMaxTop(1000);
-        options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(1000);
-        
-        // Add route components for multiple API versions
-        options.AddRouteComponents("api/v1", SampleEdmModel.GetV1Model());
-        options.AddRouteComponents("api/v2", SampleEdmModel.GetV2Model());
-        options.AddRouteComponents("odata", SampleEdmModel.GetMainModel());
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-// Register the in-memory data store as a singleton
-builder.Services.AddSingleton<InMemoryDataStore>();
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
 
-// Register the OData options provider bridge
-builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
+        builder.Host.UseSerilog();
 
-// Enable the magical OData MCP integration!
-builder.Services.AddODataMcp(options =>
-{
-    // Optional: Exclude any routes from MCP
-    // options.ExcludeRoutes = new[] { "internal" };
-    
-    // Optional: Customize tool naming
-    options.ToolNamingPattern = "{route}.{entity}.{operation}";
-    
-    // Optional: Enable dynamic models (for changing schemas)
-    options.EnableDynamicModels = false;
-    
-    // Performance settings
-    options.UseAggressiveCaching = true;
-    options.DefaultPageSize = 50;
-    options.MaxPageSize = 500;
-});
+        // Add services to the container
+        builder.Services.AddControllers()
+            .AddOData(options =>
+            {
+                // Enable query options without dollar prefix (optional)
+                options.EnableQueryFeatures();
+                options.SetMaxTop(1000);
+                options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(1000);
+                
+                // Add route components for multiple API versions
+                options.AddRouteComponents("api/v1", SampleEdmModel.GetV1Model());
+                options.AddRouteComponents("api/v2", SampleEdmModel.GetV2Model());
+                options.AddRouteComponents("odata", SampleEdmModel.GetMainModel());
+            });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+        // Register the in-memory data store as a singleton
+        builder.Services.AddSingleton<InMemoryDataStore>();
 
-// Add CORS for testing
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+        // Register the OData options provider bridge
+        builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
 
-var app = builder.Build();
+        // Enable the magical OData MCP integration!
+        builder.Services.AddODataMcp(options =>
+        {
+            // Optional: Exclude any routes from MCP
+            // options.ExcludeRoutes = new[] { "internal" };
+            
+            // Optional: Customize tool naming
+            options.ToolNamingPattern = "{route}.{entity}.{operation}";
+            
+            // Optional: Enable dynamic models (for changing schemas)
+            options.EnableDynamicModels = false;
+            
+            // Performance settings
+            options.UseAggressiveCaching = true;
+            options.DefaultPageSize = 50;
+            options.MaxPageSize = 500;
+        });
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
-app.UseHttpsRedirection();
-app.UseCors();
+        // Add CORS for testing
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
 
-// Enable OData routing
-app.UseRouting();
+        var app = builder.Build();
 
-// Enable OData MCP middleware
-app.UseODataMcp();
+        // Configure the HTTP request pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
-app.UseAuthorization();
+        app.UseHttpsRedirection();
+        app.UseCors();
 
-// Map controllers with OData conventions
-app.MapControllers();
+        // Use OData route endpoint for each configured route
+        app.UseRouting();
+        app.UseAuthorization();
+        app.MapControllers();
 
-// Log startup information
-Log.Information("OData MCP Sample started successfully!");
-Log.Information("OData endpoints available at:");
-Log.Information("  - https://localhost:5001/api/v1/$metadata");
-Log.Information("  - https://localhost:5001/api/v2/$metadata");
-Log.Information("  - https://localhost:5001/odata/$metadata");
-Log.Information("MCP endpoints automatically available at:");
-Log.Information("  - https://localhost:5001/api/v1/mcp");
-Log.Information("  - https://localhost:5001/api/v2/mcp");
-Log.Information("  - https://localhost:5001/odata/mcp");
+        // Enable the magical OData MCP middleware!
+        app.UseODataMcp();
 
-try
-{
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
+        try
+        {
+            Log.Information("Starting web host");
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
 }

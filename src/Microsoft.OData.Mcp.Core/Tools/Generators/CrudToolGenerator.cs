@@ -9,6 +9,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Generates CRUD (Create, Read, Update, Delete) MCP tools from OData entity types.
     /// </summary>
@@ -19,9 +20,10 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public sealed class CrudToolGenerator : ICrudToolGenerator
     {
+
         #region Fields
 
-        private readonly ILogger<CrudToolGenerator> _logger;
+        internal readonly ILogger<CrudToolGenerator> _logger;
 
         #endregion
 
@@ -234,7 +236,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Formats a tool name according to the specified naming convention.
@@ -243,7 +245,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityName">The entity type name.</param>
         /// <param name="convention">The naming convention to apply.</param>
         /// <returns>The formatted tool name.</returns>
-        private static string FormatToolName(string operation, string entityName, ToolNamingConvention convention)
+        internal static string FormatToolName(string operation, string entityName, ToolNamingConvention convention)
         {
             var baseName = $"{operation}{entityName}";
 
@@ -262,7 +264,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The snake_case version of the string.</returns>
-        private static string ConvertToSnakeCase(string input)
+        internal static string ConvertToSnakeCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -281,7 +283,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The kebab-case version of the string.</returns>
-        private static string ConvertToKebabCase(string input)
+        internal static string ConvertToKebabCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -302,7 +304,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the CREATE tool.</returns>
-        private static string GenerateCreateDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static string GenerateCreateDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Creates a new {entityType.Name} entity in the {entitySet.Name} collection.");
@@ -342,7 +344,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the READ tool.</returns>
-        private static string GenerateReadDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static string GenerateReadDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Retrieves a specific {entityType.Name} entity from the {entitySet.Name} collection by its key.");
@@ -379,7 +381,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the UPDATE tool.</returns>
-        private static string GenerateUpdateDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static string GenerateUpdateDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Updates an existing {entityType.Name} entity in the {entitySet.Name} collection.");
@@ -421,7 +423,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the DELETE tool.</returns>
-        private static string GenerateDeleteDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static string GenerateDeleteDescription(EdmEntitySet entitySet, EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var description = new StringBuilder();
             description.Append($"Deletes a specific {entityType.Name} entity from the {entitySet.Name} collection.");
@@ -458,7 +460,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the CREATE tool input.</returns>
-        private static object GenerateCreateInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static object GenerateCreateInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -498,7 +500,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the READ tool input.</returns>
-        private static object GenerateReadInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static object GenerateReadInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -533,7 +535,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the UPDATE tool input.</returns>
-        private static object GenerateUpdateInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static object GenerateUpdateInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -579,7 +581,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the DELETE tool input.</returns>
-        private static object GenerateDeleteInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static object GenerateDeleteInputSchema(EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             // Same as READ - only key properties needed for identification
             return GenerateReadInputSchema(entityType, options);
@@ -591,7 +593,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A collection of eligible properties.</returns>
-        private static IEnumerable<EdmProperty> GetEligibleProperties(EdmEntityType entityType, CrudToolGenerationOptions options)
+        internal static IEnumerable<EdmProperty> GetEligibleProperties(EdmEntityType entityType, CrudToolGenerationOptions options)
         {
             var properties = entityType.Properties.AsEnumerable();
 
@@ -616,7 +618,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="property">The property to generate schema for.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the property.</returns>
-        private static object GeneratePropertySchema(EdmProperty property, CrudToolGenerationOptions options)
+        internal static object GeneratePropertySchema(EdmProperty property, CrudToolGenerationOptions options)
         {
             var schema = new Dictionary<string, object>();
 
@@ -645,7 +647,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="edmType">The EDM type name.</param>
         /// <returns>The corresponding JSON Schema type.</returns>
-        private static string MapEdmTypeToJsonType(string edmType)
+        internal static string MapEdmTypeToJsonType(string edmType)
         {
             return edmType?.ToLowerInvariant() switch
             {
@@ -666,7 +668,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="schema">The schema dictionary to add constraints to.</param>
         /// <param name="property">The property to add constraints for.</param>
         /// <param name="jsonType">The JSON type of the property.</param>
-        private static void AddPropertyConstraints(Dictionary<string, object> schema, EdmProperty property, string jsonType)
+        internal static void AddPropertyConstraints(Dictionary<string, object> schema, EdmProperty property, string jsonType)
         {
             // Add string constraints
             if (jsonType == "string")
@@ -698,5 +700,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         }
 
         #endregion
+
     }
+
 }

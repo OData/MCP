@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +5,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Interface for generating query MCP tools from OData entity types.
     /// </summary>
@@ -16,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public interface IQueryToolGenerator
     {
+
         /// <summary>
         /// Generates all query tools for the specified entity set.
         /// </summary>
@@ -182,18 +183,20 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// Gets or sets the list of entity types to exclude from tool generation.
         /// </summary>
         /// <value>A collection of entity type names to exclude.</value>
-        public HashSet<string> ExcludedEntityTypes { get; set; } = new();
+        public HashSet<string> ExcludedEntityTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of properties to exclude from filtering and sorting.
         /// </summary>
         /// <value>A dictionary mapping entity type names to lists of excluded properties.</value>
-        public Dictionary<string, HashSet<string>> ExcludedProperties { get; set; } = new();
+        public Dictionary<string, HashSet<string>> ExcludedProperties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets custom properties that can be used by specific generators.
         /// </summary>
         /// <value>A dictionary of custom properties for generator-specific configuration.</value>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
+
     }
+
 }

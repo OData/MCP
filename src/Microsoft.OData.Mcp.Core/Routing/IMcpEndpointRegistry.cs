@@ -3,16 +3,18 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.OData.Mcp.Core.Routing
 {
+
     /// <summary>
     /// Manages the registration and discovery of MCP endpoints.
     /// </summary>
     public interface IMcpEndpointRegistry
     {
+
         /// <summary>
         /// Registers an MCP endpoint.
         /// </summary>
         /// <param name="route">The route entry to register.</param>
-        void RegisterEndpoint(McpRouteEntry route);
+        void Register(McpRouteEntry route);
 
         /// <summary>
         /// Attempts to get an endpoint by path.
@@ -43,5 +45,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// <param name="command">The MCP command (optional).</param>
         /// <returns>The MCP URL, or null if not found.</returns>
         string? GetMcpUrl(string routeName, McpCommand? command = null);
+
     }
+
 }

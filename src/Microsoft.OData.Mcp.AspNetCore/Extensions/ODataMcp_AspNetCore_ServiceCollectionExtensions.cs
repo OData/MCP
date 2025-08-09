@@ -1,21 +1,20 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-using Microsoft.OData.Mcp.AspNetCore.Middleware;
 using Microsoft.OData.Mcp.AspNetCore.Routing;
 using Microsoft.OData.Mcp.Core;
 using Microsoft.OData.Mcp.Core.Routing;
 using Microsoft.OData.Mcp.Core.Services;
-using Microsoft.OData.Mcp.Core.Tools;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+
     /// <summary>
     /// Extension methods for registering OData MCP automatic routing services.
     /// </summary>
-    public static class ODataMcpServiceCollectionExtensions
+    public static class ODataMcp_AspNetCore_ServiceCollectionExtensions
     {
+
         /// <summary>
         /// Adds OData MCP automatic routing services to the service collection.
         /// </summary>
@@ -59,19 +58,8 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection services,
             Action<ODataMcpOptions> configureOptions)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configureOptions);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (configureOptions is null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-#endif
 
             // Configure options using the Options pattern
             services.Configure<ODataMcpOptions>(configureOptions);
@@ -100,23 +88,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             // Add memory cache if not already registered
-            services.TryAddSingleton<Microsoft.Extensions.Caching.Memory.IMemoryCache, Microsoft.Extensions.Caching.Memory.MemoryCache>();
+            services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
             // Mark that OData MCP automatic routing is enabled
             services.Configure<ODataMcpMarkerOptions>(o => o.IsEnabled = true);
 
             return services;
         }
+
     }
 
-    /// <summary>
-    /// Marker options to indicate OData MCP is enabled.
-    /// </summary>
-    internal class ODataMcpMarkerOptions
-    {
-        /// <summary>
-        /// Gets or sets a value indicating whether OData MCP is enabled.
-        /// </summary>
-        public bool IsEnabled { get; set; }
-    }
 }

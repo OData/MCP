@@ -1,0 +1,132 @@
+<Project>
+  <!--<Import Project="version.props" />-->
+
+  <!-- Folder layout -->
+  <PropertyGroup>
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.performance'))">true</IsBenchmarkProject>
+    <IsTestProject Condition="$(MSBuildProjectName.ToLower().Contains('.tests.'))">true</IsTestProject>
+    <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
+    <IsSampleProject Condition="$(MSBuildProjectName.ToLower().Contains('.samples.'))">true</IsSampleProject>
+    <IsTemplateProject Condition="$(MSBuildProjectName.ToLower().Contains('.templates.'))">true</IsTemplateProject>
+    <IsToolsProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.tools'))">true</IsToolsProject>
+    <IsNetCore Condition=" '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0' OR '$(TargetFramework)' == 'net10.0' ">true</IsNetCore>
+    <IsPrimaryProject Condition=" '$(IsBenchmarkProject)' != 'true' And '$(IsTestProject)' != 'true' And '$(IsTestAssetProject)' != 'true' And '$(IsSampleProject)' != 'true' And '$(IsTemplateProject)' != 'true' And '$(IsToolsProject)' != 'true' ">true</IsPrimaryProject>
+    <IncludeReadmeFile Condition="Exists('$(MSBuildProjectDirectory)\readme.md')">true</IncludeReadmeFile>
+
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <SignAssembly>false</SignAssembly>
+    <!-- Signing disabled for now - add proper key file when needed -->
+    <!-- <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)odata-mcp.snk</AssemblyOriginatorKeyFile> -->
+
+    <LangVersion>latest</LangVersion>
+    <!-- Default to Debug configuration if none is specified -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>Microsoft OData MCP Framework</Product>
+    <Version>1.0.0-preview</Version>
+    <PackageVersion>1.0.0-preview</PackageVersion>
+
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft Corporation</Company>
+    <RpmPackageVendor>Microsoft</RpmPackageVendor>
+    <Copyright>Copyright © 2025 Microsoft Corporation. All rights reserved.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile Condition="$(IncludeReadmeFile) == 'true'">readme.md</PackageReadmeFile>
+
+    <!-- Suppress warnings about using SemVer 2.0. -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
+
+    <!-- Contact email address for NuGet packages and Linux installers. -->
+    <MaintainerEmail>odata@microsoft.com</MaintainerEmail>
+
+    <!-- <PackageIcon>odata.png</PackageIcon> -->
+    <Summary>
+      Microsoft OData MCP Framework enables AI assistants to interact with OData services through the Model Context Protocol (MCP).
+      It provides both embedded (AspNetCore) and standalone (Tools) deployment options for exposing OData APIs as MCP tools.
+    </Summary>
+    <Description>
+      $(Summary)
+    </Description>
+
+    <!-- <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl> -->
+    <PackageProjectUrl>https://github.com/odata/mcp</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>odata;mcp;modelcontextprotocol;ai;llm</PackageTags>
+    <Serviceable>true</Serviceable>
+
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepositoryUrl>https://github.com/odata/mcp.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Compilation options -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+
+    <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+
+    <!-- Fixes a common error in targets implementing a NoBuild mode. -->
+    <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
+
+    <!-- Suppress warnings about uninstantiated classes. -->
+    <NoWarn>$(NoWarn);CA1812</NoWarn>
+
+    <!-- Suppress warnings about pre-release packages and deprecated icon URL -->
+    <NoWarn>$(NoWarn);NU5104;NU1510;NU5048</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(IsTestProject) == 'true' ">
+    <NoWarn>$(NoWarn);CA1001;CA1707;CA2007;CA1801</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(IsSampleProject) == 'true' ">
+    <NoWarn>$(NoWarn);CA1001;CA1707;CA1716;CA1801;CA1822</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPrimaryProject)' == 'true' ">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <StandardTestTfms>net10.0;net9.0;net8.0;</StandardTestTfms>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) != 'true' and $(IsSampleProject) != 'true' and $(IsTemplateProject) != 'true' ">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.*" PrivateAssets="All" />
+    <InternalsVisibleTo Include="$(AssemblyName.Replace('Microsoft.OData.Mcp', 'Microsoft.OData.Mcp.Tests'))" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) == 'true' and $(IsSampleProject) != 'true' ">
+    <PackageReference Include="FluentAssertions" Version="6.*" PrivateAssets="All" />
+    <PackageReference Include="FluentAssertions.Analyzers" Version="0.*" PrivateAssets="All" />
+    <PackageReference Include="MSTest" Version="3.*" />
+    <PackageReference Include="Breakdance.Extensions.MSTest2" Version="7.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <None Include="$(MSBuildThisFileDirectory)odata.png" Pack="true" PackagePath="\" Condition="'$(IsTestProject)' != 'true'" /> -->
+    <None Include="readme.md" Pack="true" PackagePath="\" Condition="$(IncludeReadmeFile) == 'true'" />
+  </ItemGroup>
+
+</Project>

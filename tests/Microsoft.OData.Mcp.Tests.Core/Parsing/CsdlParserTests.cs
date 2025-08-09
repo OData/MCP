@@ -1,6 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
+using System.Xml;
 using FluentAssertions;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,7 +63,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
             var parser = new CsdlParser();
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() => parser.ParseFromString(null!));
+            Assert.ThrowsExactly<ArgumentNullException>(() => parser.ParseFromString(null!));
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
             var parser = new CsdlParser();
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentException>(() => parser.ParseFromString(""));
+            Assert.ThrowsExactly<ArgumentException>(() => parser.ParseFromString(""));
         }
 
         /// <summary>
@@ -92,7 +90,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
             var invalidXml = "<invalid xml>";
 
             // Act & Assert
-            Assert.ThrowsException<System.Xml.XmlException>(() => parser.ParseFromString(invalidXml));
+            Assert.ThrowsExactly<XmlException>(() => parser.ParseFromString(invalidXml));
         }
     }
 }

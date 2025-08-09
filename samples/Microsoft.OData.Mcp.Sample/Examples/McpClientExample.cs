@@ -12,9 +12,13 @@ namespace Microsoft.OData.Mcp.Sample.Examples
     /// </summary>
     public class McpClientExample
     {
-        private readonly HttpClient _httpClient;
-        private readonly JsonSerializerOptions _jsonOptions;
+        internal readonly HttpClient _httpClient;
+        internal readonly JsonSerializerOptions _jsonOptions;
 
+
+        /// <summary>
+        /// 
+        /// </summary>
         public McpClientExample()
         {
             _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:5001") };
@@ -59,7 +63,7 @@ namespace Microsoft.OData.Mcp.Sample.Examples
                 var tools = JsonSerializer.Deserialize<ToolsResponse>(content, _jsonOptions);
                 
                 Console.WriteLine($"Found {tools?.Tools?.Count ?? 0} tools:");
-                foreach (var tool in tools?.Tools ?? new())
+                foreach (var tool in tools?.Tools ?? [])
                 {
                     Console.WriteLine($"  - {tool.Name}: {tool.Description}");
                 }
@@ -286,16 +290,16 @@ namespace Microsoft.OData.Mcp.Sample.Examples
         }
 
         // Helper classes for deserialization
-        private class ToolsResponse
+        internal class ToolsResponse
         {
-            public List<Tool> Tools { get; set; } = new();
+            public List<Tool> Tools { get; set; } = [];
         }
 
-        private class Tool
+        internal class Tool
         {
             public string Name { get; set; } = string.Empty;
             public string Description { get; set; } = string.Empty;
-            public Dictionary<string, object> Parameters { get; set; } = new();
+            public Dictionary<string, object> Parameters { get; set; } = [];
         }
     }
 }

@@ -155,7 +155,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with deployment-specific
         /// network settings.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 
@@ -493,17 +493,17 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets the allowed origins.
         /// </summary>
-        public List<string> AllowedOrigins { get; set; } = new() { "*" };
+        public List<string> AllowedOrigins { get; set; } = ["*"];
 
         /// <summary>
         /// Gets or sets the allowed methods.
         /// </summary>
-        public List<string> AllowedMethods { get; set; } = new() { "GET", "POST", "OPTIONS" };
+        public List<string> AllowedMethods { get; set; } = ["GET", "POST", "OPTIONS"];
 
         /// <summary>
         /// Gets or sets the allowed headers.
         /// </summary>
-        public List<string> AllowedHeaders { get; set; } = new() { "*" };
+        public List<string> AllowedHeaders { get; set; } = ["*"];
 
         /// <summary>
         /// Gets or sets a value indicating whether credentials are allowed.
@@ -580,7 +580,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets the compression algorithms to use.
         /// </summary>
-        public List<string> Algorithms { get; set; } = new() { "gzip", "deflate" };
+        public List<string> Algorithms { get; set; } = ["gzip", "deflate"];
 
         /// <summary>
         /// Gets or sets the minimum response size to compress.
@@ -590,15 +590,15 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets the MIME types to compress.
         /// </summary>
-        public List<string> MimeTypes { get; set; } = new()
-        {
+        public List<string> MimeTypes { get; set; } =
+        [
             "application/json",
             "application/xml",
             "text/plain",
             "text/html",
             "text/css",
             "text/javascript"
-        };
+        ];
 
         /// <summary>
         /// Validates the compression configuration.

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +14,7 @@ using Microsoft.OData.Mcp.Authentication.Models;
 
 namespace Microsoft.OData.Mcp.Authentication.Services
 {
+
     /// <summary>
     /// Provides services for validating JWT tokens and extracting user context.
     /// </summary>
@@ -24,13 +24,14 @@ namespace Microsoft.OData.Mcp.Authentication.Services
     /// </remarks>
     public sealed class TokenValidationService : ITokenValidationService
     {
+
         #region Fields
 
-        private readonly McpAuthenticationOptions _options;
-        private readonly ILogger<TokenValidationService> _logger;
-        private readonly JwtSecurityTokenHandler _tokenHandler;
-        private readonly IConfigurationManager<OpenIdConnectConfiguration>? _configurationManager;
-        private TokenValidationParameters? _validationParameters;
+        internal readonly McpAuthenticationOptions _options;
+        internal readonly ILogger<TokenValidationService> _logger;
+        internal readonly JwtSecurityTokenHandler _tokenHandler;
+        internal readonly IConfigurationManager<OpenIdConnectConfiguration>? _configurationManager;
+        internal TokenValidationParameters? _validationParameters;
 
         #endregion
 
@@ -102,7 +103,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
 
             try
             {
-                var result = await ValidateTokenAsync(token, new Dictionary<string, object>(), cancellationToken);
+                var result = await ValidateTokenAsync(token, [], cancellationToken);
                 return result.IsValid ? result.Principal : null;
             }
             catch (Exception ex)
@@ -357,12 +358,12 @@ namespace Microsoft.OData.Mcp.Authentication.Services
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Initializes the token validation parameters.
         /// </summary>
-        private void InitializeValidationParameters()
+        internal void InitializeValidationParameters()
         {
             _validationParameters = new TokenValidationParameters
             {
@@ -410,7 +411,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <returns>The token validation parameters.</returns>
-        private async Task<TokenValidationParameters?> GetValidationParametersAsync(CancellationToken cancellationToken)
+        internal async Task<TokenValidationParameters?> GetValidationParametersAsync(CancellationToken cancellationToken)
         {
             if (_validationParameters is null)
             {
@@ -467,7 +468,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <param name="baseParameters">The base validation parameters.</param>
         /// <param name="additionalParameters">Additional parameters to apply.</param>
         /// <returns>A new set of validation parameters with the additional parameters applied.</returns>
-        private static TokenValidationParameters ApplyAdditionalValidationParameters(
+        internal static TokenValidationParameters ApplyAdditionalValidationParameters(
             TokenValidationParameters baseParameters, 
             Dictionary<string, object> additionalParameters)
         {
@@ -494,4 +495,5 @@ namespace Microsoft.OData.Mcp.Authentication.Services
 
         #endregion
     }
+
 }

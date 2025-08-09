@@ -57,7 +57,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// a navigation property from entities in this set. They establish the connections
         /// between related entity sets in the model.
         /// </remarks>
-        public List<EdmNavigationPropertyBinding> NavigationPropertyBindings { get; set; } = new();
+        public List<EdmNavigationPropertyBinding> NavigationPropertyBindings { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the annotations for this entity set.
@@ -67,7 +67,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Annotations can be used to specify additional behaviors, constraints, or metadata
         /// that are not captured by the standard OData model elements.
         /// </remarks>
-        public Dictionary<string, object> Annotations { get; set; } = new();
+        public Dictionary<string, object> Annotations { get; set; } = [];
 
         /// <summary>
         /// Gets a value indicating whether this entity set has any navigation property bindings.

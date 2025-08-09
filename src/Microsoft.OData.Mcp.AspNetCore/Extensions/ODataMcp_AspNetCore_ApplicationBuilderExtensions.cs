@@ -1,19 +1,20 @@
 using System;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Middleware;
 using Microsoft.OData.Mcp.AspNetCore.Routing;
 using Microsoft.OData.Mcp.Core;
-using Microsoft.OData.Mcp.Core.Routing;
 
 namespace Microsoft.AspNetCore.Builder
 {
+
     /// <summary>
     /// Extension methods for configuring OData MCP in the application pipeline.
     /// </summary>
-    public static class ApplicationBuilderExtensions
+    public static class ODataMcp_AspNetCore_ApplicationBuilderExtensions
     {
+
         /// <summary>
         /// Adds OData MCP middleware to automatically discover and register MCP endpoints.
         /// </summary>
@@ -34,14 +35,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </example>
         public static IApplicationBuilder UseODataMcp(this IApplicationBuilder app)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(app);
-#else
-            if (app is null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-#endif
 
             // Check if OData MCP was registered
             var markerOptions = app.ApplicationServices.GetService<IOptions<ODataMcpMarkerOptions>>();
@@ -62,18 +56,17 @@ namespace Microsoft.AspNetCore.Builder
             // OData route discovery would happen here
             // For now, routes must be registered explicitly using the fluent API
 
-            var convention = app.ApplicationServices.GetService<IMcpRouteConvention>();
-            if (convention == null)
-            {
-                // Service might not be registered yet - create it
-                convention = app.ApplicationServices.GetRequiredService<ODataMcpRouteConvention>();
-            }
-            var endpointDataSource = app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>();
+            var convention = app.ApplicationServices.GetService<IMcpRouteConvention>()
+                ?? app.ApplicationServices.GetRequiredService<ODataMcpRouteConvention>();
+
+            var endpointDataSource = app.ApplicationServices.GetRequiredService<EndpointDataSource>();
 
             // Add the MCP middleware to handle requests
             app.UseMiddleware<ODataMcpMiddleware>();
 
             return app;
         }
+
     }
+
 }

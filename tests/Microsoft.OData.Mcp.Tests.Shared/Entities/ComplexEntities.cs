@@ -52,7 +52,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public int? ManagerId { get; set; }
 
-        public List<Employee> Reports { get; set; } = new();
+        public List<Employee> Reports { get; set; } = [];
 
         public decimal Salary { get; set; }
 

@@ -61,7 +61,7 @@ namespace Microsoft.OData.Mcp.Tests.Console
             isValid.Should().BeTrue();
         }
         
-        private static string GetMetadataPath(string url)
+        internal static string GetMetadataPath(string url)
         {
             if (url.EndsWith("/$metadata", StringComparison.OrdinalIgnoreCase))
             {
@@ -70,7 +70,7 @@ namespace Microsoft.OData.Mcp.Tests.Console
             return "";
         }
         
-        private static bool IsValidUrl(string url)
+        internal static bool IsValidUrl(string url)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out var result) 
                 && (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);

@@ -47,7 +47,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Each target service can have its own delegation configuration, including
         /// different forwarding strategies, scopes, and authentication parameters.
         /// </remarks>
-        public List<TargetServiceOptions> TargetServices { get; set; } = new();
+        public List<TargetServiceOptions> TargetServices { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the token exchange options for services that support token exchange.

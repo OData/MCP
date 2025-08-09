@@ -58,7 +58,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// of MCP operations. Users must have at least one of the required
         /// scopes to perform the operation.
         /// </remarks>
-        public Dictionary<string, List<string>> RequiredScopes { get; set; } = new();
+        public Dictionary<string, List<string>> RequiredScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tool-specific scope requirements.
@@ -69,7 +69,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Tool-specific requirements override general operation requirements
         /// for the specified tools.
         /// </remarks>
-        public Dictionary<string, List<string>> ToolScopes { get; set; } = new();
+        public Dictionary<string, List<string>> ToolScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the entity-specific scope requirements.
@@ -80,7 +80,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// For example, sensitive entities might require higher-privilege scopes
         /// than general-purpose entities.
         /// </remarks>
-        public Dictionary<string, EntityScopeRequirements> EntityScopes { get; set; } = new();
+        public Dictionary<string, EntityScopeRequirements> EntityScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the default scopes required when no specific requirement is defined.
@@ -91,7 +91,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// are defined for an operation, tool, or entity. This ensures a baseline
         /// level of access control.
         /// </remarks>
-        public List<string> DefaultRequiredScopes { get; set; } = new();
+        public List<string> DefaultRequiredScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the behavior when required scopes are missing.
@@ -275,25 +275,25 @@ namespace Microsoft.OData.Mcp.Authentication.Models
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Initializes the default scope requirements for common operations.
         /// </summary>
-        private void InitializeDefaultScopeRequirements()
+        internal void InitializeDefaultScopeRequirements()
         {
             // Standard CRUD operations
-            RequiredScopes["read"] = new List<string> { "odata.read", "read" };
-            RequiredScopes["create"] = new List<string> { "odata.write", "write" };
-            RequiredScopes["update"] = new List<string> { "odata.write", "write" };
-            RequiredScopes["delete"] = new List<string> { "odata.delete", "write" };
+            RequiredScopes["read"] = ["odata.read", "read"];
+            RequiredScopes["create"] = ["odata.write", "write"];
+            RequiredScopes["update"] = ["odata.write", "write"];
+            RequiredScopes["delete"] = ["odata.delete", "write"];
 
             // Query operations
-            RequiredScopes["query"] = new List<string> { "odata.read", "read" };
-            RequiredScopes["navigate"] = new List<string> { "odata.read", "read" };
+            RequiredScopes["query"] = ["odata.read", "read"];
+            RequiredScopes["navigate"] = ["odata.read", "read"];
 
             // Administrative operations
-            RequiredScopes["admin"] = new List<string> { "odata.admin", "admin" };
+            RequiredScopes["admin"] = ["odata.admin", "admin"];
         }
 
         #endregion

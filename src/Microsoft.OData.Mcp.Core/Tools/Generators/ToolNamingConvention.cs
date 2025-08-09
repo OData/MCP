@@ -1,5 +1,6 @@
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Naming conventions for generated tool names.
     /// </summary>
@@ -11,6 +12,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public enum ToolNamingConvention
     {
+
         /// <summary>
         /// Use PascalCase naming (e.g., CreateCustomer, UpdateOrder).
         /// </summary>
@@ -50,5 +52,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// systems, though less common for API method names.
         /// </remarks>
         KebabCase
+
     }
+
 }

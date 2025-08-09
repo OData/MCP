@@ -6,6 +6,7 @@ using Microsoft.OData.Mcp.Core.Tools;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Unified configuration for MCP servers supporting both sidecar and middleware deployment modes.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class McpServerConfiguration
     {
+
         #region Properties
 
         /// <summary>
@@ -126,7 +128,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with application-specific
         /// settings that don't fit into the standard configuration categories.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 
@@ -464,12 +466,12 @@ namespace Microsoft.OData.Mcp.Core.Configuration
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Applies development environment overrides.
         /// </summary>
-        private void ApplyDevelopmentOverrides()
+        internal void ApplyDevelopmentOverrides()
         {
             Authentication.Enabled = false;
             Security.RequireHttps = false;
@@ -482,7 +484,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Applies staging environment overrides.
         /// </summary>
-        private void ApplyStagingOverrides()
+        internal void ApplyStagingOverrides()
         {
             // Keep authentication disabled by default for simplicity
             Authentication.Enabled = false;
@@ -496,7 +498,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Applies production environment overrides.
         /// </summary>
-        private void ApplyProductionOverrides()
+        internal void ApplyProductionOverrides()
         {
             // Keep authentication disabled by default for simplicity (Easy As Fuck™ philosophy)
             // Users can enable it explicitly if needed
@@ -514,7 +516,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Applies testing environment overrides.
         /// </summary>
-        private void ApplyTestingOverrides()
+        internal void ApplyTestingOverrides()
         {
             Authentication.Enabled = false;
             Security.RequireHttps = false;
@@ -532,6 +534,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </summary>
     public enum McpDeploymentMode
     {
+
         /// <summary>
         /// Sidecar deployment runs as a separate service alongside the OData service.
         /// </summary>
@@ -546,5 +549,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Hybrid deployment combines aspects of both sidecar and middleware modes.
         /// </summary>
         Hybrid
+
     }
+
 }

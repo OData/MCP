@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Routing
 {
+
     /// <summary>
     /// Default implementation of the MCP endpoint registry.
     /// </summary>
@@ -15,11 +16,12 @@ namespace Microsoft.OData.Mcp.Core.Routing
     /// </remarks>
     public class McpEndpointRegistry : IMcpEndpointRegistry
     {
+
         #region Fields
 
-        private readonly ConcurrentDictionary<string, McpRouteEntry> _routesByName;
-        private McpRouteMatcher? _routeMatcher;
-        private readonly object _matcherLock = new();
+        internal readonly ConcurrentDictionary<string, McpRouteEntry> _routesByName;
+        internal McpRouteMatcher? _routeMatcher;
+        internal readonly object _matcherLock = new();
 
         #endregion
 
@@ -42,16 +44,9 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// </summary>
         /// <param name="route">The route entry to register.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
-        public void RegisterEndpoint(McpRouteEntry route)
+        public void Register(McpRouteEntry route)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(route);
-#else
-            if (route is null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-#endif
 
             _routesByName.AddOrUpdate(route.RouteName, route, (key, existing) =>
             {
@@ -131,13 +126,13 @@ namespace Microsoft.OData.Mcp.Core.Routing
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Gets or creates the route matcher.
         /// </summary>
         /// <returns>The route matcher.</returns>
-        private McpRouteMatcher GetOrCreateMatcher()
+        internal McpRouteMatcher GetOrCreateMatcher()
         {
             lock (_matcherLock)
             {
@@ -151,5 +146,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         }
 
         #endregion
+
     }
+
 }

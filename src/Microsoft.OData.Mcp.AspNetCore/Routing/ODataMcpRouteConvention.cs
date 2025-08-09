@@ -20,9 +20,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
     {
         #region Fields
 
-        private readonly ODataMcpOptions _options;
-        private readonly IMcpEndpointRegistry _endpointRegistry;
-        private readonly ODataRouteOptionsResolver _routeOptionsResolver;
+        internal readonly ODataMcpOptions _options;
+        internal readonly IMcpEndpointRegistry _endpointRegistry;
+        internal readonly ODataRouteOptionsResolver _routeOptionsResolver;
 
         #endregion
 
@@ -42,19 +42,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
             IMcpEndpointRegistry endpointRegistry,
             IODataOptionsProvider? odataOptionsProvider = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(endpointRegistry);
-#else
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            if (endpointRegistry is null)
-            {
-                throw new ArgumentNullException(nameof(endpointRegistry));
-            }
-#endif
 
             _options = options.Value;
             _endpointRegistry = endpointRegistry;
@@ -73,19 +62,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         /// <param name="routeName">The OData route name.</param>
         public void ApplyConvention(IEndpointRouteBuilder endpointRouteBuilder, string routePrefix, string routeName)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(endpointRouteBuilder);
             ArgumentException.ThrowIfNullOrWhiteSpace(routeName);
-#else
-            if (endpointRouteBuilder is null)
-            {
-                throw new ArgumentNullException(nameof(endpointRouteBuilder));
-            }
-            if (string.IsNullOrWhiteSpace(routeName))
-            {
-                throw new ArgumentException("Route name cannot be null or whitespace.", nameof(routeName));
-            }
-#endif
 
             // Check if this route should have MCP enabled
             if (!ShouldApplyMcp(routeName))
@@ -109,7 +87,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
             };
 
             // Register in the endpoint registry
-            _endpointRegistry.RegisterEndpoint(routeEntry);
+            _endpointRegistry.Register(routeEntry);
 
             // Map the MCP endpoints
             MapMcpEndpoints(endpointRouteBuilder, mcpBasePath, routeName);
@@ -117,14 +95,14 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Determines whether MCP should be applied to this route.
         /// </summary>
         /// <param name="routeName">The route name.</param>
         /// <returns>True if MCP should be applied; otherwise, false.</returns>
-        private bool ShouldApplyMcp(string routeName)
+        internal bool ShouldApplyMcp(string routeName)
         {
             // Check if auto-registration is enabled
             if (!_options.AutoRegisterRoutes)
@@ -152,7 +130,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         /// </summary>
         /// <param name="routePrefix">The route prefix to normalize.</param>
         /// <returns>The normalized route prefix.</returns>
-        private static string NormalizeRoutePrefix(string? routePrefix)
+        internal static string NormalizeRoutePrefix(string? routePrefix)
         {
             if (string.IsNullOrWhiteSpace(routePrefix))
             {
@@ -167,7 +145,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         /// </summary>
         /// <param name="normalizedPrefix">The normalized route prefix.</param>
         /// <returns>The MCP base path.</returns>
-        private static string BuildMcpBasePath(string normalizedPrefix)
+        internal static string BuildMcpBasePath(string normalizedPrefix)
         {
             if (string.IsNullOrEmpty(normalizedPrefix))
             {
@@ -183,7 +161,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         /// <param name="endpointRouteBuilder">The endpoint route builder.</param>
         /// <param name="mcpBasePath">The MCP base path.</param>
         /// <param name="routeName">The route name.</param>
-        private void MapMcpEndpoints(IEndpointRouteBuilder endpointRouteBuilder, string mcpBasePath, string routeName)
+        internal void MapMcpEndpoints(IEndpointRouteBuilder endpointRouteBuilder, string mcpBasePath, string routeName)
         {
             // For now, just register the routes with placeholder handlers
             // The actual implementation will be handled by the existing MCP infrastructure
@@ -236,21 +214,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Metadata for MCP endpoints.
-    /// </summary>
-    public class McpEndpointMetadata
-    {
-        /// <summary>
-        /// Gets or sets the MCP command type.
-        /// </summary>
-        public McpCommand Command { get; set; }
-
-        /// <summary>
-        /// Gets or sets the OData route name.
-        /// </summary>
-        public string? RouteName { get; set; }
-    }
 }

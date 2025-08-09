@@ -12,6 +12,7 @@ using Microsoft.OData.Mcp.Authentication.Services;
 
 namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
 {
+
     /// <summary>
     /// Health check for the authentication system.
     /// </summary>
@@ -22,12 +23,13 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
     /// </remarks>
     public sealed class AuthenticationHealthCheck : IHealthCheck
     {
+
         #region Fields
 
-        private readonly McpAuthenticationOptions _authOptions;
-        private readonly ITokenValidationService? _tokenValidationService;
-        private readonly ILogger<AuthenticationHealthCheck> _logger;
-        private readonly IHttpClientFactory? _httpClientFactory;
+        internal readonly McpAuthenticationOptions _authOptions;
+        internal readonly ITokenValidationService? _tokenValidationService;
+        internal readonly ILogger<AuthenticationHealthCheck> _logger;
+        internal readonly IHttpClientFactory? _httpClientFactory;
 
         #endregion
 
@@ -137,14 +139,14 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Checks the validity of the authentication configuration.
         /// </summary>
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
-        private void CheckConfigurationValidity(Dictionary<string, object> healthData, List<string> issues)
+        internal void CheckConfigurationValidity(Dictionary<string, object> healthData, List<string> issues)
         {
             try
             {
@@ -179,7 +181,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        private async Task CheckAuthorityConnectivityAsync(Dictionary<string, object> healthData, List<string> issues, CancellationToken cancellationToken)
+        internal async Task CheckAuthorityConnectivityAsync(Dictionary<string, object> healthData, List<string> issues, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(_authOptions.JwtBearer.Authority))
             {
@@ -252,7 +254,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// </summary>
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
-        private void CheckTokenValidationService(Dictionary<string, object> healthData, List<string> issues)
+        internal void CheckTokenValidationService(Dictionary<string, object> healthData, List<string> issues)
         {
             try
             {
@@ -285,7 +287,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// </summary>
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
-        private void CheckTokenDelegationConfiguration(Dictionary<string, object> healthData, List<string> issues)
+        internal void CheckTokenDelegationConfiguration(Dictionary<string, object> healthData, List<string> issues)
         {
             try
             {
@@ -333,5 +335,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         }
 
         #endregion
+
     }
+
 }

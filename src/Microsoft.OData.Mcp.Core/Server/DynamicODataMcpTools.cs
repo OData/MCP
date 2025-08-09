@@ -26,12 +26,12 @@ namespace Microsoft.OData.Mcp.Core.Server
     [McpServerToolType]
     public class DynamicODataMcpTools
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IOptions<McpServerConfiguration> _configuration;
-        private readonly ICsdlMetadataParser _metadataParser;
-        private readonly ILogger<DynamicODataMcpTools> _logger;
-        private EdmModel? _cachedModel;
-        private DateTime _lastMetadataRefresh = DateTime.MinValue;
+        internal readonly IHttpClientFactory _httpClientFactory;
+        internal readonly IOptions<McpServerConfiguration> _configuration;
+        internal readonly ICsdlMetadataParser _metadataParser;
+        internal readonly ILogger<DynamicODataMcpTools> _logger;
+        internal EdmModel? _cachedModel;
+        internal DateTime _lastMetadataRefresh = DateTime.MinValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicODataMcpTools"/> class.
@@ -222,29 +222,28 @@ namespace Microsoft.OData.Mcp.Core.Server
                 }
 
                 var baseUrl = config.ODataService.BaseUrl?.TrimEnd('/') ?? throw new InvalidOperationException("OData service base URL is not configured");
-                var examples = new List<object>();
-
-                // Basic queries
-                examples.Add(new
+                var examples = new List<object>
                 {
-                    Description = "Get all entities",
-                    Url = $"{baseUrl}/{entitySetName}",
-                    ODataOptions = "None"
-                });
-
-                examples.Add(new
-                {
-                    Description = "Get top 10 entities",
-                    Url = $"{baseUrl}/{entitySetName}?$top=10",
-                    ODataOptions = "$top"
-                });
-
-                examples.Add(new
-                {
-                    Description = "Get entities with count",
-                    Url = $"{baseUrl}/{entitySetName}?$count=true",
-                    ODataOptions = "$count"
-                });
+                    // Basic queries
+                    new
+                    {
+                        Description = "Get all entities",
+                        Url = $"{baseUrl}/{entitySetName}",
+                        ODataOptions = "None"
+                    },
+                    new
+                    {
+                        Description = "Get top 10 entities",
+                        Url = $"{baseUrl}/{entitySetName}?$top=10",
+                        ODataOptions = "$top"
+                    },
+                    new
+                    {
+                        Description = "Get entities with count",
+                        Url = $"{baseUrl}/{entitySetName}?$count=true",
+                        ODataOptions = "$count"
+                    }
+                };
 
                 if (entityType != null)
                 {
@@ -480,12 +479,12 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
         }
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Gets the OData model, refreshing from metadata if needed.
         /// </summary>
-        private async Task<EdmModel> GetODataModelAsync()
+        internal async Task<EdmModel> GetODataModelAsync()
         {
             var config = _configuration.Value;
             
@@ -529,7 +528,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <summary>
         /// Gets a sample key value based on the property type.
         /// </summary>
-        private static string GetSampleKeyValue(string? propertyType)
+        internal static string GetSampleKeyValue(string? propertyType)
         {
             return propertyType?.ToLowerInvariant() switch
             {
@@ -546,7 +545,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <summary>
         /// Parses a query string into a dictionary.
         /// </summary>
-        private static Dictionary<string, string> ParseQueryString(string query)
+        internal static Dictionary<string, string> ParseQueryString(string query)
         {
             var result = new Dictionary<string, string>();
             

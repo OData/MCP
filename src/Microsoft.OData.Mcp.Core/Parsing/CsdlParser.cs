@@ -7,6 +7,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Parsing
 {
+
     /// <summary>
     /// Parses OData CSDL (Conceptual Schema Definition Language) XML documents into EDM models.
     /// </summary>
@@ -17,12 +18,13 @@ namespace Microsoft.OData.Mcp.Core.Parsing
     /// </remarks>
     public sealed class CsdlParser : ICsdlMetadataParser
     {
+
         #region Fields
 
-        private readonly ILogger<CsdlParser>? _logger;
+        internal readonly ILogger<CsdlParser>? _logger;
 
-        private static readonly XNamespace EdmNamespace = "http://docs.oasis-open.org/odata/ns/edm";
-        private static readonly XNamespace EdmxNamespace = "http://docs.oasis-open.org/odata/ns/edmx";
+        internal static readonly XNamespace EdmNamespace = "http://docs.oasis-open.org/odata/ns/edm";
+        internal static readonly XNamespace EdmxNamespace = "http://docs.oasis-open.org/odata/ns/edmx";
 
         #endregion
 
@@ -58,14 +60,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <exception cref="InvalidOperationException">Thrown when the CSDL structure is invalid.</exception>
         public EdmModel ParseFromString(string csdlXml)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(csdlXml);
-#else
-            if (string.IsNullOrWhiteSpace(csdlXml))
-            {
-                throw new ArgumentException("CSDL XML content cannot be null or whitespace.", nameof(csdlXml));
-            }
-#endif
 
             _logger?.LogDebug("Parsing CSDL XML from string");
 
@@ -96,14 +91,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <exception cref="InvalidOperationException">Thrown when the CSDL structure is invalid.</exception>
         public EdmModel ParseFromStream(Stream stream)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(stream);
-#else
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-#endif
 
             _logger?.LogDebug("Parsing CSDL XML from stream");
 
@@ -135,14 +123,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <exception cref="InvalidOperationException">Thrown when the CSDL structure is invalid.</exception>
         public EdmModel ParseFromFile(string filePath)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-#else
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
-            }
-#endif
 
             if (!File.Exists(filePath))
             {
@@ -170,20 +151,17 @@ namespace Microsoft.OData.Mcp.Core.Parsing
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Parses the root EDMX document.
         /// </summary>
         /// <param name="document">The XML document to parse.</param>
         /// <returns>The parsed EDM model.</returns>
-        private EdmModel ParseDocument(XDocument document)
+        internal EdmModel ParseDocument(XDocument document)
         {
-            var root = document.Root;
-            if (root is null)
-            {
+            var root = document.Root ??
                 throw new InvalidOperationException("CSDL document has no root element");
-            }
 
             if (root.Name != EdmxNamespace + "Edmx")
             {
@@ -197,11 +175,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
 
             var model = new EdmModel(version);
 
-            var dataServices = root.Element(EdmxNamespace + "DataServices");
-            if (dataServices is null)
-            {
+            var dataServices = root.Element(EdmxNamespace + "DataServices") ??
                 throw new InvalidOperationException("EDMX document missing DataServices element");
-            }
 
             var schemas = dataServices.Elements(EdmNamespace + "Schema");
             foreach (var schema in schemas)
@@ -220,13 +195,10 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="schemaElement">The schema XML element.</param>
         /// <param name="model">The model to populate.</param>
-        private void ParseSchema(XElement schemaElement, EdmModel model)
+        internal void ParseSchema(XElement schemaElement, EdmModel model)
         {
-            var namespaceAttr = schemaElement.Attribute("Namespace");
-            if (namespaceAttr is null)
-            {
+            var namespaceAttr = schemaElement.Attribute("Namespace") ??
                 throw new InvalidOperationException("Schema element missing Namespace attribute");
-            }
 
             var schemaNamespace = namespaceAttr.Value;
             _logger?.LogDebug("Parsing schema namespace: {Namespace}", schemaNamespace);
@@ -267,13 +239,10 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <param name="entityTypeElement">The entity type XML element.</param>
         /// <param name="schemaNamespace">The namespace of the schema.</param>
         /// <returns>The parsed entity type.</returns>
-        private EdmEntityType ParseEntityType(XElement entityTypeElement, string schemaNamespace)
+        internal EdmEntityType ParseEntityType(XElement entityTypeElement, string schemaNamespace)
         {
-            var nameAttr = entityTypeElement.Attribute("Name");
-            if (nameAttr is null)
-            {
+            var nameAttr = entityTypeElement.Attribute("Name") ??
                 throw new InvalidOperationException("EntityType element missing Name attribute");
-            }
 
             var entityType = new EdmEntityType(nameAttr.Value, schemaNamespace)
             {
@@ -328,13 +297,10 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <param name="complexTypeElement">The complex type XML element.</param>
         /// <param name="schemaNamespace">The namespace of the schema.</param>
         /// <returns>The parsed complex type.</returns>
-        private EdmComplexType ParseComplexType(XElement complexTypeElement, string schemaNamespace)
+        internal EdmComplexType ParseComplexType(XElement complexTypeElement, string schemaNamespace)
         {
-            var nameAttr = complexTypeElement.Attribute("Name");
-            if (nameAttr is null)
-            {
+            var nameAttr = complexTypeElement.Attribute("Name") ??
                 throw new InvalidOperationException("ComplexType element missing Name attribute");
-            }
 
             var complexType = new EdmComplexType(nameAttr.Value, schemaNamespace)
             {
@@ -371,7 +337,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="propertyElement">The property XML element.</param>
         /// <returns>The parsed property.</returns>
-        private EdmProperty ParseProperty(XElement propertyElement)
+        internal EdmProperty ParseProperty(XElement propertyElement)
         {
             var nameAttr = propertyElement.Attribute("Name");
             var typeAttr = propertyElement.Attribute("Type");
@@ -436,7 +402,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="navigationPropertyElement">The navigation property XML element.</param>
         /// <returns>The parsed navigation property.</returns>
-        private EdmNavigationProperty ParseNavigationProperty(XElement navigationPropertyElement)
+        internal EdmNavigationProperty ParseNavigationProperty(XElement navigationPropertyElement)
         {
             var nameAttr = navigationPropertyElement.Attribute("Name");
             var typeAttr = navigationPropertyElement.Attribute("Type");
@@ -495,7 +461,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <param name="containerElement">The entity container XML element.</param>
         /// <param name="schemaNamespace">The namespace of the schema.</param>
         /// <returns>The parsed entity container.</returns>
-        private EdmEntityContainer ParseEntityContainer(XElement containerElement, string schemaNamespace)
+        internal EdmEntityContainer ParseEntityContainer(XElement containerElement, string schemaNamespace)
         {
             var nameAttr = containerElement.Attribute("Name");
             if (nameAttr is null)
@@ -552,7 +518,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="entitySetElement">The entity set XML element.</param>
         /// <returns>The parsed entity set.</returns>
-        private EdmEntitySet ParseEntitySet(XElement entitySetElement)
+        internal EdmEntitySet ParseEntitySet(XElement entitySetElement)
         {
             var nameAttr = entitySetElement.Attribute("Name");
             var entityTypeAttr = entitySetElement.Attribute("EntityType");
@@ -594,7 +560,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="singletonElement">The singleton XML element.</param>
         /// <returns>The parsed singleton.</returns>
-        private EdmSingleton ParseSingleton(XElement singletonElement)
+        internal EdmSingleton ParseSingleton(XElement singletonElement)
         {
             var nameAttr = singletonElement.Attribute("Name");
             var typeAttr = singletonElement.Attribute("Type");
@@ -635,7 +601,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="functionImportElement">The function import XML element.</param>
         /// <returns>The parsed function import.</returns>
-        private EdmFunctionImport ParseFunctionImport(XElement functionImportElement)
+        internal EdmFunctionImport ParseFunctionImport(XElement functionImportElement)
         {
             var nameAttr = functionImportElement.Attribute("Name");
             var functionAttr = functionImportElement.Attribute("Function");
@@ -665,7 +631,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="actionImportElement">The action import XML element.</param>
         /// <returns>The parsed action import.</returns>
-        private EdmActionImport ParseActionImport(XElement actionImportElement)
+        internal EdmActionImport ParseActionImport(XElement actionImportElement)
         {
             var nameAttr = actionImportElement.Attribute("Name");
             var actionAttr = actionImportElement.Attribute("Action");
@@ -690,5 +656,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         }
 
         #endregion
+
     }
+
 }

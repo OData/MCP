@@ -1,5 +1,6 @@
 namespace Microsoft.OData.Mcp.Core.Routing
 {
+
     /// <summary>
     /// Provides access to OData configuration options.
     /// </summary>
@@ -9,6 +10,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
     /// </remarks>
     public interface IODataOptionsProvider
     {
+
         /// <summary>
         /// Gets a value indicating whether dollar prefixes are disabled for query options.
         /// </summary>
@@ -24,5 +26,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// <param name="routeName">The name of the OData route.</param>
         /// <returns>The route prefix, or null if not found.</returns>
         string? GetRoutePrefix(string routeName);
+
     }
+
 }

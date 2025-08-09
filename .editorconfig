@@ -11,10 +11,10 @@ indent_size = 4
 end_of_line = crlf
 
 [*.{csproj,vbproj,vcxproj,proj,props,targets}]
-indent_size = 2
+indent_size = 4
 
 [*.{json,js,ts,yml,yaml}]
-indent_size = 2
+indent_size = 4
 
 # C# formatting rules
 [*.cs]

@@ -52,7 +52,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Metadata can include information about the tool's capabilities, limitations,
         /// performance characteristics, or other implementation-specific details.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets examples of how to use the tool.
@@ -62,7 +62,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Examples help AI models understand the proper usage patterns and expected
         /// input/output formats for the tool.
         /// </remarks>
-        public List<McpToolExample> Examples { get; set; } = new();
+        public List<McpToolExample> Examples { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the categories or tags associated with the tool.
@@ -72,7 +72,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Categories help organize tools and make them easier to discover. Common
         /// categories might include "data", "utility", "integration", etc.
         /// </remarks>
-        public HashSet<string> Categories { get; set; } = new();
+        public HashSet<string> Categories { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether the tool is currently enabled and available for use.

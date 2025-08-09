@@ -69,7 +69,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// They should be the minimum scopes required for the MCP server to perform
         /// its operations on behalf of the user.
         /// </remarks>
-        public List<string> Scopes { get; set; } = new();
+        public List<string> Scopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the client credentials for service-to-service authentication.
@@ -102,7 +102,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// to the authentication token. They can be used for service-specific
         /// requirements like API versions or custom authentication schemes.
         /// </remarks>
-        public Dictionary<string, string> AdditionalHeaders { get; set; } = new();
+        public Dictionary<string, string> AdditionalHeaders { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the timeout for requests to this service.

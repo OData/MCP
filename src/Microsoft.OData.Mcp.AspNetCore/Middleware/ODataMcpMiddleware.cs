@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.OData.Mcp.Core;
+using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Routing;
 using Microsoft.OData.Mcp.Core.Tools;
-using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Middleware
 {
@@ -18,11 +23,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
     {
         #region Fields
 
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ODataMcpMiddleware> _logger;
-        private readonly IMcpEndpointRegistry _endpointRegistry;
-        private readonly IMcpToolFactory _toolFactory;
-        private readonly AspNetCore.ODataMcpOptions _options;
+        internal readonly RequestDelegate _next;
+        internal readonly ILogger<ODataMcpMiddleware> _logger;
+        internal readonly IMcpEndpointRegistry _endpointRegistry;
+        internal readonly IMcpToolFactory _toolFactory;
+        internal readonly AspNetCore.ODataMcpOptions _options;
+        internal readonly ConcurrentDictionary<string, IEnumerable<McpToolDefinition>> _toolsCache;
 
         #endregion
 
@@ -43,26 +49,18 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
             IMcpToolFactory toolFactory,
             AspNetCore.ODataMcpOptions options)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(next);
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(endpointRegistry);
             ArgumentNullException.ThrowIfNull(toolFactory);
             ArgumentNullException.ThrowIfNull(options);
-#else
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _endpointRegistry = endpointRegistry ?? throw new ArgumentNullException(nameof(endpointRegistry));
-            _toolFactory = toolFactory ?? throw new ArgumentNullException(nameof(toolFactory));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            return;
-#endif
 
             _next = next;
             _logger = logger;
             _endpointRegistry = endpointRegistry;
             _toolFactory = toolFactory;
             _options = options;
+            _toolsCache = new ConcurrentDictionary<string, IEnumerable<McpToolDefinition>>();
         }
 
         #endregion
@@ -123,12 +121,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Handles MCP info requests.
         /// </summary>
-        private async Task HandleInfoRequest(HttpContext context, McpRouteEntry route)
+        internal async Task HandleInfoRequest(HttpContext context, McpRouteEntry route)
         {
             var response = new
             {
@@ -154,21 +152,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
         /// <summary>
         /// Handles MCP tools list requests.
         /// </summary>
-        private async Task HandleToolsRequest(HttpContext context, McpRouteEntry route)
+        internal async Task HandleToolsRequest(HttpContext context, McpRouteEntry route)
         {
-            // Generate tools dynamically using the factory
-            // Note: In a real implementation, you might want to cache these
-            var generationOptions = new McpToolGenerationOptions
-            {
-                GenerateCrudTools = true,
-                GenerateQueryTools = true,
-                GenerateNavigationTools = true,
-                IncludeExamples = _options.IncludeMetadata
-            };
-            
-            // For now, return empty tools list since we need the EDM model
-            // TODO: Get the EDM model for this route and generate tools
-            var tools = new List<McpToolDefinition>();
+            var tools = await GetOrGenerateToolsAsync(route);
             
             var response = new
             {
@@ -191,7 +177,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
         /// <summary>
         /// Handles MCP tool info requests.
         /// </summary>
-        private async Task HandleToolInfoRequest(HttpContext context, McpRouteEntry route)
+        internal async Task HandleToolInfoRequest(HttpContext context, McpRouteEntry route)
         {
             var toolName = context.Request.RouteValues["toolName"]?.ToString();
             if (string.IsNullOrEmpty(toolName))
@@ -200,53 +186,261 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
                 return;
             }
 
-            // For now, return not found since we need to implement tool lookup
-            // TODO: Implement tool lookup using the factory
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            await context.Response.WriteAsync($"Tool '{toolName}' not found");
-            return;
+            var tools = await GetOrGenerateToolsAsync(route);
+            var tool = tools.FirstOrDefault(t => t.Name.Equals(toolName, StringComparison.OrdinalIgnoreCase));
+            
+            if (tool == null)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsync($"Tool '{toolName}' not found");
+                return;
+            }
 
-            // Original code to be reimplemented:
-            // var fullToolName = string.IsNullOrWhiteSpace(route.RouteName) || route.RouteName.Equals("default", StringComparison.OrdinalIgnoreCase)
-            //     ? toolName
-            //     : $"{route.RouteName}.{toolName}";
-            // Get tool from factory or cache
-
-            // This code is unreachable due to the return above
-            // Keeping it commented for future implementation
-            // var response = new
-            // {
-            //     name = tool.Name,
-            //     description = tool.Description,
-            //     inputSchema = tool.InputSchema,
-            //     examples = tool.Examples
-            // };
-            // 
-            // context.Response.ContentType = "application/json";
-            // await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions 
-            // { 
-            //     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            //     WriteIndented = true
-            // }));
+            var response = new
+            {
+                name = tool.Name,
+                description = tool.Description,
+                inputSchema = tool.InputSchema,
+                examples = tool.Examples
+            };
+            
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions 
+            { 
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            }));
         }
 
         /// <summary>
         /// Handles MCP tool execution requests.
         /// </summary>
-        private async Task HandleToolsExecuteRequest(HttpContext context, McpRouteEntry route)
+        internal async Task HandleToolsExecuteRequest(HttpContext context, McpRouteEntry route)
         {
-            // TODO: Implement tool execution
-            // This would involve:
-            // 1. Reading the request body to get tool name and parameters
-            // 2. Looking up the tool from the cache
-            // 3. Validating parameters against the tool's input schema
-            // 4. Executing the tool handler
-            // 5. Returning the result
+            // Read the request body
+            string requestBody;
+            using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
+            {
+                requestBody = await reader.ReadToEndAsync();
+            }
 
-            context.Response.StatusCode = StatusCodes.Status501NotImplemented;
-            await context.Response.WriteAsync("Tool execution not yet implemented");
+            if (string.IsNullOrWhiteSpace(requestBody))
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync("Request body is required");
+                return;
+            }
+
+            JsonDocument? requestJson = null;
+            try
+            {
+                requestJson = JsonDocument.Parse(requestBody);
+                
+                // Extract tool name and parameters
+                if (!requestJson.RootElement.TryGetProperty("tool", out var toolElement) ||
+                    toolElement.ValueKind != JsonValueKind.String)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsync("Tool name is required");
+                    return;
+                }
+
+                var toolName = toolElement.GetString();
+                if (string.IsNullOrWhiteSpace(toolName))
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsync("Tool name cannot be empty");
+                    return;
+                }
+
+                // Get parameters (optional)
+                JsonDocument? parameters = null;
+                if (requestJson.RootElement.TryGetProperty("parameters", out var paramsElement))
+                {
+                    parameters = JsonDocument.Parse(paramsElement.GetRawText());
+                }
+                else
+                {
+                    // Create empty parameters document
+                    parameters = JsonDocument.Parse("{}");
+                }
+
+                // Find and execute the tool
+                var tools = await GetOrGenerateToolsAsync(route);
+                var tool = tools.FirstOrDefault(t => t.Name.Equals(toolName, StringComparison.OrdinalIgnoreCase));
+                
+                if (tool == null)
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsync($"Tool '{toolName}' not found");
+                    return;
+                }
+
+                // Get the EDM model for this route (required for context)
+                var edmModel = GetEdmModelForRoute(route) ?? new EdmModel();
+                
+                // Create execution context
+                var toolContext = new McpToolContext
+                {
+                    Model = edmModel,
+                    ServiceBaseUrl = GetServiceBaseUrl(context, route),
+                    HttpClientFactory = context.RequestServices.GetRequiredService<IHttpClientFactory>(),
+                    CorrelationId = Guid.NewGuid().ToString()
+                };
+
+                // Add route metadata to context
+                toolContext.SetProperty("RouteName", route.RouteName);
+                toolContext.SetProperty("ODataRoutePrefix", route.ODataRoutePrefix);
+                toolContext.SetProperty("Logger", context.RequestServices.GetRequiredService<ILogger<ODataMcpMiddleware>>());
+                
+                // Execute the tool
+                var result = await tool.Handler(toolContext, parameters);
+                
+                // Return the result
+                context.Response.ContentType = "application/json";
+                
+                if (result.IsSuccess)
+                {
+                    var successResponse = new
+                    {
+                        success = true,
+                        data = result.Data?.RootElement,
+                        correlationId = result.CorrelationId
+                    };
+                    
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(successResponse, new JsonSerializerOptions 
+                    { 
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        WriteIndented = true
+                    }));
+                }
+                else
+                {
+                    context.Response.StatusCode = result.ErrorCode switch
+                    {
+                        "NOT_FOUND" => StatusCodes.Status404NotFound,
+                        "VALIDATION_ERROR" => StatusCodes.Status400BadRequest,
+                        "UNAUTHORIZED" => StatusCodes.Status401Unauthorized,
+                        "FORBIDDEN" => StatusCodes.Status403Forbidden,
+                        _ => StatusCodes.Status500InternalServerError
+                    };
+                    
+                    var errorResponse = new
+                    {
+                        success = false,
+                        error = result.ErrorMessage,
+                        errorCode = result.ErrorCode,
+                        correlationId = result.CorrelationId
+                    };
+                    
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions 
+                    { 
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        WriteIndented = true
+                    }));
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Invalid JSON in request body");
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync("Invalid JSON in request body");
+            }
+            finally
+            {
+                requestJson?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Gets or generates tools for a route.
+        /// </summary>
+        internal async Task<IEnumerable<McpToolDefinition>> GetOrGenerateToolsAsync(McpRouteEntry route)
+        {
+            return await _toolsCache.GetOrAddAsync(route.RouteName, async (key) =>
+            {
+                // For AspNetCore, we need to get the EDM model from somewhere
+                // This is a simplified version - in production, you'd get this from the OData configuration
+                var edmModel = GetEdmModelForRoute(route);
+                
+                if (edmModel is null)
+                {
+                    _logger.LogWarning("No EDM model found for route {RouteName}", route.RouteName);
+                    return Enumerable.Empty<McpToolDefinition>();
+                }
+
+                var generationOptions = new McpToolGenerationOptions
+                {
+                    GenerateCrudTools = true,
+                    GenerateQueryTools = true,
+                    GenerateNavigationTools = true,
+                    IncludeExamples = _options.IncludeMetadata,
+                    MaxToolCount = 100
+                };
+                
+                return await _toolFactory.GenerateToolsAsync(edmModel, generationOptions);
+            });
+        }
+
+        /// <summary>
+        /// Gets the EDM model for a route.
+        /// </summary>
+        internal EdmModel? GetEdmModelForRoute(McpRouteEntry route)
+        {
+            // TODO: This should be properly integrated with OData configuration
+            // For now, return a simple model or null
+            // In production, this would get the actual EDM model from the OData route configuration
+            
+            // Check if we have model metadata in the route
+            if (route.Metadata.TryGetValue("EdmModel", out var modelObj) && modelObj is EdmModel model)
+            {
+                return model;
+            }
+
+            _logger.LogWarning("EDM model not found in route metadata for {RouteName}. Tool generation will be limited.", route.RouteName);
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the service base URL for a route.
+        /// </summary>
+        internal string GetServiceBaseUrl(HttpContext context, McpRouteEntry route)
+        {
+            var request = context.Request;
+            var scheme = request.Scheme;
+            var host = request.Host.Value;
+            var pathBase = request.PathBase.Value ?? "";
+            
+            var baseUrl = $"{scheme}://{host}{pathBase}";
+            
+            if (!string.IsNullOrWhiteSpace(route.ODataRoutePrefix))
+            {
+                baseUrl = $"{baseUrl.TrimEnd('/')}/{route.ODataRoutePrefix.TrimStart('/')}";
+            }
+            
+            return baseUrl;
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Extension methods for ConcurrentDictionary to support async operations.
+    /// </summary>
+    internal static class ConcurrentDictionaryExtensions
+    {
+        public static async Task<TValue> GetOrAddAsync<TKey, TValue>(
+            this ConcurrentDictionary<TKey, TValue> dictionary,
+            TKey key,
+            Func<TKey, Task<TValue>> valueFactory) where TKey : notnull
+        {
+            if (dictionary.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            value = await valueFactory(key);
+            return dictionary.GetOrAdd(key, value);
+        }
     }
 }

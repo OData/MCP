@@ -143,7 +143,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom feature flags allow applications to define their own toggleable
         /// features beyond the predefined flags in this configuration.
         /// </remarks>
-        public Dictionary<string, bool> CustomFlags { get; set; } = new();
+        public Dictionary<string, bool> CustomFlags { get; set; } = [];
 
         /// <summary>
         /// Gets or sets feature flag metadata.
@@ -153,7 +153,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Metadata can include information such as flag descriptions, deprecation
         /// notices, rollout percentages, or other contextual information.
         /// </remarks>
-        public Dictionary<string, object> FlagMetadata { get; set; } = new();
+        public Dictionary<string, object> FlagMetadata { get; set; } = [];
 
         #endregion
 

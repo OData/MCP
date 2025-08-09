@@ -12,16 +12,17 @@ namespace Microsoft.OData.Mcp.Core.Routing
     /// </remarks>
     public ref struct SpanRouteParser
     {
+
         #region Constants
 
-        private const string McpSegment = "mcp";
-        private const char PathSeparator = '/';
+        internal const string McpSegment = "mcp";
+        internal const char PathSeparator = '/';
 
         #endregion
 
         #region Fields
 
-        private readonly ReadOnlySpan<char> _path;
+        internal readonly ReadOnlySpan<char> _path;
 
         #endregion
 
@@ -219,7 +220,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Finds the index of the "mcp" segment in the path.
@@ -227,7 +228,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// <param name="path">The path to search.</param>
         /// <returns>The index of the "mcp" segment, or -1 if not found.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int FindMcpSegment(ReadOnlySpan<char> path)
+        internal static int FindMcpSegment(ReadOnlySpan<char> path)
         {
             var remaining = path;
             var offset = 0;
@@ -255,36 +256,6 @@ namespace Microsoft.OData.Mcp.Core.Routing
         }
 
         #endregion
-    }
 
-    /// <summary>
-    /// Represents the type of MCP command.
-    /// </summary>
-    public enum McpCommand
-    {
-        /// <summary>
-        /// Unknown or invalid command.
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// Server information request (/mcp/info or /mcp).
-        /// </summary>
-        Info,
-
-        /// <summary>
-        /// List all tools (/mcp/tools).
-        /// </summary>
-        Tools,
-
-        /// <summary>
-        /// Execute a tool (/mcp/tools/execute).
-        /// </summary>
-        ToolsExecute,
-
-        /// <summary>
-        /// Get information about a specific tool (/mcp/tools/{toolName}).
-        /// </summary>
-        ToolInfo
     }
 }

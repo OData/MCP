@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Basic information about an MCP server instance.
     /// </summary>
@@ -15,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class McpServerInfo
     {
+
         #region Properties
 
         /// <summary>
@@ -115,13 +116,13 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Capabilities help clients understand what features are available
         /// and how they can interact with the server.
         /// </remarks>
-        public List<string> Capabilities { get; set; } = new()
-        {
+        public List<string> Capabilities { get; set; } =
+        [
             "tools",
             "authentication",
             "metadata_discovery",
             "odata_integration"
-        };
+        ];
 
         /// <summary>
         /// Gets or sets additional metadata about the server.
@@ -131,7 +132,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom metadata allows extending the server information with
         /// application-specific details that don't fit into standard properties.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the server instance identifier.
@@ -236,14 +237,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="capability"/> is null or whitespace.</exception>
         public void AddCapability(string capability)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(capability);
-#else
-            if (string.IsNullOrWhiteSpace(capability))
-            {
-                throw new ArgumentException("Capability cannot be null or whitespace.", nameof(capability));
-            }
-#endif
 
             if (!Capabilities.Contains(capability, StringComparer.OrdinalIgnoreCase))
             {
@@ -273,7 +267,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <returns><c>true</c> if the server has the capability; otherwise, <c>false</c>.</returns>
         public bool HasCapability(string capability)
         {
-            return !string.IsNullOrWhiteSpace(capability) && 
+            return !string.IsNullOrWhiteSpace(capability) &&
                    Capabilities.Contains(capability, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -285,14 +279,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddMetadata(string key, object value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             Metadata[key] = value;
         }
@@ -353,14 +340,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(McpServerInfo other)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
 
             if (!string.IsNullOrWhiteSpace(other.Name)) Name = other.Name;
             if (!string.IsNullOrWhiteSpace(other.Description)) Description = other.Description;
@@ -402,14 +382,14 @@ namespace Microsoft.OData.Mcp.Core.Configuration
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Validates if a version string follows semantic versioning.
         /// </summary>
         /// <param name="version">The version string to validate.</param>
         /// <returns><c>true</c> if the version is valid; otherwise, <c>false</c>.</returns>
-        private static bool IsValidSemanticVersion(string version)
+        internal static bool IsValidSemanticVersion(string version)
         {
             if (string.IsNullOrWhiteSpace(version))
             {
@@ -426,71 +406,15 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// </summary>
         /// <param name="url">The URL string to validate.</param>
         /// <returns><c>true</c> if the URL is valid; otherwise, <c>false</c>.</returns>
-        private static bool IsValidUrl(string url)
+        internal static bool IsValidUrl(string url)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out var validatedUri) &&
                    (validatedUri.Scheme == Uri.UriSchemeHttp || validatedUri.Scheme == Uri.UriSchemeHttps);
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Build information for the MCP server.
-    /// </summary>
-    public sealed class BuildInfo
-    {
-        /// <summary>
-        /// Gets or sets the build number or identifier.
-        /// </summary>
-        /// <value>The build number or identifier from the CI/CD system.</value>
-        public string? BuildNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the commit hash of the source code.
-        /// </summary>
-        /// <value>The Git commit hash or similar version control identifier.</value>
-        public string? CommitHash { get; set; }
-
-        /// <summary>
-        /// Gets or sets the branch name from which the build was created.
-        /// </summary>
-        /// <value>The source control branch name.</value>
-        public string? Branch { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timestamp when the build was created.
-        /// </summary>
-        /// <value>The UTC timestamp of the build.</value>
-        public DateTime? BuildTimestamp { get; set; }
-
-        /// <summary>
-        /// Gets or sets the build configuration (e.g., Debug, Release).
-        /// </summary>
-        /// <value>The build configuration used to compile the server.</value>
-        public string? Configuration { get; set; }
-
-        /// <summary>
-        /// Gets or sets the target framework for which the server was built.
-        /// </summary>
-        /// <value>The .NET target framework (e.g., "net8.0", "net9.0").</value>
-        public string? TargetFramework { get; set; }
-
-        /// <summary>
-        /// Creates a copy of this build information.
-        /// </summary>
-        /// <returns>A new instance with the same values.</returns>
-        public BuildInfo Clone()
-        {
-            return new BuildInfo
-            {
-                BuildNumber = BuildNumber,
-                CommitHash = CommitHash,
-                Branch = Branch,
-                BuildTimestamp = BuildTimestamp,
-                Configuration = Configuration,
-                TargetFramework = TargetFramework
-            };
-        }
-    }
 }
+

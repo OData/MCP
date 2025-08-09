@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Represents authorization metadata extracted from a JWT token for use in downstream services.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class AuthorizationMetadata
     {
+
         #region Properties
 
         /// <summary>
@@ -34,7 +36,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// These scopes determine what operations the user is authorized to perform.
         /// They are used for fine-grained authorization decisions throughout the system.
         /// </remarks>
-        public List<string> Scopes { get; set; } = new();
+        public List<string> Scopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the user's roles.
@@ -44,7 +46,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Roles provide a higher-level abstraction over permissions and can be
         /// used for role-based access control (RBAC) scenarios.
         /// </remarks>
-        public List<string> Roles { get; set; } = new();
+        public List<string> Roles { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tenant identifier for multi-tenant scenarios.
@@ -114,7 +116,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// These attributes can contain business-specific authorization data
         /// such as department, cost center, or data classification levels.
         /// </remarks>
-        public Dictionary<string, string> CustomAttributes { get; set; } = new();
+        public Dictionary<string, string> CustomAttributes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the authorization context identifier.
@@ -154,14 +156,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="subject"/> is null or whitespace.</exception>
         public AuthorizationMetadata(string subject)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(subject);
-#else
-            if (string.IsNullOrWhiteSpace(subject))
-            {
-                throw new ArgumentException("Subject cannot be null or whitespace.", nameof(subject));
-            }
-#endif
 
             Subject = subject;
             ContextId = Guid.NewGuid().ToString();
@@ -179,14 +174,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="userContext"/> is null.</exception>
         public static AuthorizationMetadata FromUserContext(UserContext userContext)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(userContext);
-#else
-            if (userContext is null)
-            {
-                throw new ArgumentNullException(nameof(userContext));
-            }
-#endif
 
             return new AuthorizationMetadata(userContext.UserId)
             {
@@ -211,14 +199,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredScopes"/> is null.</exception>
         public bool HasAnyScope(IEnumerable<string> requiredScopes)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(requiredScopes);
-#else
-            if (requiredScopes is null)
-            {
-                throw new ArgumentNullException(nameof(requiredScopes));
-            }
-#endif
 
             return requiredScopes.Any(scope => Scopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
         }
@@ -251,14 +232,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredRoles"/> is null.</exception>
         public bool HasAnyRole(IEnumerable<string> requiredRoles)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(requiredRoles);
-#else
-            if (requiredRoles is null)
-            {
-                throw new ArgumentNullException(nameof(requiredRoles));
-            }
-#endif
 
             return requiredRoles.Any(role => Roles.Contains(role, StringComparer.OrdinalIgnoreCase));
         }
@@ -305,14 +279,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void SetCustomAttribute(string key, string value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Attribute key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             CustomAttributes[key] = value;
         }
@@ -354,5 +321,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

@@ -35,7 +35,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Entity types are the primary structural elements in the EDM, defining the properties
         /// and relationships that make up the data model.
         /// </remarks>
-        public List<EdmEntityType> EntityTypes { get; set; } = new();
+        public List<EdmEntityType> EntityTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the complex types defined in this model.
@@ -45,7 +45,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Complex types are structured types without keys that can be used as property types
         /// in entity types or other complex types.
         /// </remarks>
-        public List<EdmComplexType> ComplexTypes { get; set; } = new();
+        public List<EdmComplexType> ComplexTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the entity containers defined in this model.
@@ -55,7 +55,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Entity containers define the addressable resources in the OData service.
         /// Typically, there is one primary entity container per service.
         /// </remarks>
-        public List<EdmEntityContainer> EntityContainers { get; set; } = new();
+        public List<EdmEntityContainer> EntityContainers { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the namespaces used in this model.
@@ -65,7 +65,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Namespaces provide organizational structure and help avoid naming conflicts
         /// between types from different sources.
         /// </remarks>
-        public List<string> Namespaces { get; set; } = new();
+        public List<string> Namespaces { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the functions defined in this model.
@@ -75,7 +75,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Functions are operations that can be called to retrieve data or perform calculations.
         /// They are side-effect free and can be composed with other query operations.
         /// </remarks>
-        public List<EdmFunction> Functions { get; set; } = new();
+        public List<EdmFunction> Functions { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the actions defined in this model.
@@ -85,7 +85,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Actions are operations that may have side effects and are used to modify
         /// data or perform operations that cannot be expressed through standard CRUD operations.
         /// </remarks>
-        public List<EdmAction> Actions { get; set; } = new();
+        public List<EdmAction> Actions { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the annotations for this model.
@@ -95,7 +95,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Annotations can be used to specify additional behaviors, constraints, or metadata
         /// that are not captured by the standard OData model elements.
         /// </remarks>
-        public Dictionary<string, object> Annotations { get; set; } = new();
+        public Dictionary<string, object> Annotations { get; set; } = [];
 
         /// <summary>
         /// Gets the primary entity container for this model.

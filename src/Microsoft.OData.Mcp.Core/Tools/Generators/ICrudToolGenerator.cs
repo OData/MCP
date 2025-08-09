@@ -5,6 +5,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Interface for generating CRUD (Create, Read, Update, Delete) MCP tools from OData entity types.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public interface ICrudToolGenerator
     {
+
         /// <summary>
         /// Generates all CRUD tools for the specified entity set.
         /// </summary>
@@ -156,5 +158,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
             EdmEntityType entityType,
             CrudToolGenerationOptions options,
             CancellationToken cancellationToken = default);
+
     }
+
 }

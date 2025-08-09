@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Routing
 {
+
     /// <summary>
     /// Efficiently matches MCP routes to their corresponding OData endpoints.
     /// </summary>
@@ -15,11 +16,12 @@ namespace Microsoft.OData.Mcp.Core.Routing
     /// </remarks>
     public sealed class McpRouteMatcher
     {
+
         #region Fields
 
-        private readonly FrozenDictionary<string, McpRouteEntry> _routesByODataPrefix;
-        private readonly FrozenDictionary<string, McpRouteEntry> _routesByMcpPath;
-        private readonly McpRouteEntry? _rootRoute;
+        internal readonly FrozenDictionary<string, McpRouteEntry> _routesByODataPrefix;
+        internal readonly FrozenDictionary<string, McpRouteEntry> _routesByMcpPath;
+        internal readonly McpRouteEntry? _rootRoute;
 
         #endregion
 
@@ -32,14 +34,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="routes"/> is null.</exception>
         public McpRouteMatcher(IEnumerable<McpRouteEntry> routes)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(routes);
-#else
-            if (routes is null)
-            {
-                throw new ArgumentNullException(nameof(routes));
-            }
-#endif
 
             var routeList = routes.ToList();
             
@@ -180,14 +175,14 @@ namespace Microsoft.OData.Mcp.Core.Routing
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Normalizes a route path by removing leading and trailing slashes.
         /// </summary>
         /// <param name="path">The path to normalize.</param>
         /// <returns>The normalized path.</returns>
-        private static string NormalizeRoutePath(string? path)
+        internal static string NormalizeRoutePath(string? path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -198,41 +193,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Represents an MCP route entry with its associated OData information.
-    /// </summary>
-    public sealed class McpRouteEntry
-    {
-        /// <summary>
-        /// Gets the name of the OData route.
-        /// </summary>
-        public required string RouteName { get; init; }
-
-        /// <summary>
-        /// Gets the OData route prefix (e.g., "api/v1", "odata", or empty for root).
-        /// </summary>
-        public required string ODataRoutePrefix { get; init; }
-
-        /// <summary>
-        /// Gets the base path for MCP endpoints (e.g., "/api/v1/mcp").
-        /// </summary>
-        public required string McpBasePath { get; init; }
-
-        /// <summary>
-        /// Gets a value indicating whether this route was explicitly registered.
-        /// </summary>
-        public bool IsExplicit { get; init; }
-
-        /// <summary>
-        /// Gets the custom MCP path if one was specified.
-        /// </summary>
-        public string? CustomMcpPath { get; init; }
-
-        /// <summary>
-        /// Gets additional metadata about this route.
-        /// </summary>
-        public Dictionary<string, object> Metadata { get; init; } = new();
-    }
 }

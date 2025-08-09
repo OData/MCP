@@ -15,6 +15,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
     /// </remarks>
     public sealed class McpMiddlewareOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -223,7 +224,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
         /// These headers will be added to all MCP responses and can be used for
         /// custom branding, security headers, or operational metadata.
         /// </remarks>
-        public Dictionary<string, string> CustomHeaders { get; set; } = new();
+        public Dictionary<string, string> CustomHeaders { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the middleware integration mode.
@@ -243,7 +244,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
         /// Requests matching these patterns will be passed through without MCP processing.
         /// Supports simple wildcard patterns using * and ?.
         /// </remarks>
-        public List<string> ExcludePaths { get; set; } = new();
+        public List<string> ExcludePaths { get; set; } = [];
 
         /// <summary>
         /// Gets or sets paths to include for MCP processing.
@@ -253,7 +254,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
         /// When specified, only requests matching these patterns will be processed by MCP.
         /// If empty, all requests under the base path will be processed.
         /// </remarks>
-        public List<string> IncludePaths { get; set; } = new();
+        public List<string> IncludePaths { get; set; } = [];
 
         #endregion
 
@@ -282,9 +283,9 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
             RequestTimeout = TimeSpan.FromMinutes(2),
             MaxRequestBodySize = 1024 * 1024, // 1MB
             IntegrationMode = McpIntegrationMode.Embedded,
-            ExcludePaths = new List<string>(),
-            IncludePaths = new List<string>(),
-            CustomHeaders = new Dictionary<string, string>()
+            ExcludePaths = [],
+            IncludePaths = [],
+            CustomHeaders = []
         };
 
         /// <summary>
@@ -310,9 +311,9 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
             RequestTimeout = TimeSpan.FromMinutes(10),
             MaxRequestBodySize = 10 * 1024 * 1024, // 10MB
             IntegrationMode = McpIntegrationMode.Embedded,
-            ExcludePaths = new List<string>(),
-            IncludePaths = new List<string>(),
-            CustomHeaders = new Dictionary<string, string>()
+            ExcludePaths = [],
+            IncludePaths = [],
+            CustomHeaders = []
         };
 
         /// <summary>
@@ -338,9 +339,9 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
             RequestTimeout = TimeSpan.FromMinutes(1),
             MaxRequestBodySize = 512 * 1024, // 512KB
             IntegrationMode = McpIntegrationMode.Embedded,
-            ExcludePaths = new List<string>(),
-            IncludePaths = new List<string>(),
-            CustomHeaders = new Dictionary<string, string>()
+            ExcludePaths = [],
+            IncludePaths = [],
+            CustomHeaders = []
         };
 
         #endregion
@@ -499,7 +500,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Checks if a path matches a pattern with simple wildcards.
@@ -507,7 +508,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
         /// <param name="path">The path to check.</param>
         /// <param name="pattern">The pattern to match against.</param>
         /// <returns><c>true</c> if the path matches the pattern; otherwise, <c>false</c>.</returns>
-        private static bool MatchesPattern(string path, string pattern)
+        internal static bool MatchesPattern(string path, string pattern)
         {
             if (string.IsNullOrWhiteSpace(pattern))
             {
@@ -526,26 +527,7 @@ namespace Microsoft.OData.Mcp.Tools.Configuration
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the integration modes for MCP middleware.
-    /// </summary>
-    public enum McpIntegrationMode
-    {
-        /// <summary>
-        /// Embedded mode integrates MCP endpoints alongside existing application routes.
-        /// </summary>
-        Embedded,
-
-        /// <summary>
-        /// Proxy mode forwards MCP requests to an external MCP server.
-        /// </summary>
-        Proxy,
-
-        /// <summary>
-        /// Hybrid mode combines embedded and proxy functionality.
-        /// </summary>
-        Hybrid
-    }
 }

@@ -9,6 +9,7 @@ using Microsoft.OData.Mcp.Core.Tools;
 
 namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
 {
+
     /// <summary>
     /// Health check for the MCP server functionality.
     /// </summary>
@@ -20,8 +21,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
     {
         #region Fields
 
-        private readonly ILogger<McpServerHealthCheck> _logger;
-        private readonly IMcpToolFactory? _toolFactory;
+        internal readonly ILogger<McpServerHealthCheck> _logger;
+        internal readonly IMcpToolFactory? _toolFactory;
 
         #endregion
 
@@ -35,14 +36,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
         public McpServerHealthCheck(ILogger<McpServerHealthCheck> logger, IMcpToolFactory? toolFactory = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(logger);
-#else
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-#endif
 
             _logger = logger;
             _toolFactory = toolFactory;
@@ -105,7 +99,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Checks the availability of core MCP server services.
@@ -113,7 +107,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        private async Task CheckCoreServicesAsync(Dictionary<string, object> healthData, List<string> issues, CancellationToken cancellationToken)
+        internal async Task CheckCoreServicesAsync(Dictionary<string, object> healthData, List<string> issues, CancellationToken cancellationToken)
         {
             var startTime = DateTime.UtcNow;
 
@@ -158,7 +152,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// </summary>
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
-        private void CheckMcpProtocolCompatibility(Dictionary<string, object> healthData, List<string> issues)
+        internal void CheckMcpProtocolCompatibility(Dictionary<string, object> healthData, List<string> issues)
         {
             try
             {
@@ -191,7 +185,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// </summary>
         /// <param name="healthData">Dictionary to store health check data.</param>
         /// <param name="issues">List to collect any issues found.</param>
-        private void CheckResourceUtilization(Dictionary<string, object> healthData, List<string> issues)
+        internal void CheckResourceUtilization(Dictionary<string, object> healthData, List<string> issues)
         {
             try
             {
@@ -238,7 +232,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// Gets the MCP protocol version.
         /// </summary>
         /// <returns>The MCP protocol version string.</returns>
-        private static string GetMcpProtocolVersion()
+        internal static string GetMcpProtocolVersion()
         {
             // In real implementation, this would query the MCP SDK for version information
             return "1.0.0";
@@ -248,17 +242,17 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
         /// Gets the list of supported MCP features.
         /// </summary>
         /// <returns>A list of supported MCP feature names.</returns>
-        private static List<string> GetSupportedMcpFeatures()
+        internal static List<string> GetSupportedMcpFeatures()
         {
             // In real implementation, this would enumerate available MCP features
-            return new List<string>
-            {
+            return
+            [
                 "Tools",
                 "Authentication",
                 "TokenDelegation",
                 "ODataIntegration",
                 "DynamicToolGeneration"
-            };
+            ];
         }
 
         #endregion

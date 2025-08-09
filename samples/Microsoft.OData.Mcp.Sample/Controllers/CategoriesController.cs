@@ -15,7 +15,7 @@ namespace Microsoft.OData.Mcp.Sample.Controllers
     /// </summary>
     public class CategoriesController : ODataController
     {
-        private readonly InMemoryDataStore _dataStore;
+        internal readonly InMemoryDataStore _dataStore;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoriesController"/> class.

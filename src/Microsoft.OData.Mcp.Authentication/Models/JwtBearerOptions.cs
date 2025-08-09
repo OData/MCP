@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for JWT bearer token validation.
     /// </summary>
@@ -13,6 +14,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class JwtBearerOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -123,7 +125,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// considered valid. Scopes provide fine-grained authorization control
         /// beyond basic authentication.
         /// </remarks>
-        public List<string> RequiredScopes { get; set; } = new();
+        public List<string> RequiredScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets additional token validation parameters.
@@ -134,7 +136,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// standard JWT validation. They can be used to enforce additional
         /// security requirements specific to the deployment environment.
         /// </remarks>
-        public Dictionary<string, object> AdditionalValidationParameters { get; set; } = new();
+        public Dictionary<string, object> AdditionalValidationParameters { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether to require HTTPS for metadata retrieval.
@@ -235,5 +237,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

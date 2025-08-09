@@ -19,8 +19,8 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
         /// </summary>
         public static List<Customer> GetCustomers()
         {
-            return new List<Customer>
-            {
+            return
+            [
                 new Customer
                 {
                     CustomerId = 1,
@@ -71,7 +71,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                     City = "دبي", // Dubai
                     Country = "UAE"
                 }
-            };
+            ];
         }
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
         /// </summary>
         public static List<客戶> GetEdgeCaseEntities()
         {
-            return new List<客戶>
-            {
+            return
+            [
                 new 客戶
                 {
                     Id = 1,
@@ -101,7 +101,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                     VeryLongPropertyNameThatExceedsNormalLimitsAndTestsHowTheSystemHandlesExtremelyLongIdentifiers = 
                         "Another value with special chars: < > & \" ' / \\ | ` ~"
                 }
-            };
+            ];
         }
 
         /// <summary>
@@ -163,9 +163,9 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                 ManagerId = 1
             };
 
-            ceo.Reports = new List<Employee> { manager1, manager2 };
+            ceo.Reports = [manager1, manager2];
 
-            return new List<Employee> { ceo, manager1, manager2 };
+            return [ceo, manager1, manager2];
         }
 
         /// <summary>
@@ -199,8 +199,8 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
         /// </summary>
         public static List<Order> GetOrders()
         {
-            return new List<Order>
-            {
+            return
+            [
                 new Order
                 {
                     OrderId = 1,
@@ -233,7 +233,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                     OrderAmount = 3200.00m,
                     Status = "Pending"
                 }
-            };
+            ];
         }
 
         /// <summary>
@@ -241,8 +241,8 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
         /// </summary>
         public static List<Product> GetProducts()
         {
-            return new List<Product>
-            {
+            return
+            [
                 new Product
                 {
                     ProductId = 1,
@@ -279,7 +279,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                     Price = 299.99m,
                     InStock = true
                 }
-            };
+            ];
         }
 
         /// <summary>
@@ -287,8 +287,8 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
         /// </summary>
         public static List<VipCustomer> GetVipCustomers()
         {
-            return new List<VipCustomer>
-            {
+            return
+            [
                 new VipCustomer
                 {
                     CustomerId = 100,
@@ -317,7 +317,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Data
                     CreditLimit = 50000m,
                     LoyaltyPoints = 25000
                 }
-            };
+            ];
         }
 
         #endregion

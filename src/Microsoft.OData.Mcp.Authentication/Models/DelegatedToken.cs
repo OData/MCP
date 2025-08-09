@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Represents a token that has been delegated for use with a downstream service.
     /// </summary>
@@ -12,6 +13,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class DelegatedToken
     {
+
         #region Properties
 
         /// <summary>
@@ -52,7 +54,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// These scopes may be a subset of the originally requested scopes, depending
         /// on what the authorization server granted for the target service.
         /// </remarks>
-        public List<string> Scopes { get; set; } = new();
+        public List<string> Scopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the target service identifier.
@@ -123,7 +125,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// client credentials applied, or other context that might be useful
         /// for debugging or auditing.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether this token can be refreshed.
@@ -406,5 +408,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

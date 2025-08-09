@@ -1,15 +1,12 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Parsing;
-using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
 using Microsoft.OData.Mcp.Core.Tools.Generators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.OData.Mcp.Tests.Core
 {

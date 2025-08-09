@@ -24,7 +24,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public string Email { get; set; } = string.Empty;
 
-        public List<Order> Orders { get; set; } = new();
+        public List<Order> Orders { get; set; } = [];
 
         public string Phone { get; set; } = string.Empty;
 
@@ -50,7 +50,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public int OrderId { get; set; }
 
-        public List<OrderItem> OrderItems { get; set; } = new();
+        public List<OrderItem> OrderItems { get; set; } = [];
 
         public string Status { get; set; } = string.Empty;
 
@@ -98,7 +98,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public bool InStock { get; set; }
 
-        public List<OrderItem> OrderItems { get; set; } = new();
+        public List<OrderItem> OrderItems { get; set; } = [];
 
         public decimal Price { get; set; }
 

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Factory for creating MCP tools dynamically from OData metadata.
     /// </summary>
@@ -17,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public interface IMcpToolFactory
     {
+
         /// <summary>
         /// Generates all MCP tools for the specified OData model.
         /// </summary>
@@ -106,5 +106,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <returns>A collection of tools the user is authorized to access.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tools"/> is null.</exception>
         IEnumerable<McpToolDefinition> FilterToolsForUser(IEnumerable<McpToolDefinition> tools, IEnumerable<string> userScopes, IEnumerable<string> userRoles, McpToolGenerationOptions? options = null);
+
     }
+
 }

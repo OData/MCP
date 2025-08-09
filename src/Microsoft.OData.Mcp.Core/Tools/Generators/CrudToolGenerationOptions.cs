@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Options for controlling CRUD tool generation behavior.
     /// </summary>
@@ -13,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public sealed class CrudToolGenerationOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -156,7 +158,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// settings that don't fit into the standard options. Different generators
         /// may use these properties for specialized behavior.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of entity types to exclude from tool generation.
@@ -167,7 +169,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// such as system entities, audit tables, or entities that should only
         /// be accessed through specialized tools.
         /// </remarks>
-        public HashSet<string> ExcludedEntityTypes { get; set; } = new();
+        public HashSet<string> ExcludedEntityTypes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of properties to exclude from tool generation.
@@ -178,7 +180,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// system fields, computed properties, or sensitive information that
         /// should not be exposed through MCP tools.
         /// </remarks>
-        public Dictionary<string, HashSet<string>> ExcludedProperties { get; set; } = new();
+        public Dictionary<string, HashSet<string>> ExcludedProperties { get; set; } = [];
 
         #endregion
 
@@ -303,7 +305,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
             if (!ExcludedProperties.ContainsKey(entityTypeName))
             {
-                ExcludedProperties[entityTypeName] = new HashSet<string>();
+                ExcludedProperties[entityTypeName] = [];
             }
 
             ExcludedProperties[entityTypeName].Add(propertyName);
@@ -344,4 +346,5 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
         #endregion
     }
+
 }

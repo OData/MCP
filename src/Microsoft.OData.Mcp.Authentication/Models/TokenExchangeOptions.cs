@@ -66,7 +66,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// The actual scopes granted may be a subset based on the original
         /// token's scopes and the authorization server's policies.
         /// </remarks>
-        public List<string> DefaultScopes { get; set; } = new();
+        public List<string> DefaultScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets additional parameters to include in token exchange requests.
@@ -76,7 +76,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// These parameters can be used to pass additional context or configuration
         /// to the authorization server during token exchange operations.
         /// </remarks>
-        public Dictionary<string, string> AdditionalParameters { get; set; } = new();
+        public Dictionary<string, string> AdditionalParameters { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the timeout for token exchange operations.

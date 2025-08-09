@@ -2,11 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.HealthChecks;
 using Microsoft.OData.Mcp.Authentication.Models;
 using Microsoft.OData.Mcp.Authentication.Services;
@@ -22,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// These extensions provide a fluent API for configuring all aspects of the OData MCP server,
     /// including authentication, metadata parsing, and MCP tool generation.
     /// </remarks>
-    public static class ServiceCollectionExtensions
+    public static class DEPRECATE_ServiceCollectionExtensions
     {
         /// <summary>
         /// Adds the OData MCP server services to the service collection.
@@ -258,14 +256,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Configures JWT bearer options from MCP authentication settings.
         /// </summary>
         /// <param name="jwtOptions">The JWT bearer options to configure.</param>
         /// <param name="mcpJwtOptions">The MCP JWT options.</param>
-        private static void ConfigureJwtBearerOptions(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions jwtOptions, Microsoft.OData.Mcp.Authentication.Models.JwtBearerOptions mcpJwtOptions)
+        internal static void ConfigureJwtBearerOptions(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions jwtOptions, Microsoft.OData.Mcp.Authentication.Models.JwtBearerOptions mcpJwtOptions)
         {
             if (!string.IsNullOrWhiteSpace(mcpJwtOptions.Authority))
                 jwtOptions.Authority = mcpJwtOptions.Authority;
@@ -321,7 +319,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="options">The authorization options to configure.</param>
         /// <param name="scopeOptions">The scope authorization options.</param>
-        private static void ConfigureScopePolicies(Microsoft.AspNetCore.Authorization.AuthorizationOptions options, ScopeAuthorizationOptions scopeOptions)
+        internal static void ConfigureScopePolicies(Microsoft.AspNetCore.Authorization.AuthorizationOptions options, ScopeAuthorizationOptions scopeOptions)
         {
             // Create policies for each operation type
             foreach (var kvp in scopeOptions.RequiredScopes)

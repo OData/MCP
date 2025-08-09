@@ -28,7 +28,8 @@ If you create any temporary new files, scripts, or helper files for iteration, c
 * Ensure that the final return statement of a method is on its own line.
 * Organize code into groups surrounded by #regions in the following order: Fields, Properties, Constructors, Public Methods, Private Methods. 
   - Region instructions should be surrounded by blank lines.
-* Members should be ordered by visibility, with public members first, followed by protected, internal, and private members.
+* Members should be ordered by visibility, with public members first, followed by protected, then internal members.
+* No member should be private unless it is a field. We need to be able to unit test all methods in a class.
 * Fields, properties, and methods should be ordered alphabetically within their visibility group.
 * Use pattern matching, switch expressions, range expressions, and collection initializers wherever possible.
 * Use `nameof` instead of string literals when referring to member names.

@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Factory for creating MCP tools dynamically from OData metadata.
     /// </summary>
@@ -19,10 +21,12 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public sealed class McpToolFactory : IMcpToolFactory
     {
+
         #region Fields
 
-        private readonly ILogger<McpToolFactory> _logger;
-        private readonly Dictionary<string, McpToolDefinition> _generatedTools = new();
+        internal readonly ILogger<McpToolFactory> _logger;
+        internal readonly IHttpClientFactory _httpClientFactory;
+        internal readonly Dictionary<string, McpToolDefinition> _generatedTools = [];
 
         #endregion
 
@@ -32,19 +36,26 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Initializes a new instance of the <see cref="McpToolFactory"/> class.
         /// </summary>
         /// <param name="logger">The logger instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
-        public McpToolFactory(ILogger<McpToolFactory> logger)
+        /// <param name="httpClientFactory">The HTTP client factory for OData requests.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> or <paramref name="httpClientFactory"/> is null.</exception>
+        public McpToolFactory(ILogger<McpToolFactory> logger, IHttpClientFactory httpClientFactory)
         {
 #if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(httpClientFactory);
 #else
             if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+            if (httpClientFactory is null)
+            {
+                throw new ArgumentNullException(nameof(httpClientFactory));
+            }
 #endif
 
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
 
         #endregion
@@ -433,15 +444,15 @@ namespace Microsoft.OData.Mcp.Core.Tools
             }
 #endif
 
-            var scopes = userScopes?.ToList() ?? new List<string>();
-            var roles = userRoles?.ToList() ?? new List<string>();
+            var scopes = userScopes?.ToList() ?? [];
+            var roles = userRoles?.ToList() ?? [];
 
             return tools.Where(tool => tool.IsAuthorizedForUser(scopes, roles));
         }
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Generates a Create tool for the specified entity type.
@@ -450,7 +461,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A Create tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateCreateToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateCreateToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"create_{entityType.Name.ToLowerInvariant()}");
             var description = $"Creates a new {entityType.Name} entity";
@@ -485,7 +496,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A Read tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateReadToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateReadToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"get_{entityType.Name.ToLowerInvariant()}");
             var description = $"Retrieves a {entityType.Name} entity by its key";
@@ -520,7 +531,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>An Update tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateUpdateToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateUpdateToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"update_{entityType.Name.ToLowerInvariant()}");
             var description = $"Updates an existing {entityType.Name} entity";
@@ -555,7 +566,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A Delete tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateDeleteToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateDeleteToolAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"delete_{entityType.Name.ToLowerInvariant()}");
             var description = $"Deletes a {entityType.Name} entity";
@@ -589,7 +600,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A general query tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateGeneralQueryToolAsync(EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateGeneralQueryToolAsync(EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName("odata_query");
             var description = "Executes advanced OData queries with full $filter, $orderby, $select, and $expand support";
@@ -623,7 +634,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A navigation tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateNavigationToolAsync(EdmEntityType entityType, EdmNavigationProperty navProperty, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateNavigationToolAsync(EdmEntityType entityType, EdmNavigationProperty navProperty, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"navigate_{entityType.Name.ToLowerInvariant()}_{navProperty.Name.ToLowerInvariant()}");
             var description = $"Navigates from {entityType.Name} to {navProperty.Name}";
@@ -660,7 +671,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="model">The OData model.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>An entity set list tool definition.</returns>
-        private async Task<McpToolDefinition> GenerateEntitySetListToolAsync(EdmEntitySet entitySet, EdmModel model, McpToolGenerationOptions options)
+        internal async Task<McpToolDefinition> GenerateEntitySetListToolAsync(EdmEntitySet entitySet, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"list_{entitySet.Name.ToLowerInvariant()}");
             var description = $"Lists entities from the {entitySet.Name} collection with optional filtering and pagination";
@@ -692,86 +703,621 @@ namespace Microsoft.OData.Mcp.Core.Tools
             return await Task.FromResult(tool);
         }
 
-        // Tool handler methods (these would contain the actual implementation)
-        private async Task<McpToolResult> CreateEntityHandler(McpToolContext context, JsonDocument parameters)
+        // Tool handler methods with REAL implementations
+        internal async Task<McpToolResult> CreateEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would create an entity via OData service
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                // Extract entity type from context
+                var entityTypeName = context.GetProperty<string>("TargetEntityType");
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError($"Entity set name not found in context", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL
+                var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}";
+                
+                // Serialize the parameters as the entity data
+                var jsonContent = parameters.RootElement.GetRawText();
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                
+                // Make the POST request
+                var response = await httpClient.PostAsync(url, content, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseDoc = JsonDocument.Parse(responseContent);
+                    return McpToolResult.Success(responseDoc, context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to create entity: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to create entity: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating entity");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> ReadEntityHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> ReadEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would read an entity via OData service
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
+                }
+                
+                // Extract key from parameters
+                string? key = null;
+                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                {
+                    key = idElement.GetString();
+                }
+                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                {
+                    key = keyElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return McpToolResult.ValidationError("Entity key is required", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL
+                var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
+                
+                // Add $select if specified
+                if (parameters.RootElement.TryGetProperty("select", out var selectElement))
+                {
+                    var select = selectElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(select))
+                    {
+                        url += $"?$select={Uri.EscapeDataString(select)}";
+                    }
+                }
+                
+                // Make the GET request
+                var response = await httpClient.GetAsync(url, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseDoc = JsonDocument.Parse(responseContent);
+                    return McpToolResult.Success(responseDoc, context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return McpToolResult.NotFound($"Entity with key '{key}' not found", context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to read entity: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to read entity: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading entity");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> UpdateEntityHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> UpdateEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would update an entity via OData service
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
+                }
+                
+                // Extract key from parameters
+                string? key = null;
+                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                {
+                    key = idElement.GetString();
+                }
+                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                {
+                    key = keyElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return McpToolResult.ValidationError("Entity key is required for update", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL
+                var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
+                
+                // Prepare the update data (exclude the key from the body)
+                var updateData = new Dictionary<string, object>();
+                foreach (var property in parameters.RootElement.EnumerateObject())
+                {
+                    if (property.Name != "id" && property.Name != "key")
+                    {
+                        updateData[property.Name] = property.Value.GetRawText();
+                    }
+                }
+                
+                var jsonContent = JsonSerializer.Serialize(updateData);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                
+                // Use PATCH for partial updates
+                var request = new HttpRequestMessage(new HttpMethod("PATCH"), url)
+                {
+                    Content = content
+                };
+                
+                var response = await httpClient.SendAsync(request, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Some OData services return the updated entity, others return 204 No Content
+                    if (response.Content.Headers.ContentLength > 0)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        var responseDoc = JsonDocument.Parse(responseContent);
+                        return McpToolResult.Success(responseDoc, context.CorrelationId);
+                    }
+                    else
+                    {
+                        return McpToolResult.Success(correlationId: context.CorrelationId);
+                    }
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to update entity: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to update entity: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating entity");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> DeleteEntityHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> DeleteEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would delete an entity via OData service
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
+                }
+                
+                // Extract key from parameters
+                string? key = null;
+                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                {
+                    key = idElement.GetString();
+                }
+                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                {
+                    key = keyElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return McpToolResult.ValidationError("Entity key is required for delete", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL
+                var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
+                
+                // Make the DELETE request
+                var response = await httpClient.DeleteAsync(url, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    return McpToolResult.Success(correlationId: context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return McpToolResult.NotFound($"Entity with key '{key}' not found", context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to delete entity: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to delete entity: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting entity");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> QueryEntityHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> QueryEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would execute an OData query
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                // This is a general query handler - can be used for any entity set
+                var entitySet = parameters.RootElement.TryGetProperty("entitySet", out var entitySetElement) 
+                    ? entitySetElement.GetString() 
+                    : context.GetProperty<string>("TargetEntitySet");
+                    
+                if (string.IsNullOrWhiteSpace(entitySet))
+                {
+                    return McpToolResult.ValidationError("Entity set name is required", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL with query parameters
+                var queryBuilder = new UriBuilder($"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySet}");
+                var queryParams = new List<string>();
+                
+                // Add OData query options
+                if (parameters.RootElement.TryGetProperty("$filter", out var filterElement))
+                {
+                    var filter = filterElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(filter))
+                        queryParams.Add($"$filter={Uri.EscapeDataString(filter)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$orderby", out var orderbyElement))
+                {
+                    var orderby = orderbyElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(orderby))
+                        queryParams.Add($"$orderby={Uri.EscapeDataString(orderby)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$select", out var selectElement))
+                {
+                    var select = selectElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(select))
+                        queryParams.Add($"$select={Uri.EscapeDataString(select)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$expand", out var expandElement))
+                {
+                    var expand = expandElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(expand))
+                        queryParams.Add($"$expand={Uri.EscapeDataString(expand)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$top", out var topElement))
+                {
+                    queryParams.Add($"$top={topElement.GetInt32()}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$skip", out var skipElement))
+                {
+                    queryParams.Add($"$skip={skipElement.GetInt32()}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$count", out var countElement) && countElement.GetBoolean())
+                {
+                    queryParams.Add("$count=true");
+                }
+                
+                if (queryParams.Count > 0)
+                {
+                    queryBuilder.Query = string.Join("&", queryParams);
+                }
+                
+                // Make the GET request
+                var response = await httpClient.GetAsync(queryBuilder.Uri, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseDoc = JsonDocument.Parse(responseContent);
+                    return McpToolResult.Success(responseDoc, context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to query entities: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to query entities: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error querying entities");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> NavigateEntityHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> NavigateEntityHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would navigate relationships via OData service
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
+                }
+                
+                // Extract source entity key
+                string? key = null;
+                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                {
+                    key = idElement.GetString();
+                }
+                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                {
+                    key = keyElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    return McpToolResult.ValidationError("Entity key is required for navigation", context.CorrelationId);
+                }
+                
+                // Extract navigation property name
+                string? navigationProperty = null;
+                if (parameters.RootElement.TryGetProperty("navigationProperty", out var navPropElement))
+                {
+                    navigationProperty = navPropElement.GetString();
+                }
+                else if (parameters.RootElement.TryGetProperty("property", out var propElement))
+                {
+                    navigationProperty = propElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(navigationProperty))
+                {
+                    return McpToolResult.ValidationError("Navigation property name is required", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL for navigation
+                var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})/{navigationProperty}";
+                
+                // Add query options if specified
+                var queryParams = new List<string>();
+                
+                if (parameters.RootElement.TryGetProperty("$select", out var selectElement))
+                {
+                    var select = selectElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(select))
+                        queryParams.Add($"$select={Uri.EscapeDataString(select)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$expand", out var expandElement))
+                {
+                    var expand = expandElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(expand))
+                        queryParams.Add($"$expand={Uri.EscapeDataString(expand)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$filter", out var filterElement))
+                {
+                    var filter = filterElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(filter))
+                        queryParams.Add($"$filter={Uri.EscapeDataString(filter)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$top", out var topElement))
+                {
+                    queryParams.Add($"$top={topElement.GetInt32()}");
+                }
+                
+                if (queryParams.Count > 0)
+                {
+                    url += "?" + string.Join("&", queryParams);
+                }
+                
+                // Make the GET request
+                var response = await httpClient.GetAsync(url, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseDoc = JsonDocument.Parse(responseContent);
+                    return McpToolResult.Success(responseDoc, context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return McpToolResult.NotFound($"Entity with key '{key}' or navigation property '{navigationProperty}' not found", context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to navigate entity: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to navigate entity: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error navigating entity");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
-        private async Task<McpToolResult> ListEntitiesHandler(McpToolContext context, JsonDocument parameters)
+        internal async Task<McpToolResult> ListEntitiesHandler(McpToolContext context, JsonDocument parameters)
         {
-            // Implementation would list entities from an entity set
-            return await Task.FromResult(McpToolResult.Error("Not implemented", "NOT_IMPLEMENTED", context.CorrelationId));
+            try
+            {
+                // Get the entity set name from context or parameters
+                var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                if (string.IsNullOrWhiteSpace(entitySetName) && parameters.RootElement.TryGetProperty("entitySet", out var entitySetElement))
+                {
+                    entitySetName = entitySetElement.GetString();
+                }
+                
+                if (string.IsNullOrWhiteSpace(entitySetName))
+                {
+                    return McpToolResult.ValidationError("Entity set name is required", context.CorrelationId);
+                }
+                
+                // Get the HTTP client
+                var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                // Build the URL with query parameters
+                var queryBuilder = new UriBuilder($"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}");
+                var queryParams = new List<string>();
+                
+                // Add OData query options
+                if (parameters.RootElement.TryGetProperty("$filter", out var filterElement))
+                {
+                    var filter = filterElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(filter))
+                        queryParams.Add($"$filter={Uri.EscapeDataString(filter)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$orderby", out var orderbyElement))
+                {
+                    var orderby = orderbyElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(orderby))
+                        queryParams.Add($"$orderby={Uri.EscapeDataString(orderby)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$select", out var selectElement))
+                {
+                    var select = selectElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(select))
+                        queryParams.Add($"$select={Uri.EscapeDataString(select)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$expand", out var expandElement))
+                {
+                    var expand = expandElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(expand))
+                        queryParams.Add($"$expand={Uri.EscapeDataString(expand)}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$top", out var topElement))
+                {
+                    queryParams.Add($"$top={topElement.GetInt32()}");
+                }
+                else
+                {
+                    // Default to top 20 if not specified to avoid huge responses
+                    queryParams.Add("$top=20");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$skip", out var skipElement))
+                {
+                    queryParams.Add($"$skip={skipElement.GetInt32()}");
+                }
+                
+                if (parameters.RootElement.TryGetProperty("$count", out var countElement) && countElement.GetBoolean())
+                {
+                    queryParams.Add("$count=true");
+                }
+                
+                // Add search if specified
+                if (parameters.RootElement.TryGetProperty("$search", out var searchElement))
+                {
+                    var search = searchElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(search))
+                        queryParams.Add($"$search={Uri.EscapeDataString(search)}");
+                }
+                
+                if (queryParams.Count > 0)
+                {
+                    queryBuilder.Query = string.Join("&", queryParams);
+                }
+                
+                _logger.LogDebug("Listing entities from {EntitySet} with URL: {Url}", entitySetName, queryBuilder.Uri);
+                
+                // Make the GET request
+                var response = await httpClient.GetAsync(queryBuilder.Uri, context.CancellationToken);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseDoc = JsonDocument.Parse(responseContent);
+                    
+                    // Log the count if available
+                    if (responseDoc.RootElement.TryGetProperty("@odata.count", out var countProp))
+                    {
+                        _logger.LogDebug("Total count of entities: {Count}", countProp.GetInt32());
+                    }
+                    
+                    return McpToolResult.Success(responseDoc, context.CorrelationId);
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to list entities: {StatusCode} - {Error}", response.StatusCode, error);
+                    return McpToolResult.Error($"Failed to list entities: {response.StatusCode}", response.StatusCode.ToString(), context.CorrelationId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing entities");
+                return McpToolResult.Error(ex, context.CorrelationId);
+            }
         }
 
         // Schema generation methods (these would generate appropriate JSON schemas)
-        private JsonDocument GenerateEntityInputSchema(EdmEntityType entityType, bool required = false)
+        internal JsonDocument GenerateEntityInputSchema(EdmEntityType entityType, bool required = false)
         {
             // Implementation would generate JSON schema for entity input
             var schema = JsonSerializer.Serialize(new { type = "object", description = $"Input schema for {entityType.Name}" });
             return JsonDocument.Parse(schema);
         }
 
-        private JsonDocument GenerateKeyInputSchema(EdmEntityType entityType)
+        internal JsonDocument GenerateKeyInputSchema(EdmEntityType entityType)
         {
             // Implementation would generate JSON schema for entity key
             var schema = JsonSerializer.Serialize(new { type = "object", description = $"Key schema for {entityType.Name}" });
             return JsonDocument.Parse(schema);
         }
 
-        private JsonDocument GenerateEntityUpdateSchema(EdmEntityType entityType)
+        internal JsonDocument GenerateEntityUpdateSchema(EdmEntityType entityType)
         {
             // Implementation would generate JSON schema for entity updates
             var schema = JsonSerializer.Serialize(new { type = "object", description = $"Update schema for {entityType.Name}" });
             return JsonDocument.Parse(schema);
         }
 
-        private JsonDocument GenerateQueryInputSchema()
+        internal JsonDocument GenerateQueryInputSchema()
         {
             // Implementation would generate JSON schema for OData queries
             var schema = JsonSerializer.Serialize(new { type = "object", description = "OData query parameters" });
             return JsonDocument.Parse(schema);
         }
 
-        private JsonDocument GenerateNavigationInputSchema(EdmEntityType entityType, EdmNavigationProperty navProperty)
+        internal JsonDocument GenerateNavigationInputSchema(EdmEntityType entityType, EdmNavigationProperty navProperty)
         {
             // Implementation would generate JSON schema for navigation
             var schema = JsonSerializer.Serialize(new { type = "object", description = $"Navigation schema for {navProperty.Name}" });
             return JsonDocument.Parse(schema);
         }
 
-        private JsonDocument GenerateEntitySetQuerySchema()
+        internal JsonDocument GenerateEntitySetQuerySchema()
         {
             // Implementation would generate JSON schema for entity set queries
             var schema = JsonSerializer.Serialize(new { type = "object", description = "Entity set query parameters" });
@@ -779,14 +1325,16 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         // Example generation methods (these would add appropriate examples)
-        private void AddCreateExamples(McpToolDefinition tool, EdmEntityType entityType) { }
-        private void AddReadExamples(McpToolDefinition tool, EdmEntityType entityType) { }
-        private void AddUpdateExamples(McpToolDefinition tool, EdmEntityType entityType) { }
-        private void AddDeleteExamples(McpToolDefinition tool, EdmEntityType entityType) { }
-        private void AddQueryExamples(McpToolDefinition tool, EdmModel model) { }
-        private void AddNavigationExamples(McpToolDefinition tool, EdmEntityType entityType, EdmNavigationProperty navProperty) { }
-        private void AddEntitySetExamples(McpToolDefinition tool, EdmEntitySet entitySet) { }
+        internal void AddCreateExamples(McpToolDefinition tool, EdmEntityType entityType) { }
+        internal void AddReadExamples(McpToolDefinition tool, EdmEntityType entityType) { }
+        internal void AddUpdateExamples(McpToolDefinition tool, EdmEntityType entityType) { }
+        internal void AddDeleteExamples(McpToolDefinition tool, EdmEntityType entityType) { }
+        internal void AddQueryExamples(McpToolDefinition tool, EdmModel model) { }
+        internal void AddNavigationExamples(McpToolDefinition tool, EdmEntityType entityType, EdmNavigationProperty navProperty) { }
+        internal void AddEntitySetExamples(McpToolDefinition tool, EdmEntitySet entitySet) { }
 
         #endregion
+
     }
+
 }

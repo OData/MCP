@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration for client certificate authentication.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class ClientCertificate
     {
+
         #region Properties
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <remarks>
         /// This allows certificates to be embedded directly in configuration.
         /// While convenient for some scenarios, this method should be used
-        /// carefully to avoid exposing private keys in configuration files.
+        /// carefully to avoid exposing internal keys in configuration files.
         /// </remarks>
         public string? Base64Data { get; set; }
 
@@ -263,13 +265,13 @@ namespace Microsoft.OData.Mcp.Authentication.Models
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Loads a certificate from the certificate store.
         /// </summary>
         /// <returns>The loaded certificate.</returns>
-        private X509Certificate2 LoadFromStore()
+        internal X509Certificate2 LoadFromStore()
         {
             using var store = new X509Store(StoreName, StoreLocation);
             store.Open(OpenFlags.ReadOnly);
@@ -308,7 +310,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Loads a certificate from a file.
         /// </summary>
         /// <returns>The loaded certificate.</returns>
-        private X509Certificate2 LoadFromFile()
+        internal X509Certificate2 LoadFromFile()
         {
             if (string.IsNullOrWhiteSpace(FilePath))
             {
@@ -343,7 +345,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Loads a certificate from Base64-encoded data.
         /// </summary>
         /// <returns>The loaded certificate.</returns>
-        private X509Certificate2 LoadFromBase64()
+        internal X509Certificate2 LoadFromBase64()
         {
             if (string.IsNullOrWhiteSpace(Base64Data))
             {
@@ -374,7 +376,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Validates the certificate chain and revocation status.
         /// </summary>
         /// <param name="certificate">The certificate to validate.</param>
-        private void ValidateCertificateChain(X509Certificate2 certificate)
+        internal void ValidateCertificateChain(X509Certificate2 certificate)
         {
             using var chain = new X509Chain();
             chain.ChainPolicy.RevocationMode = CheckRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck;
@@ -388,26 +390,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the sources from which client certificates can be loaded.
-    /// </summary>
-    public enum CertificateSource
-    {
-        /// <summary>
-        /// Load certificate from the Windows certificate store.
-        /// </summary>
-        Store,
-
-        /// <summary>
-        /// Load certificate from a file on disk.
-        /// </summary>
-        File,
-
-        /// <summary>
-        /// Load certificate from Base64-encoded data in configuration.
-        /// </summary>
-        Base64
-    }
 }

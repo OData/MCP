@@ -107,7 +107,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Users must have at least one of these scopes to execute the tool.
         /// This provides fine-grained authorization control based on OAuth2 tokens.
         /// </remarks>
-        public List<string> RequiredScopes { get; set; } = new();
+        public List<string> RequiredScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the required roles for this tool.
@@ -117,7 +117,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This provides role-based authorization control in addition to or
         /// instead of scope-based authorization.
         /// </remarks>
-        public List<string> RequiredRoles { get; set; } = new();
+        public List<string> RequiredRoles { get; set; } = [];
 
         /// <summary>
         /// Gets or sets additional metadata for the tool.
@@ -127,7 +127,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This can include information such as rate limits, caching behavior,
         /// or other tool-specific configuration data.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets example usage scenarios for the tool.
@@ -137,7 +137,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Examples help AI models understand how to use the tool effectively
         /// and provide better assistance to users.
         /// </remarks>
-        public List<McpToolExample> Examples { get; set; } = new();
+        public List<McpToolExample> Examples { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the tool implementation handler.
@@ -404,8 +404,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <returns><c>true</c> if the user is authorized to use this tool; otherwise, <c>false</c>.</returns>
         public bool IsAuthorizedForUser(IEnumerable<string> userScopes, IEnumerable<string> userRoles)
         {
-            var scopes = userScopes?.ToList() ?? new List<string>();
-            var roles = userRoles?.ToList() ?? new List<string>();
+            var scopes = userScopes?.ToList() ?? [];
+            var roles = userRoles?.ToList() ?? [];
 
             // Check required scopes
             if (RequiredScopes.Count > 0)
@@ -488,51 +488,5 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Defines the operation types for MCP tools.
-    /// </summary>
-    public enum McpToolOperationType
-    {
-        /// <summary>
-        /// Read operation that retrieves data without modification.
-        /// </summary>
-        Read,
-
-        /// <summary>
-        /// Create operation that adds new data.
-        /// </summary>
-        Create,
-
-        /// <summary>
-        /// Update operation that modifies existing data.
-        /// </summary>
-        Update,
-
-        /// <summary>
-        /// Delete operation that removes data.
-        /// </summary>
-        Delete,
-
-        /// <summary>
-        /// Query operation that searches and filters data.
-        /// </summary>
-        Query,
-
-        /// <summary>
-        /// Navigate operation that traverses relationships.
-        /// </summary>
-        Navigate,
-
-        /// <summary>
-        /// Batch operation that processes multiple items.
-        /// </summary>
-        Batch,
-
-        /// <summary>
-        /// Custom operation with specific business logic.
-        /// </summary>
-        Custom
     }
 }

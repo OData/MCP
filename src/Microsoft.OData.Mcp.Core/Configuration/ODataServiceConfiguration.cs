@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Configuration for connecting to and interacting with OData services.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class ODataServiceConfiguration
     {
+
         #region Properties
 
         /// <summary>
@@ -113,7 +115,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// These headers will be added to all HTTP requests made to the OData service
         /// and can be used for custom authentication, tracing, or service identification.
         /// </remarks>
-        public Dictionary<string, string> DefaultHeaders { get; set; } = new();
+        public Dictionary<string, string> DefaultHeaders { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the supported OData versions.
@@ -123,7 +125,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// This information helps the MCP server understand which OData features
         /// are available and how to construct appropriate requests.
         /// </remarks>
-        public List<string> SupportedODataVersions { get; set; } = new() { "4.0", "4.01" };
+        public List<string> SupportedODataVersions { get; set; } = ["4.0", "4.01"];
 
         /// <summary>
         /// Gets or sets the maximum page size for query results.
@@ -173,7 +175,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with service-specific
         /// settings that don't fit into the standard configuration properties.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 
@@ -291,14 +293,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="entitySetName"/> is null or whitespace.</exception>
         public string GetEntitySetUrl(string entitySetName, string? hostBaseUrl = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(entitySetName);
-#else
-            if (string.IsNullOrWhiteSpace(entitySetName))
-            {
-                throw new ArgumentException("Entity set name cannot be null or whitespace.", nameof(entitySetName));
-            }
-#endif
 
             var baseUrl = BaseUrl;
             
@@ -325,14 +320,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is null or whitespace.</exception>
         public void AddDefaultHeader(string name, string value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Header name cannot be null or whitespace.", nameof(name));
-            }
-#endif
 
             DefaultHeaders[name] = value ?? string.Empty;
         }
@@ -355,14 +343,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddCustomProperty(string key, object value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Property key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             CustomProperties[key] = value;
         }
@@ -416,14 +397,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(ODataServiceConfiguration other)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
 
             if (!string.IsNullOrWhiteSpace(other.BaseUrl)) BaseUrl = other.BaseUrl;
             if (!string.IsNullOrWhiteSpace(other.MetadataPath)) MetadataPath = other.MetadataPath;
@@ -465,272 +439,20 @@ namespace Microsoft.OData.Mcp.Core.Configuration
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Validates if a string is a valid URL.
         /// </summary>
         /// <param name="url">The URL string to validate.</param>
         /// <returns><c>true</c> if the URL is valid; otherwise, <c>false</c>.</returns>
-        private static bool IsValidUrl(string url)
+        internal static bool IsValidUrl(string url)
         {
             return Uri.TryCreate(url, UriKind.Absolute, out var validatedUri) &&
                    (validatedUri.Scheme == Uri.UriSchemeHttp || validatedUri.Scheme == Uri.UriSchemeHttps);
         }
 
         #endregion
-    }
 
-    /// <summary>
-    /// Authentication configuration for connecting to OData services.
-    /// </summary>
-    public sealed class ODataAuthenticationConfiguration
-    {
-        /// <summary>
-        /// Gets or sets the authentication type for the OData service.
-        /// </summary>
-        /// <value>The type of authentication to use when connecting to the OData service.</value>
-        public ODataAuthenticationType Type { get; set; } = ODataAuthenticationType.None;
-
-        /// <summary>
-        /// Gets or sets the API key for API key authentication.
-        /// </summary>
-        /// <value>The API key value.</value>
-        public string? ApiKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the API key header name.
-        /// </summary>
-        /// <value>The name of the header to include the API key in.</value>
-        public string ApiKeyHeader { get; set; } = "X-API-Key";
-
-        /// <summary>
-        /// Gets or sets the bearer token for bearer token authentication.
-        /// </summary>
-        /// <value>The bearer token value.</value>
-        public string? BearerToken { get; set; }
-
-        /// <summary>
-        /// Gets or sets the basic authentication credentials.
-        /// </summary>
-        /// <value>The username and password for basic authentication.</value>
-        public BasicAuthenticationCredentials? BasicAuth { get; set; }
-
-        /// <summary>
-        /// Gets or sets the OAuth2 configuration.
-        /// </summary>
-        /// <value>Configuration for OAuth2 client credentials flow.</value>
-        public OAuth2Configuration? OAuth2 { get; set; }
-
-        /// <summary>
-        /// Validates the authentication configuration.
-        /// </summary>
-        /// <returns>A collection of validation errors, or empty if the configuration is valid.</returns>
-        public IEnumerable<string> Validate()
-        {
-            var errors = new List<string>();
-
-            switch (Type)
-            {
-                case ODataAuthenticationType.ApiKey:
-                    if (string.IsNullOrWhiteSpace(ApiKey))
-                    {
-                        errors.Add("ApiKey is required for API key authentication");
-                    }
-                    if (string.IsNullOrWhiteSpace(ApiKeyHeader))
-                    {
-                        errors.Add("ApiKeyHeader is required for API key authentication");
-                    }
-                    break;
-
-                case ODataAuthenticationType.Bearer:
-                    if (string.IsNullOrWhiteSpace(BearerToken))
-                    {
-                        errors.Add("BearerToken is required for bearer token authentication");
-                    }
-                    break;
-
-                case ODataAuthenticationType.Basic:
-                    if (BasicAuth is null)
-                    {
-                        errors.Add("BasicAuth is required for basic authentication");
-                    }
-                    else
-                    {
-                        var basicErrors = BasicAuth.Validate();
-                        errors.AddRange(basicErrors.Select(e => $"BasicAuth: {e}"));
-                    }
-                    break;
-
-                case ODataAuthenticationType.OAuth2:
-                    if (OAuth2 is null)
-                    {
-                        errors.Add("OAuth2 is required for OAuth2 authentication");
-                    }
-                    else
-                    {
-                        var oauthErrors = OAuth2.Validate();
-                        errors.AddRange(oauthErrors.Select(e => $"OAuth2: {e}"));
-                    }
-                    break;
-            }
-
-            return errors;
-        }
-
-        /// <summary>
-        /// Creates a copy of this configuration.
-        /// </summary>
-        /// <returns>A new instance with the same settings.</returns>
-        public ODataAuthenticationConfiguration Clone()
-        {
-            return new ODataAuthenticationConfiguration
-            {
-                Type = Type,
-                ApiKey = ApiKey,
-                ApiKeyHeader = ApiKeyHeader,
-                BearerToken = BearerToken,
-                BasicAuth = BasicAuth?.Clone(),
-                OAuth2 = OAuth2?.Clone()
-            };
-        }
-
-        /// <summary>
-        /// Merges another configuration into this one.
-        /// </summary>
-        /// <param name="other">The configuration to merge.</param>
-        public void MergeWith(ODataAuthenticationConfiguration other)
-        {
-            if (other is null) return;
-
-            Type = other.Type;
-            if (!string.IsNullOrWhiteSpace(other.ApiKey)) ApiKey = other.ApiKey;
-            if (!string.IsNullOrWhiteSpace(other.ApiKeyHeader)) ApiKeyHeader = other.ApiKeyHeader;
-            if (!string.IsNullOrWhiteSpace(other.BearerToken)) BearerToken = other.BearerToken;
-            if (other.BasicAuth is not null) BasicAuth = other.BasicAuth.Clone();
-            if (other.OAuth2 is not null) OAuth2 = other.OAuth2.Clone();
-        }
-    }
-
-    /// <summary>
-    /// Defines the authentication types for OData services.
-    /// </summary>
-    public enum ODataAuthenticationType
-    {
-        /// <summary>
-        /// No authentication required.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// API key authentication using a custom header.
-        /// </summary>
-        ApiKey,
-
-        /// <summary>
-        /// Bearer token authentication using the Authorization header.
-        /// </summary>
-        Bearer,
-
-        /// <summary>
-        /// Basic authentication using username and password.
-        /// </summary>
-        Basic,
-
-        /// <summary>
-        /// OAuth2 client credentials flow.
-        /// </summary>
-        OAuth2
-    }
-
-    /// <summary>
-    /// Basic authentication credentials.
-    /// </summary>
-    public sealed class BasicAuthenticationCredentials
-    {
-        /// <summary>
-        /// Gets or sets the username.
-        /// </summary>
-        public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        public string Password { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Validates the credentials.
-        /// </summary>
-        /// <returns>Validation errors.</returns>
-        public IEnumerable<string> Validate()
-        {
-            var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(Username)) errors.Add("Username is required");
-            if (string.IsNullOrWhiteSpace(Password)) errors.Add("Password is required");
-            return errors;
-        }
-
-        /// <summary>
-        /// Creates a copy of these credentials.
-        /// </summary>
-        /// <returns>A new instance with the same values.</returns>
-        public BasicAuthenticationCredentials Clone()
-        {
-            return new BasicAuthenticationCredentials { Username = Username, Password = Password };
-        }
-    }
-
-    /// <summary>
-    /// OAuth2 configuration for client credentials flow.
-    /// </summary>
-    public sealed class OAuth2Configuration
-    {
-        /// <summary>
-        /// Gets or sets the OAuth2 token endpoint URL.
-        /// </summary>
-        public string TokenEndpoint { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the client ID.
-        /// </summary>
-        public string ClientId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the client secret.
-        /// </summary>
-        public string ClientSecret { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the OAuth2 scopes to request.
-        /// </summary>
-        public List<string> Scopes { get; set; } = new();
-
-        /// <summary>
-        /// Validates the OAuth2 configuration.
-        /// </summary>
-        /// <returns>Validation errors.</returns>
-        public IEnumerable<string> Validate()
-        {
-            var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(TokenEndpoint)) errors.Add("TokenEndpoint is required");
-            if (string.IsNullOrWhiteSpace(ClientId)) errors.Add("ClientId is required");
-            if (string.IsNullOrWhiteSpace(ClientSecret)) errors.Add("ClientSecret is required");
-            return errors;
-        }
-
-        /// <summary>
-        /// Creates a copy of this configuration.
-        /// </summary>
-        /// <returns>A new instance with the same values.</returns>
-        public OAuth2Configuration Clone()
-        {
-            return new OAuth2Configuration
-            {
-                TokenEndpoint = TokenEndpoint,
-                ClientId = ClientId,
-                ClientSecret = ClientSecret,
-                Scopes = new List<string>(Scopes)
-            };
-        }
     }
 }

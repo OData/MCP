@@ -98,7 +98,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Referential constraints specify how the navigation property relates to properties
         /// in the source and target entity types, effectively defining foreign key relationships.
         /// </remarks>
-        public List<EdmReferentialConstraint> ReferentialConstraints { get; set; } = new();
+        public List<EdmReferentialConstraint> ReferentialConstraints { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the on-delete action for this navigation property.

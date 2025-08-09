@@ -1,17 +1,17 @@
 using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Routing;
 using Microsoft.OData.Mcp.Core.Routing;
 
 namespace Microsoft.AspNetCore.Routing
 {
+
     /// <summary>
     /// Extension methods for adding MCP to OData routes.
     /// </summary>
-    public static class ODataRouteBuilderExtensions
+    public static class ODataMcp_AspNetCore_RouteBuilderExtensions
     {
+
         /// <summary>
         /// Adds MCP endpoints to an OData route using the default path.
         /// </summary>
@@ -47,14 +47,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </example>
         public static IRouteBuilder AddMcp(this IRouteBuilder routeBuilder, string? customPath)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(routeBuilder);
-#else
-            if (routeBuilder is null)
-            {
-                throw new ArgumentNullException(nameof(routeBuilder));
-            }
-#endif
 
             // Get the services
             var serviceProvider = routeBuilder.ServiceProvider;
@@ -91,27 +84,18 @@ namespace Microsoft.AspNetCore.Routing
             string routePrefix,
             string? customMcpPath = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(endpointRouteBuilder);
-            ArgumentException.ThrowIfNullOrWhiteSpace(routeName);
-#else
-            if (endpointRouteBuilder is null)
-            {
-                throw new ArgumentNullException(nameof(endpointRouteBuilder));
-            }
-            if (string.IsNullOrWhiteSpace(routeName))
-            {
-                throw new ArgumentException("Route name cannot be null or whitespace.", nameof(routeName));
-            }
-#endif
 
             var serviceProvider = endpointRouteBuilder.ServiceProvider;
             var endpointRegistry = serviceProvider.GetRequiredService<IMcpEndpointRegistry>();
             var convention = serviceProvider.GetRequiredService<IMcpRouteConvention>();
 
             // Create the route entry
-            var normalizedPrefix = routePrefix?.Trim('/') ?? string.Empty;
-            var mcpBasePath = customMcpPath ?? (string.IsNullOrEmpty(normalizedPrefix) ? "/mcp" : $"/{normalizedPrefix}/mcp");
+            var normalizedPrefix = routePrefix?.Trim('/')
+                ?? string.Empty;
+
+            var mcpBasePath = customMcpPath
+                ?? (string.IsNullOrEmpty(normalizedPrefix) ? "/mcp" : $"/{normalizedPrefix}/mcp");
 
             var routeEntry = new McpRouteEntry
             {
@@ -123,7 +107,7 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             // Register the endpoint
-            endpointRegistry.RegisterEndpoint(routeEntry);
+            endpointRegistry.Register(routeEntry);
 
             // Apply the convention to create the actual endpoints
             convention.ApplyConvention(endpointRouteBuilder, routePrefix ?? string.Empty, routeName);

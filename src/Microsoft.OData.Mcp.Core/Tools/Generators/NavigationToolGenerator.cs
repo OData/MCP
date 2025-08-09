@@ -9,6 +9,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
+
     /// <summary>
     /// Generates navigation MCP tools from OData entity relationships.
     /// </summary>
@@ -19,9 +20,10 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public sealed class NavigationToolGenerator : INavigationToolGenerator
     {
+
         #region Fields
 
-        private readonly ILogger<NavigationToolGenerator> _logger;
+        internal readonly ILogger<NavigationToolGenerator> _logger;
 
         #endregion
 
@@ -223,7 +225,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Formats a tool name according to the specified naming convention.
@@ -233,7 +235,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationName">The navigation property name.</param>
         /// <param name="convention">The naming convention to apply.</param>
         /// <returns>The formatted tool name.</returns>
-        private static string FormatToolName(string operation, string entityName, string navigationName, ToolNamingConvention convention)
+        internal static string FormatToolName(string operation, string entityName, string navigationName, ToolNamingConvention convention)
         {
             var baseName = $"{operation}{entityName}{navigationName}";
 
@@ -252,7 +254,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The snake_case version of the string.</returns>
-        private static string ConvertToSnakeCase(string input)
+        internal static string ConvertToSnakeCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -271,7 +273,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns>The kebab-case version of the string.</returns>
-        private static string ConvertToKebabCase(string input)
+        internal static string ConvertToKebabCase(string input)
         {
             var result = new StringBuilder();
             for (int i = 0; i < input.Length; i++)
@@ -291,7 +293,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="entityType">The entity type.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A collection of eligible navigation properties.</returns>
-        private static IEnumerable<EdmNavigationProperty> GetEligibleNavigationProperties(EdmEntityType entityType, NavigationToolGenerationOptions options)
+        internal static IEnumerable<EdmNavigationProperty> GetEligibleNavigationProperties(EdmEntityType entityType, NavigationToolGenerationOptions options)
         {
             var navigationProperties = entityType.NavigationProperties.AsEnumerable();
 
@@ -312,7 +314,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the GET RELATED tool.</returns>
-        private static string GenerateGetRelatedDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static string GenerateGetRelatedDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var description = new StringBuilder();
             var relatedType = navigationProperty.IsCollection ? $"{navigationProperty.TargetTypeName} entities" : $"{navigationProperty.TargetTypeName} entity";
@@ -365,7 +367,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the ADD RELATIONSHIP tool.</returns>
-        private static string GenerateAddRelationshipDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static string GenerateAddRelationshipDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var description = new StringBuilder();
             var operation = navigationProperty.IsCollection ? "Adds a relationship" : "Sets the relationship";
@@ -422,7 +424,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A description for the REMOVE RELATIONSHIP tool.</returns>
-        private static string GenerateRemoveRelationshipDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static string GenerateRemoveRelationshipDescription(EdmEntitySet entitySet, EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var description = new StringBuilder();
             var operation = navigationProperty.IsCollection ? "Removes a relationship" : "Unsets the relationship";
@@ -482,7 +484,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the GET RELATED tool input.</returns>
-        private static object GenerateGetRelatedInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static object GenerateGetRelatedInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -551,7 +553,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the ADD RELATIONSHIP tool input.</returns>
-        private static object GenerateAddRelationshipInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static object GenerateAddRelationshipInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -590,7 +592,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// <param name="navigationProperty">The navigation property.</param>
         /// <param name="options">Generation options.</param>
         /// <returns>A JSON schema for the REMOVE RELATIONSHIP tool input.</returns>
-        private static object GenerateRemoveRelationshipInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
+        internal static object GenerateRemoveRelationshipInputSchema(EdmEntityType entityType, EdmNavigationProperty navigationProperty, NavigationToolGenerationOptions options)
         {
             var properties = new Dictionary<string, object>();
             var required = new List<string>();
@@ -630,7 +632,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="property">The property to generate schema for.</param>
         /// <returns>A JSON schema for the property.</returns>
-        private static object GeneratePropertySchema(EdmProperty property)
+        internal static object GeneratePropertySchema(EdmProperty property)
         {
             var schema = new Dictionary<string, object>();
 
@@ -647,7 +649,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         /// </summary>
         /// <param name="edmType">The EDM type name.</param>
         /// <returns>The corresponding JSON Schema type.</returns>
-        private static string MapEdmTypeToJsonType(string edmType)
+        internal static string MapEdmTypeToJsonType(string edmType)
         {
             return edmType?.ToLowerInvariant() switch
             {
@@ -663,5 +665,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
         }
 
         #endregion
+
     }
+
 }

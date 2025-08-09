@@ -1,48 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
-    
-    <!-- Console app settings -->
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>false</SelfContained>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    
-    <!-- Tool metadata for dotnet tool -->
-    <PackAsTool>true</PackAsTool>
-		<PackageType>McpServer</PackageType>
-    <ToolCommandName>odata-mcp</ToolCommandName>
-    
-    <!-- Package metadata -->
-    <PackageId>Microsoft.OData.Mcp.Tools</PackageId>
-    <Description>Command-line tools for running a standalone MCP server that connects to external OData APIs</Description>
-    <Authors>Microsoft</Authors>
-    <PackageTags>OData;MCP;ModelContextProtocol;Tools;CLI</PackageTags>
-    <RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
 
-  <ItemGroup>
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.*-*" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
-  </ItemGroup>
+        <!-- Console app settings -->
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>false</SelfContained>
+        <PublishReadyToRun>true</PublishReadyToRun>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
-  </ItemGroup>
+        <!-- Tool metadata for dotnet tool -->
+        <PackAsTool>true</PackAsTool>
+        <PackageType>McpServer</PackageType>
+        <ToolCommandName>odata-mcp</ToolCommandName>
 
-  <ItemGroup>
-    <Folder Include=".mcp\" />
-  </ItemGroup>
+        <!-- Package metadata -->
+        <PackageId>Microsoft.OData.Mcp.Tools</PackageId>
+        <Description>Command-line tools for running a standalone MCP server that connects to external OData APIs</Description>
+        <PackageTags>OData;MCP;ModelContextProtocol;Tools;CLI</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include=".mcp\server.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ModelContextProtocol" Version="0.*-*" />
+        <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.*" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.*" Condition="'$(TargetFramework)' == 'net8.0'" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*-*" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+    </ItemGroup>
 
 </Project>

@@ -8,18 +8,33 @@ Enable AI assistants to interact with your OData services through the Model Cont
 
 ## ✨ Features
 
-- **Zero Configuration** - Just add `services.AddODataMcp()` and it works!
-- **Automatic Discovery** - MCP endpoints for all your OData routes
-- **High Performance** - Zero-allocation routing, frozen collections, startup-time caching
-- **Tool Generation** - Query, CRUD, navigation, and batch operations out of the box
-- **Multi-Route Support** - Automatic namespacing for multiple OData endpoints
-- **Flexible Control** - Opt-out of routes, customize naming, explicit configuration when needed
+- **Dynamic Tool Generation** - Automatically generates MCP tools from OData metadata
+- **Two Deployment Models** - Embedded (AspNetCore) or Standalone (Console)
+- **Real HTTP Operations** - All tools execute actual OData HTTP requests
+- **Comprehensive Coverage** - CRUD, Query, Navigation, and Advanced OData operations
+- **Claude Code Ready** - Works immediately with Claude Code and other MCP clients
+- **High Performance** - Efficient tool generation with caching and optimizations
 
 ## 🚀 Quick Start
 
+### Option 1: Standalone Console (Connect to ANY OData Service)
+
+```bash
+# Install the tool globally
+dotnet tool install -g Microsoft.OData.Mcp.Tools
+
+# Start the MCP server for Northwind service
+odata-mcp start --url https://services.odata.org/V4/Northwind/Northwind.svc
+
+# Or with authentication
+odata-mcp start --url https://your-api.com/odata --auth-token YOUR_TOKEN
+```
+
+### Option 2: Embedded in ASP.NET Core
+
 ```csharp
 // 1. Install the package
-// dotnet add package Microsoft.OData.Mcp.Core
+// dotnet add package Microsoft.OData.Mcp.AspNetCore
 
 // 2. Add to your Program.cs
 builder.Services.AddControllers()
@@ -48,131 +63,193 @@ The Model Context Protocol (MCP) is an open standard that enables AI assistants 
 - Create, update, and delete entities
 - Navigate relationships
 - Execute batch operations
-- Understand your data model through metadata
+- Use advanced OData features ($filter, $orderby, $expand, etc.)
 
-## 🎯 Use Cases
+## 🤖 Using with Claude Code
 
-- **AI-Powered Analytics** - Let AI assistants analyze your business data
-- **Automated Reporting** - Generate reports through natural language
-- **Data Integration** - Connect AI workflows to your OData services
-- **Customer Support** - Enable AI to look up customer information
-- **Process Automation** - Automate CRUD operations through AI
+### 1. Register the MCP Server
 
-## 📚 Documentation
+Add to your Claude Code configuration:
 
-- [Getting Started](docs/GETTING_STARTED.md) - Set up in 5 minutes
-- [Magical Zero-Config](docs/MAGICAL_ZERO_CONFIG.md) - How automatic registration works
-- [Configuration](docs/CONFIGURATION.md) - Customization options
-- [Examples](docs/EXAMPLES.md) - Common scenarios
-- [API Reference](docs/API.md) - Detailed API documentation
-
-## 🔧 Advanced Configuration
-
-```csharp
-builder.Services.AddODataMcp(options =>
-{
-    // Exclude internal routes
-    options.ExcludeRoutes = new[] { "admin", "system" };
-    
-    // Custom tool naming
-    options.ToolNamingPattern = "{route}.{entity}.{operation}";
-    
-    // Performance tuning
-    options.UseAggressiveCaching = true;
-    options.DefaultPageSize = 100;
-    
-    // Enable dynamic models (off by default)
-    options.EnableDynamicModels = true;
-});
-```
-
-## 🏗️ Architecture Highlights
-
-### Zero-Allocation Performance
-- Route parsing with `ReadOnlySpan<char>`
-- `FrozenDictionary` for O(1) lookups
-- No regex, minimal allocations
-
-### Automatic Integration
-- Hooks into OData route registration
-- Creates MCP endpoints as siblings to `$metadata`
-- Respects OData configuration (e.g., `EnableNoDollarQueryOptions`)
-
-### Tool Generation
-- Analyzes EDM model at startup
-- Generates strongly-typed tools
-- Caches for optimal runtime performance
-
-## 📦 Multi-Route Support
-
-```csharp
-// Multiple OData routes
-builder.Services.AddOData(options => options
-    .AddRouteComponents("api/v1", GetV1Model())
-    .AddRouteComponents("api/v2", GetV2Model())
-    .AddRouteComponents("odata", GetMainModel()));
-
-// MCP enables for ALL automatically
-builder.Services.AddODataMcp();
-```
-
-Tools are namespaced to prevent conflicts:
-- `v1.Customer.query`
-- `v2.Customer.query`
-- `odata.Customer.query`
-
-## 🔌 Integration with AI Assistants
-
-### Claude Desktop
+**Windows** (`%APPDATA%\Claude\claude.conf.json`):
 ```json
 {
-  "servers": {
-    "my-odata-api": {
-      "command": "curl",
-      "args": ["http://localhost:5000/odata/mcp"]
+  "mcpServers": {
+    "odata-northwind": {
+      "command": "odata-mcp",
+      "args": ["start", "--url", "https://services.odata.org/V4/Northwind/Northwind.svc"]
     }
   }
 }
 ```
 
-### Custom AI Applications
-```python
-import httpx
-
-# Discover available tools
-tools = httpx.get("http://api.example.com/odata/mcp/tools").json()
-
-# Execute a query
-result = httpx.post(
-    "http://api.example.com/odata/mcp/tools/execute",
-    json={
-        "tool": "Customer.query",
-        "parameters": {
-            "filter": "Country eq 'USA'",
-            "top": 10
-        }
+**macOS/Linux** (`~/.config/claude/claude.conf.json`):
+```json
+{
+  "mcpServers": {
+    "odata-northwind": {
+      "command": "odata-mcp",
+      "args": ["start", "--url", "https://services.odata.org/V4/Northwind/Northwind.svc"]
     }
-).json()
+  }
+}
 ```
+
+### 2. Use in Claude
+
+Once registered, you can ask Claude to:
+
+- "List all products from Northwind"
+- "Get customer ALFKI details"
+- "Show me orders from 2024 sorted by date"
+- "Find products with price > $50"
+- "Create a new product category"
+
+## 🔧 Generated Tools
+
+The MCP server dynamically generates tools based on your OData metadata:
+
+### CRUD Operations
+- `create_[entity]` - Create new entities
+- `get_[entity]` - Retrieve entities by key
+- `update_[entity]` - Update existing entities
+- `delete_[entity]` - Delete entities
+
+### Query Operations
+- `list_[entityset]` - List entities with filtering and pagination
+- `odata_query` - Execute advanced OData queries
+
+### Examples
+
+```javascript
+// Get a specific product
+{
+  "tool": "get_product",
+  "parameters": {
+    "id": 1
+  }
+}
+
+// List products with filtering
+{
+  "tool": "list_products",
+  "parameters": {
+    "filter": "UnitPrice gt 20",
+    "orderby": "ProductName",
+    "top": 10
+  }
+}
+
+// Advanced OData query
+{
+  "tool": "odata_query",
+  "parameters": {
+    "query": "Products?$filter=Category/CategoryName eq 'Beverages'&$expand=Category"
+  }
+}
+```
+
+## 🔐 Authentication
+
+### Bearer Token
+```bash
+odata-mcp start --url https://api.example.com/odata --auth-token YOUR_TOKEN
+```
+
+### Configuration File
+```json
+{
+  "McpServer": {
+    "ODataService": {
+      "BaseUrl": "https://api.example.com/odata",
+      "AuthToken": "YOUR_TOKEN"
+    }
+  }
+}
+```
+
+```bash
+odata-mcp start --config settings.json
+```
+
+## 📚 Advanced Configuration
+
+### Tool Generation Options
+
+Control which tools are generated:
+
+```csharp
+services.AddODataMcp(options =>
+{
+    options.GenerateCrudTools = true;      // CRUD operations
+    options.GenerateQueryTools = true;     // List and query operations  
+    options.GenerateNavigationTools = true; // Relationship navigation
+    options.MaxToolCount = 100;            // Limit total tools
+    options.IncludeExamples = true;        // Add usage examples
+});
+```
+
+### Multiple OData Routes
+
+```csharp
+builder.Services
+    .AddOData(options => options
+        .AddRouteComponents("v1", GetV1Model())
+        .AddRouteComponents("v2", GetV2Model()))
+    .AddODataMcp(); // Automatically handles all routes
+```
+
+## 🧪 Testing
+
+The project includes comprehensive tests using real OData services (no mocking):
+
+```bash
+# Run all tests
+dotnet test
+
+# Run with coverage
+dotnet test /p:CollectCoverage=true /p:CoverageOutputFormat=opencover
+```
+
+## 🛠️ Troubleshooting
+
+### "Failed to reconnect to odata-server"
+- Ensure the OData service URL is accessible
+- Check authentication tokens are valid
+- Verify network connectivity
+
+### "Tool not found"
+- Tools are generated from metadata - ensure your OData service exposes metadata
+- Check the tool name matches the generated names (use `list_tools` to see all)
+
+### Performance Issues
+- Adjust `MaxToolCount` to limit tool generation
+- Use specific entity queries instead of full collection queries
+- Enable response caching in your OData service
+
+## 📦 NuGet Packages
+
+- `Microsoft.OData.Mcp.Core` - Core functionality and abstractions
+- `Microsoft.OData.Mcp.AspNetCore` - ASP.NET Core integration
+- `Microsoft.OData.Mcp.Tools` - Standalone CLI tool
+- `Microsoft.OData.Mcp.Authentication` - Authentication providers
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🔗 Related Projects
 
-Built on top of:
-- [ASP.NET Core OData](https://github.com/OData/AspNetCoreOData)
-- [Model Context Protocol](https://modelcontextprotocol.com)
+- [Model Context Protocol](https://github.com/modelcontextprotocol)
+- [OData](https://www.odata.org/)
+- [Claude Code](https://claude.ai/code)
 
-## 🔗 Links
+## 📞 Support
 
-- [NuGet Package](https://www.nuget.org/packages/Microsoft.OData.Mcp.Core/)
-- [GitHub Repository](https://github.com/microsoft/odata-mcp)
-- [Issue Tracker](https://github.com/microsoft/odata-mcp/issues)
-- [OData Documentation](https://www.odata.org/)
-- [MCP Specification](https://spec.modelcontextprotocol.com/)
+- **Issues**: [GitHub Issues](https://github.com/microsoft/odata-mcp/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/microsoft/odata-mcp/discussions)
+- **Email**: odata@microsoft.com

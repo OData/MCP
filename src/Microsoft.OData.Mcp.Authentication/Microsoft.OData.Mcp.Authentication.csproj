@@ -1,54 +1,55 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>net10.0;net9.0;net8.0;</TargetFrameworks>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<NoWarn>NU1510</NoWarn>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
-		<Title>Microsoft OData MCP Server Authentication</Title>
-		<Description>OAuth2 and JWT authentication framework for OData MCP servers, including token validation and delegation.</Description>
-		<Authors>Microsoft</Authors>
-		<PackageTags>odata;mcp;server;authentication;oauth2;jwt</PackageTags>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0;</TargetFrameworks>
+        <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <NoWarn>NU1510</NoWarn>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
+        <Title>Microsoft OData MCP Server Authentication</Title>
+        <Description>OAuth2 and JWT authentication framework for OData MCP servers, including token validation and delegation.</Description>
+        <Authors>Microsoft</Authors>
+        <PackageTags>odata;mcp;server;authentication;oauth2;jwt</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
 
-	<ItemGroup>
-	</ItemGroup>
+    <ItemGroup>
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*-*" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*-*" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*-*" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.*-*" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.*-*" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-		<PackageReference Include="System.Text.Json" Version="10.*-*" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*-*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.*-*" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+        <PackageReference Include="System.Text.Json" Version="10.*-*" />
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="9.*" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-		<PackageReference Include="System.Text.Json" Version="9.*" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+        <PackageReference Include="System.Text.Json" Version="9.*" />
+    </ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="8.*" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-		<PackageReference Include="System.Text.Json" Version="8.*" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+        <PackageReference Include="System.Text.Json" Version="8.*" />
+    </ItemGroup>
 
 </Project>

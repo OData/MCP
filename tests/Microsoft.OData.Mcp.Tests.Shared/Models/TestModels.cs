@@ -94,9 +94,11 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
         /// </summary>
         public static IEdmModel GetMultiTenantModel()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.Namespace = "Tenant";
-            
+            var builder = new ODataConventionModelBuilder
+            {
+                Namespace = "Tenant"
+            };
+
             // Each tenant might have different entity visibility
             builder.EntitySet<Customer>("Customers");
             builder.EntitySet<Order>("Orders");
@@ -114,9 +116,11 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
         /// </summary>
         public static IEdmModel GetNoAuthModel()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.Namespace = "Public";
-            
+            var builder = new ODataConventionModelBuilder
+            {
+                Namespace = "Public"
+            };
+
             // Only public entities
             builder.EntitySet<Product>("Products");
             

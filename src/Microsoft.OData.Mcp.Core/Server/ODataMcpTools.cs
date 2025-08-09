@@ -7,12 +7,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ModelContextProtocol;
-using ModelContextProtocol.Server;
 using Microsoft.OData.Mcp.Core.Configuration;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Core.Server
 {
+
     /// <summary>
     /// OData MCP tools using the official SDK attribute-based approach.
     /// </summary>
@@ -23,9 +23,9 @@ namespace Microsoft.OData.Mcp.Core.Server
     [McpServerToolType]
     public class ODataMcpTools
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IOptions<McpServerConfiguration> _configuration;
-        private readonly ILogger<ODataMcpTools> _logger;
+        internal readonly IHttpClientFactory _httpClientFactory;
+        internal readonly IOptions<McpServerConfiguration> _configuration;
+        internal readonly ILogger<ODataMcpTools> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataMcpTools"/> class.
@@ -278,14 +278,204 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
         }
 
-        #region Private Methods
+        /// <summary>
+        /// Updates an existing entity in the OData service.
+        /// </summary>
+        /// <param name="entitySet">The entity set name.</param>
+        /// <param name="key">The entity key.</param>
+        /// <param name="entity">The updated entity data as JSON.</param>
+        /// <returns>The updated entity.</returns>
+        [McpServerTool]
+        [Description("Updates an existing entity in the OData service")]
+        public async Task<string> UpdateEntity(string entitySet, string key, string entity)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+            ArgumentException.ThrowIfNullOrWhiteSpace(entity);
+
+            var config = _configuration.Value;
+            
+            if (string.IsNullOrWhiteSpace(config.ODataService.BaseUrl))
+            {
+                throw new InvalidOperationException("OData service URL is not configured");
+            }
+
+            try
+            {
+                // Validate JSON
+                using var jsonDoc = JsonDocument.Parse(entity);
+                
+                // Build the URL
+                var formattedKey = FormatKeyValue(key);
+                var url = $"{config.ODataService.BaseUrl.TrimEnd('/')}/{entitySet}({formattedKey})";
+                _logger.LogDebug("Updating entity in {EntitySet} with key {Key}: {Url}", entitySet, key, url);
+
+                // Create the request
+                using var httpClient = _httpClientFactory.CreateClient("OData");
+                using var content = new StringContent(entity, Encoding.UTF8, "application/json");
+                
+                // Use PATCH for partial updates
+                using var request = new HttpRequestMessage(new HttpMethod("PATCH"), url)
+                {
+                    Content = content
+                };
+                request.Headers.Add("If-Match", "*"); // Override optimistic concurrency
+                
+                var response = await httpClient.SendAsync(request);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new InvalidOperationException($"Failed to update entity: {response.StatusCode} - {error}");
+                }
+                
+                // For successful updates, return the updated entity by fetching it
+                if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    // Fetch the updated entity
+                    return await GetEntity(entitySet, key);
+                }
+                
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                // Parse and format the response
+                var json = JsonDocument.Parse(responseContent);
+                return JsonSerializer.Serialize(json, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true 
+                });
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Invalid JSON provided for entity update");
+                throw new ArgumentException("Invalid JSON format", nameof(entity), ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error updating entity");
+                throw new InvalidOperationException($"Failed to update entity: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deletes an entity from the OData service.
+        /// </summary>
+        /// <param name="entitySet">The entity set name.</param>
+        /// <param name="key">The entity key.</param>
+        /// <returns>Success message.</returns>
+        [McpServerTool]
+        [Description("Deletes an entity from the OData service")]
+        public async Task<string> DeleteEntity(string entitySet, string key)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+            var config = _configuration.Value;
+            
+            if (string.IsNullOrWhiteSpace(config.ODataService.BaseUrl))
+            {
+                throw new InvalidOperationException("OData service URL is not configured");
+            }
+
+            try
+            {
+                // Build the URL
+                var formattedKey = FormatKeyValue(key);
+                var url = $"{config.ODataService.BaseUrl.TrimEnd('/')}/{entitySet}({formattedKey})";
+                _logger.LogDebug("Deleting entity from {EntitySet} with key {Key}: {Url}", entitySet, key, url);
+
+                // Create the request
+                using var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                var response = await httpClient.DeleteAsync(url);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new InvalidOperationException($"Failed to delete entity: {response.StatusCode} - {error}");
+                }
+                
+                return JsonSerializer.Serialize(new 
+                { 
+                    success = true,
+                    message = $"Entity with key '{key}' deleted successfully from {entitySet}"
+                }, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true 
+                });
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error deleting entity");
+                throw new InvalidOperationException($"Failed to delete entity: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Navigates from a source entity to related entities via a navigation property.
+        /// </summary>
+        /// <param name="entitySet">The source entity set name.</param>
+        /// <param name="key">The source entity key.</param>
+        /// <param name="navigationProperty">The navigation property name.</param>
+        /// <returns>The related entities.</returns>
+        [McpServerTool]
+        [Description("Navigates from a source entity to related entities via a navigation property")]
+        public async Task<string> NavigateRelationship(string entitySet, string key, string navigationProperty)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+            ArgumentException.ThrowIfNullOrWhiteSpace(navigationProperty);
+
+            var config = _configuration.Value;
+            
+            if (string.IsNullOrWhiteSpace(config.ODataService.BaseUrl))
+            {
+                throw new InvalidOperationException("OData service URL is not configured");
+            }
+
+            try
+            {
+                // Build the URL
+                var formattedKey = FormatKeyValue(key);
+                var url = $"{config.ODataService.BaseUrl.TrimEnd('/')}/{entitySet}({formattedKey})/{navigationProperty}";
+                _logger.LogDebug("Navigating from {EntitySet}({Key}) via {NavigationProperty}: {Url}", 
+                    entitySet, key, navigationProperty, url);
+
+                // Create the request
+                using var httpClient = _httpClientFactory.CreateClient("OData");
+                
+                var response = await httpClient.GetAsync(url);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new InvalidOperationException($"Failed to navigate relationship: {response.StatusCode} - {error}");
+                }
+                
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
+                // Parse and format the response
+                var json = JsonDocument.Parse(responseContent);
+                return JsonSerializer.Serialize(json, new JsonSerializerOptions 
+                { 
+                    WriteIndented = true 
+                });
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error navigating relationship");
+                throw new InvalidOperationException($"Failed to navigate relationship: {ex.Message}", ex);
+            }
+        }
+
+        #region Internal Methods
 
         /// <summary>
         /// Formats a key value for OData URLs.
         /// </summary>
         /// <param name="key">The key value.</param>
         /// <returns>The formatted key value.</returns>
-        private static string FormatKeyValue(string key)
+        internal static string FormatKeyValue(string key)
         {
             // Check if it's a number
             if (int.TryParse(key, out _) || long.TryParse(key, out _) || 
@@ -305,5 +495,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         }
 
         #endregion
+
     }
+
 }

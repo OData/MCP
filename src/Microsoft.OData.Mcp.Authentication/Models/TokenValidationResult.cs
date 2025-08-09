@@ -69,7 +69,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// This can include information such as the validation time, token issuer,
         /// audience, or other metadata that might be useful for auditing or debugging.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the token expiration time.
@@ -284,13 +284,13 @@ namespace Microsoft.OData.Mcp.Authentication.Models
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Extracts timestamp claims from the principal.
         /// </summary>
         /// <param name="principal">The claims principal to extract timestamps from.</param>
-        private void ExtractTimestamps(ClaimsPrincipal principal)
+        internal void ExtractTimestamps(ClaimsPrincipal principal)
         {
             // Extract expiration time (exp claim)
             var expClaim = principal.FindFirst("exp");

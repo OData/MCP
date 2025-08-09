@@ -152,7 +152,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom metrics allow tracking application-specific measurements
         /// beyond the standard performance metrics.
         /// </remarks>
-        public List<MetricDefinition> CustomMetrics { get; set; } = new();
+        public List<MetricDefinition> CustomMetrics { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the log filters.
@@ -162,7 +162,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Log filters can suppress noisy log messages or enhance logging
         /// for specific components or scenarios.
         /// </remarks>
-        public List<LogFilter> LogFilters { get; set; } = new();
+        public List<LogFilter> LogFilters { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the alerting configuration.
@@ -182,7 +182,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// Custom properties allow extending the configuration with monitoring system-specific
         /// settings that don't fit into the standard configuration properties.
         /// </remarks>
-        public Dictionary<string, object> CustomProperties { get; set; } = new();
+        public Dictionary<string, object> CustomProperties { get; set; } = [];
 
         #endregion
 
@@ -487,7 +487,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets additional resource attributes.
         /// </summary>
-        public Dictionary<string, string> ResourceAttributes { get; set; } = new();
+        public Dictionary<string, string> ResourceAttributes { get; set; } = [];
 
         /// <summary>
         /// Validates the OpenTelemetry configuration.
@@ -645,7 +645,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets the metric tags.
         /// </summary>
-        public Dictionary<string, string> Tags { get; set; } = new();
+        public Dictionary<string, string> Tags { get; set; } = [];
 
         /// <summary>
         /// Validates the metric definition.
@@ -725,7 +725,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <summary>
         /// Gets or sets the alert rules.
         /// </summary>
-        public List<AlertRule> Rules { get; set; } = new();
+        public List<AlertRule> Rules { get; set; } = [];
 
         /// <summary>
         /// Validates the alerting configuration.

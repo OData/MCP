@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Represents client credentials for OAuth2 authentication.
     /// </summary>
@@ -14,6 +14,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class ClientCredentials
     {
+
         #region Properties
 
         /// <summary>
@@ -217,46 +218,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the client authentication methods supported by OAuth2.
-    /// </summary>
-    public enum ClientAuthenticationMethod
-    {
-        /// <summary>
-        /// No client authentication (public client).
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Client secret sent in the Authorization header using HTTP Basic authentication.
-        /// </summary>
-        ClientSecret,
-
-        /// <summary>
-        /// Client secret sent in the request body as a form parameter.
-        /// </summary>
-        ClientSecretPost,
-
-        /// <summary>
-        /// Client authentication using TLS client certificates.
-        /// </summary>
-        TlsClientAuth,
-
-        /// <summary>
-        /// Client authentication using self-signed TLS client certificates.
-        /// </summary>
-        SelfSignedTlsClientAuth,
-
-        /// <summary>
-        /// Client authentication using JWT signed with the client's private key.
-        /// </summary>
-        PrivateKeyJwt,
-
-        /// <summary>
-        /// Client authentication using JWT signed with the client secret.
-        /// </summary>
-        ClientSecretJwt
-    }
 }

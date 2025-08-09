@@ -1,18 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:docs.oasis-open.org)",
-      "Bash(mkdir:*)",
-      "Bash(dotnet:*)",
-      "WebFetch(domain:modelcontextprotocol.github.io)",
       "WebFetch(domain:devblogs.microsoft.com)",
-      "Bash(find:*)",
-      "Bash(mv:*)",
+      "WebFetch(domain:docs.oasis-open.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:modelcontextprotocol.github.io)",
       "Bash(cp:*)",
       "Bash(dir)",
+      "Bash(dotnet:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
       "Bash(ls:*)",
-      "Bash(rm:*)"
+      "Bash(mv:*)"
     ],
     "deny": []
   }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Provides execution context for MCP tool operations.
     /// </summary>
@@ -19,6 +21,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public sealed class McpToolContext
     {
+
         #region Properties
 
         /// <summary>
@@ -90,7 +93,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// This allows tools to store and retrieve custom context information
         /// that may be needed during execution.
         /// </remarks>
-        public Dictionary<string, object> Properties { get; set; } = new();
+        public Dictionary<string, object> Properties { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the request timestamp.
@@ -308,7 +311,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
             if (!string.IsNullOrWhiteSpace(AuthToken))
             {
                 client.DefaultRequestHeaders.Authorization = 
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
+                    new AuthenticationHeaderValue("Bearer", AuthToken);
             }
 
             client.DefaultRequestHeaders.Add("X-Correlation-ID", CorrelationId);
@@ -338,5 +341,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         #endregion
+
     }
+
 }

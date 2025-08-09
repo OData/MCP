@@ -1,24 +1,24 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
 using Microsoft.OData.Mcp.Core.Tools.Generators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.OData.Mcp.Tests.Core.Extensions
 {
+
     /// <summary>
     /// Tests for the ServiceCollectionExtensions class in Core.
     /// </summary>
     [TestClass]
     public class ServiceCollectionExtensionsTests
     {
+
         /// <summary>
         /// Tests that AddODataMcpServerCore registers required services.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
             // Arrange
             var services = new ServiceCollection();
             var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["McpServer:ODataService:BaseUrl"] = "https://test.com",
                     ["McpServer:ODataService:RequestTimeout"] = "00:02:00"
@@ -40,10 +40,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
 
             // Assert
             services.Should().NotBeNull();
-            
+
             // Build service provider to verify registrations
             var serviceProvider = services.BuildServiceProvider();
-            
+
             // Verify core services are registered
             serviceProvider.GetService<ICsdlMetadataParser>().Should().NotBeNull();
             serviceProvider.GetService<IMcpToolFactory>().Should().NotBeNull();
@@ -73,10 +73,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
             // Assert
             var serviceProvider = services.BuildServiceProvider();
             var options = serviceProvider.GetRequiredService<IOptions<McpServerConfiguration>>();
-            
+
             options.Value.ODataService.BaseUrl.Should().Be("https://configured.com");
             options.Value.ODataService.RequestTimeout.Should().Be(TimeSpan.FromMinutes(5));
         }
 
     }
+
 }

@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Represents an example usage pattern for an MCP tool.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public sealed class McpToolExample
     {
+
         #region Properties
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Tags provide flexible categorization beyond the main category,
         /// allowing for cross-cutting concerns like "authentication", "pagination", "bulk-operations", etc.
         /// </remarks>
-        public List<string> Tags { get; set; } = new();
+        public List<string> Tags { get; set; } = [];
 
         /// <summary>
         /// Gets or sets additional notes about this example.
@@ -104,7 +106,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Prerequisites might include required permissions, data setup,
         /// configuration settings, or other dependencies.
         /// </remarks>
-        public List<string> Prerequisites { get; set; } = new();
+        public List<string> Prerequisites { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether this example requires authentication.
@@ -433,31 +435,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the difficulty levels for MCP tool examples.
-    /// </summary>
-    public enum McpToolExampleDifficulty
-    {
-        /// <summary>
-        /// Beginner-level example suitable for new users.
-        /// </summary>
-        Beginner,
-
-        /// <summary>
-        /// Intermediate-level example requiring some experience.
-        /// </summary>
-        Intermediate,
-
-        /// <summary>
-        /// Advanced-level example for experienced users.
-        /// </summary>
-        Advanced,
-
-        /// <summary>
-        /// Expert-level example for complex scenarios.
-        /// </summary>
-        Expert
-    }
 }

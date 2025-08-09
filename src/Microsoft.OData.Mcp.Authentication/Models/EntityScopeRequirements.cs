@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Defines scope requirements for operations on a specific entity type.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class EntityScopeRequirements
     {
+
         #region Properties
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to query, retrieve, or
         /// navigate to entities of this type.
         /// </remarks>
-        public List<string> ReadScopes { get; set; } = new();
+        public List<string> ReadScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scopes required for creating entities of this type.
@@ -34,7 +36,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to create new instances
         /// of this entity type.
         /// </remarks>
-        public List<string> CreateScopes { get; set; } = new();
+        public List<string> CreateScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scopes required for updating entities of this type.
@@ -44,7 +46,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to modify existing
         /// instances of this entity type.
         /// </remarks>
-        public List<string> UpdateScopes { get; set; } = new();
+        public List<string> UpdateScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scopes required for deleting entities of this type.
@@ -54,7 +56,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to delete instances
         /// of this entity type.
         /// </remarks>
-        public List<string> DeleteScopes { get; set; } = new();
+        public List<string> DeleteScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scopes required for querying entities of this type.
@@ -64,7 +66,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to perform complex
         /// queries, filtering, and sorting on this entity type.
         /// </remarks>
-        public List<string> QueryScopes { get; set; } = new();
+        public List<string> QueryScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scopes required for navigating to related entities.
@@ -74,7 +76,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// Users must have at least one of these scopes to follow navigation
         /// properties from this entity type to related entities.
         /// </remarks>
-        public List<string> NavigateScopes { get; set; } = new();
+        public List<string> NavigateScopes { get; set; } = [];
 
         /// <summary>
         /// Gets or sets custom scope requirements for specific operations.
@@ -85,7 +87,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// the standard CRUD operations. The operation names should match those
         /// used in the MCP tool definitions.
         /// </remarks>
-        public Dictionary<string, List<string>> CustomOperationScopes { get; set; } = new();
+        public Dictionary<string, List<string>> CustomOperationScopes { get; set; } = [];
 
         #endregion
 
@@ -364,5 +366,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

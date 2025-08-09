@@ -47,7 +47,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Entity sets are the primary addressable resources in an OData service, allowing clients
         /// to query, create, update, and delete entities.
         /// </remarks>
-        public List<EdmEntitySet> EntitySets { get; set; } = new();
+        public List<EdmEntitySet> EntitySets { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the singletons in this container.
@@ -57,7 +57,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Singletons represent entities that exist as single instances rather than collections.
         /// They are useful for representing unique resources like service configuration or user profiles.
         /// </remarks>
-        public List<EdmSingleton> Singletons { get; set; } = new();
+        public List<EdmSingleton> Singletons { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the function imports in this container.
@@ -67,7 +67,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Function imports allow functions to be called as part of the OData service interface.
         /// They provide a way to expose custom operations that don't fit the standard CRUD pattern.
         /// </remarks>
-        public List<EdmFunctionImport> FunctionImports { get; set; } = new();
+        public List<EdmFunctionImport> FunctionImports { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the action imports in this container.
@@ -77,7 +77,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Action imports allow actions to be called as part of the OData service interface.
         /// Unlike functions, actions can have side effects and are typically invoked via POST requests.
         /// </remarks>
-        public List<EdmActionImport> ActionImports { get; set; } = new();
+        public List<EdmActionImport> ActionImports { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the annotations for this entity container.
@@ -87,7 +87,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Annotations can be used to specify additional behaviors, constraints, or metadata
         /// that are not captured by the standard OData model elements.
         /// </remarks>
-        public Dictionary<string, object> Annotations { get; set; } = new();
+        public Dictionary<string, object> Annotations { get; set; } = [];
 
         /// <summary>
         /// Gets the fully qualified name of the entity container.

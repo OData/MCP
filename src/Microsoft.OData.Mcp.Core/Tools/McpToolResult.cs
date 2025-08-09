@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Represents the result of an MCP tool execution.
     /// </summary>
@@ -14,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
     /// </remarks>
     public sealed class McpToolResult
     {
+
         #region Properties
 
         /// <summary>
@@ -64,7 +65,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Metadata can include information such as execution time, record counts,
         /// caching status, or other operational details.
         /// </remarks>
-        public Dictionary<string, object> Metadata { get; set; } = new();
+        public Dictionary<string, object> Metadata { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the execution duration.
@@ -102,7 +103,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Warnings indicate potential issues or notable conditions that didn't
         /// prevent successful execution but may be of interest to users.
         /// </remarks>
-        public List<string> Warnings { get; set; } = new();
+        public List<string> Warnings { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the timestamp when the execution completed.
@@ -175,14 +176,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="data"/> is null.</exception>
         public static McpToolResult Success(object data, string? correlationId = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(data);
-#else
-            if (data is null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-#endif
 
             var json = JsonSerializer.Serialize(data);
             var document = JsonDocument.Parse(json);
@@ -199,15 +193,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="errorMessage"/> is null or whitespace.</exception>
         public static McpToolResult Error(string errorMessage, string? errorCode = null, string? correlationId = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
-#else
-            if (string.IsNullOrWhiteSpace(errorMessage))
-            {
-                throw new ArgumentException("Error message cannot be null or whitespace.", nameof(errorMessage));
-            }
-#endif
-
             return new McpToolResult(errorMessage, errorCode, correlationId);
         }
 
@@ -220,14 +206,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
         public static McpToolResult Error(Exception exception, string? correlationId = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(exception);
-#else
-            if (exception is null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-#endif
 
             var errorCode = exception.GetType().Name;
             var result = new McpToolResult(exception.Message, errorCode, correlationId);
@@ -293,14 +272,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddMetadata(string key, object value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             Metadata[key] = value;
         }
@@ -327,14 +299,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="warning"/> is null or whitespace.</exception>
         public void AddWarning(string warning)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(warning);
-#else
-            if (string.IsNullOrWhiteSpace(warning))
-            {
-                throw new ArgumentException("Warning message cannot be null or whitespace.", nameof(warning));
-            }
-#endif
 
             Warnings.Add(warning);
         }
@@ -403,5 +368,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         }
 
         #endregion
+
     }
+
 }

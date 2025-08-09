@@ -43,7 +43,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Gets or sets the parameters of the action.
         /// </summary>
         /// <value>A collection of parameters that the action accepts.</value>
-        public List<EdmParameter> Parameters { get; set; } = new();
+        public List<EdmParameter> Parameters { get; set; } = [];
 
         /// <summary>
         /// Gets or sets a value indicating whether the action is bound.

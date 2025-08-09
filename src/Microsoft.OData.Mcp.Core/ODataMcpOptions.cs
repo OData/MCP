@@ -2,11 +2,13 @@ using System;
 
 namespace Microsoft.OData.Mcp.Core
 {
+
     /// <summary>
     /// Configuration options for OData MCP integration.
     /// </summary>
     public class ODataMcpOptions
     {
+
         /// <summary>
         /// Gets or sets a value indicating whether to automatically register MCP endpoints 
         /// for all OData routes.
@@ -127,5 +129,7 @@ namespace Microsoft.OData.Mcp.Core
         /// An array of allowed origins. Default allows all origins ("*").
         /// </value>
         public string[] AllowedOrigins { get; set; } = new[] { "*" };
+
     }
+
 }

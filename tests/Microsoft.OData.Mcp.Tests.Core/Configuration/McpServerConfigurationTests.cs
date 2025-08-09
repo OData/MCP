@@ -1,10 +1,6 @@
 using FluentAssertions;
 using Microsoft.OData.Mcp.Core.Configuration;
-using Microsoft.OData.Mcp.Core.Tools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Tests.Core.Configuration
 {

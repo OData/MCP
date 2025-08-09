@@ -3,6 +3,7 @@ using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Parsing
 {
+
     /// <summary>
     /// Interface for parsing OData CSDL (Conceptual Schema Definition Language) XML documents into EDM models.
     /// </summary>
@@ -13,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
     /// </remarks>
     public interface ICsdlMetadataParser
     {
+
         /// <summary>
         /// Parses a CSDL XML document from a string.
         /// </summary>
@@ -43,5 +45,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <exception cref="System.Xml.XmlException">Thrown when the XML is malformed.</exception>
         /// <exception cref="System.InvalidOperationException">Thrown when the CSDL structure is invalid.</exception>
         EdmModel ParseFromFile(string filePath);
+
     }
+
 }

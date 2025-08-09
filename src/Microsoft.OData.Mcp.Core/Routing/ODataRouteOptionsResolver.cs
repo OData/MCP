@@ -1,15 +1,15 @@
-using System;
-
 namespace Microsoft.OData.Mcp.Core.Routing
 {
+
     /// <summary>
     /// Resolves OData route options to determine route patterns.
     /// </summary>
     public class ODataRouteOptionsResolver
     {
+
         #region Fields
 
-        private readonly IODataOptionsProvider? _optionsProvider;
+        internal readonly IODataOptionsProvider? _optionsProvider;
 
         #endregion
 
@@ -78,5 +78,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
         }
 
         #endregion
+
     }
+
 }

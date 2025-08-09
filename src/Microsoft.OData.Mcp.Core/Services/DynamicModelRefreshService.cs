@@ -4,20 +4,21 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OData.Mcp.Core.Tools;
 
 namespace Microsoft.OData.Mcp.Core.Services
 {
+
     /// <summary>
     /// Background service that refreshes OData models when dynamic models are enabled.
     /// </summary>
     public class DynamicModelRefreshService : BackgroundService
     {
+
         #region Fields
 
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<DynamicModelRefreshService> _logger;
-        private readonly ODataMcpOptions _options;
+        internal readonly IServiceProvider _serviceProvider;
+        internal readonly ILogger<DynamicModelRefreshService> _logger;
+        internal readonly ODataMcpOptions _options;
 
         #endregion
 
@@ -34,16 +35,9 @@ namespace Microsoft.OData.Mcp.Core.Services
             ILogger<DynamicModelRefreshService> logger,
             ODataMcpOptions options)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(serviceProvider);
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(options);
-#else
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            return;
-#endif
 
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -102,14 +96,14 @@ namespace Microsoft.OData.Mcp.Core.Services
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Refreshes the OData models and regenerates tools.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task RefreshModelsAsync(CancellationToken cancellationToken)
+        internal async Task RefreshModelsAsync(CancellationToken cancellationToken)
         {
             _logger.LogDebug("Refreshing OData models");
 
@@ -128,5 +122,7 @@ namespace Microsoft.OData.Mcp.Core.Services
         }
 
         #endregion
+
     }
+
 }

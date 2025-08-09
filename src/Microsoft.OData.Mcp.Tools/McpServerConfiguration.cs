@@ -5,14 +5,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Server;
+using Microsoft.OData.Mcp.Core.Tools;
+using Microsoft.OData.Mcp.Core.Tools.Generators;
 
 namespace Microsoft.OData.Mcp.Tools
 {
+
     /// <summary>
     /// Provides configuration methods for the MCP server that can be reused in tests.
     /// </summary>
     public static class McpServerConfiguration
     {
+
         /// <summary>
         /// Configures the core MCP server services.
         /// </summary>
@@ -20,6 +24,9 @@ namespace Microsoft.OData.Mcp.Tools
         /// <param name="configuration">The configuration to use.</param>
         /// <param name="odataServiceUrl">The OData service URL to connect to.</param>
         /// <param name="authToken">Optional authentication token for the OData service.</param>
+        /// <remarks>
+        /// RWM: Thus should move to a set of Extension methids for starting the MCP Server.
+        /// </remarks>
         public static void ConfigureMcpServices(
             IServiceCollection services, 
             IConfiguration configuration,
@@ -36,9 +43,19 @@ namespace Microsoft.OData.Mcp.Tools
             services.AddScoped<ODataMcpTools>();
             services.AddScoped<DynamicODataMcpTools>();
             
+            // Add tool generation services
+            services.AddScoped<McpToolFactory>();
+            services.AddScoped<IMcpToolFactory, McpToolFactory>();
+            services.AddScoped<IQueryToolGenerator, QueryToolGenerator>();
+            services.AddScoped<ICrudToolGenerator, CrudToolGenerator>();
+            services.AddScoped<INavigationToolGenerator, NavigationToolGenerator>();
+            
             // Add HTTP client factory for OData calls
             services.AddHttpClient("OData", client =>
             {
+                client.DefaultRequestHeaders.Add("Accept", "application/xml");
+                client.DefaultRequestHeaders.Add("Accept", "text/xml");
+                
                 if (!string.IsNullOrWhiteSpace(authToken))
                 {
                     client.DefaultRequestHeaders.Authorization = 
@@ -85,5 +102,7 @@ namespace Microsoft.OData.Mcp.Tools
                 builder.SetMinimumLevel(LogLevel.Information);
             }
         }
+
     }
+
 }
