@@ -1,5 +1,6 @@
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a parameter in the Entity Data Model.
     /// </summary>
@@ -8,6 +9,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmParameter
     {
+
         #region Properties
 
         /// <summary>
@@ -69,5 +71,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         }
 
         #endregion
+
     }
+
 }

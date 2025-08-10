@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a complex type in an OData model.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmComplexType
     {
+
         #region Properties
 
         /// <summary>
@@ -218,5 +220,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
         }
 
         #endregion
+
     }
+
 }

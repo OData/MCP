@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
@@ -14,6 +12,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmNavigationPropertyBinding
     {
+
         #region Properties
 
         /// <summary>
@@ -107,5 +106,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(path);
         }
 
         #endregion
+
     }
+
 }

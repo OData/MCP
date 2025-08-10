@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents an action import in an OData entity container.
     /// </summary>
@@ -15,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmActionImport
     {
+
         #region Properties
 
         /// <summary>
@@ -148,5 +149,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(term);
         }
 
         #endregion
+
     }
+
 }

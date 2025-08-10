@@ -17,7 +17,6 @@ using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Tools;
-using Microsoft.OData.Mcp.Core.Tools.Generators;
 using Microsoft.OData.Mcp.Tools.Services;
 using ModelContextProtocol.Server;
 

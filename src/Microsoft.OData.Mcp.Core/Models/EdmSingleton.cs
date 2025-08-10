@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a singleton in an OData entity container.
     /// </summary>
@@ -15,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmSingleton
     {
+
         #region Properties
 
         /// <summary>
@@ -235,5 +237,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(term);
         }
 
         #endregion
+
     }
+
 }

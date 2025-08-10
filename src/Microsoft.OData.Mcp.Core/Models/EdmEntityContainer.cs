@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents an entity container in an OData model.
     /// </summary>
@@ -15,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmEntityContainer
     {
+
         #region Properties
 
         /// <summary>
@@ -302,5 +304,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(term);
         }
 
         #endregion
+
     }
+
 }

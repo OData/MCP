@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents the EDM primitive types as defined in the OData specification.
     /// </summary>
@@ -14,6 +12,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public enum EdmPrimitiveType
     {
+
         /// <summary>
         /// Represents binary data.
         /// </summary>
@@ -211,5 +210,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// </summary>
         [Description("Edm.GeometryCollection")]
         GeometryCollection
+
     }
+
 }

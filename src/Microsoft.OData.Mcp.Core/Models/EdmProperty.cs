@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a property in an OData entity type or complex type.
     /// </summary>
@@ -14,6 +13,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmProperty
     {
+
         #region Properties
 
         /// <summary>
@@ -235,5 +235,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
         }
 
         #endregion
+
     }
+
 }

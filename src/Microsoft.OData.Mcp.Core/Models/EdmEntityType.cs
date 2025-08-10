@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents an entity type in an OData model.
     /// </summary>
@@ -15,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmEntityType
     {
+
         #region Properties
 
         /// <summary>
@@ -253,5 +255,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
         }
 
         #endregion
+
     }
+
 }

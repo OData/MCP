@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a function in the Entity Data Model.
     /// </summary>
@@ -12,6 +13,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmFunction
     {
+
         #region Properties
 
         /// <summary>
@@ -92,5 +94,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         }
 
         #endregion
+
     }
+
 }

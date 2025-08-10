@@ -7,7 +7,6 @@ using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
-using Microsoft.OData.Mcp.Core.Tools.Generators;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -258,11 +257,6 @@ namespace Microsoft.Extensions.DependencyInjection
             
             // Register tool factory
             services.TryAddSingleton<IMcpToolFactory, McpToolFactory>();
-            
-            // Register tool generators as concrete implementations
-            services.TryAddSingleton<QueryToolGenerator>();
-            services.TryAddSingleton<CrudToolGenerator>();
-            services.TryAddSingleton<NavigationToolGenerator>();
             
             // Register MCP tools using attribute-based approach
             services.AddSingleton<ODataMcpTools>();

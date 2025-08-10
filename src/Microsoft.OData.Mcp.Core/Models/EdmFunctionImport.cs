@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a function import in an OData entity container.
     /// </summary>
@@ -160,5 +160,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(term);
         }
 
         #endregion
+
     }
+
 }

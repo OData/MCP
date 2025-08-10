@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.OData.Mcp.Core.Tools.Generators
+namespace Microsoft.OData.Mcp.Core.Legacy.Generators
 {
 
     /// <summary>

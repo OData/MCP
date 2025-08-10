@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.OData.Mcp.Core.Legacy;
 using Microsoft.OData.Mcp.Core.Models;
 
-namespace Microsoft.OData.Mcp.Core.Tools.Generators
+namespace Microsoft.OData.Mcp.Core.Legacy.Generators
 {
 
     /// <summary>

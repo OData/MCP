@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Tools;
-using Microsoft.OData.Mcp.Core.Tools.Generators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.Core
@@ -39,9 +38,6 @@ namespace Microsoft.OData.Mcp.Tests.Core
             // Assert
             serviceProvider.GetService<ICsdlMetadataParser>().Should().NotBeNull();
             serviceProvider.GetService<IMcpToolFactory>().Should().NotBeNull();
-            serviceProvider.GetService<QueryToolGenerator>().Should().NotBeNull();
-            serviceProvider.GetService<CrudToolGenerator>().Should().NotBeNull();
-            serviceProvider.GetService<NavigationToolGenerator>().Should().NotBeNull();
         }
 
         /// <summary>

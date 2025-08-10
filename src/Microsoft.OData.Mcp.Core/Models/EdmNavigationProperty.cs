@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a navigation property in an OData entity type.
     /// </summary>
@@ -15,6 +16,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmNavigationProperty
     {
+
         #region Properties
 
         /// <summary>
@@ -229,5 +231,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
         }
 
         #endregion
+
     }
+
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OData.Mcp.Core.Tools;
 
-namespace Microsoft.OData.Mcp.Core.Models
+namespace Microsoft.OData.Mcp.Core.Legacy
 {
     /// <summary>
     /// Represents an MCP (Model Context Protocol) tool that can be executed by AI models.

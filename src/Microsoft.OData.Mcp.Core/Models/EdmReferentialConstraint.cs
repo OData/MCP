@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Models
 {
+
     /// <summary>
     /// Represents a referential constraint that defines the relationship between properties
     /// in a navigation property.
@@ -15,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// </remarks>
     public sealed class EdmReferentialConstraint
     {
+
         #region Properties
 
         /// <summary>
@@ -98,5 +98,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(property);
         }
 
         #endregion
+
     }
+
 }
