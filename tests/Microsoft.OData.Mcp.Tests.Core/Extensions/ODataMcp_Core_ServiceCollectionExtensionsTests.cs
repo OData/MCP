@@ -13,10 +13,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
 {
 
     /// <summary>
-    /// Tests for the ServiceCollectionExtensions class in Core.
+    /// Tests for the <see cref="ODataMcp_Core_ServiceCollectionExtensions"/> class in Core.
     /// </summary>
     [TestClass]
-    public class ServiceCollectionExtensionsTests
+    public class ODataMcp_Core_ServiceCollectionExtensionsTests
     {
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
                 .Build();
 
             // Act
-            services.AddODataMcpServerCore(configuration);
+            services.AddODataMcpCore(configuration);
 
             // Assert
             services.Should().NotBeNull();
@@ -64,7 +64,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
             var services = new ServiceCollection();
 
             // Act
-            services.AddODataMcpServerCore(options =>
+            services.AddODataMcpCore(options =>
             {
                 options.ODataService.BaseUrl = "https://configured.com";
                 options.ODataService.RequestTimeout = TimeSpan.FromMinutes(5);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OData.Mcp.AspNetCore.Routing;
 using Microsoft.OData.Mcp.Core;
+using Microsoft.OData.Mcp.Core.Configuration;
 using Microsoft.OData.Mcp.Core.Routing;
 using Microsoft.OData.Mcp.Core.Services;
 
@@ -61,10 +62,19 @@ namespace Microsoft.Extensions.DependencyInjection
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configureOptions);
 
+            // CRITICAL: Register all core MCP services first
+            // This includes IMcpToolFactory, ICsdlMetadataParser, tool generators, etc.
+            services.AddODataMcpCore(config =>
+            {
+                // AspNetCore scenarios typically don't have a single OData service URL
+                // Each route will have its own model, so we leave BaseUrl empty
+                config.ODataService.BaseUrl = string.Empty;
+            });
+
             // Configure options using the Options pattern
             services.Configure<ODataMcpOptions>(configureOptions);
             
-            // Also register as singleton for backward compatibility
+            // Also register as singleton for backward compatibility and middleware injection
             services.AddSingleton<ODataMcpOptions>(sp =>
             {
                 var options = new ODataMcpOptions();
@@ -72,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return options;
             });
 
-            // Register core routing services
+            // Register AspNetCore-specific routing services
             services.TryAddSingleton<IMcpEndpointRegistry, McpEndpointRegistry>();
             services.TryAddSingleton<IMcpRouteConvention, ODataMcpRouteConvention>();
             

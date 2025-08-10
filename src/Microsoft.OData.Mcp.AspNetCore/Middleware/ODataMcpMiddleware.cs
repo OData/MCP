@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OData.Mcp.Core;
 using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Routing;
 using Microsoft.OData.Mcp.Core.Tools;
@@ -27,7 +28,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
         internal readonly ILogger<ODataMcpMiddleware> _logger;
         internal readonly IMcpEndpointRegistry _endpointRegistry;
         internal readonly IMcpToolFactory _toolFactory;
-        internal readonly AspNetCore.ODataMcpOptions _options;
+        internal readonly ODataMcpOptions _options;
         internal readonly ConcurrentDictionary<string, IEnumerable<McpToolDefinition>> _toolsCache;
 
         #endregion
@@ -47,7 +48,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
             ILogger<ODataMcpMiddleware> logger,
             IMcpEndpointRegistry endpointRegistry,
             IMcpToolFactory toolFactory,
-            AspNetCore.ODataMcpOptions options)
+            ODataMcpOptions options)
         {
             ArgumentNullException.ThrowIfNull(next);
             ArgumentNullException.ThrowIfNull(logger);

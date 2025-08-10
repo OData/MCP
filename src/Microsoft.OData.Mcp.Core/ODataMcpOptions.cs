@@ -10,6 +10,15 @@ namespace Microsoft.OData.Mcp.Core
     {
 
         /// <summary>
+        /// Gets or sets whether to enable MCP endpoints.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> to enable MCP endpoints; otherwise, <c>false</c>.
+        /// Default is <c>true</c>.
+        /// </value>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether to automatically register MCP endpoints 
         /// for all OData routes.
         /// </summary>
@@ -18,6 +27,14 @@ namespace Microsoft.OData.Mcp.Core
         /// Default is <c>true</c>.
         /// </value>
         public bool AutoRegisterRoutes { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the base path for MCP endpoints.
+        /// </summary>
+        /// <value>
+        /// The base path for MCP endpoints. Default is "/mcp".
+        /// </value>
+        public string BasePath { get; set; } = "/mcp";
 
         /// <summary>
         /// Gets or sets the routes to exclude from automatic MCP registration.
@@ -35,6 +52,40 @@ namespace Microsoft.OData.Mcp.Core
         /// Default is <c>false</c> for performance.
         /// </value>
         public bool EnableDynamicModels { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the interval for refreshing dynamic models.
+        /// </summary>
+        /// <value>
+        /// The interval for refreshing dynamic models. Default is 1 hour.
+        /// </value>
+        public TimeSpan ModelRefreshInterval { get; set; } = TimeSpan.FromHours(1);
+
+        /// <summary>
+        /// Gets or sets whether to enable detailed error messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> to enable detailed error messages; otherwise, <c>false</c>.
+        /// Default is <c>false</c>.
+        /// </value>
+        public bool EnableDetailedErrors { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether to auto-discover metadata.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> to auto-discover metadata; otherwise, <c>false</c>.
+        /// Default is <c>true</c>.
+        /// </value>
+        public bool AutoDiscoverMetadata { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the request timeout.
+        /// </summary>
+        /// <value>
+        /// The request timeout. Default is 2 minutes.
+        /// </value>
+        public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// Gets or sets the tool naming pattern.
@@ -61,6 +112,15 @@ namespace Microsoft.OData.Mcp.Core
         /// The duration to cache dynamic content. Default is 5 minutes.
         /// </value>
         public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(5);
+
+        /// <summary>
+        /// Gets or sets whether to enable caching.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> to enable caching; otherwise, <c>false</c>.
+        /// Default is <c>true</c>.
+        /// </value>
+        public bool EnableCaching { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use aggressive caching.

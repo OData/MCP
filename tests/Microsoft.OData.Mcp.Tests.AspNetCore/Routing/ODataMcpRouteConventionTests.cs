@@ -15,7 +15,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Routing
     /// <summary>
     /// Tests for OData MCP route convention using real test servers.
     /// </summary>
-    [Ignore]
+    //[Ignore]
     [TestClass]
     public class ODataMcpRouteConventionTests : AspNetCoreBreakdanceTestBase
     {

@@ -7,8 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OData.Mcp.Tools.Server;
-// using ModelContextProtocol; // Will be added when SDK integration is complete
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Tools.Commands
 {
@@ -28,30 +27,16 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         public string? Url { get; set; }
 
         /// <summary>
-        /// Gets or sets the server port (0 for STDIO mode).
-        /// </summary>
-        [Option("-p|--port", Description = "Server port (0 for STDIO mode, default)")]
-        public int Port { get; set; } = 0;
-
-        /// <summary>
         /// Gets or sets the authentication token.
         /// </summary>
         [Option("-t|--auth-token", Description = "Authentication token for the OData service")]
         public string? AuthToken { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration file path.
-        /// </summary>
-        [Option("-c|--config", Description = "Configuration file path")]
-        public string? ConfigFile { get; set; }
-
-        /// <summary>
         /// Gets or sets whether to enable verbose logging.
         /// </summary>
         [Option("-v|--verbose", Description = "Enable verbose logging")]
         public bool Verbose { get; set; }
-
-        internal IHost? _host;
 
         /// <summary>
         /// Executes the start command.
@@ -76,78 +61,55 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                 }
 
                 // Build configuration
-                var configBuilder = new ConfigurationBuilder();
+                var configuration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["McpServer:ODataService:BaseUrl"] = Url,
+                        ["McpServer:ODataService:Authentication:BearerToken"] = AuthToken,
+                        ["Logging:LogLevel:Default"] = Verbose ? "Debug" : "Information"
+                    })
+                    .Build();
 
-                if (!string.IsNullOrWhiteSpace(ConfigFile))
-                {
-                    configBuilder.AddJsonFile(ConfigFile, optional: false, reloadOnChange: true);
-                }
+                // Create and run host
+                var host = Host.CreateDefaultBuilder()
+                    .ConfigureLogging(logging =>
+                    {
+                        logging.ClearProviders();
+                        // MCP protocol requires all logs go to stderr
+                        logging.AddConsole(options =>
+                        {
+                            options.LogToStandardErrorThreshold = LogLevel.Trace;
+                        });
+                        if (Verbose)
+                        {
+                            logging.SetMinimumLevel(LogLevel.Debug);
+                        }
+                    })
+                    .ConfigureServices((context, services) =>
+                    {
+                        // Register OData services
+                        services.AddODataMcpCore(configuration);
+                        
+                        // Configure MCP server with STDIO transport
+                        services
+                            .AddMcpServer()
+                            .WithODataTools()  // Uses Core's extension method
+                            .WithStdioServerTransport();
+                    })
+                    .Build();
 
-                configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["McpServer:ODataService:BaseUrl"] = Url,
-                    ["McpServer:ODataService:AuthToken"] = AuthToken,
-                    ["McpServer:ServerPort"] = Port.ToString(),
-                    ["Logging:LogLevel:Default"] = Verbose ? "Debug" : "Information"
-                });
-
-                var configuration = configBuilder.Build();
-
-                // Run the appropriate server mode
-                if (Port == 0)
-                {
-                    //RWM: This is the default mode.
-                    await RunSdkStdioServerAsync(configuration);
-                }
-                else
-                {
-                    // HTTP mode - future implementation
-                    Console.Error.WriteLine("HTTP mode not yet implemented. Use port 0 for STDIO mode.");
-                    return 1;
-                }
-
+                await host.RunAsync();
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Fatal error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
                 if (Verbose)
                 {
                     Console.Error.WriteLine(ex.ToString());
                 }
                 return 1;
             }
-        }
-
-        /// <summary>
-        /// Runs the server using the MCP SDK implementation.
-        /// </summary>
-        internal async Task RunSdkStdioServerAsync(IConfiguration configuration)
-        {
-            var builder = Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.Sources.Clear();
-                    config.AddConfiguration(configuration);
-                })
-                .ConfigureServices((context, services) =>
-                {
-                    // Configure MCP server services
-                    McpServerConfiguration.ConfigureMcpServices(services, context.Configuration, Url!, AuthToken);
-
-                    // Add MCP SDK server with OData tools
-                    services.AddODataMcpServer(Url!, AuthToken);
-
-                    // Use STDIO transport
-                    services.WithStdioTransport();
-                });
-
-            _host = builder.Build();
-
-            var logger = _host.Services.GetRequiredService<ILogger<StartCommand>>();
-            logger.LogInformation("Starting OData MCP Server with SDK implementation (STDIO mode)");
-
-            await _host.RunAsync();
         }
 
     }

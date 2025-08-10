@@ -33,7 +33,7 @@ namespace Microsoft.OData.Mcp.Tests.Core
                 .Build();
 
             // Act
-            services.AddODataMcpServerCore(configuration);
+            services.AddODataMcpCore(configuration);
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert
@@ -63,7 +63,7 @@ namespace Microsoft.OData.Mcp.Tests.Core
                 .Build();
 
             // Act
-            services.AddODataMcpServerCore(configuration);
+            services.AddODataMcpCore(configuration);
             var serviceProvider = services.BuildServiceProvider();
             var options = serviceProvider.GetRequiredService<IOptions<McpServerConfiguration>>();
 
