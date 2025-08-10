@@ -12,7 +12,12 @@
       "Bash(find:*)",
       "Bash(mkdir:*)",
       "Bash(ls:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "mcp__odata-server__query_entity_set",
+      "mcp__odata-server__get_entity",
+      "mcp__odata-server__navigate_relationship",
+      "mcp__odata-server__list_products",
+      "mcp__odata-server__shutdown_server"
     ],
     "deny": []
   }

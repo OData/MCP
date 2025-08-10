@@ -1,9 +1,36 @@
 {
   "profiles": {
-    "Microsoft.OData.Northwind.Hosted": {
+    "Northwind": {
       "commandName": "Project",
-      "commandLineArgs": "start https://services.odata.org/V4/Northwind/Northwind.svc/$metadata",
-      "hotReloadEnabled": true
+      "commandLineArgs": "start https://services.odata.org/V4/Northwind/Northwind.svc",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
+    },
+    "TripPin": {
+      "commandName": "Project",
+      "commandLineArgs": "start https://services.odata.org/V4/TripPinServiceRW",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
+    },
+    "TripPin-Verbose": {
+      "commandName": "Project",
+      "commandLineArgs": "start https://services.odata.org/V4/TripPinServiceRW --verbose",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
+    },
+    "Northwind-Verbose": {
+      "commandName": "Project",
+      "commandLineArgs": "start https://services.odata.org/V4/Northwind/Northwind.svc --verbose",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
     }
   }
 }

@@ -223,6 +223,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <param name="entityType">The target entity type.</param>
         /// <param name="inputSchema">The input schema.</param>
         /// <param name="handler">The tool handler.</param>
+        /// <param name="entitySet">The optional entity set name for the entity type.</param>
         /// <returns>A new tool definition for CRUD operations.</returns>
         /// <exception cref="ArgumentException">Thrown when required parameters are null or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="inputSchema"/> or <paramref name="handler"/> is null.</exception>
@@ -232,7 +233,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
             McpToolOperationType operationType,
             string entityType,
             JsonDocument inputSchema,
-            Func<McpToolContext, JsonDocument, Task<McpToolResult>> handler)
+            Func<McpToolContext, JsonDocument, Task<McpToolResult>> handler,
+            string? entitySet = null)
         {
 #if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -270,6 +272,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 Category = "CRUD",
                 OperationType = operationType,
                 TargetEntityType = entityType,
+                TargetEntitySet = entitySet,
                 InputSchema = inputSchema,
                 Handler = handler
             };

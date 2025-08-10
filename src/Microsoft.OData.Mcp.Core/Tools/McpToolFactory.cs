@@ -468,6 +468,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
 
             var inputSchema = GenerateEntityInputSchema(entityType, required: true);
             var requiredScopes = options.GetCombinedScopes(entityType.FullName, McpToolOperationType.Create).ToList();
+            
+            // Find the entity set for this entity type
+            var entitySet = model.EntityContainer?.EntitySets.FirstOrDefault(es => es.EntityType == entityType.FullName);
 
             var tool = McpToolDefinition.CreateCrudTool(
                 toolName,
@@ -475,7 +478,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 McpToolOperationType.Create,
                 entityType.FullName,
                 inputSchema,
-                CreateEntityHandler);
+                CreateEntityHandler,
+                entitySet?.Name);
 
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
@@ -503,6 +507,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
 
             var inputSchema = GenerateKeyInputSchema(entityType);
             var requiredScopes = options.GetCombinedScopes(entityType.FullName, McpToolOperationType.Read).ToList();
+            
+            // Find the entity set for this entity type
+            var entitySet = model.EntityContainer?.EntitySets.FirstOrDefault(es => es.EntityType == entityType.FullName);
 
             var tool = McpToolDefinition.CreateCrudTool(
                 toolName,
@@ -510,7 +517,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 McpToolOperationType.Read,
                 entityType.FullName,
                 inputSchema,
-                ReadEntityHandler);
+                ReadEntityHandler,
+                entitySet?.Name);
 
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
@@ -538,6 +546,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
 
             var inputSchema = GenerateEntityUpdateSchema(entityType);
             var requiredScopes = options.GetCombinedScopes(entityType.FullName, McpToolOperationType.Update).ToList();
+            
+            // Find the entity set for this entity type
+            var entitySet = model.EntityContainer?.EntitySets.FirstOrDefault(es => es.EntityType == entityType.FullName);
 
             var tool = McpToolDefinition.CreateCrudTool(
                 toolName,
@@ -545,7 +556,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 McpToolOperationType.Update,
                 entityType.FullName,
                 inputSchema,
-                UpdateEntityHandler);
+                UpdateEntityHandler,
+                entitySet?.Name);
 
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
@@ -573,6 +585,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
 
             var inputSchema = GenerateKeyInputSchema(entityType);
             var requiredScopes = options.GetCombinedScopes(entityType.FullName, McpToolOperationType.Delete).ToList();
+            
+            // Find the entity set for this entity type
+            var entitySet = model.EntityContainer?.EntitySets.FirstOrDefault(es => es.EntityType == entityType.FullName);
 
             var tool = McpToolDefinition.CreateCrudTool(
                 toolName,
@@ -580,7 +595,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 McpToolOperationType.Delete,
                 entityType.FullName,
                 inputSchema,
-                DeleteEntityHandler);
+                DeleteEntityHandler,
+                entitySet?.Name);
 
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
@@ -708,9 +724,19 @@ namespace Microsoft.OData.Mcp.Core.Tools
         {
             try
             {
-                // Extract entity type from context
+                // Extract entity type and set from context
                 var entityTypeName = context.GetProperty<string>("TargetEntityType");
                 var entitySetName = context.GetProperty<string>("TargetEntitySet");
+                
+                // If no entity set, try to derive it from entity type name
+                if (string.IsNullOrWhiteSpace(entitySetName) && !string.IsNullOrWhiteSpace(entityTypeName))
+                {
+                    // Try plural form - this is a common convention
+                    var typeName = entityTypeName.Split('.').Last();
+                    entitySetName = typeName.EndsWith("y") ? typeName.Substring(0, typeName.Length - 1) + "ies" :
+                                   typeName.EndsWith("s") ? typeName + "es" :
+                                   typeName + "s";
+                }
                 
                 if (string.IsNullOrWhiteSpace(entitySetName))
                 {

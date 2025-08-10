@@ -463,12 +463,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// <returns>The parsed entity container.</returns>
         internal EdmEntityContainer ParseEntityContainer(XElement containerElement, string schemaNamespace)
         {
-            var nameAttr = containerElement.Attribute("Name");
-            if (nameAttr is null)
-            {
-                throw new InvalidOperationException("EntityContainer element missing Name attribute");
-            }
-
+            var nameAttr = containerElement.Attribute("Name") ?? throw new InvalidOperationException("EntityContainer element missing Name attribute");
             var container = new EdmEntityContainer(nameAttr.Value, schemaNamespace)
             {
                 Name = nameAttr.Value,

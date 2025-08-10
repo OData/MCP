@@ -267,6 +267,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register MCP tools using attribute-based approach
             services.AddSingleton<ODataMcpTools>();
             services.AddSingleton<DynamicODataMcpTools>();
+            // SystemMcpTools registration removed temporarily - needs special handling for IHostApplicationLifetime
             
             // Register OData HTTP client
             services.AddODataHttpClient();
