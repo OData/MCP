@@ -56,19 +56,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="property"/> or <paramref name="referencedProperty"/> is null or whitespace.</exception>
         public EdmReferentialConstraint(string property, string referencedProperty)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(property);
+ArgumentException.ThrowIfNullOrWhiteSpace(property);
             ArgumentException.ThrowIfNullOrWhiteSpace(referencedProperty);
-#else
-            if (string.IsNullOrWhiteSpace(property))
-            {
-                throw new ArgumentException("Property name cannot be null or whitespace.", nameof(property));
-            }
-            if (string.IsNullOrWhiteSpace(referencedProperty))
-            {
-                throw new ArgumentException("Referenced property name cannot be null or whitespace.", nameof(referencedProperty));
-            }
-#endif
 
             Property = property;
             ReferencedProperty = referencedProperty;

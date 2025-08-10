@@ -119,14 +119,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="principal"/> is null.</exception>
         public TokenValidationResult(ClaimsPrincipal principal)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(principal);
-#else
-            if (principal is null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(principal);
 
             IsValid = true;
             Principal = principal;
@@ -142,14 +135,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="error"/> is null or whitespace.</exception>
         public TokenValidationResult(string error, string? errorDescription = null, Exception? exception = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(error);
-#else
-            if (string.IsNullOrWhiteSpace(error))
-            {
-                throw new ArgumentException("Error cannot be null or whitespace.", nameof(error));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(error);
 
             IsValid = false;
             Error = error;
@@ -193,14 +179,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddMetadata(string key, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace.", nameof(key));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
             Metadata[key] = value;
         }

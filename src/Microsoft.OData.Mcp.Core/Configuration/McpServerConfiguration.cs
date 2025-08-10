@@ -153,14 +153,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="odataServiceUrl"/> is null or whitespace.</exception>
         public static McpServerConfiguration ForSidecar(string odataServiceUrl)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(odataServiceUrl);
-#else
-            if (string.IsNullOrWhiteSpace(odataServiceUrl))
-            {
-                throw new ArgumentException("OData service URL cannot be null or whitespace.", nameof(odataServiceUrl));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(odataServiceUrl);
 
             return new McpServerConfiguration
             {
@@ -438,14 +431,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(McpServerConfiguration other)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(other);
 
             // Merge all sections
             ServerInfo.MergeWith(other.ServerInfo);

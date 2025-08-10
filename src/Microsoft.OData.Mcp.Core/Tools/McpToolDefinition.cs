@@ -236,34 +236,11 @@ namespace Microsoft.OData.Mcp.Core.Tools
             Func<McpToolContext, JsonDocument, Task<McpToolResult>> handler,
             string? entitySet = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(description);
             ArgumentException.ThrowIfNullOrWhiteSpace(entityType);
             ArgumentNullException.ThrowIfNull(inputSchema);
             ArgumentNullException.ThrowIfNull(handler);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Tool name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                throw new ArgumentException("Tool description cannot be null or whitespace.", nameof(description));
-            }
-            if (string.IsNullOrWhiteSpace(entityType))
-            {
-                throw new ArgumentException("Entity type cannot be null or whitespace.", nameof(entityType));
-            }
-            if (inputSchema is null)
-            {
-                throw new ArgumentNullException(nameof(inputSchema));
-            }
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-#endif
 
             return new McpToolDefinition
             {
@@ -294,29 +271,10 @@ namespace Microsoft.OData.Mcp.Core.Tools
             JsonDocument inputSchema,
             Func<McpToolContext, JsonDocument, Task<McpToolResult>> handler)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(description);
             ArgumentNullException.ThrowIfNull(inputSchema);
             ArgumentNullException.ThrowIfNull(handler);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Tool name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                throw new ArgumentException("Tool description cannot be null or whitespace.", nameof(description));
-            }
-            if (inputSchema is null)
-            {
-                throw new ArgumentNullException(nameof(inputSchema));
-            }
-            if (handler is null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-#endif
 
             return new McpToolDefinition
             {
@@ -341,19 +299,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
         public void AddExample(string title, string description, JsonDocument input, JsonDocument? expectedOutput = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
             ArgumentNullException.ThrowIfNull(input);
-#else
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                throw new ArgumentException("Example title cannot be null or whitespace.", nameof(title));
-            }
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-#endif
 
             Examples.Add(new McpToolExample
             {
@@ -372,14 +319,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddMetadata(string key, object value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             Metadata[key] = value;
         }

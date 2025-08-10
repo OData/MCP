@@ -87,19 +87,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="function"/> is null or whitespace.</exception>
         public EdmFunctionImport(string name, string function)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(function);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Function import name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(function))
-            {
-                throw new ArgumentException("Function name cannot be null or whitespace.", nameof(function));
-            }
-#endif
 
             Name = name;
             Function = function;
@@ -117,19 +106,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="term"/> is null or whitespace.</exception>
         public void AddAnnotation(string term, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(term);
+ArgumentException.ThrowIfNullOrWhiteSpace(term);
             ArgumentNullException.ThrowIfNull(value);
-#else
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                throw new ArgumentException("Annotation term cannot be null or whitespace.", nameof(term));
-            }
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-#endif
 
             Annotations[term] = value;
         }

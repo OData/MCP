@@ -190,19 +190,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="scopes"/> is null.</exception>
         public void SetRequiredScopesForOperation(string operation, IEnumerable<string> scopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(operation);
+ArgumentException.ThrowIfNullOrWhiteSpace(operation);
             ArgumentNullException.ThrowIfNull(scopes);
-#else
-            if (string.IsNullOrWhiteSpace(operation))
-            {
-                throw new ArgumentException("Operation name cannot be null or whitespace.", nameof(operation));
-            }
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-#endif
 
             RequiredScopes[operation] = scopes.ToList();
         }
@@ -216,19 +205,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="scopes"/> is null.</exception>
         public void SetRequiredScopesForTool(string toolName, IEnumerable<string> scopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
+ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
             ArgumentNullException.ThrowIfNull(scopes);
-#else
-            if (string.IsNullOrWhiteSpace(toolName))
-            {
-                throw new ArgumentException("Tool name cannot be null or whitespace.", nameof(toolName));
-            }
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-#endif
 
             ToolScopes[toolName] = scopes.ToList();
         }

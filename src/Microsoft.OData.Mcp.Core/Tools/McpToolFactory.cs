@@ -40,19 +40,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> or <paramref name="httpClientFactory"/> is null.</exception>
         public McpToolFactory(ILogger<McpToolFactory> logger, IHttpClientFactory httpClientFactory)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(logger);
+ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(httpClientFactory);
-#else
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            if (httpClientFactory is null)
-            {
-                throw new ArgumentNullException(nameof(httpClientFactory));
-            }
-#endif
 
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -71,14 +60,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateToolsAsync(EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(model);
-#else
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(model);
 
             options ??= McpToolGenerationOptions.Default();
             
@@ -158,19 +140,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="entityType"/> or <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateEntityToolsAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entityType);
+ArgumentNullException.ThrowIfNull(entityType);
             ArgumentNullException.ThrowIfNull(model);
-#else
-            if (entityType is null)
-            {
-                throw new ArgumentNullException(nameof(entityType));
-            }
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
 
             options ??= McpToolGenerationOptions.Default();
             
@@ -205,19 +176,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="entityType"/> or <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateCrudToolsAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entityType);
+ArgumentNullException.ThrowIfNull(entityType);
             ArgumentNullException.ThrowIfNull(model);
-#else
-            if (entityType is null)
-            {
-                throw new ArgumentNullException(nameof(entityType));
-            }
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
 
             options ??= McpToolGenerationOptions.Default();
 
@@ -263,14 +223,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateQueryToolsAsync(EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(model);
-#else
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(model);
 
             options ??= McpToolGenerationOptions.Default();
 
@@ -296,19 +249,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="entityType"/> or <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateNavigationToolsAsync(EdmEntityType entityType, EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entityType);
+ArgumentNullException.ThrowIfNull(entityType);
             ArgumentNullException.ThrowIfNull(model);
-#else
-            if (entityType is null)
-            {
-                throw new ArgumentNullException(nameof(entityType));
-            }
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
 
             options ??= McpToolGenerationOptions.Default();
 
@@ -336,19 +278,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="entitySet"/> or <paramref name="model"/> is null.</exception>
         public async Task<IEnumerable<McpToolDefinition>> GenerateEntitySetToolsAsync(EdmEntitySet entitySet, EdmModel model, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entitySet);
+ArgumentNullException.ThrowIfNull(entitySet);
             ArgumentNullException.ThrowIfNull(model);
-#else
-            if (entitySet is null)
-            {
-                throw new ArgumentNullException(nameof(entitySet));
-            }
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
 
             options ??= McpToolGenerationOptions.Default();
 
@@ -371,14 +302,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tools"/> is null.</exception>
         public IEnumerable<string> ValidateTools(IEnumerable<McpToolDefinition> tools)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(tools);
-#else
-            if (tools is null)
-            {
-                throw new ArgumentNullException(nameof(tools));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(tools);
 
             var errors = new List<string>();
             var toolNames = new HashSet<string>();
@@ -435,14 +359,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tools"/> is null.</exception>
         public IEnumerable<McpToolDefinition> FilterToolsForUser(IEnumerable<McpToolDefinition> tools, IEnumerable<string> userScopes, IEnumerable<string> userRoles, McpToolGenerationOptions? options = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(tools);
-#else
-            if (tools is null)
-            {
-                throw new ArgumentNullException(nameof(tools));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(tools);
 
             var scopes = userScopes?.ToList() ?? [];
             var roles = userRoles?.ToList() ?? [];

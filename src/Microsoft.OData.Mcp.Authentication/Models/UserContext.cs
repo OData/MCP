@@ -176,14 +176,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="userId"/> is null or whitespace.</exception>
         public UserContext(string userId)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(userId);
-#else
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                throw new ArgumentException("User ID cannot be null or whitespace.", nameof(userId));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(userId);
 
             UserId = userId;
         }
@@ -202,14 +195,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="InvalidOperationException">Thrown when the principal does not contain a subject claim.</exception>
         public static UserContext FromClaimsPrincipal(ClaimsPrincipal principal, string? token = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(principal);
-#else
-            if (principal is null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(principal);
 
             var subjectClaim = principal.FindFirst(ClaimTypes.NameIdentifier) ?? 
                               principal.FindFirst("sub");
@@ -306,14 +292,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredScopes"/> is null.</exception>
         public bool HasAnyScope(IEnumerable<string> requiredScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(requiredScopes);
-#else
-            if (requiredScopes is null)
-            {
-                throw new ArgumentNullException(nameof(requiredScopes));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(requiredScopes);
 
             return requiredScopes.Any(scope => Scopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
         }
@@ -326,14 +305,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredScopes"/> is null.</exception>
         public bool HasAllScopes(IEnumerable<string> requiredScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(requiredScopes);
-#else
-            if (requiredScopes is null)
-            {
-                throw new ArgumentNullException(nameof(requiredScopes));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(requiredScopes);
 
             return requiredScopes.All(scope => Scopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
         }
@@ -346,14 +318,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredRoles"/> is null.</exception>
         public bool HasAnyRole(IEnumerable<string> requiredRoles)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(requiredRoles);
-#else
-            if (requiredRoles is null)
-            {
-                throw new ArgumentNullException(nameof(requiredRoles));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(requiredRoles);
 
             return requiredRoles.Any(role => Roles.Contains(role, StringComparer.OrdinalIgnoreCase));
         }

@@ -148,19 +148,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
         public McpToolExample(string title, JsonDocument input)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
             ArgumentNullException.ThrowIfNull(input);
-#else
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                throw new ArgumentException("Example title cannot be null or whitespace.", nameof(title));
-            }
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-#endif
 
             Title = title;
             Input = input;
@@ -181,19 +170,8 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
         public static McpToolExample Create(string title, object input, string? description = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
             ArgumentNullException.ThrowIfNull(input);
-#else
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                throw new ArgumentException("Example title cannot be null or whitespace.", nameof(title));
-            }
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-#endif
 
             var json = JsonSerializer.Serialize(input);
             var document = JsonDocument.Parse(json);
@@ -218,24 +196,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> or <paramref name="expectedOutput"/> is null.</exception>
         public static McpToolExample CreateWithOutput(string title, object input, object expectedOutput, string? description = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
             ArgumentNullException.ThrowIfNull(input);
             ArgumentNullException.ThrowIfNull(expectedOutput);
-#else
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                throw new ArgumentException("Example title cannot be null or whitespace.", nameof(title));
-            }
-            if (input is null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-            if (expectedOutput is null)
-            {
-                throw new ArgumentNullException(nameof(expectedOutput));
-            }
-#endif
 
             var inputJson = JsonSerializer.Serialize(input);
             var inputDocument = JsonDocument.Parse(inputJson);
@@ -259,14 +222,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="tag"/> is null or whitespace.</exception>
         public void AddTag(string tag)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(tag);
-#else
-            if (string.IsNullOrWhiteSpace(tag))
-            {
-                throw new ArgumentException("Tag cannot be null or whitespace.", nameof(tag));
-            }
-#endif
 
             if (!Tags.Contains(tag, StringComparer.OrdinalIgnoreCase))
             {
@@ -281,14 +237,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="tags"/> is null.</exception>
         public void AddTags(params string[] tags)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(tags);
-#else
-            if (tags is null)
-            {
-                throw new ArgumentNullException(nameof(tags));
-            }
-#endif
 
             foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
             {
@@ -303,14 +252,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="prerequisite"/> is null or whitespace.</exception>
         public void AddPrerequisite(string prerequisite)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(prerequisite);
-#else
-            if (string.IsNullOrWhiteSpace(prerequisite))
-            {
-                throw new ArgumentException("Prerequisite cannot be null or whitespace.", nameof(prerequisite));
-            }
-#endif
 
             if (!Prerequisites.Contains(prerequisite, StringComparer.OrdinalIgnoreCase))
             {

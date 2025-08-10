@@ -65,19 +65,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="path"/> or <paramref name="target"/> is null or whitespace.</exception>
         public EdmNavigationPropertyBinding(string path, string target)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+ArgumentException.ThrowIfNullOrWhiteSpace(path);
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
-#else
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException("Navigation property path cannot be null or whitespace.", nameof(path));
-            }
-            if (string.IsNullOrWhiteSpace(target))
-            {
-                throw new ArgumentException("Target entity set name cannot be null or whitespace.", nameof(target));
-            }
-#endif
 
             Path = path;
             Target = target;

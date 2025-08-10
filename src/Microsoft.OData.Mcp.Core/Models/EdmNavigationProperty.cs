@@ -182,19 +182,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="type"/> is null or whitespace.</exception>
         public EdmNavigationProperty(string name, string type)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(type);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Navigation property name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(type))
-            {
-                throw new ArgumentException("Navigation property type cannot be null or whitespace.", nameof(type));
-            }
-#endif
 
             Name = name;
             Type = type;

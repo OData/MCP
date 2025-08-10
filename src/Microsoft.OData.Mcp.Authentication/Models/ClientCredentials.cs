@@ -97,19 +97,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="clientId"/> or <paramref name="clientSecret"/> is null or whitespace.</exception>
         public ClientCredentials(string clientId, string clientSecret)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
+ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
             ArgumentException.ThrowIfNullOrWhiteSpace(clientSecret);
-#else
-            if (string.IsNullOrWhiteSpace(clientId))
-            {
-                throw new ArgumentException("Client ID cannot be null or whitespace.", nameof(clientId));
-            }
-            if (string.IsNullOrWhiteSpace(clientSecret))
-            {
-                throw new ArgumentException("Client secret cannot be null or whitespace.", nameof(clientSecret));
-            }
-#endif
 
             ClientId = clientId;
             ClientSecret = clientSecret;
@@ -125,19 +114,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="certificate"/> is null.</exception>
         public ClientCredentials(string clientId, ClientCertificate certificate)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
+ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
             ArgumentNullException.ThrowIfNull(certificate);
-#else
-            if (string.IsNullOrWhiteSpace(clientId))
-            {
-                throw new ArgumentException("Client ID cannot be null or whitespace.", nameof(clientId));
-            }
-            if (certificate is null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-#endif
 
             ClientId = clientId;
             Certificate = certificate;

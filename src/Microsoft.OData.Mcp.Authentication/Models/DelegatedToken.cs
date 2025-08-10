@@ -180,19 +180,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="accessToken"/> or <paramref name="targetServiceId"/> is null or whitespace.</exception>
         public DelegatedToken(string accessToken, string targetServiceId)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(accessToken);
+ArgumentException.ThrowIfNullOrWhiteSpace(accessToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(targetServiceId);
-#else
-            if (string.IsNullOrWhiteSpace(accessToken))
-            {
-                throw new ArgumentException("Access token cannot be null or whitespace.", nameof(accessToken));
-            }
-            if (string.IsNullOrWhiteSpace(targetServiceId))
-            {
-                throw new ArgumentException("Target service ID cannot be null or whitespace.", nameof(targetServiceId));
-            }
-#endif
 
             AccessToken = accessToken;
             TargetServiceId = targetServiceId;
@@ -211,19 +200,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="originalToken"/> or <paramref name="targetServiceId"/> is null or whitespace.</exception>
         public static DelegatedToken CreatePassThrough(string originalToken, string targetServiceId)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(originalToken);
+ArgumentException.ThrowIfNullOrWhiteSpace(originalToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(targetServiceId);
-#else
-            if (string.IsNullOrWhiteSpace(originalToken))
-            {
-                throw new ArgumentException("Original token cannot be null or whitespace.", nameof(originalToken));
-            }
-            if (string.IsNullOrWhiteSpace(targetServiceId))
-            {
-                throw new ArgumentException("Target service ID cannot be null or whitespace.", nameof(targetServiceId));
-            }
-#endif
 
             return new DelegatedToken(originalToken, targetServiceId)
             {
@@ -244,19 +222,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="exchangedToken"/> or <paramref name="targetServiceId"/> is null or whitespace.</exception>
         public static DelegatedToken CreateFromExchange(string exchangedToken, string targetServiceId, string? originalToken = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(exchangedToken);
+ArgumentException.ThrowIfNullOrWhiteSpace(exchangedToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(targetServiceId);
-#else
-            if (string.IsNullOrWhiteSpace(exchangedToken))
-            {
-                throw new ArgumentException("Exchanged token cannot be null or whitespace.", nameof(exchangedToken));
-            }
-            if (string.IsNullOrWhiteSpace(targetServiceId))
-            {
-                throw new ArgumentException("Target service ID cannot be null or whitespace.", nameof(targetServiceId));
-            }
-#endif
 
             return new DelegatedToken(exchangedToken, targetServiceId)
             {
@@ -277,19 +244,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="onBehalfOfToken"/> or <paramref name="targetServiceId"/> is null or whitespace.</exception>
         public static DelegatedToken CreateFromOnBehalfOf(string onBehalfOfToken, string targetServiceId, string? originalToken = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(onBehalfOfToken);
+ArgumentException.ThrowIfNullOrWhiteSpace(onBehalfOfToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(targetServiceId);
-#else
-            if (string.IsNullOrWhiteSpace(onBehalfOfToken))
-            {
-                throw new ArgumentException("On-behalf-of token cannot be null or whitespace.", nameof(onBehalfOfToken));
-            }
-            if (string.IsNullOrWhiteSpace(targetServiceId))
-            {
-                throw new ArgumentException("Target service ID cannot be null or whitespace.", nameof(targetServiceId));
-            }
-#endif
 
             return new DelegatedToken(onBehalfOfToken, targetServiceId)
             {
@@ -308,14 +264,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void AddMetadata(string key, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Metadata key cannot be null or whitespace.", nameof(key));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
             Metadata[key] = value;
         }
@@ -369,14 +318,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <returns>A new delegated token instance with updated values.</returns>
         public DelegatedToken WithUpdatedToken(string newAccessToken, DateTime? newExpiresAt = null, string? newRefreshToken = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(newAccessToken);
-#else
-            if (string.IsNullOrWhiteSpace(newAccessToken))
-            {
-                throw new ArgumentException("New access token cannot be null or whitespace.", nameof(newAccessToken));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(newAccessToken);
 
             return new DelegatedToken(newAccessToken, TargetServiceId)
             {

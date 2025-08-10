@@ -123,19 +123,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="entityType"/> is null or whitespace.</exception>
         public EdmEntitySet(string name, string entityType)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(entityType);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Entity set name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(entityType))
-            {
-                throw new ArgumentException("Entity type cannot be null or whitespace.", nameof(entityType));
-            }
-#endif
 
             Name = name;
             EntityType = entityType;
@@ -164,19 +153,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="navigationPropertyPath"/> or <paramref name="target"/> is null or whitespace.</exception>
         public void AddNavigationPropertyBinding(string navigationPropertyPath, string target)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(navigationPropertyPath);
+ArgumentException.ThrowIfNullOrWhiteSpace(navigationPropertyPath);
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
-#else
-            if (string.IsNullOrWhiteSpace(navigationPropertyPath))
-            {
-                throw new ArgumentException("Navigation property path cannot be null or whitespace.", nameof(navigationPropertyPath));
-            }
-            if (string.IsNullOrWhiteSpace(target))
-            {
-                throw new ArgumentException("Target cannot be null or whitespace.", nameof(target));
-            }
-#endif
 
             var existing = GetNavigationPropertyBinding(navigationPropertyPath);
             if (existing is not null)
@@ -216,19 +194,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="term"/> is null or whitespace.</exception>
         public void AddAnnotation(string term, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(term);
+ArgumentException.ThrowIfNullOrWhiteSpace(term);
             ArgumentNullException.ThrowIfNull(value);
-#else
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                throw new ArgumentException("Annotation term cannot be null or whitespace.", nameof(term));
-            }
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-#endif
 
             Annotations[term] = value;
         }

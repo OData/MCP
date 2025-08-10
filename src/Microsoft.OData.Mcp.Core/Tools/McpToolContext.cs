@@ -142,14 +142,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
         public McpToolContext(EdmModel model)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(model);
-#else
-            if (model is null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-#endif
 
             Model = model;
         }
@@ -279,14 +272,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or whitespace.</exception>
         public void SetProperty(string key, object value)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(key);
-#else
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Property key cannot be null or whitespace.", nameof(key));
-            }
-#endif
 
             Properties[key] = value;
         }

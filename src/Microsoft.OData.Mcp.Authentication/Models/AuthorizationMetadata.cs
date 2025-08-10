@@ -212,14 +212,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="requiredScopes"/> is null.</exception>
         public bool HasAllScopes(IEnumerable<string> requiredScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(requiredScopes);
-#else
-            if (requiredScopes is null)
-            {
-                throw new ArgumentNullException(nameof(requiredScopes));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(requiredScopes);
 
             return requiredScopes.All(scope => Scopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
         }

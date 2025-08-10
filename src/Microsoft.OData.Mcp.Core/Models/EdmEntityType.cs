@@ -164,19 +164,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="namespace"/> is null or whitespace.</exception>
         public EdmEntityType(string name, string @namespace)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(@namespace);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Entity type name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(@namespace))
-            {
-                throw new ArgumentException("Entity type namespace cannot be null or whitespace.", nameof(@namespace));
-            }
-#endif
 
             Name = name;
             Namespace = @namespace;

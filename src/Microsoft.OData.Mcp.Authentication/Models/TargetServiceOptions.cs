@@ -144,19 +144,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="serviceId"/> or <paramref name="baseUrl"/> is null or whitespace.</exception>
         public TargetServiceOptions(string serviceId, string baseUrl)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(serviceId);
+ArgumentException.ThrowIfNullOrWhiteSpace(serviceId);
             ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
-#else
-            if (string.IsNullOrWhiteSpace(serviceId))
-            {
-                throw new ArgumentException("Service ID cannot be null or whitespace.", nameof(serviceId));
-            }
-            if (string.IsNullOrWhiteSpace(baseUrl))
-            {
-                throw new ArgumentException("Base URL cannot be null or whitespace.", nameof(baseUrl));
-            }
-#endif
 
             ServiceId = serviceId;
             BaseUrl = baseUrl;
@@ -188,14 +177,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <returns><c>true</c> if the URI matches this service; otherwise, <c>false</c>.</returns>
         public bool MatchesUrl(Uri uri)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(uri);
-#else
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(uri);
 
             return MatchesUrl(uri.ToString());
         }

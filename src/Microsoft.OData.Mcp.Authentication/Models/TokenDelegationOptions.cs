@@ -146,14 +146,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="targetService"/> is null.</exception>
         public void AddOrUpdateTargetService(TargetServiceOptions targetService)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(targetService);
-#else
-            if (targetService is null)
-            {
-                throw new ArgumentNullException(nameof(targetService));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(targetService);
 
             var existing = GetTargetService(targetService.ServiceId);
             if (existing is not null)

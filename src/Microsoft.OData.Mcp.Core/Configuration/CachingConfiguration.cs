@@ -394,14 +394,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(CachingConfiguration other)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
 
             Enabled = other.Enabled;
             ProviderType = other.ProviderType;

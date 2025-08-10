@@ -45,19 +45,8 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> or <paramref name="logger"/> is null.</exception>
         public TokenValidationService(IOptions<McpAuthenticationOptions> options, ILogger<TokenValidationService> logger)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(options);
+ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(logger);
-#else
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-#endif
 
             _options = options.Value;
             _logger = logger;
@@ -92,14 +81,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>A task that represents the asynchronous validation operation. The task result contains the claims principal if the token is valid, or null if invalid.</returns>
         public async Task<ClaimsPrincipal?> ValidateTokenAsync(string token, CancellationToken cancellationToken = default)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(token);
-#else
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new ArgumentException("Token cannot be null or whitespace.", nameof(token));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
             try
             {
@@ -122,19 +104,8 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>A task that represents the asynchronous validation operation. The task result contains the validation result.</returns>
         public async Task<Models.TokenValidationResult> ValidateTokenAsync(string token, Dictionary<string, object> validationParameters, CancellationToken cancellationToken = default)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(token);
+ArgumentException.ThrowIfNullOrWhiteSpace(token);
             ArgumentNullException.ThrowIfNull(validationParameters);
-#else
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new ArgumentException("Token cannot be null or whitespace.", nameof(token));
-            }
-            if (validationParameters is null)
-            {
-                throw new ArgumentNullException(nameof(validationParameters));
-            }
-#endif
 
             try
             {
@@ -224,14 +195,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>The user context containing identity and authorization information.</returns>
         public UserContext ExtractUserContext(ClaimsPrincipal principal)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(principal);
-#else
-            if (principal is null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(principal);
 
             try
             {
@@ -252,19 +216,8 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns><c>true</c> if the user has at least one of the required scopes; otherwise, <c>false</c>.</returns>
         public bool HasRequiredScopes(UserContext userContext, IEnumerable<string> requiredScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(userContext);
+ArgumentNullException.ThrowIfNull(userContext);
             ArgumentNullException.ThrowIfNull(requiredScopes);
-#else
-            if (userContext is null)
-            {
-                throw new ArgumentNullException(nameof(userContext));
-            }
-            if (requiredScopes is null)
-            {
-                throw new ArgumentNullException(nameof(requiredScopes));
-            }
-#endif
 
             return userContext.HasAnyScope(requiredScopes);
         }
@@ -276,14 +229,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>A task that represents the asynchronous operation. The task result contains the authorization metadata.</returns>
         public async Task<AuthorizationMetadata> GetAuthorizationMetadataAsync(string token)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(token);
-#else
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new ArgumentException("Token cannot be null or whitespace.", nameof(token));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
             try
             {
@@ -310,14 +256,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns><c>true</c> if the token is expired; otherwise, <c>false</c>.</returns>
         public bool IsTokenExpired(ClaimsPrincipal principal)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(principal);
-#else
-            if (principal is null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(principal);
 
             var expClaim = principal.FindFirst("exp");
             if (expClaim is null || !long.TryParse(expClaim.Value, out var exp))
@@ -336,14 +275,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>The remaining time before the token expires, or null if the token has no expiration.</returns>
         public TimeSpan? GetTokenLifetime(ClaimsPrincipal principal)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(principal);
-#else
-            if (principal is null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(principal);
 
             var expClaim = principal.FindFirst("exp");
             if (expClaim is null || !long.TryParse(expClaim.Value, out var exp))

@@ -205,14 +205,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <returns><c>true</c> if the exception should trigger a retry; otherwise, <c>false</c>.</returns>
         public bool ShouldRetry(Exception exception)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(exception);
-#else
-            if (exception is null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(exception);
 
             var exceptionType = exception.GetType().FullName;
             return exceptionType is not null && RetryableExceptionTypes.Contains(exceptionType);

@@ -150,19 +150,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="namespace"/> is null or whitespace.</exception>
         public EdmEntityContainer(string name, string @namespace)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+ArgumentException.ThrowIfNullOrWhiteSpace(name);
             ArgumentException.ThrowIfNullOrWhiteSpace(@namespace);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Entity container name cannot be null or whitespace.", nameof(name));
-            }
-            if (string.IsNullOrWhiteSpace(@namespace))
-            {
-                throw new ArgumentException("Entity container namespace cannot be null or whitespace.", nameof(@namespace));
-            }
-#endif
 
             Name = name;
             Namespace = @namespace;
@@ -220,14 +209,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="InvalidOperationException">Thrown when an entity set with the same name already exists.</exception>
         public void AddEntitySet(EdmEntitySet entitySet)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entitySet);
-#else
-            if (entitySet is null)
-            {
-                throw new ArgumentNullException(nameof(entitySet));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(entitySet);
 
             if (GetEntitySet(entitySet.Name) is not null)
             {
@@ -245,14 +227,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="InvalidOperationException">Thrown when a singleton with the same name already exists.</exception>
         public void AddSingleton(EdmSingleton singleton)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(singleton);
-#else
-            if (singleton is null)
-            {
-                throw new ArgumentNullException(nameof(singleton));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(singleton);
 
             if (GetSingleton(singleton.Name) is not null)
             {
@@ -270,19 +245,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="term"/> is null or whitespace.</exception>
         public void AddAnnotation(string term, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(term);
+ArgumentException.ThrowIfNullOrWhiteSpace(term);
             ArgumentNullException.ThrowIfNull(value);
-#else
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                throw new ArgumentException("Annotation term cannot be null or whitespace.", nameof(term));
-            }
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-#endif
 
             Annotations[term] = value;
         }

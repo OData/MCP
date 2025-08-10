@@ -107,14 +107,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="allOperationsScopes"/> is null.</exception>
         public EntityScopeRequirements(IEnumerable<string> allOperationsScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(allOperationsScopes);
-#else
-            if (allOperationsScopes is null)
-            {
-                throw new ArgumentNullException(nameof(allOperationsScopes));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(allOperationsScopes);
 
             var scopes = allOperationsScopes.ToList();
             ReadScopes = new List<string>(scopes);
@@ -133,19 +126,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="readScopes"/> or <paramref name="writeScopes"/> is null.</exception>
         public EntityScopeRequirements(IEnumerable<string> readScopes, IEnumerable<string> writeScopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(readScopes);
+ArgumentNullException.ThrowIfNull(readScopes);
             ArgumentNullException.ThrowIfNull(writeScopes);
-#else
-            if (readScopes is null)
-            {
-                throw new ArgumentNullException(nameof(readScopes));
-            }
-            if (writeScopes is null)
-            {
-                throw new ArgumentNullException(nameof(writeScopes));
-            }
-#endif
 
             var readScopesList = readScopes.ToList();
             var writeScopesList = writeScopes.ToList();
@@ -196,19 +178,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="scopes"/> is null.</exception>
         public void SetScopesForOperation(string operation, IEnumerable<string> scopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(operation);
+ArgumentException.ThrowIfNullOrWhiteSpace(operation);
             ArgumentNullException.ThrowIfNull(scopes);
-#else
-            if (string.IsNullOrWhiteSpace(operation))
-            {
-                throw new ArgumentException("Operation name cannot be null or whitespace.", nameof(operation));
-            }
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-#endif
 
             var scopesList = scopes.ToList();
 
@@ -247,19 +218,8 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="scopes"/> is null.</exception>
         public void AddCustomOperation(string operationName, IEnumerable<string> scopes)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
+ArgumentException.ThrowIfNullOrWhiteSpace(operationName);
             ArgumentNullException.ThrowIfNull(scopes);
-#else
-            if (string.IsNullOrWhiteSpace(operationName))
-            {
-                throw new ArgumentException("Operation name cannot be null or whitespace.", nameof(operationName));
-            }
-            if (scopes is null)
-            {
-                throw new ArgumentNullException(nameof(scopes));
-            }
-#endif
 
             CustomOperationScopes[operationName] = scopes.ToList();
         }

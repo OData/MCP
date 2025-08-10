@@ -316,14 +316,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="flagName"/> is null or whitespace.</exception>
         public void SetCustomFlag(string flagName, bool enabled)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(flagName);
-#else
-            if (string.IsNullOrWhiteSpace(flagName))
-            {
-                throw new ArgumentException("Flag name cannot be null or whitespace.", nameof(flagName));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(flagName);
 
             CustomFlags[flagName] = enabled;
         }
@@ -346,14 +339,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="flagName"/> is null or whitespace.</exception>
         public void AddFlagMetadata(string flagName, object metadata)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(flagName);
-#else
-            if (string.IsNullOrWhiteSpace(flagName))
-            {
-                throw new ArgumentException("Flag name cannot be null or whitespace.", nameof(flagName));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(flagName);
 
             FlagMetadata[flagName] = metadata;
         }
@@ -506,14 +492,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(FeatureFlagsConfiguration other)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(other);
 
             EnableDevelopmentEndpoints = other.EnableDevelopmentEndpoints;
             EnableExperimentalFeatures = other.EnableExperimentalFeatures;

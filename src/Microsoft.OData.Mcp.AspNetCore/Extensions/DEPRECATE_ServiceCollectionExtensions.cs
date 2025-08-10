@@ -31,19 +31,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configuration"/> is null.</exception>
         public static IServiceCollection AddODataMcpServer(this IServiceCollection services, IConfiguration configuration)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-#endif
 
             // Configure authentication options
             services.Configure<McpAuthenticationOptions>(configuration.GetSection("Authentication"));
@@ -71,19 +60,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureOptions"/> is null.</exception>
         public static IServiceCollection AddODataMcpServer(this IServiceCollection services, Action<McpAuthenticationOptions> configureOptions)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configureOptions);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (configureOptions is null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-#endif
 
             // Configure authentication options
             services.Configure(configureOptions);
@@ -111,19 +89,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configuration"/> is null.</exception>
         public static IServiceCollection AddODataMcpAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-#endif
 
             var authOptions = new McpAuthenticationOptions();
             configuration.GetSection("Authentication").Bind(authOptions);
@@ -140,19 +107,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="authOptions"/> is null.</exception>
         public static IServiceCollection AddODataMcpAuthentication(this IServiceCollection services, McpAuthenticationOptions authOptions)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(authOptions);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (authOptions is null)
-            {
-                throw new ArgumentNullException(nameof(authOptions));
-            }
-#endif
 
             if (!authOptions.Enabled)
             {
@@ -197,19 +153,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentException">Thrown when <paramref name="policyName"/> is null or whitespace.</exception>
         public static IServiceCollection AddODataMcpCors(this IServiceCollection services, string policyName, Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>? configurePolicy = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
             ArgumentException.ThrowIfNullOrWhiteSpace(policyName);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (string.IsNullOrWhiteSpace(policyName))
-            {
-                throw new ArgumentException("Policy name cannot be null or whitespace.", nameof(policyName));
-            }
-#endif
 
             services.AddCors(options =>
             {
@@ -240,14 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
         public static IServiceCollection AddODataMcpHealthChecks(this IServiceCollection services)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(services);
-#else
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-#endif
 
             services.AddHealthChecks()
                 .AddCheck<McpServerHealthCheck>("mcp_server")

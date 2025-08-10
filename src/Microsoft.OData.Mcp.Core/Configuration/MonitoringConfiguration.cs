@@ -342,14 +342,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is null or whitespace.</exception>
         public void AddCustomMetric(string name, MetricType type, string description, string? unit = null)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-#else
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Metric name cannot be null or whitespace.", nameof(name));
-            }
-#endif
 
             CustomMetrics.Add(new MetricDefinition
             {
@@ -368,14 +361,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentException">Thrown when <paramref name="category"/> is null or whitespace.</exception>
         public void AddLogFilter(string category, string level)
         {
-#if NET8_0_OR_GREATER
             ArgumentException.ThrowIfNullOrWhiteSpace(category);
-#else
-            if (string.IsNullOrWhiteSpace(category))
-            {
-                throw new ArgumentException("Category cannot be null or whitespace.", nameof(category));
-            }
-#endif
 
             LogFilters.Add(new LogFilter
             {
@@ -419,14 +405,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public void MergeWith(MonitoringConfiguration other)
         {
-#if NET8_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(other);
-#else
-            if (other is null)
-            {
-                throw new ArgumentNullException(nameof(other));
-            }
-#endif
 
             if (!string.IsNullOrWhiteSpace(other.LogLevel)) LogLevel = other.LogLevel;
             

@@ -49,19 +49,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.HealthChecks
             ITokenValidationService? tokenValidationService = null,
             IHttpClientFactory? httpClientFactory = null)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(authOptions);
+ArgumentNullException.ThrowIfNull(authOptions);
             ArgumentNullException.ThrowIfNull(logger);
-#else
-            if (authOptions is null)
-            {
-                throw new ArgumentNullException(nameof(authOptions));
-            }
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-#endif
 
             _authOptions = authOptions.Value;
             _tokenValidationService = tokenValidationService;

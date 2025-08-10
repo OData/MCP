@@ -56,15 +56,9 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
             NavigationToolGenerationOptions options,
             CancellationToken cancellationToken = default)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entitySet);
+ArgumentNullException.ThrowIfNull(entitySet);
             ArgumentNullException.ThrowIfNull(entityType);
             ArgumentNullException.ThrowIfNull(options);
-#else
-            if (entitySet is null) throw new ArgumentNullException(nameof(entitySet));
-            if (entityType is null) throw new ArgumentNullException(nameof(entityType));
-            if (options is null) throw new ArgumentNullException(nameof(options));
-#endif
 
             _logger.LogDebug("Generating navigation tools for entity set {EntitySet} with type {EntityType}",
                 entitySet.Name, entityType.Name);

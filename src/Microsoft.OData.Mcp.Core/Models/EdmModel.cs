@@ -168,14 +168,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="version"/> is null or whitespace.</exception>
         public EdmModel(string version)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(version);
-#else
-            if (string.IsNullOrWhiteSpace(version))
-            {
-                throw new ArgumentException("Model version cannot be null or whitespace.", nameof(version));
-            }
-#endif
+ArgumentException.ThrowIfNullOrWhiteSpace(version);
 
             Version = version;
         }
@@ -281,14 +274,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="InvalidOperationException">Thrown when an entity type with the same full name already exists.</exception>
         public void AddEntityType(EdmEntityType entityType)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entityType);
-#else
-            if (entityType is null)
-            {
-                throw new ArgumentNullException(nameof(entityType));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(entityType);
 
             if (GetEntityType(entityType.FullName) is not null)
             {
@@ -310,14 +296,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="InvalidOperationException">Thrown when a complex type with the same full name already exists.</exception>
         public void AddComplexType(EdmComplexType complexType)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(complexType);
-#else
-            if (complexType is null)
-            {
-                throw new ArgumentNullException(nameof(complexType));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(complexType);
 
             if (GetComplexType(complexType.FullName) is not null)
             {
@@ -339,14 +318,7 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="InvalidOperationException">Thrown when an entity container with the same full name already exists.</exception>
         public void AddEntityContainer(EdmEntityContainer entityContainer)
         {
-#if NET8_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(entityContainer);
-#else
-            if (entityContainer is null)
-            {
-                throw new ArgumentNullException(nameof(entityContainer));
-            }
-#endif
+ArgumentNullException.ThrowIfNull(entityContainer);
 
             if (GetEntityContainer(entityContainer.FullName) is not null)
             {
@@ -368,19 +340,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="term"/> is null or whitespace.</exception>
         public void AddAnnotation(string term, object value)
         {
-#if NET8_0_OR_GREATER
-            ArgumentException.ThrowIfNullOrWhiteSpace(term);
+ArgumentException.ThrowIfNullOrWhiteSpace(term);
             ArgumentNullException.ThrowIfNull(value);
-#else
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                throw new ArgumentException("Annotation term cannot be null or whitespace.", nameof(term));
-            }
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-#endif
 
             Annotations[term] = value;
         }
