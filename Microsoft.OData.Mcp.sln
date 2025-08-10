@@ -27,13 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.OData.Mcp.Tests.S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{089100B1-113F-4E66-888A-E83F3999EAFD}"
 	ProjectSection(SolutionItems) = preProject
-		Architecture_Plan.md = Architecture_Plan.md
 		CLAUDE.md = CLAUDE.md
 		Directory.Build.props = Directory.Build.props
 		global.json = global.json
-		IMPLEMENTATION_PLAN.md = IMPLEMENTATION_PLAN.md
 		README.md = README.md
-		TEST_FIX_PLAN.md = TEST_FIX_PLAN.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.OData.Mcp.Tests.Core", "tests\Microsoft.OData.Mcp.Tests.Core\Microsoft.OData.Mcp.Tests.Core.csproj", "{310A83AE-4268-9993-F39B-EC296A559F8F}"
