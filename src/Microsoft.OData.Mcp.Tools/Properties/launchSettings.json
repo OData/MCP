@@ -31,6 +31,14 @@
         "DOTNET_ENVIRONMENT": "Development"
       },
       "hotReloadEnabled": false
+    },
+    "Add-Wizard": {
+      "commandName": "Project",
+      "commandLineArgs": "add",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
     }
   }
 }

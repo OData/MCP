@@ -6,18 +6,14 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:modelcontextprotocol.github.io)",
+      "WebFetch(domain:docs.anthropic.com)",
       "Bash(cp:*)",
       "Bash(dir)",
       "Bash(dotnet:*)",
       "Bash(find:*)",
       "Bash(mkdir:*)",
       "Bash(ls:*)",
-      "Bash(mv:*)",
-      "mcp__odata-server__query_entity_set",
-      "mcp__odata-server__get_entity",
-      "mcp__odata-server__navigate_relationship",
-      "mcp__odata-server__list_products",
-      "mcp__odata-server__shutdown_server"
+      "Bash(mv:*)"
     ],
     "deny": []
   }

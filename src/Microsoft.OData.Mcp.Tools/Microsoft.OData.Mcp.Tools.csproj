@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -16,7 +16,7 @@
         <!-- Tool metadata for dotnet tool -->
         <PackAsTool>true</PackAsTool>
         <PackageType>McpServer</PackageType>
-        <ToolCommandName>odata-mcp</ToolCommandName>
+        <ToolCommandName>dotnet-odata-mcp</ToolCommandName>
 
         <!-- Package metadata -->
         <PackageId>Microsoft.OData.Mcp.Tools</PackageId>

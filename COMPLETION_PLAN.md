@@ -204,11 +204,33 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - ✅ Navigation (Customers('ALFKI')/Orders returns 6 orders)
 - ✅ Complex combined queries work flawlessly
 
-### 6.3 Test Write Operations (Expected to Fail - Read-Only Service)
-- [ ] Attempt create product (should fail gracefully)
-- [ ] Attempt update product (should fail gracefully)
-- [ ] Attempt delete product (should fail gracefully)
-- [ ] Ensure failures are handled properly
+### 6.3 Test Write Operations (Expected to Fail - Read-Only Service) ✅ COMPLETED!
+- [x] Attempt create product (should fail gracefully) - **Returns "Forbidden" as expected**
+- [x] Attempt update product (should fail gracefully) - **Returns "Forbidden" as expected**
+- [x] Attempt delete product (should fail gracefully) - **Returns "Forbidden" as expected**
+- [x] Ensure failures are handled properly - **All operations return appropriate error messages**
+
+### 6.7 Fix Entity Set Error in CRUD Tools ✅ COMPLETED!
+- [x] Fixed "Entity set name not found in context" error in all CRUD tools
+- [x] Updated McpToolDefinition.CreateCrudTool to accept optional entitySet parameter
+- [x] Modified McpToolFactory to find and pass entity set for all CRUD operations
+- [x] Added fallback logic in CreateEntityHandler to derive entity set from entity type
+- [x] Tested all CRUD operations work correctly with entity set information
+
+### 6.8 Generic CRUD Tools Issue Identified
+- [x] Discovered that generic tools (create_entity, update_entity, delete_entity) are not exposed via MCP
+- [x] Confirmed entity-specific tools work correctly (create_product, update_customer, etc.)
+- [x] Decision: Defer fixing generic tools to end of project (not critical for functionality)
+
+### 6.9 Interactive Add Command ✅ COMPLETED!
+- [x] Created `odata-mcp add` interactive wizard command
+- [x] Prompts for URL, name, authentication, and verbose logging
+- [x] Generates `/mcp add` command for Claude Code registration
+- [x] Smart name derivation from URL (detects Northwind, TripPin, etc.)
+- [x] Optional connection testing to validate service
+- [x] Removed problematic Sharprompt dependency
+- [x] Implemented using standard console input/output for reliability
+- [x] Successfully tested wizard with automated input
 
 ### 6.6 Shutdown Tool Implementation ✅ COMPLETED!
 - [x] Created shutdown_server MCP tool for graceful shutdown
@@ -241,9 +263,17 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - [ ] Handle ETag requirements
 - [ ] Document session URL handling
 
-## Phase 8: Cleanup and Create Integration Tests
+## Phase 8: Fix Generic CRUD Tools (DEFERRED TO LAST)
 
-### 8.1 Code Cleanup (Without Breaking Tests)
+### 8.0 Fix Generic Tools Not Being Exposed
+- [ ] Investigate why CreateEntity, UpdateEntity, DeleteEntity not exposed via MCP
+- [ ] These tools have [McpServerTool] attributes but aren't accessible
+- [ ] Likely need to be registered differently or have a configuration issue
+- [ ] **Note: Not critical - entity-specific tools provide same functionality**
+
+## Phase 9: Cleanup and Create Integration Tests
+
+### 9.1 Code Cleanup (Without Breaking Tests)
 - [ ] Identify dead code paths through coverage
 - [ ] Remove only confirmed dead code
 - [ ] Optimize tool generation caching
@@ -251,7 +281,7 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - [ ] Ensure all async operations properly awaited
 - [ ] Add comprehensive error handling
 
-### 8.2 Create AspNetCore Integration Tests
+### 9.2 Create AspNetCore Integration Tests
 - [ ] Use TestModels from Tests.Shared
 - [ ] Create test for MCP endpoint discovery
 - [ ] Create test for tool listing endpoint
@@ -260,7 +290,7 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - [ ] Test with complex model
 - [ ] Test excluded routes functionality
 
-### 8.3 Create Tools Integration Tests
+### 9.3 Create Tools Integration Tests
 - [ ] Test STDIO communication with real MCP messages
 - [ ] Test tool generation from real metadata
 - [ ] Test tool execution with real parameters
@@ -292,9 +322,9 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 
 
 
-## Phase 9: TEST QUALITY REQUIREMENTS
+## Phase 10: TEST QUALITY REQUIREMENTS
 
-### 9.1 Each Test File MUST Include
+### 10.1 Each Test File MUST Include
 - [ ] Constructor tests (null checks, validation)
 - [ ] Property getter/setter tests
 - [ ] Method functionality tests (happy path)
@@ -304,7 +334,7 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - [ ] Boundary condition tests
 - [ ] Thread safety tests (where applicable)
 
-### 9.2 Test Pattern to Follow
+### 10.2 Test Pattern to Follow
 ```csharp
 [TestClass]
 public class [ClassName]Tests
@@ -320,16 +350,16 @@ public class [ClassName]Tests
 }
 ```
 
-## Phase 10: ACHIEVE 96% CODE COVERAGE
+## Phase 11: ACHIEVE 96% CODE COVERAGE
 
-### 10.1 Coverage Targets
+### 11.1 Coverage Targets
 - [ ] Overall: 96% line coverage minimum
 - [ ] Core project: 98% coverage
 - [ ] Authentication: 95% coverage
 - [ ] AspNetCore: 95% coverage
 - [ ] Tools: 90% coverage
 
-### 10.2 Coverage Analysis
+### 11.2 Coverage Analysis
 - [ ] Run coverage report after each test file
 - [ ] Identify uncovered code
 - [ ] Add tests for all branches
@@ -419,3 +449,29 @@ The project is ONLY complete when:
 - Register via builder.WithTools() during service configuration
 - CancellationTokenSource pattern for graceful shutdown
 - Closure capture for accessing shutdown mechanism in tool delegates
+
+## Today's Accomplishments (Session 2):
+
+### 1. Fixed CRUD Tools Entity Set Error ✅
+- Updated McpToolDefinition.CreateCrudTool to include entitySet parameter
+- Modified all CRUD tool generators in McpToolFactory to pass entity set
+- Added fallback logic to derive entity set from entity type name
+- All CRUD operations now work correctly with entity set information
+
+### 2. Tested Write Operations on Read-Only Service ✅
+- Confirmed all write operations (create, update, delete) fail gracefully
+- Northwind returns "Forbidden" errors as expected
+- Error handling works properly for read-only services
+
+### 3. Created Interactive Add Command ✅
+- Implemented `odata-mcp add` wizard for easy MCP registration
+- Interactive prompts for URL, name, authentication, and logging
+- Smart name derivation from URL (detects Northwind, TripPin, etc.)
+- Optional connection testing with metadata validation
+- Generates ready-to-use `/mcp add` command for Claude Code
+- Replaced problematic Sharprompt with standard console I/O for reliability
+
+### 4. Identified Generic CRUD Tools Issue
+- Discovered generic tools (create_entity, update_entity, delete_entity) not exposed
+- These have [McpServerTool] attributes but aren't accessible via MCP
+- Decision: Defer to end of project as entity-specific tools provide same functionality
