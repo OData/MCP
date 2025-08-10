@@ -3,20 +3,11 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0;</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
-        <LangVersion>latest</LangVersion>
-        <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <NoWarn>NU1510</NoWarn>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
         <Title>Microsoft OData MCP Server Authentication</Title>
         <Description>OAuth2 and JWT authentication framework for OData MCP servers, including token validation and delegation.</Description>
-        <Authors>Microsoft</Authors>
         <PackageTags>odata;mcp;server;authentication;oauth2;jwt</PackageTags>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/microsoft/odata-mcp-server</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
     <ItemGroup>

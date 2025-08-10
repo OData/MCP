@@ -3,8 +3,6 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
-        <Nullable>enable</Nullable>
-        <NoWarn>NU1510</NoWarn>
         <PackageId>Microsoft.OData.Mcp.Core</PackageId>
         <Title>Microsoft OData MCP Server Core</Title>
         <Description>Core library for creating MCP servers from OData metadata, including CSDL parsing and domain models.</Description>

@@ -4,8 +4,6 @@
         <OutputType>Exe</OutputType>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>disable</ImplicitUsings>
         <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
 
         <!-- Console app settings -->
