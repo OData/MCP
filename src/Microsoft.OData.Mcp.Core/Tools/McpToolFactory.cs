@@ -485,6 +485,11 @@ namespace Microsoft.OData.Mcp.Core.Tools
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
             tool.Version = options.ToolVersion;
 
+            // Store entity metadata for use by handlers
+            tool.Metadata["KeyProperties"] = entityType.Key;
+            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+
             if (options.IncludeExamples)
             {
                 AddCreateExamples(tool, entityType);
@@ -523,6 +528,11 @@ namespace Microsoft.OData.Mcp.Core.Tools
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
             tool.Version = options.ToolVersion;
+
+            // Store entity metadata for use by handlers
+            tool.Metadata["KeyProperties"] = entityType.Key;
+            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
 
             if (options.IncludeExamples)
             {
@@ -563,6 +573,11 @@ namespace Microsoft.OData.Mcp.Core.Tools
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
             tool.Version = options.ToolVersion;
 
+            // Store entity metadata for use by handlers
+            tool.Metadata["KeyProperties"] = entityType.Key;
+            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+
             if (options.IncludeExamples)
             {
                 AddUpdateExamples(tool, entityType);
@@ -601,6 +616,11 @@ namespace Microsoft.OData.Mcp.Core.Tools
             tool.RequiredScopes = requiredScopes;
             tool.RequiredRoles = new List<string>(options.DefaultRequiredRoles);
             tool.Version = options.ToolVersion;
+
+            // Store entity metadata for use by handlers
+            tool.Metadata["KeyProperties"] = entityType.Key;
+            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
 
             if (options.IncludeExamples)
             {
@@ -787,15 +807,67 @@ namespace Microsoft.OData.Mcp.Core.Tools
                     return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
                 }
                 
-                // Extract key from parameters
-                string? key = null;
-                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                // Get key properties from context metadata
+                var keyProperties = context.GetProperty<List<string>>("KeyProperties") ?? new List<string>();
+                if (keyProperties.Count == 0)
                 {
-                    key = idElement.GetString();
+                    return McpToolResult.ValidationError("No key properties found in entity metadata", context.CorrelationId);
                 }
-                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                
+                // Check if parameters are wrapped in a "parameters" object
+                var rootElement = parameters.RootElement;
+                if (rootElement.TryGetProperty("parameters", out var paramsElement))
                 {
-                    key = keyElement.GetString();
+                    rootElement = paramsElement;
+                }
+                
+                // Extract key values from parameters
+                var keyValues = new Dictionary<string, string>();
+                foreach (var keyProp in keyProperties)
+                {
+                    if (rootElement.TryGetProperty(keyProp, out var keyElement))
+                    {
+                        var value = keyElement.ValueKind switch
+                        {
+                            JsonValueKind.String => keyElement.GetString(),
+                            JsonValueKind.Number => keyElement.GetRawText(),
+                            JsonValueKind.True => "true",
+                            JsonValueKind.False => "false",
+                            _ => keyElement.GetRawText()
+                        };
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            keyValues[keyProp] = value;
+                        }
+                    }
+                }
+                
+                // Validate we have all required keys
+                if (keyValues.Count != keyProperties.Count)
+                {
+                    var missingKeys = keyProperties.Where(k => !keyValues.ContainsKey(k));
+                    return McpToolResult.ValidationError($"Missing required key properties: {string.Join(", ", missingKeys)}", context.CorrelationId);
+                }
+                
+                // Build the key string for OData URL
+                string key;
+                if (keyProperties.Count == 1)
+                {
+                    // Single key - just use the value
+                    var keyValue = keyValues.Values.First();
+                    // Quote string values
+                    key = IsStringKey(keyValue) ? $"'{keyValue}'" : keyValue;
+                }
+                else
+                {
+                    // Composite key - format as Key1='value1',Key2='value2'
+                    var keyParts = keyProperties.Select(kp =>
+                    {
+                        var value = keyValues[kp];
+                        var quotedValue = IsStringKey(value) ? $"'{value}'" : value;
+                        return $"{kp}={quotedValue}";
+                    });
+                    key = string.Join(",", keyParts);
                 }
                 
                 if (string.IsNullOrWhiteSpace(key))
@@ -809,8 +881,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 // Build the URL
                 var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
                 
-                // Add $select if specified
-                if (parameters.RootElement.TryGetProperty("select", out var selectElement))
+                // Add $select if specified (check both with and without $ prefix)
+                if (rootElement.TryGetProperty("$select", out var selectElement) || 
+                    rootElement.TryGetProperty("select", out selectElement))
                 {
                     var select = selectElement.GetString();
                     if (!string.IsNullOrWhiteSpace(select))
@@ -857,15 +930,67 @@ namespace Microsoft.OData.Mcp.Core.Tools
                     return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
                 }
                 
-                // Extract key from parameters
-                string? key = null;
-                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                // Get key properties from context metadata
+                var keyProperties = context.GetProperty<List<string>>("KeyProperties") ?? new List<string>();
+                if (keyProperties.Count == 0)
                 {
-                    key = idElement.GetString();
+                    return McpToolResult.ValidationError("No key properties found in entity metadata", context.CorrelationId);
                 }
-                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                
+                // Check if parameters are wrapped in a "parameters" object
+                var rootElement = parameters.RootElement;
+                if (rootElement.TryGetProperty("parameters", out var paramsElement))
                 {
-                    key = keyElement.GetString();
+                    rootElement = paramsElement;
+                }
+                
+                // Extract key values from parameters
+                var keyValues = new Dictionary<string, string>();
+                foreach (var keyProp in keyProperties)
+                {
+                    if (rootElement.TryGetProperty(keyProp, out var keyElement))
+                    {
+                        var value = keyElement.ValueKind switch
+                        {
+                            JsonValueKind.String => keyElement.GetString(),
+                            JsonValueKind.Number => keyElement.GetRawText(),
+                            JsonValueKind.True => "true",
+                            JsonValueKind.False => "false",
+                            _ => keyElement.GetRawText()
+                        };
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            keyValues[keyProp] = value;
+                        }
+                    }
+                }
+                
+                // Validate we have all required keys
+                if (keyValues.Count != keyProperties.Count)
+                {
+                    var missingKeys = keyProperties.Where(k => !keyValues.ContainsKey(k));
+                    return McpToolResult.ValidationError($"Missing required key properties: {string.Join(", ", missingKeys)}", context.CorrelationId);
+                }
+                
+                // Build the key string for OData URL
+                string key;
+                if (keyProperties.Count == 1)
+                {
+                    // Single key - just use the value
+                    var keyValue = keyValues.Values.First();
+                    // Quote string values
+                    key = IsStringKey(keyValue) ? $"'{keyValue}'" : keyValue;
+                }
+                else
+                {
+                    // Composite key - format as Key1='value1',Key2='value2'
+                    var keyParts = keyProperties.Select(kp =>
+                    {
+                        var value = keyValues[kp];
+                        var quotedValue = IsStringKey(value) ? $"'{value}'" : value;
+                        return $"{kp}={quotedValue}";
+                    });
+                    key = string.Join(",", keyParts);
                 }
                 
                 if (string.IsNullOrWhiteSpace(key))
@@ -879,13 +1004,62 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 // Build the URL
                 var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
                 
-                // Prepare the update data (exclude the key from the body)
-                var updateData = new Dictionary<string, object>();
-                foreach (var property in parameters.RootElement.EnumerateObject())
+                // Extract ETag if provided
+                string? etag = null;
+                if (rootElement.TryGetProperty("@odata.etag", out var etagElement) ||
+                    rootElement.TryGetProperty("etag", out etagElement) ||
+                    rootElement.TryGetProperty("Etag", out etagElement))
                 {
-                    if (property.Name != "id" && property.Name != "key")
+                    etag = etagElement.GetString();
+                }
+                
+                // If no ETag provided, fetch the entity to get current ETag
+                if (string.IsNullOrWhiteSpace(etag))
+                {
+                    try
                     {
-                        updateData[property.Name] = property.Value.GetRawText();
+                        var getResponse = await httpClient.GetAsync(url, context.CancellationToken);
+                        if (getResponse.IsSuccessStatusCode)
+                        {
+                            var entityJson = await getResponse.Content.ReadAsStringAsync();
+                            using var entityDoc = JsonDocument.Parse(entityJson);
+                            
+                            // Extract ETag from the fetched entity
+                            if (entityDoc.RootElement.TryGetProperty("@odata.etag", out var fetchedEtagElement))
+                            {
+                                etag = fetchedEtagElement.GetString();
+                                _logger.LogDebug("Auto-fetched ETag for update: {ETag}", etag);
+                            }
+                        }
+                        // If fetch fails, continue without ETag (service may not require it)
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to auto-fetch ETag, continuing without it");
+                    }
+                }
+                
+                // Prepare the update data (exclude the key properties and metadata from the body)
+                var updateData = new Dictionary<string, object>();
+                foreach (var property in rootElement.EnumerateObject())
+                {
+                    // Exclude key properties, metadata properties, and ETag
+                    if (!keyProperties.Contains(property.Name) && 
+                        !property.Name.StartsWith("@") && 
+                        !property.Name.StartsWith("$") && 
+                        property.Name != "etag" &&
+                        property.Name != "Etag" &&
+                        property.Name != "parameters")
+                    {
+                        updateData[property.Name] = property.Value.ValueKind switch
+                        {
+                            JsonValueKind.String => property.Value.GetString()!,
+                            JsonValueKind.Number => property.Value.GetDecimal(),
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            JsonValueKind.Null => null!,
+                            _ => JsonSerializer.Deserialize<object>(property.Value.GetRawText())!
+                        };
                     }
                 }
                 
@@ -897,6 +1071,13 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 {
                     Content = content
                 };
+                
+                // Add If-Match header if we have an ETag
+                if (!string.IsNullOrWhiteSpace(etag))
+                {
+                    request.Headers.Add("If-Match", etag);
+                    _logger.LogDebug("Adding If-Match header with ETag: {ETag}", etag);
+                }
                 
                 var response = await httpClient.SendAsync(request, context.CancellationToken);
                 
@@ -913,6 +1094,20 @@ namespace Microsoft.OData.Mcp.Core.Tools
                     {
                         return McpToolResult.Success(correlationId: context.CorrelationId);
                     }
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.PreconditionFailed)
+                {
+                    return McpToolResult.Error(
+                        "The entity has been modified by another user. Please retrieve the latest version and try again.",
+                        "ETAG_MISMATCH",
+                        context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.PreconditionRequired)
+                {
+                    return McpToolResult.Error(
+                        "This service requires an ETag for updates. Please retrieve the entity first.",
+                        "ETAG_REQUIRED",
+                        context.CorrelationId);
                 }
                 else
                 {
@@ -939,15 +1134,67 @@ namespace Microsoft.OData.Mcp.Core.Tools
                     return McpToolResult.ValidationError("Entity set name not found in context", context.CorrelationId);
                 }
                 
-                // Extract key from parameters
-                string? key = null;
-                if (parameters.RootElement.TryGetProperty("id", out var idElement))
+                // Get key properties from context metadata
+                var keyProperties = context.GetProperty<List<string>>("KeyProperties") ?? new List<string>();
+                if (keyProperties.Count == 0)
                 {
-                    key = idElement.GetString();
+                    return McpToolResult.ValidationError("No key properties found in entity metadata", context.CorrelationId);
                 }
-                else if (parameters.RootElement.TryGetProperty("key", out var keyElement))
+                
+                // Check if parameters are wrapped in a "parameters" object
+                var rootElement = parameters.RootElement;
+                if (rootElement.TryGetProperty("parameters", out var paramsElement))
                 {
-                    key = keyElement.GetString();
+                    rootElement = paramsElement;
+                }
+                
+                // Extract key values from parameters
+                var keyValues = new Dictionary<string, string>();
+                foreach (var keyProp in keyProperties)
+                {
+                    if (rootElement.TryGetProperty(keyProp, out var keyElement))
+                    {
+                        var value = keyElement.ValueKind switch
+                        {
+                            JsonValueKind.String => keyElement.GetString(),
+                            JsonValueKind.Number => keyElement.GetRawText(),
+                            JsonValueKind.True => "true",
+                            JsonValueKind.False => "false",
+                            _ => keyElement.GetRawText()
+                        };
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            keyValues[keyProp] = value;
+                        }
+                    }
+                }
+                
+                // Validate we have all required keys
+                if (keyValues.Count != keyProperties.Count)
+                {
+                    var missingKeys = keyProperties.Where(k => !keyValues.ContainsKey(k));
+                    return McpToolResult.ValidationError($"Missing required key properties: {string.Join(", ", missingKeys)}", context.CorrelationId);
+                }
+                
+                // Build the key string for OData URL
+                string key;
+                if (keyProperties.Count == 1)
+                {
+                    // Single key - just use the value
+                    var keyValue = keyValues.Values.First();
+                    // Quote string values
+                    key = IsStringKey(keyValue) ? $"'{keyValue}'" : keyValue;
+                }
+                else
+                {
+                    // Composite key - format as Key1='value1',Key2='value2'
+                    var keyParts = keyProperties.Select(kp =>
+                    {
+                        var value = keyValues[kp];
+                        var quotedValue = IsStringKey(value) ? $"'{value}'" : value;
+                        return $"{kp}={quotedValue}";
+                    });
+                    key = string.Join(",", keyParts);
                 }
                 
                 if (string.IsNullOrWhiteSpace(key))
@@ -961,8 +1208,53 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 // Build the URL
                 var url = $"{context.ServiceBaseUrl?.TrimEnd('/')}/{entitySetName}({key})";
                 
+                // Extract ETag if provided
+                string? etag = null;
+                if (rootElement.TryGetProperty("@odata.etag", out var etagElement) ||
+                    rootElement.TryGetProperty("etag", out etagElement) ||
+                    rootElement.TryGetProperty("Etag", out etagElement))
+                {
+                    etag = etagElement.GetString();
+                }
+                
+                // If no ETag provided, fetch the entity to get current ETag
+                if (string.IsNullOrWhiteSpace(etag))
+                {
+                    try
+                    {
+                        var getResponse = await httpClient.GetAsync(url, context.CancellationToken);
+                        if (getResponse.IsSuccessStatusCode)
+                        {
+                            var entityJson = await getResponse.Content.ReadAsStringAsync();
+                            using var entityDoc = JsonDocument.Parse(entityJson);
+                            
+                            // Extract ETag from the fetched entity
+                            if (entityDoc.RootElement.TryGetProperty("@odata.etag", out var fetchedEtagElement))
+                            {
+                                etag = fetchedEtagElement.GetString();
+                                _logger.LogDebug("Auto-fetched ETag for delete: {ETag}", etag);
+                            }
+                        }
+                        // If fetch fails, continue without ETag (service may not require it)
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to auto-fetch ETag for delete, continuing without it");
+                    }
+                }
+                
+                // Create DELETE request
+                var request = new HttpRequestMessage(HttpMethod.Delete, url);
+                
+                // Add If-Match header if we have an ETag
+                if (!string.IsNullOrWhiteSpace(etag))
+                {
+                    request.Headers.Add("If-Match", etag);
+                    _logger.LogDebug("Adding If-Match header for delete with ETag: {ETag}", etag);
+                }
+                
                 // Make the DELETE request
-                var response = await httpClient.DeleteAsync(url, context.CancellationToken);
+                var response = await httpClient.SendAsync(request, context.CancellationToken);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -971,6 +1263,20 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     return McpToolResult.NotFound($"Entity with key '{key}' not found", context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.PreconditionFailed)
+                {
+                    return McpToolResult.Error(
+                        "The entity has been modified by another user. Please retrieve the latest version and try again.",
+                        "ETAG_MISMATCH",
+                        context.CorrelationId);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.PreconditionRequired)
+                {
+                    return McpToolResult.Error(
+                        "This service requires an ETag for deletion. Please retrieve the entity first.",
+                        "ETAG_REQUIRED",
+                        context.CorrelationId);
                 }
                 else
                 {
@@ -1310,23 +1616,227 @@ namespace Microsoft.OData.Mcp.Core.Tools
         // Schema generation methods (these would generate appropriate JSON schemas)
         internal JsonDocument GenerateEntityInputSchema(EdmEntityType entityType, bool required = false)
         {
-            // Implementation would generate JSON schema for entity input
-            var schema = JsonSerializer.Serialize(new { type = "object", description = $"Input schema for {entityType.Name}" });
-            return JsonDocument.Parse(schema);
+            var properties = new Dictionary<string, object>();
+            var requiredProperties = new List<string>();
+
+            // Add all properties from the entity type
+            foreach (var property in entityType.Properties)
+            {
+                var propertySchema = new Dictionary<string, object>
+                {
+                    ["type"] = MapEdmTypeToJsonType(property.Type),
+                    ["description"] = $"The {property.Name} property of type {property.Type}"
+                };
+
+                // Add nullable indicator if applicable
+                if (property.Nullable && propertySchema["type"] is string type && type != "null")
+                {
+                    propertySchema["type"] = new[] { type, "null" };
+                }
+
+                properties[property.Name] = propertySchema;
+
+                // For create operations, key properties and non-nullable properties are required
+                if (required && (property.IsKey || !property.Nullable))
+                {
+                    requiredProperties.Add(property.Name);
+                }
+            }
+
+            var schema = new Dictionary<string, object>
+            {
+                ["type"] = "object",
+                ["description"] = $"Input schema for creating or updating {entityType.Name} entities",
+                ["properties"] = properties
+            };
+
+            if (requiredProperties.Count > 0)
+            {
+                schema["required"] = requiredProperties;
+            }
+
+            var schemaJson = JsonSerializer.Serialize(schema);
+            return JsonDocument.Parse(schemaJson);
         }
 
         internal JsonDocument GenerateKeyInputSchema(EdmEntityType entityType)
         {
-            // Implementation would generate JSON schema for entity key
-            var schema = JsonSerializer.Serialize(new { type = "object", description = $"Key schema for {entityType.Name}" });
-            return JsonDocument.Parse(schema);
+            var properties = new Dictionary<string, object>();
+            var requiredProperties = new List<string>();
+
+            // Add only key properties from the entity type
+            var keyProperties = entityType.Properties.Where(p => entityType.Key.Contains(p.Name)).ToList();
+            
+            foreach (var property in keyProperties)
+            {
+                var propertySchema = new Dictionary<string, object>
+                {
+                    ["type"] = MapEdmTypeToJsonType(property.Type),
+                    ["description"] = $"The key property {property.Name} of type {property.Type}"
+                };
+
+                properties[property.Name] = propertySchema;
+                requiredProperties.Add(property.Name); // All key properties are required
+            }
+
+            // Add optional $select parameter for read operations
+            properties["$select"] = new Dictionary<string, object>
+            {
+                ["type"] = "string",
+                ["description"] = "Comma-separated list of properties to select (optional)"
+            };
+
+            // Add optional ETag parameter for delete operations with optimistic concurrency
+            properties["@odata.etag"] = new Dictionary<string, object>
+            {
+                ["type"] = "string",
+                ["description"] = "ETag for optimistic concurrency (optional). If not provided, current ETag will be fetched for delete operations."
+            };
+
+            var schema = new Dictionary<string, object>
+            {
+                ["type"] = "object",
+                ["description"] = keyProperties.Count > 1 
+                    ? $"Composite key schema for {entityType.Name} with keys: {string.Join(", ", requiredProperties)}"
+                    : $"Key schema for {entityType.Name} with key: {requiredProperties.FirstOrDefault()}",
+                ["properties"] = properties,
+                ["required"] = requiredProperties
+            };
+
+            var schemaJson = JsonSerializer.Serialize(schema);
+            return JsonDocument.Parse(schemaJson);
         }
 
         internal JsonDocument GenerateEntityUpdateSchema(EdmEntityType entityType)
         {
-            // Implementation would generate JSON schema for entity updates
-            var schema = JsonSerializer.Serialize(new { type = "object", description = $"Update schema for {entityType.Name}" });
-            return JsonDocument.Parse(schema);
+            var properties = new Dictionary<string, object>();
+            var requiredProperties = new List<string>();
+
+            // Add key properties as required (for identification)
+            var keyProperties = entityType.Properties.Where(p => entityType.Key.Contains(p.Name)).ToList();
+            foreach (var property in keyProperties)
+            {
+                var propertySchema = new Dictionary<string, object>
+                {
+                    ["type"] = MapEdmTypeToJsonType(property.Type),
+                    ["description"] = $"The key property {property.Name} (required for identification)"
+                };
+
+                properties[property.Name] = propertySchema;
+                requiredProperties.Add(property.Name);
+            }
+
+            // Add non-key properties as optional (for partial updates)
+            var nonKeyProperties = entityType.Properties.Where(p => !entityType.Key.Contains(p.Name)).ToList();
+            foreach (var property in nonKeyProperties)
+            {
+                var propertySchema = new Dictionary<string, object>
+                {
+                    ["type"] = MapEdmTypeToJsonType(property.Type),
+                    ["description"] = $"The {property.Name} property (optional for update)"
+                };
+
+                // Add nullable indicator
+                if (property.Nullable && propertySchema["type"] is string type && type != "null")
+                {
+                    propertySchema["type"] = new[] { type, "null" };
+                }
+
+                properties[property.Name] = propertySchema;
+                // Non-key properties are optional for updates
+            }
+
+            // Add optional ETag parameter for optimistic concurrency
+            properties["@odata.etag"] = new Dictionary<string, object>
+            {
+                ["type"] = "string",
+                ["description"] = "ETag for optimistic concurrency. If not provided, current ETag will be fetched automatically."
+            };
+
+            var schema = new Dictionary<string, object>
+            {
+                ["type"] = "object",
+                ["description"] = $"Update schema for {entityType.Name} entities (key properties required, others optional)",
+                ["properties"] = properties,
+                ["required"] = requiredProperties,
+                ["additionalProperties"] = false
+            };
+
+            var schemaJson = JsonSerializer.Serialize(schema);
+            return JsonDocument.Parse(schemaJson);
+        }
+
+        /// <summary>
+        /// Determines if a key value should be quoted as a string in OData URLs.
+        /// </summary>
+        /// <param name="value">The key value to check.</param>
+        /// <returns>True if the value should be quoted; otherwise, false.</returns>
+        internal static bool IsStringKey(string value)
+        {
+            // If it starts with a quote, assume it's already quoted
+            if (value.StartsWith("'") || value.StartsWith("\""))
+            {
+                return false;
+            }
+            
+            // Try to parse as number
+            if (int.TryParse(value, out _) || long.TryParse(value, out _) || 
+                decimal.TryParse(value, out _) || double.TryParse(value, out _))
+            {
+                return false;
+            }
+            
+            // Try to parse as boolean
+            if (bool.TryParse(value, out _))
+            {
+                return false;
+            }
+            
+            // Try to parse as GUID (GUIDs need quotes in OData)
+            if (Guid.TryParse(value, out _))
+            {
+                return true;
+            }
+            
+            // Everything else is treated as a string
+            return true;
+        }
+
+        /// <summary>
+        /// Maps EDM type names to JSON Schema type names.
+        /// </summary>
+        /// <param name="edmType">The EDM type name.</param>
+        /// <returns>The corresponding JSON Schema type.</returns>
+        internal static string MapEdmTypeToJsonType(string? edmType)
+        {
+            if (string.IsNullOrWhiteSpace(edmType))
+            {
+                return "string";
+            }
+
+            // Remove Edm. prefix if present
+            var typeName = edmType.StartsWith("Edm.") ? edmType.Substring(4) : edmType;
+
+            return typeName.ToLowerInvariant() switch
+            {
+                "string" => "string",
+                "int16" => "integer",
+                "int32" => "integer",
+                "int64" => "integer",
+                "decimal" => "number",
+                "double" => "number",
+                "single" => "number",
+                "boolean" => "boolean",
+                "datetime" => "string",
+                "datetimeoffset" => "string",
+                "date" => "string",
+                "timeofday" => "string",
+                "guid" => "string",
+                "binary" => "string",
+                "byte" => "integer",
+                "sbyte" => "integer",
+                _ => "string" // Default to string for unknown types
+            };
         }
 
         internal JsonDocument GenerateQueryInputSchema()

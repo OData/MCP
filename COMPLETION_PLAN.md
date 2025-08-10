@@ -247,6 +247,72 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 - Response sent before shutdown initiates
 - Works seamlessly in STDIO mode
 
+## Phase 6.10: Fix Entity Key and Property Handling for Generated Tools ✅ COMPLETED!
+
+### 6.10.1 Problem Analysis ✅
+- [x] Schema generation methods return stub implementations instead of using entity metadata
+- [x] Handlers expect generic "id" or "key" properties instead of actual key property names
+- [x] No support for composite keys (entities with multiple key properties)
+- [x] No validation that requested properties exist on entities
+- [x] Entity-specific tools send parameters wrapped in "parameters" object
+
+### 6.10.2 Fix Schema Generation Methods ✅
+- [x] Implement `GenerateKeyInputSchema` to use actual key properties from EdmEntityType
+  - [x] For single keys: Use actual property name (e.g., "UserName", "ProductId")
+  - [x] For composite keys: Include all key properties as required fields
+  - [x] Add proper types from EdmProperty.Type (string, number, etc.)
+  - [x] Include descriptions for each property
+- [x] Implement `GenerateEntityInputSchema` with all entity properties
+  - [x] Mark key properties as required for creates
+  - [x] Include all non-key properties with correct nullability
+  - [x] Add property type validation schema
+- [x] Implement `GenerateEntityUpdateSchema` for partial updates
+  - [x] Include key properties as required (for identification)
+  - [x] Include non-key properties as optional
+
+### 6.10.3 Enhance Tool Metadata Storage ✅
+- [x] Store key property metadata in tool.Metadata dictionary:
+  ```csharp
+  tool.Metadata["KeyProperties"] = entityType.Key; // List<string> of key names
+  tool.Metadata["EntityType"] = entityType.FullName;
+  tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+  ```
+- [x] Pass metadata through to tool context during execution
+- [x] Ensure metadata is available in handler methods
+
+### 6.10.4 Fix Handler Parameter Processing ✅
+- [x] Update `ReadEntityHandler` to:
+  - [x] Check for "parameters" wrapper and unwrap if present
+  - [x] Get key properties from context metadata
+  - [x] Extract key values using actual property names
+  - [x] Build composite keys properly (e.g., "Key1='value1',Key2='value2'")
+- [x] Update `UpdateEntityHandler` with same parameter processing
+- [x] Update `DeleteEntityHandler` with same parameter processing
+- [x] Add property validation before processing
+
+### 6.10.5 Add Composite Key Support ✅
+- [x] Implement composite key formatting for OData URLs
+- [x] Handle multiple key properties in correct order
+- [x] Support different key types (string, int, guid, etc.)
+- [x] Added `IsStringKey` helper method for proper quoting
+
+### 6.10.6 Test the Fixes ✅ COMPLETED!
+- [x] Test single key entities (e.g., Products with ProductID) - ✅ Works perfectly!
+- [x] Test composite key entities (e.g., Order_Details with OrderID+ProductID) - ✅ Composite keys work!
+- [x] Test with TripPin's UserName-based entities - ✅ get_person with UserName works!
+- [x] Verify parameter validation catches invalid properties - ✅ Validation working
+- [x] Ensure "parameters" wrapper is handled correctly - ✅ Wrapper handling confirmed
+
+**Implementation Summary:**
+- Fixed all three schema generation methods to use actual entity metadata
+- Added `MapEdmTypeToJsonType` helper for proper type mapping
+- Enhanced handlers to extract keys using actual property names from metadata
+- Added support for composite keys with proper formatting
+- Implemented parameter unwrapping for "parameters" object
+- Added `IsStringKey` helper to determine when to quote values
+- Metadata is stored in tool definitions and passed through context
+- Build successful with all changes
+
 ## Phase 7: Test Tools Against TripPin
 
 ### 7.1 Test Read-Write Service
@@ -258,10 +324,15 @@ Create a **WORKING** MCP server that dynamically wraps ANY external OData servic
 
 ### 7.2 Test Write Operations
 - [ ] Create new trip (with session handling)
-- [ ] Update person data
+- [x] Update person data - ETag parameter passing works correctly
 - [ ] Delete test data
-- [ ] Handle ETag requirements
+- [x] Handle ETag requirements - Implementation complete, ETag passed correctly
 - [ ] Document session URL handling
+
+### 7.3 TripPin ETag Investigation (TODO)
+- [ ] Contact Microsoft about TripPin ETag behavior with session-based URLs
+- [ ] Understand why auto-fetch doesn't work with TripPin's session URLs
+- [ ] Write comprehensive tests once TripPin ETag behavior is understood
 
 ## Phase 8: Fix Generic CRUD Tools (DEFERRED TO LAST)
 
