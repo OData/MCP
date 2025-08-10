@@ -86,9 +86,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IMcpEndpointRegistry, McpEndpointRegistry>();
             services.TryAddSingleton<IMcpRouteConvention, ODataMcpRouteConvention>();
             
-            // Note: IODataOptionsProvider should be implemented by the host application
-            // if they want dollar prefix handling to work correctly
-            
             // Conditionally register dynamic model refresh service
             var optionsInstance = new ODataMcpOptions();
             configureOptions(optionsInstance);

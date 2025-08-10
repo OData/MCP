@@ -5,8 +5,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Http;
 using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools

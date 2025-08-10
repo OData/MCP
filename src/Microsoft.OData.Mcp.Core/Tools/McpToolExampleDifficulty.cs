@@ -1,5 +1,6 @@
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Defines the difficulty levels for MCP tool examples.
     /// </summary>
@@ -24,5 +25,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Expert-level example for complex scenarios.
         /// </summary>
         Expert
+
     }
+
 }

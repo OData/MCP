@@ -33,21 +33,19 @@ namespace Microsoft.OData.Mcp.AspNetCore.Routing
         /// </summary>
         /// <param name="options">The MCP options.</param>
         /// <param name="endpointRegistry">The MCP endpoint registry.</param>
-        /// <param name="odataOptionsProvider">Optional provider for OData configuration options.</param>
         /// <exception cref="ArgumentNullException">
         /// Thrown when required parameters are null.
         /// </exception>
         public ODataMcpRouteConvention(
             IOptions<ODataMcpOptions> options,
-            IMcpEndpointRegistry endpointRegistry,
-            IODataOptionsProvider? odataOptionsProvider = null)
+            IMcpEndpointRegistry endpointRegistry)
         {
             ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(endpointRegistry);
 
             _options = options.Value;
             _endpointRegistry = endpointRegistry;
-            _routeOptionsResolver = new ODataRouteOptionsResolver(odataOptionsProvider);
+            _routeOptionsResolver = new ODataRouteOptionsResolver();
         }
 
         #endregion

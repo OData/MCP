@@ -39,9 +39,9 @@ namespace Microsoft.OData.Mcp.Tests.Core
             // Assert
             serviceProvider.GetService<ICsdlMetadataParser>().Should().NotBeNull();
             serviceProvider.GetService<IMcpToolFactory>().Should().NotBeNull();
-            serviceProvider.GetService<IQueryToolGenerator>().Should().NotBeNull();
-            serviceProvider.GetService<ICrudToolGenerator>().Should().NotBeNull();
-            serviceProvider.GetService<INavigationToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<QueryToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<CrudToolGenerator>().Should().NotBeNull();
+            serviceProvider.GetService<NavigationToolGenerator>().Should().NotBeNull();
         }
 
         /// <summary>

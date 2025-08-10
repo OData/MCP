@@ -1,78 +1,7 @@
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools.Generators
 {
-
-    /// <summary>
-    /// Interface for generating query MCP tools from OData entity types.
-    /// </summary>
-    /// <remarks>
-    /// Query tool generators create MCP tools that allow AI models to perform advanced
-    /// querying operations on OData entities, including filtering, sorting, projection,
-    /// and expansion of related entities.
-    /// </remarks>
-    public interface IQueryToolGenerator
-    {
-
-        /// <summary>
-        /// Generates all query tools for the specified entity set.
-        /// </summary>
-        /// <param name="entitySet">The entity set to generate tools for.</param>
-        /// <param name="entityType">The entity type definition.</param>
-        /// <param name="options">Options controlling tool generation behavior.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>A collection of generated MCP tools for query operations.</returns>
-        Task<IEnumerable<McpTool>> GenerateAllQueryToolsAsync(
-            EdmEntitySet entitySet,
-            EdmEntityType entityType,
-            QueryToolGenerationOptions options,
-            CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Generates a query tool for listing entities with filtering and sorting.
-        /// </summary>
-        /// <param name="entitySet">The entity set to query.</param>
-        /// <param name="entityType">The entity type definition.</param>
-        /// <param name="options">Options controlling tool generation behavior.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>A query MCP tool for the entity type.</returns>
-        Task<McpTool> GenerateListToolAsync(
-            EdmEntitySet entitySet,
-            EdmEntityType entityType,
-            QueryToolGenerationOptions options,
-            CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Generates a search tool for full-text search across entity properties.
-        /// </summary>
-        /// <param name="entitySet">The entity set to search.</param>
-        /// <param name="entityType">The entity type definition.</param>
-        /// <param name="options">Options controlling tool generation behavior.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>A search MCP tool for the entity type.</returns>
-        Task<McpTool> GenerateSearchToolAsync(
-            EdmEntitySet entitySet,
-            EdmEntityType entityType,
-            QueryToolGenerationOptions options,
-            CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Generates a count tool for getting entity counts with optional filtering.
-        /// </summary>
-        /// <param name="entitySet">The entity set to count.</param>
-        /// <param name="entityType">The entity type definition.</param>
-        /// <param name="options">Options controlling tool generation behavior.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>A count MCP tool for the entity type.</returns>
-        Task<McpTool> GenerateCountToolAsync(
-            EdmEntitySet entitySet,
-            EdmEntityType entityType,
-            QueryToolGenerationOptions options,
-            CancellationToken cancellationToken = default);
-    }
 
     /// <summary>
     /// Options for controlling query tool generation behavior.
@@ -83,6 +12,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// </remarks>
     public sealed class QueryToolGenerationOptions
     {
+
         /// <summary>
         /// Gets or sets a value indicating whether to generate list tools.
         /// </summary>

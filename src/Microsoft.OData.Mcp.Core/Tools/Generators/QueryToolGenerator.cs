@@ -19,7 +19,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// It supports all standard OData query options like $filter, $orderby, $select, $expand,
     /// $top, $skip, and $search.
     /// </remarks>
-    public sealed class QueryToolGenerator : IQueryToolGenerator
+    public sealed class QueryToolGenerator
     {
 
         #region Fields

@@ -18,7 +18,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// and work with related entities. It supports getting related entities, adding relationships,
     /// and removing relationships for both collection and single navigation properties.
     /// </remarks>
-    public sealed class NavigationToolGenerator : INavigationToolGenerator
+    public sealed class NavigationToolGenerator
     {
 
         #region Fields

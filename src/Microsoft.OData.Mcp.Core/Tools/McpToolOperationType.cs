@@ -1,10 +1,12 @@
 namespace Microsoft.OData.Mcp.Core.Tools
 {
+
     /// <summary>
     /// Defines the operation types for MCP tools.
     /// </summary>
     public enum McpToolOperationType
     {
+
         /// <summary>
         /// Read operation that retrieves data without modification.
         /// </summary>
@@ -44,5 +46,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// Custom operation with specific business logic.
         /// </summary>
         Custom
+
     }
+
 }

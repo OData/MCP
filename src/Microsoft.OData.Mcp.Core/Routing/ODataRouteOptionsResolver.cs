@@ -7,21 +7,13 @@ namespace Microsoft.OData.Mcp.Core.Routing
     public class ODataRouteOptionsResolver
     {
 
-        #region Fields
-
-        internal readonly IODataOptionsProvider? _optionsProvider;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataRouteOptionsResolver"/> class.
         /// </summary>
-        /// <param name="optionsProvider">The OData options provider.</param>
-        public ODataRouteOptionsResolver(IODataOptionsProvider? optionsProvider = null)
+        public ODataRouteOptionsResolver()
         {
-            _optionsProvider = optionsProvider;
         }
 
         #endregion
@@ -34,14 +26,8 @@ namespace Microsoft.OData.Mcp.Core.Routing
         /// <returns>True if dollar prefixes are enabled; otherwise, false.</returns>
         public bool UsesDollarPrefix()
         {
-            if (_optionsProvider == null)
-            {
-                // Default OData behavior uses dollar prefixes
-                return true;
-            }
-
-            // If EnableNoDollarQueryOptions is true, then dollar prefixes are disabled
-            return !_optionsProvider.EnableNoDollarQueryOptions;
+            // Default OData behavior uses dollar prefixes
+            return true;
         }
 
         /// <summary>

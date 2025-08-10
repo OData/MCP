@@ -18,7 +18,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
     /// on OData entities. It generates separate tools for each CRUD operation, with proper
     /// validation, documentation, and parameter handling.
     /// </remarks>
-    public sealed class CrudToolGenerator : ICrudToolGenerator
+    public sealed class CrudToolGenerator
     {
 
         #region Fields
@@ -40,7 +40,7 @@ namespace Microsoft.OData.Mcp.Core.Tools.Generators
 
         #endregion
 
-        #region ICrudToolGenerator Implementation
+        #region Public Methods
 
         /// <summary>
         /// Generates all CRUD tools for the specified entity set.

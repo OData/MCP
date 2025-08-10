@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OData.Mcp.Core.Routing;
 using Microsoft.OData.Mcp.Sample.Data;
 using Microsoft.OData.Mcp.Sample.Models;
-using Microsoft.OData.Mcp.Sample.Services;
 using Serilog;
 
 /// <summary>
@@ -50,7 +48,7 @@ public class Program
         builder.Services.AddSingleton<InMemoryDataStore>();
 
         // Register the OData options provider bridge
-        builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
+        //builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
 
         // Enable the magical OData MCP integration!
         builder.Services.AddODataMcp(options =>

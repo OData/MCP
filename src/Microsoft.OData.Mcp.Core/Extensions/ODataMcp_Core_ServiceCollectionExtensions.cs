@@ -259,10 +259,10 @@ namespace Microsoft.Extensions.DependencyInjection
             // Register tool factory
             services.TryAddSingleton<IMcpToolFactory, McpToolFactory>();
             
-            // Register tool generators
-            services.TryAddSingleton<IQueryToolGenerator, QueryToolGenerator>();
-            services.TryAddSingleton<ICrudToolGenerator, CrudToolGenerator>();
-            services.TryAddSingleton<INavigationToolGenerator, NavigationToolGenerator>();
+            // Register tool generators as concrete implementations
+            services.TryAddSingleton<QueryToolGenerator>();
+            services.TryAddSingleton<CrudToolGenerator>();
+            services.TryAddSingleton<NavigationToolGenerator>();
             
             // Register MCP tools using attribute-based approach
             services.AddSingleton<ODataMcpTools>();
