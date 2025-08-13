@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
+using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Parsing;
 using ModelContextProtocol.Server;
@@ -99,10 +100,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                     }
                 }
 
-                return JsonSerializer.Serialize(entitySets, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(entitySets, JsonConstants.PrettyPrint);
             }
             catch (Exception ex)
             {
@@ -172,10 +170,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                     }).ToArray()
                 };
 
-                return JsonSerializer.Serialize(description, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(description, JsonConstants.PrettyPrint);
             }
             catch (Exception ex)
             {
@@ -350,10 +345,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                     Examples = examples
                 };
 
-                return JsonSerializer.Serialize(result, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(result, JsonConstants.PrettyPrint);
             }
             catch (Exception ex)
             {
@@ -392,7 +384,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                 {
                     validation.Errors.Add("Invalid URL format");
                     return JsonSerializer.Serialize(new { validation.QueryUrl, IsValid = false, validation.Errors }, 
-                        new JsonSerializerOptions { WriteIndented = true });
+                        JsonConstants.PrettyPrint);
                 }
 
                 // Check if URL starts with base URL
@@ -468,10 +460,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                     validation.Suggestions
                 };
 
-                return JsonSerializer.Serialize(finalValidation, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(finalValidation, JsonConstants.PrettyPrint);
             }
             catch (Exception ex)
             {

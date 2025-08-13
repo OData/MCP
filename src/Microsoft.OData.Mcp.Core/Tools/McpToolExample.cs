@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.OData.Mcp.Core.Constants;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
@@ -176,7 +177,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
             ArgumentNullException.ThrowIfNull(input);
 
-            var json = JsonSerializer.Serialize(input);
+            var json = JsonSerializer.Serialize(input, JsonConstants.Default);
             var document = JsonDocument.Parse(json);
 
             return new McpToolExample
@@ -203,10 +204,10 @@ namespace Microsoft.OData.Mcp.Core.Tools
             ArgumentNullException.ThrowIfNull(input);
             ArgumentNullException.ThrowIfNull(expectedOutput);
 
-            var inputJson = JsonSerializer.Serialize(input);
+            var inputJson = JsonSerializer.Serialize(input, JsonConstants.Default);
             var inputDocument = JsonDocument.Parse(inputJson);
 
-            var outputJson = JsonSerializer.Serialize(expectedOutput);
+            var outputJson = JsonSerializer.Serialize(expectedOutput, JsonConstants.Default);
             var outputDocument = JsonDocument.Parse(outputJson);
 
             return new McpToolExample
@@ -280,11 +281,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// <returns>The input parameters as a JSON string.</returns>
         public string GetInputJson(bool indent = true)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = indent
-            };
-
+            var options = indent ? JsonConstants.PrettyPrint : JsonConstants.Compact;
             return JsonSerializer.Serialize(Input.RootElement, options);
         }
 
@@ -300,11 +297,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 return null;
             }
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = indent
-            };
-
+            var options = indent ? JsonConstants.PrettyPrint : JsonConstants.Compact;
             return JsonSerializer.Serialize(ExpectedOutput.RootElement, options);
         }
 
@@ -341,13 +334,13 @@ namespace Microsoft.OData.Mcp.Core.Tools
         public McpToolExample Clone()
         {
             // Create a deep copy of the JsonDocument by serializing and deserializing
-            var inputJson = JsonSerializer.Serialize(Input);
+            var inputJson = JsonSerializer.Serialize(Input, JsonConstants.Default);
             var inputCopy = JsonDocument.Parse(inputJson);
 
             JsonDocument? outputCopy = null;
             if (ExpectedOutput is not null)
             {
-                var outputJson = JsonSerializer.Serialize(ExpectedOutput);
+                var outputJson = JsonSerializer.Serialize(ExpectedOutput, JsonConstants.Default);
                 outputCopy = JsonDocument.Parse(outputJson);
             }
 

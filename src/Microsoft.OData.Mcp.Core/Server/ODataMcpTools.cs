@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
+using Microsoft.OData.Mcp.Core.Constants;
 using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Core.Server
@@ -114,10 +115,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                 
                 // Parse and format the response
                 var json = JsonDocument.Parse(content);
-                return JsonSerializer.Serialize(json, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(json, JsonConstants.PrettyPrint);
             }
             catch (HttpRequestException ex)
             {
@@ -174,10 +172,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                 
                 // Parse and format the response
                 var json = JsonDocument.Parse(content);
-                return JsonSerializer.Serialize(json, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                return JsonSerializer.Serialize(json, JsonConstants.PrettyPrint);
             }
             catch (HttpRequestException ex)
             {
@@ -402,10 +397,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                 { 
                     success = true,
                     message = $"Entity with key '{key}' deleted successfully from {entitySet}"
-                }, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
-                });
+                }, JsonConstants.PrettyPrint);
             }
             catch (HttpRequestException ex)
             {

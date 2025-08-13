@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Microsoft.OData.Mcp.Core.Constants;
 
 namespace Microsoft.OData.Mcp.Core.Tools
 {
@@ -181,7 +182,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         {
             ArgumentNullException.ThrowIfNull(data);
 
-            var json = JsonSerializer.Serialize(data);
+            var json = JsonSerializer.Serialize(data, JsonConstants.Default);
             var document = JsonDocument.Parse(json);
             return new McpToolResult(document, correlationId);
         }
@@ -367,7 +368,7 @@ namespace Microsoft.OData.Mcp.Core.Tools
         public override string ToString()
         {
             var dictionary = ToDictionary();
-            return JsonSerializer.Serialize(dictionary);
+            return JsonSerializer.Serialize(dictionary, JsonConstants.Default);
         }
 
         #endregion

@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Tools
@@ -983,7 +984,7 @@ ArgumentNullException.ThrowIfNull(tools);
                     }
                 }
                 
-                var jsonContent = JsonSerializer.Serialize(updateData);
+                var jsonContent = JsonSerializer.Serialize(updateData, JsonConstants.Default);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 
                 // Use PATCH for partial updates
@@ -1575,7 +1576,7 @@ ArgumentNullException.ThrowIfNull(tools);
                 schema["required"] = requiredProperties;
             }
 
-            var schemaJson = JsonSerializer.Serialize(schema);
+            var schemaJson = JsonSerializer.Serialize(schema, JsonConstants.Default);
             return JsonDocument.Parse(schemaJson);
         }
 
@@ -1623,7 +1624,7 @@ ArgumentNullException.ThrowIfNull(tools);
                 ["required"] = requiredProperties
             };
 
-            var schemaJson = JsonSerializer.Serialize(schema);
+            var schemaJson = JsonSerializer.Serialize(schema, JsonConstants.Default);
             return JsonDocument.Parse(schemaJson);
         }
 
@@ -1682,7 +1683,7 @@ ArgumentNullException.ThrowIfNull(tools);
                 ["additionalProperties"] = false
             };
 
-            var schemaJson = JsonSerializer.Serialize(schema);
+            var schemaJson = JsonSerializer.Serialize(schema, JsonConstants.Default);
             return JsonDocument.Parse(schemaJson);
         }
 
@@ -1762,21 +1763,21 @@ ArgumentNullException.ThrowIfNull(tools);
         internal JsonDocument GenerateQueryInputSchema()
         {
             // Implementation would generate JSON schema for OData queries
-            var schema = JsonSerializer.Serialize(new { type = "object", description = "OData query parameters" });
+            var schema = JsonSerializer.Serialize(new { type = "object", description = "OData query parameters" }, JsonConstants.Default);
             return JsonDocument.Parse(schema);
         }
 
         internal JsonDocument GenerateNavigationInputSchema(EdmEntityType entityType, EdmNavigationProperty navProperty)
         {
             // Implementation would generate JSON schema for navigation
-            var schema = JsonSerializer.Serialize(new { type = "object", description = $"Navigation schema for {navProperty.Name}" });
+            var schema = JsonSerializer.Serialize(new { type = "object", description = $"Navigation schema for {navProperty.Name}" }, JsonConstants.Default);
             return JsonDocument.Parse(schema);
         }
 
         internal JsonDocument GenerateEntitySetQuerySchema()
         {
             // Implementation would generate JSON schema for entity set queries
-            var schema = JsonSerializer.Serialize(new { type = "object", description = "Entity set query parameters" });
+            var schema = JsonSerializer.Serialize(new { type = "object", description = "Entity set query parameters" }, JsonConstants.Default);
             return JsonDocument.Parse(schema);
         }
 

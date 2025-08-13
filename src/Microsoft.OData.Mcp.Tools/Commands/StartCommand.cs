@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -15,8 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Microsoft.OData.Mcp.Core.Configuration;
+using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Tools;
@@ -177,7 +175,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                                 }
                                 
                                 // Execute the tool handler
-                                var jsonParams = JsonDocument.Parse(JsonSerializer.Serialize(parameters));
+                                var jsonParams = JsonDocument.Parse(JsonSerializer.Serialize(parameters, JsonConstants.Default));
                                 var result = await toolDef.Handler(context, jsonParams);
                                 
                                 // Return as JSON string
@@ -187,12 +185,12 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                                     {
                                         return jsonDoc.RootElement.GetRawText();
                                     }
-                                    return JsonSerializer.Serialize(result.Data);
+                                    return JsonSerializer.Serialize(result.Data, JsonConstants.Default);
                                 }
                                 else
                                 {
                                     var errorResponse = new { error = result.ErrorMessage ?? "Operation failed", errorCode = result.ErrorCode };
-                                    return JsonSerializer.Serialize(errorResponse);
+                                    return JsonSerializer.Serialize(errorResponse, JsonConstants.Default);
                                 }
                             };
                         
@@ -247,7 +245,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                         // Validate delay
                         if (delaySeconds < 0 || delaySeconds > 10)
                         {
-                            return Task.FromResult(JsonSerializer.Serialize(new { error = "Delay must be between 0 and 10 seconds" }));
+                            return Task.FromResult(JsonSerializer.Serialize(new { error = "Delay must be between 0 and 10 seconds" }, JsonConstants.Default));
                         }
                         
                         if (Verbose)
@@ -272,7 +270,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                         return Task.FromResult(JsonSerializer.Serialize(new 
                         { 
                             message = $"Server shutdown initiated. Reason: {reason}. Shutting down in {delaySeconds} second(s)." 
-                        }));
+                        }, JsonConstants.Default));
                     };
                 
                 var shutdownTool = McpServerTool.Create(

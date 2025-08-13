@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OData.Mcp.AspNetCore.Constants;
 using Microsoft.OData.Mcp.Core;
 using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Routing;
@@ -146,11 +147,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
             };
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions 
-            { 
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            }));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, AspNetCoreJsonConstants.ApiResponse));
         }
 
         /// <summary>
@@ -171,11 +168,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
             };
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions 
-            { 
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            }));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, AspNetCoreJsonConstants.ApiResponse));
         }
 
         /// <summary>
@@ -209,11 +202,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
             };
             
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions 
-            { 
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            }));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, AspNetCoreJsonConstants.ApiResponse));
         }
 
         /// <summary>
@@ -312,11 +301,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
                         correlationId = result.CorrelationId
                     };
                     
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(successResponse, new JsonSerializerOptions 
-                    { 
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        WriteIndented = true
-                    }));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(successResponse, AspNetCoreJsonConstants.ApiResponse));
                 }
                 else
                 {
@@ -337,11 +322,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Middleware
                         correlationId = result.CorrelationId
                     };
                     
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions 
-                    { 
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        WriteIndented = true
-                    }));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, AspNetCoreJsonConstants.ErrorResponse));
                 }
             }
             catch (JsonException ex)
