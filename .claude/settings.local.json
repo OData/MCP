@@ -16,7 +16,8 @@
       "Bash(mv:*)",
       "mcp__odata-northwind__shutdown_server",
       "mcp__odata-trippin__shutdown_server",
-      "mcp__odata-northwind__list_categories"
+      "mcp__odata-northwind__list_categories",
+      "mcp__odata-northwind__list_products"
     ],
     "deny": []
   }

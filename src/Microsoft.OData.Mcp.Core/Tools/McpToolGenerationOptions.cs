@@ -241,6 +241,28 @@ namespace Microsoft.OData.Mcp.Core.Tools
         /// </remarks>
         public string ToolVersion { get; set; } = "1.0.0";
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to exclude binary and stream fields from default $select statements.
+        /// </summary>
+        /// <value><c>true</c> to exclude binary fields by default; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// When enabled, properties of type Edm.Binary and Edm.Stream will be automatically excluded
+        /// from list operations unless explicitly included in the $select parameter. This helps prevent
+        /// large binary data from overwhelming the response and improves performance.
+        /// </remarks>
+        public bool ExcludeBinaryFieldsByDefault { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the list of property types that should always be excluded from default selections.
+        /// </summary>
+        /// <value>A list of EDM type names to exclude.</value>
+        /// <remarks>
+        /// This list allows customization of which property types are automatically excluded
+        /// from default $select statements. Common values include "Edm.Binary", "Edm.Stream",
+        /// and potentially large geographic data types.
+        /// </remarks>
+        public List<string> AlwaysExcludePropertyTypes { get; set; } = ["Edm.Binary", "Edm.Stream"];
+
         #endregion
 
         #region Constructors
@@ -509,7 +531,9 @@ namespace Microsoft.OData.Mcp.Core.Tools
                 MaxToolCount = MaxToolCount,
                 MaxNavigationDepth = MaxNavigationDepth,
                 CustomMetadata = new Dictionary<string, object>(CustomMetadata),
-                ToolVersion = ToolVersion
+                ToolVersion = ToolVersion,
+                ExcludeBinaryFieldsByDefault = ExcludeBinaryFieldsByDefault,
+                AlwaysExcludePropertyTypes = new List<string>(AlwaysExcludePropertyTypes)
             };
         }
 

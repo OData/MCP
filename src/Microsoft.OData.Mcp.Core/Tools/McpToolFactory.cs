@@ -408,8 +408,10 @@ ArgumentNullException.ThrowIfNull(tools);
 
             // Store entity metadata for use by handlers
             tool.Metadata["KeyProperties"] = entityType.Key;
-            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["EntityType"] = entityType;  // Store the actual object for consistency
+            tool.Metadata["EntityTypeName"] = entityType.FullName;
             tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+            tool.Metadata["GenerationOptions"] = options;
 
             if (options.IncludeExamples)
             {
@@ -452,8 +454,10 @@ ArgumentNullException.ThrowIfNull(tools);
 
             // Store entity metadata for use by handlers
             tool.Metadata["KeyProperties"] = entityType.Key;
-            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["EntityType"] = entityType;  // Store the actual object for consistency
+            tool.Metadata["EntityTypeName"] = entityType.FullName;
             tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+            tool.Metadata["GenerationOptions"] = options;
 
             if (options.IncludeExamples)
             {
@@ -496,8 +500,10 @@ ArgumentNullException.ThrowIfNull(tools);
 
             // Store entity metadata for use by handlers
             tool.Metadata["KeyProperties"] = entityType.Key;
-            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["EntityType"] = entityType;  // Store the actual object for consistency
+            tool.Metadata["EntityTypeName"] = entityType.FullName;
             tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+            tool.Metadata["GenerationOptions"] = options;
 
             if (options.IncludeExamples)
             {
@@ -540,8 +546,10 @@ ArgumentNullException.ThrowIfNull(tools);
 
             // Store entity metadata for use by handlers
             tool.Metadata["KeyProperties"] = entityType.Key;
-            tool.Metadata["EntityType"] = entityType.FullName;
+            tool.Metadata["EntityType"] = entityType;  // Store the actual object for consistency
+            tool.Metadata["EntityTypeName"] = entityType.FullName;
             tool.Metadata["AllProperties"] = entityType.Properties.Select(p => p.Name).ToList();
+            tool.Metadata["GenerationOptions"] = options;
 
             if (options.IncludeExamples)
             {
@@ -631,7 +639,21 @@ ArgumentNullException.ThrowIfNull(tools);
         internal async Task<McpToolDefinition> GenerateEntitySetListToolAsync(EdmEntitySet entitySet, EdmModel model, McpToolGenerationOptions options)
         {
             var toolName = options.FormatToolName($"list_{entitySet.Name.ToLowerInvariant()}");
+            
+            // Find the entity type for this entity set
+            var entityType = model.EntityTypes.FirstOrDefault(et => 
+                et.FullName == entitySet.EntityType || et.Name == entitySet.EntityType);
+            
+            // Build description that mentions binary field exclusion if applicable
             var description = $"Lists entities from the {entitySet.Name} collection with optional filtering and pagination";
+            if (entityType != null && options.ExcludeBinaryFieldsByDefault)
+            {
+                var hasBinaryFields = entityType.Properties.Any(p => IsBinaryOrStreamField(p));
+                if (hasBinaryFields)
+                {
+                    description += ". Binary/stream fields are excluded by default - use $select to explicitly include them if needed";
+                }
+            }
 
             var inputSchema = GenerateEntitySetQuerySchema();
             var requiredScopes = options.GetCombinedScopes(entitySet.EntityType, McpToolOperationType.Query).ToList();
@@ -651,6 +673,13 @@ ArgumentNullException.ThrowIfNull(tools);
                 Version = options.ToolVersion,
                 SupportsBatch = true
             };
+
+            // Store entity type and options in metadata for use by the handler
+            if (entityType != null)
+            {
+                tool.Metadata["EntityType"] = entityType;
+                tool.Metadata["GenerationOptions"] = options;
+            }
 
             if (options.IncludeExamples)
             {
@@ -1455,11 +1484,35 @@ ArgumentNullException.ThrowIfNull(tools);
                         queryParams.Add($"$orderby={Uri.EscapeDataString(orderby)}");
                 }
                 
+                // Handle $select with binary field exclusion
+                bool selectSpecified = false;
                 if (parameters.RootElement.TryGetProperty("$select", out var selectElement))
                 {
                     var select = selectElement.GetString();
                     if (!string.IsNullOrWhiteSpace(select))
+                    {
                         queryParams.Add($"$select={Uri.EscapeDataString(select)}");
+                        selectSpecified = true;
+                    }
+                }
+                
+                // If no $select was specified, build a default one excluding binary fields
+                if (!selectSpecified)
+                {
+                    // Try to get the entity type from context metadata
+                    var entityType = context.GetProperty<EdmEntityType>("EntityType");
+                    var options = context.GetProperty<McpToolGenerationOptions>("GenerationOptions");
+                    
+                    if (entityType != null)
+                    {
+                        // Use the provided options or default ones
+                        var defaultSelect = BuildDefaultSelectForEntityType(entityType, options ?? McpToolGenerationOptions.Default());
+                        if (!string.IsNullOrWhiteSpace(defaultSelect))
+                        {
+                            queryParams.Add($"$select={Uri.EscapeDataString(defaultSelect)}");
+                            _logger.LogDebug("Applied default $select excluding binary fields: {Select}", defaultSelect);
+                        }
+                    }
                 }
                 
                 if (parameters.RootElement.TryGetProperty("$expand", out var expandElement))
@@ -1721,6 +1774,59 @@ ArgumentNullException.ThrowIfNull(tools);
             
             // Everything else is treated as a string
             return true;
+        }
+
+        /// <summary>
+        /// Determines if a property is a binary or stream field that should be excluded by default.
+        /// </summary>
+        /// <param name="property">The property to check.</param>
+        /// <returns>True if the property is a binary or stream field; otherwise, false.</returns>
+        internal static bool IsBinaryOrStreamField(EdmProperty property)
+        {
+            if (property == null || string.IsNullOrWhiteSpace(property.Type))
+            {
+                return false;
+            }
+
+            var type = property.Type.ToLowerInvariant();
+            return type.Contains("edm.binary") || 
+                   type.Contains("edm.stream") || 
+                   type == "binary" || 
+                   type == "stream";
+        }
+
+        /// <summary>
+        /// Builds a default $select statement for an entity type, excluding binary and stream fields.
+        /// </summary>
+        /// <param name="entityType">The entity type to build the select for.</param>
+        /// <param name="options">The generation options.</param>
+        /// <returns>A comma-separated list of property names to select, or null if all properties should be included.</returns>
+        internal static string? BuildDefaultSelectForEntityType(EdmEntityType entityType, McpToolGenerationOptions? options = null)
+        {
+            if (entityType == null || entityType.Properties == null || entityType.Properties.Count == 0)
+            {
+                return null;
+            }
+
+            // If binary exclusion is disabled, return null to select all properties
+            if (options != null && !options.ExcludeBinaryFieldsByDefault)
+            {
+                return null;
+            }
+
+            var selectableProperties = entityType.Properties
+                .Where(p => !IsBinaryOrStreamField(p))
+                .Select(p => p.Name)
+                .ToList();
+
+            // If all properties are being selected anyway, return null
+            if (selectableProperties.Count == entityType.Properties.Count)
+            {
+                return null;
+            }
+
+            // Return the filtered list
+            return selectableProperties.Count > 0 ? string.Join(",", selectableProperties) : null;
         }
 
         /// <summary>
