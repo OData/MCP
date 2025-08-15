@@ -1,0 +1,35 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Core/">
+    <Project Path="src/Microsoft.OData.Mcp.Authentication/Microsoft.OData.Mcp.Authentication.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Core/Microsoft.OData.Mcp.Core.csproj" />
+  </Folder>
+  <Folder Name="/Runtimes/">
+    <Project Path="src/Microsoft.OData.Mcp.AspNetCore/Microsoft.OData.Mcp.AspNetCore.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tools/Microsoft.OData.Mcp.Tools.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Microsoft.OData.Mcp.Sample/Microsoft.OData.Mcp.Sample.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tests.Authentication/Microsoft.OData.Mcp.Tests.Authentication.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tests.Integration/Microsoft.OData.Mcp.Tests.Integration.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tests.Shared/Microsoft.OData.Mcp.Tests.Shared.csproj" />
+    <Project Path="src/Microsoft.OData.Mcp.Tests.Tools/Microsoft.OData.Mcp.Tests.Tools.csproj" />
+  </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="src/Microsoft.OData.Mcp.Benchmarks/Microsoft.OData.Mcp.Benchmarks.csproj" />
+  </Folder>
+</Solution>

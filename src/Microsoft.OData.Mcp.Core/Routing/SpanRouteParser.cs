@@ -75,7 +75,7 @@ namespace Microsoft.OData.Mcp.Core.Routing
             if (mcpIndex > 0)
             {
                 // Remove trailing slash from OData route
-                odataRoute = path.Slice(0, mcpIndex - 1);
+                odataRoute = path[..(mcpIndex - 1)];
             }
             else
             {

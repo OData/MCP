@@ -3,7 +3,7 @@
 
   <!-- Folder layout -->
   <PropertyGroup>
-    <IsBenchmarkProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.performance'))">true</IsBenchmarkProject>
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.benchmarks'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.ToLower().Contains('.tests.'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(MSBuildProjectName.ToLower().Contains('.samples.'))">true</IsSampleProject>
