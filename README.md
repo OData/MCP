@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.OData.Mcp.Core.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp.Core/)
 [![Build Status](https://img.shields.io/azure-devops/build/microsoft/odata-mcp/main.svg)](https://dev.azure.com/microsoft/odata-mcp)
-[![License](https://img.shields.io/github/license/microsoft/odata-mcp.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/odata/mcp.svg)](LICENSE)
 
 Enable AI to interact with your OData services ✨automagically✨ through the Model Context Protocol (MCP).
 
