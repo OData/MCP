@@ -9,6 +9,7 @@ using Microsoft.OData.Mcp.Authentication.Models;
 
 namespace Microsoft.OData.Mcp.Authentication.Services
 {
+
     /// <summary>
     /// Provides services for delegating authentication tokens to downstream services.
     /// </summary>
@@ -19,6 +20,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
     /// </remarks>
     public interface ITokenDelegationService
     {
+
         /// <summary>
         /// Gets an authentication token for making requests to a specific target service.
         /// </summary>
@@ -109,5 +111,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentException">Thrown when <paramref name="userId"/> is null or whitespace.</exception>
         Task ClearCachedTokensAsync(string userId, CancellationToken cancellationToken = default);
+
     }
+
 }

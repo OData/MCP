@@ -5,11 +5,13 @@ using System;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Build information for the MCP server.
     /// </summary>
     public sealed class BuildInfo
     {
+
         /// <summary>
         /// Gets or sets the build number or identifier.
         /// </summary>
@@ -62,5 +64,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
                 TargetFramework = TargetFramework
             };
         }
+
     }
+
 }

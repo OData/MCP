@@ -10,6 +10,7 @@ using Microsoft.OData.Mcp.Authentication.Models;
 
 namespace Microsoft.OData.Mcp.Authentication.Services
 {
+
     /// <summary>
     /// Provides services for validating JWT tokens and extracting user context.
     /// </summary>
@@ -20,6 +21,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
     /// </remarks>
     public interface ITokenValidationService
     {
+
         /// <summary>
         /// Validates a JWT token and returns the principal if valid.
         /// </summary>
@@ -80,5 +82,7 @@ namespace Microsoft.OData.Mcp.Authentication.Services
         /// <returns>The remaining time before the token expires, or null if the token has no expiration.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="principal"/> is null.</exception>
         TimeSpan? GetTokenLifetime(ClaimsPrincipal principal);
+
     }
+
 }

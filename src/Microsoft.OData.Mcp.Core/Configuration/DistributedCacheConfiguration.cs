@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Configuration for distributed caching.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class DistributedCacheConfiguration
     {
+
         #region Properties
 
         /// <summary>
@@ -181,5 +183,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         }
 
         #endregion
+
     }
+
 }

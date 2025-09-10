@@ -151,7 +151,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         /// <exception cref="ArgumentException">Thrown when <paramref name="thumbprint"/> is null or whitespace.</exception>
         public ClientCertificate(string thumbprint, StoreLocation storeLocation = StoreLocation.CurrentUser, StoreName storeName = StoreName.My)
         {
-ArgumentException.ThrowIfNullOrWhiteSpace(thumbprint);
+            ArgumentException.ThrowIfNullOrWhiteSpace(thumbprint);
 
             Source = CertificateSource.Store;
             Thumbprint = thumbprint;
@@ -167,7 +167,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(thumbprint);
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is null or whitespace.</exception>
         public ClientCertificate(string filePath, string? password = null)
         {
-ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
             Source = CertificateSource.File;
             FilePath = filePath;

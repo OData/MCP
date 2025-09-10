@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Configuration for metadata and tool caching behavior.
     /// </summary>
@@ -18,6 +19,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class CachingConfiguration
     {
+
         #region Properties
 
         /// <summary>
@@ -424,5 +426,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         }
 
         #endregion
+
     }
+
 }

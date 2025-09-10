@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for a specific target service in token delegation.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class TargetServiceOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -273,5 +275,7 @@ ArgumentNullException.ThrowIfNull(uri);
         }
 
         #endregion
+
     }
+
 }

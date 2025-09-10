@@ -7,6 +7,7 @@ using System.Security.Claims;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Represents the result of a token validation operation.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class TokenValidationResult
     {
+
         #region Properties
 
         /// <summary>
@@ -297,5 +299,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(key);
         }
 
         #endregion
+
     }
+
 }

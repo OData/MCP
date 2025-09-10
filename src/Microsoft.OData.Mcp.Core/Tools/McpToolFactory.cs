@@ -1782,7 +1782,7 @@ ArgumentNullException.ThrowIfNull(tools);
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns>True if the property is a binary or stream field; otherwise, false.</returns>
-        internal static bool IsBinaryOrStreamField(EdmProperty property)
+        public static bool IsBinaryOrStreamField(EdmProperty property)
         {
             if (property == null || string.IsNullOrWhiteSpace(property.Type))
             {
@@ -1802,7 +1802,7 @@ ArgumentNullException.ThrowIfNull(tools);
         /// <param name="entityType">The entity type to build the select for.</param>
         /// <param name="options">The generation options.</param>
         /// <returns>A comma-separated list of property names to select, or null if all properties should be included.</returns>
-        internal static string? BuildDefaultSelectForEntityType(EdmEntityType entityType, McpToolGenerationOptions? options = null)
+        public static string? BuildDefaultSelectForEntityType(EdmEntityType entityType, McpToolGenerationOptions? options = null)
         {
             if (entityType == null || entityType.Properties == null || entityType.Properties.Count == 0)
             {

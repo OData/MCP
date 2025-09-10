@@ -5,25 +5,25 @@ namespace Microsoft.OData.Mcp.Authentication.Models
 {
 
     /// <summary>
-    /// Defines the sources from which client certificates can be loaded.
+    /// Defines the strategies for forwarding tokens to downstream services.
     /// </summary>
-    public enum CertificateSource
+    public enum TokenForwardingStrategy
     {
 
         /// <summary>
-        /// Load certificate from the Windows certificate store.
+        /// Forward the original token without modification.
         /// </summary>
-        Store,
+        PassThrough,
 
         /// <summary>
-        /// Load certificate from a file on disk.
+        /// Exchange the token for a new one using OAuth2 token exchange.
         /// </summary>
-        File,
+        Exchange,
 
         /// <summary>
-        /// Load certificate from Base64-encoded data in configuration.
+        /// Use OAuth2 on-behalf-of flow to obtain a token for the downstream service.
         /// </summary>
-        Base64
+        OnBehalfOf
 
     }
 

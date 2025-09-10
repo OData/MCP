@@ -5,11 +5,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Basic authentication credentials.
     /// </summary>
     public sealed class BasicAuthenticationCredentials
     {
+
         /// <summary>
         /// Gets or sets the username.
         /// </summary>
@@ -40,5 +42,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         {
             return new BasicAuthenticationCredentials { Username = Username, Password = Password };
         }
+
     }
+
 }

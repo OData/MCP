@@ -3,6 +3,7 @@
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Defines the cache eviction policies.
     /// </summary>
@@ -13,6 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public enum CacheEvictionPolicy
     {
+
         /// <summary>
         /// Least Recently Used (LRU) eviction policy.
         /// </summary>
@@ -63,5 +65,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// of cached entries and works well with time-sensitive data.
         /// </remarks>
         TimeToLive
+
     }
+
 }

@@ -1,0 +1,10 @@
+root = true
+
+[*.cs]
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = block_scoped
+csharp_prefer_simple_using_statement = false
+indent_style = space
+indent_size = 4

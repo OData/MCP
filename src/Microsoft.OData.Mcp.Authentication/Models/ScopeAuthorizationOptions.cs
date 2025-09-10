@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for OAuth2 scope-based authorization.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class ScopeAuthorizationOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -278,26 +280,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the behavior when required scopes are missing.
-    /// </summary>
-    public enum ScopeEnforcementBehavior
-    {
-        /// <summary>
-        /// Deny access to the operation or tool when required scopes are missing.
-        /// </summary>
-        DenyAccess,
-
-        /// <summary>
-        /// Filter out tools and operations that the user cannot access due to missing scopes.
-        /// </summary>
-        FilterTools,
-
-        /// <summary>
-        /// Log the authorization decision but allow access even when scopes are missing.
-        /// </summary>
-        LogOnly
-    }
 }

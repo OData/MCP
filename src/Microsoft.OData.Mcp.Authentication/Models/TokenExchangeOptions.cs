@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for OAuth2 token exchange operations.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class TokenExchangeOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -187,5 +189,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
         }
 
         #endregion
+
     }
+
 }

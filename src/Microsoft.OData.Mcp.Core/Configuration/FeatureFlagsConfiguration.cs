@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Configuration for enabling/disabling specific features.
     /// </summary>
@@ -16,6 +17,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class FeatureFlagsConfiguration
     {
+
         #region Properties
 
         /// <summary>
@@ -524,5 +526,6 @@ ArgumentNullException.ThrowIfNull(other);
         }
 
         #endregion
+
     }
 }

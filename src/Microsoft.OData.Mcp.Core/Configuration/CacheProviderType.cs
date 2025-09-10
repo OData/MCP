@@ -3,6 +3,7 @@
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Defines the cache provider types.
     /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public enum CacheProviderType
     {
+
         /// <summary>
         /// In-memory cache within the application process.
         /// </summary>
@@ -63,5 +65,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// provider interfaces.
         /// </remarks>
         Custom
+
     }
+
 }

@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Core.Configuration
 {
+
     /// <summary>
     /// Configuration for data protection and encryption settings.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
     /// </remarks>
     public sealed class DataProtectionConfiguration
     {
+
         /// <summary>
         /// Gets or sets a value indicating whether sensitive data should be encrypted.
         /// </summary>
@@ -72,5 +74,7 @@ namespace Microsoft.OData.Mcp.Core.Configuration
         /// </summary>
         /// <param name="other">The configuration to merge into this one.</param>
         public void MergeWith(DataProtectionConfiguration other) { if (other != null) { EncryptSensitiveData = other.EncryptSensitiveData; if (!string.IsNullOrWhiteSpace(other.EncryptionKey)) EncryptionKey = other.EncryptionKey; KeyRotationPeriod = other.KeyRotationPeriod; } }
+
     }
+
 }

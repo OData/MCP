@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Microsoft.OData.Mcp.Authentication.Models
 {
+
     /// <summary>
     /// Configuration options for token delegation to downstream services.
     /// </summary>
@@ -17,6 +18,7 @@ namespace Microsoft.OData.Mcp.Authentication.Models
     /// </remarks>
     public sealed class TokenDelegationOptions
     {
+
         #region Properties
 
         /// <summary>
@@ -221,26 +223,7 @@ ArgumentNullException.ThrowIfNull(targetService);
         }
 
         #endregion
+
     }
 
-    /// <summary>
-    /// Defines the strategies for forwarding tokens to downstream services.
-    /// </summary>
-    public enum TokenForwardingStrategy
-    {
-        /// <summary>
-        /// Forward the original token without modification.
-        /// </summary>
-        PassThrough,
-
-        /// <summary>
-        /// Exchange the token for a new one using OAuth2 token exchange.
-        /// </summary>
-        Exchange,
-
-        /// <summary>
-        /// Use OAuth2 on-behalf-of flow to obtain a token for the downstream service.
-        /// </summary>
-        OnBehalfOf
-    }
 }

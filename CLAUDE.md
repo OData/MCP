@@ -34,9 +34,9 @@ If you create any temporary new files, scripts, or helper files for iteration, c
 * Use pattern matching, switch expressions, range expressions, and collection initializers wherever possible.
 * Use `nameof` instead of string literals when referring to member names.
 * Ensure that extensive XML doc comments are created for any APIs. 
-  * When applicable, include <example> and <code> documentation in the comments. 
-  * Only <param> tags should be on the same line as content.
-  * The <remarks> tag should be the last one before the member declaration.
+  * When applicable, include `<example>` and `<code>` documentation in the comments. 
+  * Only `<param>` tags should be on the same line as content.
+  * The `<remarks>` tag should be the last one before the member declaration.
 
 ## Nullable Reference Types
 
@@ -58,13 +58,14 @@ If you create any temporary new files, scripts, or helper files for iteration, c
 
 ## Source System
 
-* We're using Mintlify.com for documentation
-  * The user instructions ate at https://mintlify.com/docs/llms-full.txt
+* We're using DotNetDocs.com for documentation
+  * The user instructions are at https://dotnetdocs.com/llms-full.txt
+  * We're using Mintlify for hosting the docs. Formatting instructions for building guide documentation is at https://mintlify.com/docs/llms-full.txt
   * The schema for docs.json files is here: https://leaves.mintlify.com/schema/docs.json
 
 ## Process
 
-* API documentation is created automatically by using the `dotnet easyaf mintlify` command to turn C# doc xml files into Mintlify-Enhanced Markdown.
+* API documentation is created automatically by using the `DotNetDocs.Sdk` referenced in the `Microsoft.OData.Mcp.Docs.docsproj` project.
 * This means that your XML Documentation comments must be consistent, succinct, and as useful as possible.
 
 # Build Process

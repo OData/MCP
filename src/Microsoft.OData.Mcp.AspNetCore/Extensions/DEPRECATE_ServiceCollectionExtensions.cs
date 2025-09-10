@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// These extensions provide a fluent API for configuring all aspects of the OData MCP server,
     /// including authentication, metadata parsing, and MCP tool generation.
     /// </remarks>
-    public static class DEPRECATE_ServiceCollectionExtensions
+    internal static class DEPRECATE_ServiceCollectionExtensions
     {
         /// <summary>
         /// Adds the OData MCP server services to the service collection.
@@ -140,41 +140,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     ConfigureScopePolicies(options, authOptions.ScopeAuthorization);
                 }
-            });
-
-            return services;
-        }
-
-        /// <summary>
-        /// Adds CORS support for the OData MCP server.
-        /// </summary>
-        /// <param name="services">The service collection to add CORS to.</param>
-        /// <param name="policyName">The name of the CORS policy.</param>
-        /// <param name="configurePolicy">Action to configure the CORS policy.</param>
-        /// <returns>The service collection for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="policyName"/> is null or whitespace.</exception>
-        public static IServiceCollection AddODataMcpCors(this IServiceCollection services, string policyName, Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>? configurePolicy = null)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentException.ThrowIfNullOrWhiteSpace(policyName);
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(policyName, builder =>
-                {
-                    if (configurePolicy is not null)
-                    {
-                        configurePolicy(builder);
-                    }
-                    else
-                    {
-                        // Default CORS policy for MCP servers
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    }
-                });
             });
 
             return services;
