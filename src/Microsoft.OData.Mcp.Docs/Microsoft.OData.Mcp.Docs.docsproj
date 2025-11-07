@@ -1,13 +1,25 @@
-﻿<Project Sdk="DotNetDocs.Sdk/1.0.0-preview.10">
+<Project Sdk="DotNetDocs.Sdk/1.1.0-preview.10">
 
-  <PropertyGroup>
-      <KeepLocalOutput>true</KeepLocalOutput>
-      <DocumentationType>Mintlify</DocumentationType>
-      <GenerateDocumentation>true</GenerateDocumentation>
-      <NamespaceMode>Folder</NamespaceMode>
-      <ShowDocumentationStats>true</ShowDocumentationStats>
-      <!-- Exclude test projects from documentation -->
-      <ExcludePatterns>Tests.Shared</ExcludePatterns>
-  </PropertyGroup>
+	<PropertyGroup>
+		<DocumentationType>Mintlify</DocumentationType>
+		<GenerateDocumentation>true</GenerateDocumentation>
+		<NamespaceMode>Folder</NamespaceMode>
+		<ShowDocumentationStats>true</ShowDocumentationStats>
+
+		<ConceptualDocsEnabled>false</ConceptualDocsEnabled>
+		<ShowPlaceholders>false</ShowPlaceholders>
+
+		<MintlifyTemplate>
+			<Name>Microsoft.OData.Mcp</Name>
+			<Theme>maple</Theme>
+			<Colors>
+				<Primary>#419AC5</Primary>
+				<Light>#419AC5</Light>
+				<Dark>#3CD0E2</Dark>
+			</Colors>
+            <Navigation Mode="Unified">
+			</Navigation>
+		</MintlifyTemplate>
+	</PropertyGroup>
 
 </Project>

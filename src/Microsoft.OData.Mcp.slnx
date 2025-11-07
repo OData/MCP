@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Solution>
   <Configurations>
     <Platform Name="Any CPU" />
@@ -19,11 +20,11 @@
     <Project Path="../samples/Microsoft.OData.Mcp.Sample/Microsoft.OData.Mcp.Sample.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
-    <File Path="CLAUDE.md" />
+    <File Path="../CLAUDE.md" />
     <File Path="Directory.Build.props" />
     <File Path="global.json" />
-    <File Path="README.md" />
-    <File Path="TESTING_PLUS_REFACTOR_PLAN.md" />
+    <File Path="../README.md" />
+    <File Path="../specs/TESTING_PLUS_REFACTOR_PLAN.md" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
