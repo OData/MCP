@@ -4,10 +4,27 @@
     "light": "#419AC5",
     "primary": "#419AC5"
   },
-  "name": "Microsoft.OData.Mcp",
+  "name": "OData MCP",
   "navigation": {
     "pages": [
-      "index",
+      {
+        "group": "Getting Started",
+        "icon": "stars",
+        "pages": [
+          "index",
+          "why-mcp",
+          "quickstart-local",
+          "quickstart-server"
+        ]
+      },
+      {
+        "group": "Guides",
+        "icon": "dog-leashed",
+        "pages": [
+          "guides/page-1",
+          "guides/page-2"
+        ]
+      },
       {
         "group": "API Reference",
         "icon": "code",

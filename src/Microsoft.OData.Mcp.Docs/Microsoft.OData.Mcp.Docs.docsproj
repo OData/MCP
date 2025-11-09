@@ -10,7 +10,7 @@
 		<ShowPlaceholders>false</ShowPlaceholders>
 
 		<MintlifyTemplate>
-			<Name>Microsoft.OData.Mcp</Name>
+			<Name>OData MCP</Name>
 			<Theme>maple</Theme>
 			<Colors>
 				<Primary>#419AC5</Primary>
@@ -18,7 +18,17 @@
 				<Dark>#3CD0E2</Dark>
 			</Colors>
             <Navigation Mode="Unified">
-			</Navigation>
+                <Pages>
+                    <Groups>
+                        <Group Name="Getting Started" Icon="stars">
+                            <Pages>index;why-mcp;quickstart-local;quickstart-server</Pages>
+                        </Group>
+                        <Group Name="Guides" Icon="dog-leashed">
+                            <Pages>guides/page-1;guides/page-2;</Pages>
+                        </Group>
+                    </Groups>
+                </Pages>
+            </Navigation>
 		</MintlifyTemplate>
 	</PropertyGroup>
 
