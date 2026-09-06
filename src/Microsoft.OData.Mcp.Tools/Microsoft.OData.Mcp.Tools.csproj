@@ -6,10 +6,10 @@
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
 
-        <!-- Console app settings -->
-        <PublishSingleFile>true</PublishSingleFile>
+        <!-- Console app settings - only enable single file when RuntimeIdentifier is specified -->
+        <PublishSingleFile Condition="'$(RuntimeIdentifier)' != ''">true</PublishSingleFile>
         <SelfContained>false</SelfContained>
-        <PublishReadyToRun>true</PublishReadyToRun>
+        <PublishReadyToRun Condition="'$(RuntimeIdentifier)' != ''">true</PublishReadyToRun>
 
         <!-- Tool metadata for dotnet tool -->
         <PackAsTool>true</PackAsTool>
@@ -31,7 +31,7 @@
         <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.*" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.*" Condition="'$(TargetFramework)' == 'net8.0'" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" Condition="'$(TargetFramework)' == 'net9.0'" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*-*" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*" Condition="'$(TargetFramework)' == 'net10.0'" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.*" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
     </ItemGroup>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Solution>
   <Configurations>
     <Platform Name="Any CPU" />
@@ -25,6 +25,16 @@
     <File Path="global.json" />
     <File Path="../README.md" />
     <File Path="../specs/TESTING_PLUS_REFACTOR_PLAN.md" />
+  </Folder>
+  <Folder Name="/Solution Items/Specs/">
+    <File Path="../specs/v3/ARCHITECTURE.md" />
+    <File Path="../specs/v3/CRITICAL-ANALYSIS.md" />
+    <File Path="../specs/v3/EXECUTION-PLAN.md" />
+    <File Path="../specs/v3/INVENTORY.md" />
+    <File Path="../specs/v3/METADATA-STRATEGY.md" />
+    <File Path="../specs/v3/PROTOCOL.md" />
+    <File Path="../specs/v3/README.md" />
+    <File Path="../specs/v3/TOOL-SURFACE.md" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />

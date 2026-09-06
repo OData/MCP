@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -59,15 +60,15 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="count">Optional flag to include the total count of matching entities.</param>
         /// <returns>The query results as JSON.</returns>
         [McpServerTool]
-        [Description("Queries an OData entity set with optional filtering, sorting, and pagination")]
+        [Description("Queries an OData entity set with optional filtering, sorting, and pagination. IMPORTANT: Pass parameters directly as named parameters (e.g., entitySet='Countries', top=10, count=true). Do NOT use $ prefixes in parameter names - they are added automatically. Do NOT wrap parameters in a 'parameters' object.")]
         public async Task<string> QueryEntitySet(
             [Description("The name of the entity set to query")] string entitySet,
-            [Description("OData filter expression (e.g., 'Name eq \"John\"')")] string? filter = null,
-            [Description("OData orderby expression (e.g., 'Name desc')")] string? orderby = null,
-            [Description("Comma-separated list of properties to select")] string? select = null,
-            [Description("Maximum number of results to return")] int? top = null,
-            [Description("Number of results to skip for pagination")] int? skip = null,
-            [Description("Include the total count of matching entities")] bool count = false)
+            [Description("OData filter expression WITHOUT $ prefix (e.g., \"Name eq 'John'\" becomes $filter=Name eq 'John')")] string? filter = null,
+            [Description("OData orderby expression WITHOUT $ prefix (e.g., 'Name desc' becomes $orderby=Name desc)")] string? orderby = null,
+            [Description("Comma-separated list of properties to select WITHOUT $ prefix")] string? select = null,
+            [Description("Maximum number of results to return (becomes $top parameter)")] int? top = null,
+            [Description("Number of results to skip for pagination (becomes $skip parameter)")] int? skip = null,
+            [Description("Include the total count of matching entities (becomes $count parameter)")] bool count = false)
         {
             var config = _configuration.Value;
             
@@ -101,13 +102,18 @@ namespace Microsoft.OData.Mcp.Core.Server
                     queryParams.Add("$count=true");
 
                 if (queryParams.Count > 0)
+                {
+                    // UriBuilder.Query adds '?' automatically, so just use the joined params
                     queryBuilder.Query = string.Join("&", queryParams);
+                }
 
-                _logger.LogDebug("Executing OData query: {QueryUrl}", queryBuilder.Uri);
+                var finalUrl = queryBuilder.Uri.ToString();
+                _logger.LogDebug("Executing OData query: {QueryUrl}", finalUrl);
+                _logger.LogDebug("Query string breakdown: {QueryParams}", string.Join(", ", queryParams));
 
                 // Execute the query
                 using var httpClient = _httpClientFactory.CreateClient("OData");
-                var response = await httpClient.GetAsync(queryBuilder.Uri);
+                var response = await httpClient.GetAsync(finalUrl);
                 
                 response.EnsureSuccessStatusCode();
                 
@@ -119,8 +125,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error executing OData query");
-                throw new InvalidOperationException($"Failed to execute OData query: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error executing OData query");
+                throw new InvalidOperationException($"Failed to execute OData query: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -132,11 +139,11 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="select">Optional comma-separated list of properties to select.</param>
         /// <returns>The entity data as JSON.</returns>
         [McpServerTool]
-        [Description("Gets a single entity by its key from an OData service")]
+        [Description("Gets a single entity by its key from an OData service. Pass parameters directly as named parameters (e.g., entitySet='Countries', key='123'). Do NOT wrap in 'parameters' object.")]
         public async Task<string> GetEntity(
             [Description("The name of the entity set")] string entitySet,
             [Description("The entity key value")] string key,
-            [Description("Comma-separated list of properties to select")] string? select = null)
+            [Description("Comma-separated list of properties to select WITHOUT $ prefix")] string? select = null)
         {
             var config = _configuration.Value;
             
@@ -176,8 +183,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error getting OData entity");
-                throw new InvalidOperationException($"Failed to get OData entity: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error getting OData entity");
+                throw new InvalidOperationException($"Failed to get OData entity: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -188,7 +196,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="entity">The entity data as JSON.</param>
         /// <returns>The created entity as JSON.</returns>
         [McpServerTool]
-        [Description("Creates a new entity in the specified OData entity set")]
+        [Description("Creates a new entity in the specified OData entity set. Pass parameters directly as named parameters (e.g., entitySet='Countries', entity='{...}'). Do NOT wrap in 'parameters' object.")]
         public async Task<string> CreateEntity(
             [Description("The name of the entity set")] string entitySet,
             [Description("The entity data as JSON")] string entity)
@@ -232,13 +240,15 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Invalid JSON provided for entity creation");
-                throw new ArgumentException("Invalid JSON format", nameof(entity), ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Invalid JSON provided for entity creation");
+                throw new ArgumentException($"Invalid JSON format: {betterEx.Message}\n{betterEx.StackTrace}", nameof(entity), ex);
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error creating entity");
-                throw new InvalidOperationException($"Failed to create entity: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error creating entity");
+                throw new InvalidOperationException($"Failed to create entity: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -264,15 +274,18 @@ namespace Microsoft.OData.Mcp.Core.Server
 
                 using var httpClient = _httpClientFactory.CreateClient("OData");
                 var response = await httpClient.GetAsync(metadataUrl);
-                
+
                 response.EnsureSuccessStatusCode();
-                
-                return await response.Content.ReadAsStringAsync();
+
+                // Use byte array read for better encoding handling
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                return System.Text.Encoding.UTF8.GetString(bytes);
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error getting OData metadata");
-                throw new InvalidOperationException($"Failed to get OData metadata: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error getting OData metadata");
+                throw new InvalidOperationException($"Failed to get OData metadata: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -284,7 +297,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="entity">The updated entity data as JSON.</param>
         /// <returns>The updated entity.</returns>
         [McpServerTool]
-        [Description("Updates an existing entity in the OData service")]
+        [Description("Updates an existing entity in the OData service. Pass parameters directly as named parameters (e.g., entitySet='Countries', key='123', entity='{...}'). Do NOT wrap in 'parameters' object.")]
         public async Task<string> UpdateEntity(string entitySet, string key, string entity)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
@@ -345,13 +358,15 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Invalid JSON provided for entity update");
-                throw new ArgumentException("Invalid JSON format", nameof(entity), ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Invalid JSON provided for entity update");
+                throw new ArgumentException($"Invalid JSON format: {betterEx.Message}\n{betterEx.StackTrace}", nameof(entity), ex);
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error updating entity");
-                throw new InvalidOperationException($"Failed to update entity: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error updating entity");
+                throw new InvalidOperationException($"Failed to update entity: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -362,7 +377,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="key">The entity key.</param>
         /// <returns>Success message.</returns>
         [McpServerTool]
-        [Description("Deletes an entity from the OData service")]
+        [Description("Deletes an entity from the OData service. Pass parameters directly as named parameters (e.g., entitySet='Countries', key='123'). Do NOT wrap in 'parameters' object.")]
         public async Task<string> DeleteEntity(string entitySet, string key)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
@@ -401,8 +416,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error deleting entity");
-                throw new InvalidOperationException($"Failed to delete entity: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error deleting entity");
+                throw new InvalidOperationException($"Failed to delete entity: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -414,7 +430,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="navigationProperty">The navigation property name.</param>
         /// <returns>The related entities.</returns>
         [McpServerTool]
-        [Description("Navigates from a source entity to related entities via a navigation property")]
+        [Description("Navigates from a source entity to related entities via a navigation property. Pass parameters directly as named parameters (e.g., entitySet='Countries', key='123', navigationProperty='Regions'). Do NOT wrap in 'parameters' object.")]
         public async Task<string> NavigateRelationship(string entitySet, string key, string navigationProperty)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(entitySet);
@@ -458,8 +474,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP error navigating relationship");
-                throw new InvalidOperationException($"Failed to navigate relationship: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "HTTP error navigating relationship");
+                throw new InvalidOperationException($"Failed to navigate relationship: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 

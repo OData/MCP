@@ -39,7 +39,7 @@ Initializes a new instance of the [DynamicODataMcpTools](/api-reference/Microsof
 #### Syntax
 
 ```csharp
-public DynamicODataMcpTools(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.Core.Configuration.McpServerConfiguration> configuration, Microsoft.OData.Mcp.Core.Parsing.ICsdlMetadataParser metadataParser, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Core.Server.DynamicODataMcpTools> logger)
+public DynamicODataMcpTools(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.Core.Configuration.McpServerConfiguration> configuration, Microsoft.OData.Mcp.Core.Parsing.ICsdlMetadataParser metadataParser, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Core.Server.DynamicODataMcpTools> logger, System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmModel> edmModels)
 ```
 
 #### Parameters
@@ -50,6 +50,7 @@ public DynamicODataMcpTools(System.Net.Http.IHttpClientFactory httpClientFactory
 | `configuration` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.Core.Configuration.McpServerConfiguration>` | The server configuration. |
 | `metadataParser` | `Microsoft.OData.Mcp.Core.Parsing.ICsdlMetadataParser` | The CSDL metadata parser. |
 | `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Core.Server.DynamicODataMcpTools>` | The logger instance. |
+| `edmModels` | `System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmModel>` | The collection of EDM models to use for tool operations. |
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
 
@@ -70,7 +71,7 @@ Gets detailed schema information for a specific entity type.
 #### Syntax
 
 ```csharp
-public System.Threading.Tasks.Task<string> DescribeEntityType(string entityTypeName)
+public string DescribeEntityType(string entityTypeName)
 ```
 
 #### Parameters
@@ -81,7 +82,7 @@ public System.Threading.Tasks.Task<string> DescribeEntityType(string entityTypeN
 
 #### Returns
 
-Type: `System.Threading.Tasks.Task<string>`
+Type: `string`
 Detailed schema information including properties, keys, and navigation properties.
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  DiscoverEntitySets
@@ -91,12 +92,12 @@ Discovers and lists all available entity sets in the OData service.
 #### Syntax
 
 ```csharp
-public System.Threading.Tasks.Task<string> DiscoverEntitySets()
+public string DiscoverEntitySets()
 ```
 
 #### Returns
 
-Type: `System.Threading.Tasks.Task<string>`
+Type: `string`
 A JSON array of entity set information including names and types.
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
@@ -147,7 +148,7 @@ Generates sample OData query URLs for a specific entity set.
 #### Syntax
 
 ```csharp
-public System.Threading.Tasks.Task<string> GenerateQueryExamples(string entitySetName, bool includeAdvanced = false)
+public string GenerateQueryExamples(string entitySetName, bool includeAdvanced = false)
 ```
 
 #### Parameters
@@ -159,7 +160,7 @@ public System.Threading.Tasks.Task<string> GenerateQueryExamples(string entitySe
 
 #### Returns
 
-Type: `System.Threading.Tasks.Task<string>`
+Type: `string`
 A collection of sample OData query URLs with explanations.
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
@@ -246,7 +247,7 @@ Validates an OData query URL against the service metadata.
 #### Syntax
 
 ```csharp
-public System.Threading.Tasks.Task<string> ValidateQuery(string queryUrl)
+public string ValidateQuery(string queryUrl)
 ```
 
 #### Parameters
@@ -257,6 +258,6 @@ public System.Threading.Tasks.Task<string> ValidateQuery(string queryUrl)
 
 #### Returns
 
-Type: `System.Threading.Tasks.Task<string>`
+Type: `string`
 Validation results including any errors or warnings.
 

@@ -2,11 +2,13 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
+using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
@@ -257,18 +259,22 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Register parsers
             services.TryAddSingleton<ICsdlMetadataParser, CsdlParser>();
-            
+
             // Register tool factory
             services.TryAddSingleton<IMcpToolFactory, McpToolFactory>();
-            
+
+            // Register empty EdmModel collection by default (will be replaced in specific scenarios like Tools CLI)
+            // Note: DynamicODataMcpTools requires at least one model, so tests/scenarios using it must register models
+            services.TryAddSingleton<IEnumerable<EdmModel>>(sp => Array.Empty<EdmModel>());
+
             // Register MCP tools using attribute-based approach
             services.AddSingleton<ODataMcpTools>();
             services.AddSingleton<DynamicODataMcpTools>();
             // SystemMcpTools registration removed temporarily - needs special handling for IHostApplicationLifetime
-            
+
             // Register OData HTTP client
             services.AddODataHttpClient();
-            
+
             return services;
         }
 

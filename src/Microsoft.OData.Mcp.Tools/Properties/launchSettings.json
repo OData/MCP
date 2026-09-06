@@ -1,5 +1,13 @@
 {
   "profiles": {
+    "Manufacturing": {
+      "commandName": "Project",
+      "commandLineArgs": "start https://172.27.14.80:7121/v1",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "hotReloadEnabled": false
+    },
     "Northwind": {
       "commandName": "Project",
       "commandLineArgs": "start https://services.odata.org/V4/Northwind/Northwind.svc",

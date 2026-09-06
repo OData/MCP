@@ -17,8 +17,17 @@
       "mcp__odata-northwind__shutdown_server",
       "mcp__odata-trippin__shutdown_server",
       "mcp__odata-northwind__list_categories",
-      "mcp__odata-northwind__list_products"
+      "mcp__odata-northwind__list_products",
+      "WebFetch(domain:172.27.14.80)",
+      "Bash(curl:*)",
+      "mcp__odata-manufacturing__shutdown_server",
+      "Bash(dir:*)",
+      "mcp__odata-manufacturing__query_entity_set"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "odata-manufacturing"
+  ]
 }

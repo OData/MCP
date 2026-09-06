@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Core.Configuration;
+using Microsoft.OData.Mcp.Core.Models;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Server;
 using Microsoft.OData.Mcp.Core.Tools;
@@ -39,6 +40,15 @@ namespace Microsoft.OData.Mcp.Tests.Core.Extensions
 
             // Act
             services.AddODataMcpCore(configuration);
+
+            // Register a dummy EdmModel so DynamicODataMcpTools can be instantiated
+            var dummyModel = new EdmModel
+            {
+                Namespaces = ["Test"],
+                EntityTypes = [],
+                EntityContainers = []
+            };
+            services.AddSingleton<IEnumerable<EdmModel>>(new[] { dummyModel });
 
             // Assert
             services.Should().NotBeNull();

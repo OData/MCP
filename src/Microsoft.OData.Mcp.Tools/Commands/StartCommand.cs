@@ -229,10 +229,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                 var cts = new CancellationTokenSource();
                 
                 // Add shutdown tool to dynamic tools if we have a list
-                if (dynamicTools == null)
-                {
-                    dynamicTools = new List<McpServerTool>();
-                }
+                dynamicTools ??= [];
                 
                 // Create shutdown tool
                 Func<Dictionary<string, object?>, CancellationToken, Task<string>> shutdownDelegate = 
@@ -318,11 +315,11 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                     {
                         // Register OData services
                         services.AddODataMcpCore(configuration);
-                        
-                        // Register the parsed model as singleton to avoid re-fetching
+
+                        // Register the parsed model as IEnumerable<EdmModel> singleton to avoid re-fetching
                         if (edmModel != null)
                         {
-                            services.AddSingleton(edmModel);
+                            services.AddSingleton<IEnumerable<EdmModel>>(new[] { edmModel });
                         }
                         
                         // Configure MCP server with dynamic or static tools

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -32,8 +33,7 @@ namespace Microsoft.OData.Mcp.Core.Server
         internal readonly IOptions<McpServerConfiguration> _configuration;
         internal readonly ICsdlMetadataParser _metadataParser;
         internal readonly ILogger<DynamicODataMcpTools> _logger;
-        internal EdmModel? _cachedModel;
-        internal DateTime _lastMetadataRefresh = DateTime.MinValue;
+        internal readonly IReadOnlyList<EdmModel> _models;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicODataMcpTools"/> class.
@@ -42,16 +42,29 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="configuration">The server configuration.</param>
         /// <param name="metadataParser">The CSDL metadata parser.</param>
         /// <param name="logger">The logger instance.</param>
+        /// <param name="edmModels">The collection of EDM models to use for tool operations.</param>
         public DynamicODataMcpTools(
             IHttpClientFactory httpClientFactory,
             IOptions<McpServerConfiguration> configuration,
             ICsdlMetadataParser metadataParser,
-            ILogger<DynamicODataMcpTools> logger)
+            ILogger<DynamicODataMcpTools> logger,
+            IEnumerable<EdmModel> edmModels)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _metadataParser = metadataParser ?? throw new ArgumentNullException(nameof(metadataParser));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            ArgumentNullException.ThrowIfNull(edmModels);
+
+            _models = edmModels.ToList().AsReadOnly();
+
+            if (_models.Count == 0)
+            {
+                throw new ArgumentException("At least one EDM model must be provided", nameof(edmModels));
+            }
+
+            _logger.LogDebug("Initialized DynamicODataMcpTools with {ModelCount} EDM model(s)", _models.Count);
         }
 
         /// <summary>
@@ -60,43 +73,46 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <returns>A JSON array of entity set information including names and types.</returns>
         [McpServerTool]
         [Description("Discovers and lists all available entity sets in the OData service")]
-        public async Task<string> DiscoverEntitySets()
+        public string DiscoverEntitySets()
         {
             try
             {
-                var model = await GetODataModelAsync();
-                
                 var entitySets = new List<object>();
-                
-                foreach (var container in model.EntityContainers)
+
+                // Aggregate entity sets from all registered models
+                foreach (var model in _models)
                 {
-                    foreach (var entitySet in container.EntitySets)
+                    foreach (var container in model.EntityContainers)
                     {
-                        // Find the corresponding entity type
-                        var entityType = model.EntityTypes.FirstOrDefault(et => 
-                            et.FullName == entitySet.EntityType || et.Name == entitySet.EntityType);
-                        
-                        var entitySetInfo = new
+                        foreach (var entitySet in container.EntitySets)
                         {
-                            Name = entitySet.Name,
-                            EntityType = entitySet.EntityType,
-                            Container = container.Name,
-                            Properties = entityType?.Properties.Select(p => new
+                            // Find the corresponding entity type
+                            var entityType = model.EntityTypes.FirstOrDefault(et =>
+                                et.FullName == entitySet.EntityType || et.Name == entitySet.EntityType);
+
+                            var entitySetInfo = new
                             {
-                                Name = p.Name,
-                                Type = p.Type,
-                                IsKey = p.IsKey,
-                                Nullable = p.Nullable
-                            }).ToArray() ?? Array.Empty<object>(),
-                            NavigationProperties = entityType?.NavigationProperties.Select(np => new
-                            {
-                                Name = np.Name,
-                                Type = np.Type,
-                                IsCollection = np.Type?.Contains("Collection(") == true
-                            }).ToArray() ?? Array.Empty<object>()
-                        };
-                        
-                        entitySets.Add(entitySetInfo);
+                                Name = entitySet.Name,
+                                EntityType = entitySet.EntityType,
+                                Container = container.Name,
+                                Namespace = model.Namespaces.FirstOrDefault(),
+                                Properties = entityType?.Properties.Select(p => new
+                                {
+                                    Name = p.Name,
+                                    Type = p.Type,
+                                    IsKey = p.IsKey,
+                                    Nullable = p.Nullable
+                                }).ToArray() ?? Array.Empty<object>(),
+                                NavigationProperties = entityType?.NavigationProperties.Select(np => new
+                                {
+                                    Name = np.Name,
+                                    Type = np.Type,
+                                    IsCollection = np.Type?.Contains("Collection(") == true
+                                }).ToArray() ?? Array.Empty<object>()
+                            };
+
+                            entitySets.Add(entitySetInfo);
+                        }
                     }
                 }
 
@@ -104,8 +120,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error discovering entity sets");
-                throw new InvalidOperationException($"Failed to discover entity sets: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Error discovering entity sets");
+                throw new InvalidOperationException($"Failed to discover entity sets: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -115,21 +132,29 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="entityTypeName">The name of the entity type to describe.</param>
         /// <returns>Detailed schema information including properties, keys, and navigation properties.</returns>
         [McpServerTool]
-        [Description("Gets detailed schema information for a specific entity type")]
-        public async Task<string> DescribeEntityType(
+        [Description("Gets detailed schema information for a specific entity type. Pass parameter directly as named parameter (e.g., entityTypeName='Region'). Do NOT wrap in 'parameters' object.")]
+        public string DescribeEntityType(
             [Description("The name of the entity type to describe")] string entityTypeName)
         {
             try
             {
-                var model = await GetODataModelAsync();
-                
-                var entityType = model.EntityTypes.FirstOrDefault(et => 
-                    et.Name.Equals(entityTypeName, StringComparison.OrdinalIgnoreCase) ||
-                    et.FullName.Equals(entityTypeName, StringComparison.OrdinalIgnoreCase));
-                
-                if (entityType == null)
+                // Search all models for the entity type
+                EdmEntityType? entityType = null;
+                foreach (var model in _models)
                 {
-                    throw new ArgumentException($"Entity type '{entityTypeName}' not found");
+                    entityType = model.EntityTypes.FirstOrDefault(et =>
+                        et.Name.Equals(entityTypeName, StringComparison.OrdinalIgnoreCase) ||
+                        et.FullName.Equals(entityTypeName, StringComparison.OrdinalIgnoreCase));
+
+                    if (entityType is not null)
+                    {
+                        break;
+                    }
+                }
+
+                if (entityType is null)
+                {
+                    throw new ArgumentException($"Entity type '{entityTypeName}' not found in any registered model");
                 }
 
                 var description = new
@@ -174,8 +199,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error describing entity type: {EntityType}", entityTypeName);
-                throw new InvalidOperationException($"Failed to describe entity type: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Error describing entity type: {EntityType}", entityTypeName);
+                throw new InvalidOperationException($"Failed to describe entity type: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -186,35 +212,42 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="includeAdvanced">Whether to include advanced query examples.</param>
         /// <returns>A collection of sample OData query URLs with explanations.</returns>
         [McpServerTool]
-        [Description("Generates sample OData query URLs for a specific entity set")]
-        public async Task<string> GenerateQueryExamples(
+        [Description("Generates sample OData query URLs for a specific entity set. Pass parameters directly as named parameters (e.g., entitySetName='Countries', includeAdvanced=true). Do NOT wrap in 'parameters' object.")]
+        public string GenerateQueryExamples(
             [Description("The name of the entity set")] string entitySetName,
             [Description("Whether to include advanced query examples")] bool includeAdvanced = false)
         {
             try
             {
                 var config = _configuration.Value;
-                var model = await GetODataModelAsync();
-                
-                // Find the entity set and its type
+
+                // Search all models for the entity set and its type
                 EdmEntitySet? targetEntitySet = null;
                 EdmEntityType? entityType = null;
-                
-                foreach (var container in model.EntityContainers)
+
+                foreach (var model in _models)
                 {
-                    targetEntitySet = container.EntitySets.FirstOrDefault(es => 
-                        es.Name.Equals(entitySetName, StringComparison.OrdinalIgnoreCase));
-                    if (targetEntitySet != null)
+                    foreach (var container in model.EntityContainers)
                     {
-                        entityType = model.EntityTypes.FirstOrDefault(et => 
-                            et.FullName == targetEntitySet.EntityType || et.Name == targetEntitySet.EntityType);
+                        targetEntitySet = container.EntitySets.FirstOrDefault(es =>
+                            es.Name.Equals(entitySetName, StringComparison.OrdinalIgnoreCase));
+                        if (targetEntitySet is not null)
+                        {
+                            entityType = model.EntityTypes.FirstOrDefault(et =>
+                                et.FullName == targetEntitySet.EntityType || et.Name == targetEntitySet.EntityType);
+                            break;
+                        }
+                    }
+
+                    if (targetEntitySet is not null)
+                    {
                         break;
                     }
                 }
 
-                if (targetEntitySet == null)
+                if (targetEntitySet is null)
                 {
-                    throw new ArgumentException($"Entity set '{entitySetName}' not found");
+                    throw new ArgumentException($"Entity set '{entitySetName}' not found in any registered model");
                 }
 
                 var baseUrl = config.ODataService.BaseUrl?.TrimEnd('/') ?? throw new InvalidOperationException("OData service base URL is not configured");
@@ -349,8 +382,9 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating query examples for: {EntitySet}", entitySetName);
-                throw new InvalidOperationException($"Failed to generate query examples: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Error generating query examples for: {EntitySet}", entitySetName);
+                throw new InvalidOperationException($"Failed to generate query examples: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
@@ -360,16 +394,15 @@ namespace Microsoft.OData.Mcp.Core.Server
         /// <param name="queryUrl">The OData query URL to validate.</param>
         /// <returns>Validation results including any errors or warnings.</returns>
         [McpServerTool]
-        [Description("Validates an OData query URL against the service metadata")]
-        public async Task<string> ValidateQuery(
+        [Description("Validates an OData query URL against the service metadata. Pass parameter directly as named parameter (e.g., queryUrl='https://...'). Do NOT wrap in 'parameters' object.")]
+        public string ValidateQuery(
             [Description("The OData query URL to validate")] string queryUrl)
         {
             try
             {
                 var config = _configuration.Value;
-                var model = await GetODataModelAsync();
                 var baseUrl = config.ODataService.BaseUrl?.TrimEnd('/') ?? throw new InvalidOperationException("OData service base URL is not configured");
-                
+
                 var validation = new
                 {
                     QueryUrl = queryUrl,
@@ -383,7 +416,7 @@ namespace Microsoft.OData.Mcp.Core.Server
                 if (!Uri.TryCreate(queryUrl, UriKind.Absolute, out var uri))
                 {
                     validation.Errors.Add("Invalid URL format");
-                    return JsonSerializer.Serialize(new { validation.QueryUrl, IsValid = false, validation.Errors }, 
+                    return JsonSerializer.Serialize(new { validation.QueryUrl, IsValid = false, validation.Errors },
                         JsonConstants.PrettyPrint);
                 }
 
@@ -396,27 +429,30 @@ namespace Microsoft.OData.Mcp.Core.Server
                 // Extract entity set name
                 var path = uri.AbsolutePath.Replace(new Uri(baseUrl).AbsolutePath, "").Trim('/');
                 var pathSegments = path.Split('/');
-                
+
                 if (pathSegments.Length > 0)
                 {
                     var entitySetName = pathSegments[0].Split('(')[0]; // Remove key if present
-                    
-                    // Check if entity set exists
-                    var entitySetExists = model.EntityContainers
+
+                    // Check if entity set exists in any model
+                    var entitySetExists = _models
+                        .SelectMany(m => m.EntityContainers)
                         .SelectMany(c => c.EntitySets)
                         .Any(es => es.Name.Equals(entitySetName, StringComparison.OrdinalIgnoreCase));
-                    
+
                     if (!entitySetExists)
                     {
-                        validation.Errors.Add($"Entity set '{entitySetName}' not found in metadata");
-                        
-                        // Suggest similar names
-                        var similarNames = model.EntityContainers
+                        validation.Errors.Add($"Entity set '{entitySetName}' not found in any registered model");
+
+                        // Suggest similar names from all models
+                        var similarNames = _models
+                            .SelectMany(m => m.EntityContainers)
                             .SelectMany(c => c.EntitySets)
                             .Where(es => es.Name.Contains(entitySetName, StringComparison.OrdinalIgnoreCase))
                             .Select(es => es.Name)
+                            .Distinct()
                             .ToList();
-                        
+
                         if (similarNames.Any())
                         {
                             validation.Suggestions.Add($"Did you mean: {string.Join(", ", similarNames)}?");
@@ -464,56 +500,13 @@ namespace Microsoft.OData.Mcp.Core.Server
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating query: {QueryUrl}", queryUrl);
-                throw new InvalidOperationException($"Failed to validate query: {ex.Message}", ex);
+                var betterEx = ex.Demystify();
+                _logger.LogError(betterEx, "Error validating query: {QueryUrl}", queryUrl);
+                throw new InvalidOperationException($"Failed to validate query: {betterEx.Message}\n{betterEx.StackTrace}", ex);
             }
         }
 
         #region Internal Methods
-
-        /// <summary>
-        /// Gets the OData model, refreshing from metadata if needed.
-        /// </summary>
-        internal async Task<EdmModel> GetODataModelAsync()
-        {
-            var config = _configuration.Value;
-            
-            // Check if we need to refresh metadata
-            if (_cachedModel == null || 
-                DateTime.UtcNow - _lastMetadataRefresh > config.Caching.MetadataTtl)
-            {
-                _logger.LogDebug("Refreshing OData metadata");
-                
-                try
-                {
-                    var metadataUrl = $"{config.ODataService.BaseUrl?.TrimEnd('/') ?? throw new InvalidOperationException("OData service base URL is not configured")}{config.ODataService.MetadataPath}";
-                    
-                    using var httpClient = _httpClientFactory.CreateClient("OData");
-                    var response = await httpClient.GetAsync(metadataUrl);
-                    response.EnsureSuccessStatusCode();
-                    
-                    var metadataXml = await response.Content.ReadAsStringAsync();
-                    _cachedModel = _metadataParser.ParseFromString(metadataXml);
-                    _lastMetadataRefresh = DateTime.UtcNow;
-                    
-                    _logger.LogDebug("Successfully refreshed OData metadata");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to refresh OData metadata");
-                    
-                    // If we have a cached model, use it; otherwise rethrow
-                    if (_cachedModel == null)
-                    {
-                        throw;
-                    }
-                    
-                    _logger.LogWarning("Using cached metadata due to refresh failure");
-                }
-            }
-            
-            return _cachedModel ?? throw new InvalidOperationException("No OData metadata available");
-        }
 
         /// <summary>
         /// Gets a sample key value based on the property type.
