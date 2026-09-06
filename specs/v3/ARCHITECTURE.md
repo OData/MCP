@@ -173,7 +173,7 @@ Inbound MCP HTTP: ASP.NET schemes. Outbound: configured credentials or forward `
 
 ## 8. Testing
 
-Breakdance for DI and TestServer. Official Northwind (read) and TripPin (read/write). In-process OData + MCP for AspNetCore. MCP SDK client for protocol. PublishAot smoke for Tools.
+Breakdance for DI. Official Northwind (read) and TripPin (read/write). In-process Restier OData via `Microsoft.Restier.Breakdance.RestierBreakdanceTestBase<TApi>` (subclass of `AspNetCoreBreakdanceTestBase`). Convention-model host tests may use `AspNetCoreBreakdanceTestBase` directly. MCP SDK client for protocol. PublishAot smoke for Tools.
 
 **Never mock `HttpClient`, OData, MCP, or metadata.**
 

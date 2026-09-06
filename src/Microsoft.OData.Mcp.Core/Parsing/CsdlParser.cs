@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -227,6 +228,18 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 model.AddComplexType(parsedComplexType);
             }
 
+            var functions = schemaElement.Elements(EdmNamespace + "Function");
+            foreach (var function in functions)
+            {
+                model.Functions.Add(ParseFunction(function, schemaNamespace));
+            }
+
+            var actions = schemaElement.Elements(EdmNamespace + "Action");
+            foreach (var action in actions)
+            {
+                model.Actions.Add(ParseAction(action, schemaNamespace));
+            }
+
             // Parse entity containers
             var entityContainers = schemaElement.Elements(EdmNamespace + "EntityContainer");
             foreach (var entityContainer in entityContainers)
@@ -362,6 +375,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 DefaultValue = propertyElement.Attribute("DefaultValue")?.Value,
                 SRID = propertyElement.Attribute("SRID")?.Value
             };
+
+            ApplyDocumentation(propertyElement, description => property.Description = description);
 
             // Parse MaxLength
             var maxLengthAttr = propertyElement.Attribute("MaxLength");
@@ -592,6 +607,132 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             }
 
             return singleton;
+        }
+
+        /// <summary>
+        /// Applies CSDL documentation or Core.Description to a target.
+        /// </summary>
+        /// <param name="element">The CSDL element.</param>
+        /// <param name="setDescription">Receives the documentation string when present.</param>
+        internal void ApplyDocumentation(XElement element, Action<string> setDescription)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+            ArgumentNullException.ThrowIfNull(setDescription);
+
+            var summary = element.Element(EdmNamespace + "Documentation")?.Element(EdmNamespace + "Summary")?.Value;
+            if (!string.IsNullOrWhiteSpace(summary))
+            {
+                setDescription(summary);
+                return;
+            }
+
+            var annotation = element.Elements(EdmNamespace + "Annotation")
+                .FirstOrDefault(candidate =>
+                    (candidate.Attribute("Term")?.Value ?? string.Empty).EndsWith("Core.V1.Description", StringComparison.Ordinal));
+            var annotationValue = annotation?.Attribute("String")?.Value;
+            if (!string.IsNullOrWhiteSpace(annotationValue))
+            {
+                setDescription(annotationValue);
+            }
+        }
+
+        /// <summary>
+        /// Parses a schema-level action.
+        /// </summary>
+        /// <param name="actionElement">The action XML element.</param>
+        /// <param name="schemaNamespace">The schema namespace.</param>
+        /// <returns>
+        /// The parsed action.
+        /// </returns>
+        internal EdmAction ParseAction(XElement actionElement, string schemaNamespace)
+        {
+            ArgumentNullException.ThrowIfNull(actionElement);
+            ArgumentException.ThrowIfNullOrWhiteSpace(schemaNamespace);
+
+            var nameAttr = actionElement.Attribute("Name") ??
+                throw new InvalidOperationException("Action element missing Name attribute");
+
+            var action = new EdmAction(nameAttr.Value, schemaNamespace)
+            {
+                IsBound = bool.Parse(actionElement.Attribute("IsBound")?.Value ?? "false"),
+                Name = nameAttr.Value,
+                Namespace = schemaNamespace,
+                ReturnType = actionElement.Element(EdmNamespace + "ReturnType")?.Attribute("Type")?.Value
+            };
+
+            foreach (var parameter in actionElement.Elements(EdmNamespace + "Parameter"))
+            {
+                action.Parameters.Add(ParseOperationParameter(parameter));
+            }
+
+            if (action.IsBound && action.Parameters.Count > 0)
+            {
+                action.BindingParameterType = action.Parameters[0].Type;
+            }
+
+            return action;
+        }
+
+        /// <summary>
+        /// Parses a schema-level function.
+        /// </summary>
+        /// <param name="functionElement">The function XML element.</param>
+        /// <param name="schemaNamespace">The schema namespace.</param>
+        /// <returns>
+        /// The parsed function.
+        /// </returns>
+        internal EdmFunction ParseFunction(XElement functionElement, string schemaNamespace)
+        {
+            ArgumentNullException.ThrowIfNull(functionElement);
+            ArgumentException.ThrowIfNullOrWhiteSpace(schemaNamespace);
+
+            var nameAttr = functionElement.Attribute("Name") ??
+                throw new InvalidOperationException("Function element missing Name attribute");
+
+            var function = new EdmFunction(nameAttr.Value, schemaNamespace)
+            {
+                IsBound = bool.Parse(functionElement.Attribute("IsBound")?.Value ?? "false"),
+                IsComposable = bool.Parse(functionElement.Attribute("IsComposable")?.Value ?? "false"),
+                Name = nameAttr.Value,
+                Namespace = schemaNamespace,
+                ReturnType = functionElement.Element(EdmNamespace + "ReturnType")?.Attribute("Type")?.Value
+            };
+
+            foreach (var parameter in functionElement.Elements(EdmNamespace + "Parameter"))
+            {
+                function.Parameters.Add(ParseOperationParameter(parameter));
+            }
+
+            if (function.IsBound && function.Parameters.Count > 0)
+            {
+                function.BindingParameterType = function.Parameters[0].Type;
+            }
+
+            return function;
+        }
+
+        /// <summary>
+        /// Parses a function or action parameter.
+        /// </summary>
+        /// <param name="parameterElement">The parameter XML element.</param>
+        /// <returns>
+        /// The parsed parameter.
+        /// </returns>
+        internal EdmParameter ParseOperationParameter(XElement parameterElement)
+        {
+            ArgumentNullException.ThrowIfNull(parameterElement);
+
+            var nameAttr = parameterElement.Attribute("Name") ??
+                throw new InvalidOperationException("Parameter element missing Name attribute");
+            var typeAttr = parameterElement.Attribute("Type") ??
+                throw new InvalidOperationException($"Parameter '{nameAttr.Value}' missing Type attribute");
+
+            return new EdmParameter(nameAttr.Value, typeAttr.Value)
+            {
+                Name = nameAttr.Value,
+                Nullable = bool.Parse(parameterElement.Attribute("Nullable")?.Value ?? "true"),
+                Type = typeAttr.Value
+            };
         }
 
         /// <summary>

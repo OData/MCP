@@ -92,6 +92,8 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// <remarks>
         /// These properties represent the data that can be stored and retrieved for instances
         /// of this entity type. They include both key and non-key properties.
+        /// This collection is the declared EDM surface only. Properties ignored on an
+        /// <c>IEdmModel</c> or absent from CSDL must never be added here.
         /// </remarks>
         public List<EdmProperty> Properties { get; set; } = [];
 

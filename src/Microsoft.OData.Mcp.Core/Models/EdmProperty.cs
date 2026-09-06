@@ -13,6 +13,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// <remarks>
     /// Properties define the structure and data characteristics of entity types and complex types.
     /// They specify the name, type, and various constraints of the data elements.
+    /// Only members declared on the EDM belong here. Ignored CLR properties must not be added.
     /// </remarks>
     public sealed class EdmProperty
     {

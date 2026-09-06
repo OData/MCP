@@ -47,7 +47,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 9. **`shutdown_server`** is part of the **local Tools** spec. Never on AspNetCore endpoints.
 10. **Tools host is AOT-first.** Explicit registration, JSON source-gen, no assembly scan on the native path.
 11. **Core does not reference Authentication.**
-12. **Tests:** Breakdance, real Northwind and TripPin (and in-process OData TestServer). **Never mock.**
+12. **Tests:** Breakdance, real Northwind and TripPin, in-process Restier via `RestierBreakdanceTestBase<TApi>`. **Never mock.**
 
 ---
 
