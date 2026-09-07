@@ -134,11 +134,12 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 
 | Type | Fate |
 |------|------|
-| Outbound Bearer/API key/Basic on HttpClient | REWRITE in Core executor / Tools host |
-| `TokenValidationService` | HOST — optional AspNetCore inbound |
-| `ITokenDelegationService` | DELETE until implemented |
-| Scope matrices, cert stores, token exchange graphs | DELETE until a path needs them |
-| `ClaimsPrincipalExtensions` | Keep if inbound JWT ships |
+| Outbound Bearer/API key/Basic on HttpClient | REWRITE in `Authentication/Outbound` + Tools host. Tokens in `LatchkeyTokenCache` (SDK `ITokenCache`). Core copies raw `WWW-Authenticate` only. See [AUTHENTICATION.md](./AUTHENTICATION.md). |
+| `TokenValidationService`, `ITokenValidationService`, `McpAuthenticationOptions`, `JwtBearerOptions` (ours) | DELETE |
+| `ITokenDelegationService`, `DelegatedToken`, `TokenForwardingStrategy`, `TokenDelegationOptions`, `TokenExchangeOptions` | DELETE |
+| `ClientCredentials`, `ClientCertificate`, `CertificateSource`, `ClientAuthenticationMethod` | DELETE |
+| `AuthorizationMetadata`, `UserContext`, `EntityScopeRequirements`, `ScopeAuthorizationOptions`, `ScopeEnforcementBehavior`, `TargetServiceOptions`, `RetryPolicyOptions`, `BackoffStrategy` | DELETE |
+| `ClaimsPrincipalExtensions` | DELETE |
 
 ---
 

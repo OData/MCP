@@ -32,6 +32,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [TOOL-SURFACE.md](./TOOL-SURFACE.md) | Generic + named tools; local `shutdown_server` |
 | [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md) | Exhaustive per-tool test cases (happy, malformed, overwhelm) |
 | [TESTING.md](./TESTING.md) | Suites, OData 7 vs 8 process isolation, Restier on 7 |
+| [AUTHENTICATION.md](./AUTHENTICATION.md) | CLI outbound OAuth to remote OData (SDK 2.2); not inbound MCP OAuth |
 | [INVENTORY.md](./INVENTORY.md) | Concept keep vs implementation delete |
 | [EXECUTION-PLAN.md](./EXECUTION-PLAN.md) | Agent task list |
 
@@ -49,7 +50,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 8. **Public AspNetCore API:** `AddODataMcp()` registers services. `UseODataMcp()` maps MCP at `{prefix}/mcp` after OData routes exist. Prefix include/exclude on host options. SDK `MapMcp` is internal. The host package **must not** reference `Microsoft.AspNetCore.OData` (7 or 8). See [ODATA-HOSTING.md](./ODATA-HOSTING.md).
 9. **`shutdown_server`** is part of the **local Tools** spec. Never on AspNetCore endpoints.
 10. **Tools host is AOT-first.** Explicit registration, JSON source-gen, no assembly scan on the native path.
-11. **Core does not reference Authentication.**
+11. **Core does not reference `Microsoft.OData.Mcp.Authentication`.** That package is the CLI outbound OAuth client (hop 2). It is not the SDK namespace `ModelContextProtocol.Authentication`, which already ships in `ModelContextProtocol` 2.x — Core already PackageReferences that.
 12. **Tests:** Breakdance, real Northwind and TripPin, **never mock.** OData 7 and OData 8 **must not** share a test process. Restier is tested **only** with OData 7 until Restier hosts on 8. See [TESTING.md](./TESTING.md).
 
 ---

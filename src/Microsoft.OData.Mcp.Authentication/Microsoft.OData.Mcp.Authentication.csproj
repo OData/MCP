@@ -5,42 +5,9 @@
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
         <PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
-        <Title>Microsoft OData MCP Server Authentication</Title>
-        <Description>OAuth2 and JWT authentication framework for OData MCP servers, including token validation and delegation.</Description>
-        <PackageTags>odata;mcp;server;authentication;oauth2;jwt</PackageTags>
+        <Title>Microsoft OData MCP Authentication</Title>
+        <Description>Outbound OAuth client for remote OData (CLI hop 2). Types land in Outbound/ per specs/v3/AUTHENTICATION.md.</Description>
+        <PackageTags>odata;mcp;oauth;authentication</PackageTags>
     </PropertyGroup>
-
-    <ItemGroup>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.*" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-        <PackageReference Include="System.Text.Json" Version="10.*" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-        <PackageReference Include="System.Text.Json" Version="9.*" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-        <PackageReference Include="System.Text.Json" Version="8.*" />
-    </ItemGroup>
 
 </Project>

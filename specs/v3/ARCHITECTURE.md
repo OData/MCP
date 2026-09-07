@@ -35,7 +35,7 @@ Agents run real OData operations through MCP 2.
 Microsoft.OData.Mcp.Core            # Models/ (IEdmModel-shaped EDM), CSDL, catalogs, IOdataExecutor
 Microsoft.OData.Mcp.AspNetCore      # AddODataMcp; EndpointDataSource discovery; IEdmModel adapter; in-app HTTP
 Microsoft.OData.Mcp.Tools           # AOT / dotnet tool; stdio; shutdown_server
-Microsoft.OData.Mcp.Authentication  # Optional inbound JWT / outbound helpers
+Microsoft.OData.Mcp.Authentication  # Outbound OAuth (CLI → remote OData)
 ```
 
 ```
@@ -45,10 +45,10 @@ AspNetCore ─────► ModelContextProtocol.AspNetCore 2.x
 AspNetCore ─────► Microsoft.OData.Edm          (adapter only; IEdmModel, 7.x band)
 AspNetCore ─────► Microsoft.AspNetCore.App     (EndpointDataSource, HTTP)
 AspNetCore ─ ✗ ─► Microsoft.AspNetCore.OData   (neither 7 nor 8 — app brings one)
-Core / Tools ───► ModelContextProtocol 2.x
-Core ───────────► no Edm, no OData.Core, no ASP.NET, no Authentication
-Tools ─optional─► Authentication
-AspNetCore ─opt─► Authentication
+Core / Tools ───► ModelContextProtocol 2.x  (includes namespace ModelContextProtocol.Authentication)
+Core ───────────► no Edm, no OData.Core, no ASP.NET, no Microsoft.OData.Mcp.Authentication
+Tools ─optional─► Microsoft.OData.Mcp.Authentication
+AspNetCore ─ ✗ ─► Microsoft.OData.Mcp.Authentication
 ```
 
 OData 7 vs 8 hosting assemblies must not be a compile-time dependency of the MCP host. See [ODATA-HOSTING.md](./ODATA-HOSTING.md).

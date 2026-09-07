@@ -17,7 +17,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
-        <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
         <ProjectReference Include="..\..\src\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
     </ItemGroup>
 

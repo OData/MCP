@@ -28,7 +28,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Microsoft.OData.Mcp.Tools\Microsoft.OData.Mcp.Tools.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
-        <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared\Microsoft.OData.Mcp.Tests.Shared.csproj" />
     </ItemGroup>

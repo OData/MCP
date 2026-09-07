@@ -28,6 +28,7 @@
   </Folder>
   <Folder Name="/Solution Items/Specs/">
     <File Path="../specs/v3/ARCHITECTURE.md" />
+    <File Path="../specs/v3/AUTHENTICATION.md" />
     <File Path="../specs/v3/CRITICAL-ANALYSIS.md" />
     <File Path="../specs/v3/EXECUTION-PLAN.md" />
     <File Path="../specs/v3/INVENTORY.md" />
@@ -40,8 +41,8 @@
     <File Path="../specs/v3/TOOL-TEST-MANIFEST.md" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore.Restier/Microsoft.OData.Mcp.Tests.AspNetCore.Restier.csproj" />
+    <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Authentication/Microsoft.OData.Mcp.Tests.Authentication.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Integration/Microsoft.OData.Mcp.Tests.Integration.csproj" />

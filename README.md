@@ -228,7 +228,7 @@ dotnet test /p:CollectCoverage=true /p:CoverageOutputFormat=opencover
 - `Microsoft.OData.Mcp.Core` - Core functionality and abstractions
 - `Microsoft.OData.Mcp.AspNetCore` - ASP.NET Core integration
 - `Microsoft.OData.Mcp.Tools` - Standalone CLI tool
-- `Microsoft.OData.Mcp.Authentication` - Authentication providers
+- `Microsoft.OData.Mcp.Authentication` - Outbound OAuth for the CLI talking to remote OData (see `specs/v3/AUTHENTICATION.md`)
 
 ## 🤝 Contributing
 

@@ -98,48 +98,6 @@
                         ]
                       },
                       {
-                        "group": "Authentication",
-                        "icon": "folder-tree",
-                        "pages": [
-                          {
-                            "group": "Models",
-                            "icon": "folder-tree",
-                            "pages": [
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/index",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/AuthorizationMetadata",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/BackoffStrategy",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/CertificateSource",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientAuthenticationMethod",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientCertificate",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientCredentials",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/DelegatedToken",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/EntityScopeRequirements",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/JwtBearerOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/McpAuthenticationOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/RetryPolicyOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/ScopeAuthorizationOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/ScopeEnforcementBehavior",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/TargetServiceOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenDelegationOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenExchangeOptions",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenForwardingStrategy",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenValidationResult",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Models/UserContext"
-                            ]
-                          },
-                          {
-                            "group": "Services",
-                            "icon": "folder-tree",
-                            "pages": [
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Services/index",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Services/ITokenDelegationService",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Services/ITokenValidationService",
-                              "api-reference/Microsoft/OData/Mcp/Authentication/Services/TokenValidationService"
-                            ]
-                          }
-                        ]
-                      },
-                      {
                         "group": "Core",
                         "icon": "folder-tree",
                         "pages": [
@@ -240,27 +198,6 @@
                           }
                         ]
                       }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "group": "System",
-            "icon": "folder-tree",
-            "pages": [
-              {
-                "group": "Security",
-                "icon": "folder-tree",
-                "pages": [
-                  {
-                    "group": "Claims",
-                    "icon": "folder-tree",
-                    "pages": [
-                      "api-reference/System/Security/Claims/index",
-                      "api-reference/System/Security/Claims/ClaimsPrincipal",
-                      "api-reference/System/Security/Claims/McpAuthentication_ClaimsPrincipalExtensions"
                     ]
                   }
                 ]
