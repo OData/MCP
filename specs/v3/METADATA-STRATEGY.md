@@ -54,7 +54,9 @@ A property that exists on the C# class but was excluded from the OData model **m
 
 ### Local (AspNetCore)
 
-The app already has `Microsoft.OData.Edm.IEdmModel` on each route component. **Do not re-parse `$metadata`.** Adapter lives in `Microsoft.OData.Mcp.AspNetCore` and maps sets/types/keys/navs/annotations into Core. `Microsoft.OData.Edm` is referenced **only** there.
+The app already has `Microsoft.OData.Edm.IEdmModel` on each OData route (OData 8 conventional endpoints, OData 7 `MapODataRoute`, Restier `MapApiRoute`). **Do not re-parse `$metadata`.** Discover prefix + model from **Endpoint Routing** (`EndpointDataSource`). Do **not** require `ODataOptions.RouteComponents` and do **not** `PackageReference` `Microsoft.AspNetCore.OData`. `IEdmModel` is EdmLib 7.x on both stacks.
+
+Adapter lives in `Microsoft.OData.Mcp.AspNetCore` and maps **declared** sets/types/keys/navs/annotations into Core. `Microsoft.OData.Edm` is referenced **only** there. See [ODATA-HOSTING.md](./ODATA-HOSTING.md).
 
 ---
 

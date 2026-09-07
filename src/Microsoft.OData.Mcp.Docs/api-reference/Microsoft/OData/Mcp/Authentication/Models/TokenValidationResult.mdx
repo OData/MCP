@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['TokenValidationResult', 'Microsoft.OData.Mcp.Authentication.Models.TokenValidationResult', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -33,7 +31,7 @@ This class encapsulates the outcome of token validation, including success/failu
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenValidationResult](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenValidationResult) class.
 
@@ -43,7 +41,7 @@ Initializes a new instance of the [TokenValidationResult](/api-reference/Microso
 public TokenValidationResult()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenValidationResult](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenValidationResult) class for a successful validation.
 
@@ -65,7 +63,7 @@ public TokenValidationResult(System.Security.Claims.ClaimsPrincipal principal)
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *principal* is null. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenValidationResult](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenValidationResult) class for a failed validation.
 
@@ -89,7 +87,7 @@ public TokenValidationResult(string error, string errorDescription = null, Syste
 |-----------|-------------|
 | `ArgumentException` | Thrown when *error* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -101,7 +99,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Error
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Error
 
 Gets or sets the validation error that occurred during token validation.
 
@@ -121,7 +119,7 @@ The validation error if validation failed; otherwise, `null`.
 This provides detailed information about why token validation failed,
             which can be useful for debugging and security auditing.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ErrorDescription
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ErrorDescription
 
 Gets or sets the detailed error description.
 
@@ -141,7 +139,7 @@ A detailed description of the validation error; otherwise, `null`.
 This provides additional context about the validation failure, such as
             specific claims that were invalid or missing.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Exception
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Exception
 
 Gets or sets the exception that caused the validation failure.
 
@@ -161,7 +159,7 @@ The exception that occurred during validation; otherwise, `null`.
 This is typically used for logging and debugging purposes to understand
             the root cause of validation failures.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ExpiresAt
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExpiresAt
 
 Gets or sets the token expiration time.
 
@@ -181,7 +179,7 @@ The UTC date and time when the token expires; otherwise, `null`.
 This is extracted from the token's 'exp' claim and represents when the
             token will no longer be valid for authentication.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IssuedAt
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IssuedAt
 
 Gets or sets the token issued time.
 
@@ -201,7 +199,7 @@ The UTC date and time when the token was issued; otherwise, `null`.
 This is extracted from the token's 'iat' claim and represents when the
             token was originally created by the authorization server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsValid
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsValid
 
 Gets or sets a value indicating whether the token validation was successful.
 
@@ -216,7 +214,7 @@ public bool IsValid { get; set; }
 Type: `bool`
 `true` if the token is valid; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Metadata
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Metadata
 
 Gets or sets additional validation metadata.
 
@@ -236,7 +234,7 @@ A dictionary of additional information about the validation process.
 This can include information such as the validation time, token issuer,
             audience, or other metadata that might be useful for auditing or debugging.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  NotBefore
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NotBefore
 
 Gets or sets the token not-before time.
 
@@ -256,7 +254,7 @@ The UTC date and time before which the token is not valid; otherwise, `null`.
 This is extracted from the token's 'nbf' claim and represents the earliest
             time the token can be used for authentication.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Principal
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Principal
 
 Gets or sets the claims principal from the validated token.
 
@@ -278,7 +276,7 @@ This principal contains all the claims extracted from the JWT token and can be
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddMetadata
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddMetadata
 
 Adds metadata to the validation result.
 
@@ -301,7 +299,7 @@ public void AddMetadata(string key, object value)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *key* is null or whitespace. |
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -321,7 +319,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -342,7 +340,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Failure
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Failure
 
 Creates a failed validation result.
 
@@ -371,7 +369,7 @@ A failed token validation result.
 |-----------|-------------|
 | `ArgumentException` | Thrown when *error* is null or whitespace. |
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -385,7 +383,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetMetadata
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetMetadata
 
 Gets metadata value by key.
 
@@ -410,7 +408,7 @@ The metadata value if found and of the correct type; otherwise, the default valu
 
 - `T` - The type of the metadata value.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetRemainingLifetime
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetRemainingLifetime
 
 Gets the remaining lifetime of the token.
 
@@ -425,7 +423,7 @@ public System.Nullable<System.TimeSpan> GetRemainingLifetime()
 Type: `System.Nullable<System.TimeSpan?>?`
 The remaining time before the token expires, or null if no expiration is set.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -439,7 +437,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsExpired
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsExpired
 
 Determines whether the token is currently expired.
 
@@ -454,7 +452,7 @@ public bool IsExpired()
 Type: `bool`
 `true` if the token is expired; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsNotYetValid
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsNotYetValid
 
 Determines whether the token is not yet valid.
 
@@ -469,7 +467,7 @@ public bool IsNotYetValid()
 Type: `bool`
 `true` if the token is not yet valid; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -483,7 +481,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -504,7 +502,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Success
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Success
 
 Creates a successful validation result.
 
@@ -531,7 +529,7 @@ A successful token validation result.
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *principal* is null. |
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the token validation result.
 
@@ -546,7 +544,7 @@ public override string ToString()
 Type: `string`
 A summary of the validation result.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

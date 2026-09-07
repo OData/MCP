@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmModel', 'Microsoft.OData.Mcp.Core.Models.EdmModel', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -34,7 +32,7 @@ The EDM defines the structure of data exposed by an OData service, including ent
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmModel](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmModel) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [EdmModel](/api-reference/Microsoft/OData/Mcp/
 public EdmModel()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmModel](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmModel) class with the specified version.
 
@@ -66,7 +64,7 @@ public EdmModel(string version)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *version* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -78,7 +76,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Actions
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Actions
 
 Gets or sets the actions defined in this model.
 
@@ -98,7 +96,7 @@ A collection of actions that can be invoked on the service.
 Actions are operations that may have side effects and are used to modify
             data or perform operations that cannot be expressed through standard CRUD operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AllEntitySets
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AllEntitySets
 
 Gets all entity sets from all entity containers.
 
@@ -113,7 +111,7 @@ public System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.Ed
 Type: `System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>`
 A flattened collection of all entity sets in the model.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AllSingletons
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AllSingletons
 
 Gets all singletons from all entity containers.
 
@@ -128,7 +126,7 @@ public System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.Ed
 Type: `System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmSingleton>`
 A flattened collection of all singletons in the model.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Annotations
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Annotations
 
 Gets or sets the annotations for this model.
 
@@ -148,7 +146,7 @@ A dictionary of annotations that provide additional metadata about the model.
 Annotations can be used to specify additional behaviors, constraints, or metadata
             that are not captured by the standard OData model elements.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ComplexTypes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ComplexTypes
 
 Gets or sets the complex types defined in this model.
 
@@ -168,7 +166,7 @@ A collection of complex types that define reusable structured data elements.
 Complex types are structured types without keys that can be used as property types
             in entity types or other complex types.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityContainer
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityContainer
 
 Gets the primary entity container for this model (alias for PrimaryContainer).
 
@@ -183,7 +181,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityContainer EntityContainer { get;
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityContainer?`
 The first entity container, or `null` if no containers are defined.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityContainers
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityContainers
 
 Gets or sets the entity containers defined in this model.
 
@@ -203,7 +201,7 @@ A collection of entity containers that define the service interface.
 Entity containers define the addressable resources in the OData service.
             Typically, there is one primary entity container per service.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityTypes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityTypes
 
 Gets or sets the entity types defined in this model.
 
@@ -223,7 +221,7 @@ A collection of entity types that define the structure of entities in the servic
 Entity types are the primary structural elements in the EDM, defining the properties
             and relationships that make up the data model.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Functions
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Functions
 
 Gets or sets the functions defined in this model.
 
@@ -243,7 +241,7 @@ A collection of functions that can be called on the service.
 Functions are operations that can be called to retrieve data or perform calculations.
             They are side-effect free and can be composed with other query operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasComplexTypes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasComplexTypes
 
 Gets a value indicating whether this model has any complex types.
 
@@ -258,7 +256,7 @@ public bool HasComplexTypes { get; }
 Type: `bool`
 `true` if the model has complex types; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasEntityContainers
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasEntityContainers
 
 Gets a value indicating whether this model has any entity containers.
 
@@ -273,7 +271,7 @@ public bool HasEntityContainers { get; }
 Type: `bool`
 `true` if the model has entity containers; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasEntityTypes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasEntityTypes
 
 Gets a value indicating whether this model has any entity types.
 
@@ -288,7 +286,7 @@ public bool HasEntityTypes { get; }
 Type: `bool`
 `true` if the model has entity types; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Namespaces
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Namespaces
 
 Gets or sets the namespaces used in this model.
 
@@ -308,7 +306,7 @@ A collection of namespace strings that organize the types in the model.
 Namespaces provide organizational structure and help avoid naming conflicts
             between types from different sources.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  PrimaryContainer
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PrimaryContainer
 
 Gets the primary entity container for this model.
 
@@ -328,7 +326,7 @@ The first entity container, or `null` if no containers are defined.
 Most OData services have a single entity container that serves as the primary
             interface. This property provides convenient access to that container.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Version
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Version
 
 Gets or sets the version of the EDM.
 
@@ -350,7 +348,7 @@ This indicates which version of the OData standard the model conforms to.
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddAnnotation
 
 Adds an annotation to this model.
 
@@ -373,7 +371,7 @@ public void AddAnnotation(string term, object value)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *term* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddComplexType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddComplexType
 
 Adds a complex type to the model.
 
@@ -396,7 +394,7 @@ public void AddComplexType(Microsoft.OData.Mcp.Core.Models.EdmComplexType comple
 | `ArgumentNullException` | Thrown when *complexType* is null. |
 | `InvalidOperationException` | Thrown when a complex type with the same full name already exists. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddEntityContainer
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddEntityContainer
 
 Adds an entity container to the model.
 
@@ -419,7 +417,7 @@ public void AddEntityContainer(Microsoft.OData.Mcp.Core.Models.EdmEntityContaine
 | `ArgumentNullException` | Thrown when *entityContainer* is null. |
 | `InvalidOperationException` | Thrown when an entity container with the same full name already exists. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddEntityType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddEntityType
 
 Adds an entity type to the model.
 
@@ -442,7 +440,7 @@ public void AddEntityType(Microsoft.OData.Mcp.Core.Models.EdmEntityType entityTy
 | `ArgumentNullException` | Thrown when *entityType* is null. |
 | `InvalidOperationException` | Thrown when an entity type with the same full name already exists. |
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -462,7 +460,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -483,7 +481,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAnnotation
 
 Gets an annotation value by term.
 
@@ -508,7 +506,7 @@ The annotation value, or the default value of *T* if not found.
 
 - `T` - The type of the annotation value.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetComplexType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetComplexType
 
 Gets a complex type by its fully qualified name.
 
@@ -529,7 +527,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmComplexType GetComplexType(string full
 Type: `Microsoft.OData.Mcp.Core.Models.EdmComplexType?`
 The complex type with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetComplexType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetComplexType
 
 Gets a complex type by name and namespace.
 
@@ -551,7 +549,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmComplexType GetComplexType(string name
 Type: `Microsoft.OData.Mcp.Core.Models.EdmComplexType?`
 The complex type with the specified name and namespace, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEntityContainer
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEntityContainer
 
 Gets an entity container by its fully qualified name.
 
@@ -572,7 +570,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityContainer GetEntityContainer(str
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityContainer?`
 The entity container with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEntityContainer
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEntityContainer
 
 Gets an entity container by name and namespace.
 
@@ -594,7 +592,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityContainer GetEntityContainer(str
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityContainer?`
 The entity container with the specified name and namespace, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEntitySet
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEntitySet
 
 Gets an entity set by name from any entity container.
 
@@ -615,7 +613,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntitySet GetEntitySet(string entitySe
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntitySet?`
 The entity set with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEntityType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEntityType
 
 Gets an entity type by its fully qualified name.
 
@@ -636,7 +634,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityType GetEntityType(string fullNa
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityType?`
 The entity type with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEntityType
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEntityType
 
 Gets an entity type by name and namespace.
 
@@ -658,7 +656,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityType GetEntityType(string name, 
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityType?`
 The entity type with the specified name and namespace, or `null` if not found.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -672,7 +670,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetSingleton
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetSingleton
 
 Gets a singleton by name from any entity container.
 
@@ -693,7 +691,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmSingleton GetSingleton(string singleto
 Type: `Microsoft.OData.Mcp.Core.Models.EdmSingleton?`
 The singleton with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -707,7 +705,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -721,7 +719,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -742,7 +740,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the model.
 
@@ -757,7 +755,7 @@ public override string ToString()
 Type: `string`
 A summary of the model contents.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -771,7 +769,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the model for consistency and completeness.
 

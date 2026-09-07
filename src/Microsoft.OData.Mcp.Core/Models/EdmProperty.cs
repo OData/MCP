@@ -60,6 +60,12 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string? Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this property.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the property can contain null values.
         /// </summary>
         /// <value><c>true</c> if the property is nullable; otherwise, <c>false</c>.</value>

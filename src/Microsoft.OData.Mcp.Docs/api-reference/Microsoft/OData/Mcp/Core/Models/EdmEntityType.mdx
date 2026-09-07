@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmEntityType', 'Microsoft.OData.Mcp.Core.Models.EdmEntityType', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -34,7 +32,7 @@ Entity types define the structure of entities in an OData service, including the
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmEntityType](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntityType) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [EdmEntityType](/api-reference/Microsoft/OData
 public EdmEntityType()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmEntityType](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntityType) class with the specified name and namespace.
 
@@ -67,7 +65,7 @@ public EdmEntityType(string name, string namespace)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *name* or *namespace* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -79,7 +77,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Abstract
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Abstract
 
 Gets or sets a value indicating whether this entity type is abstract.
 
@@ -99,7 +97,7 @@ Type: `bool`
 Abstract entity types cannot be instantiated directly but can serve as base types
             for other entity types. They are useful for defining common properties and behaviors.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  BaseType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BaseType
 
 Gets or sets the base type of the entity type.
 
@@ -119,7 +117,22 @@ The fully qualified name of the base entity type, or `null` if this type has no 
 When specified, this entity type inherits all properties and navigation properties
             from the base type. The inheritance hierarchy must be consistent within the model.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  FullName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets the CSDL documentation summary or `Core.Description` for this type.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A human-readable summary from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
 
 Gets the fully qualified name of the entity type.
 
@@ -134,7 +147,7 @@ public string FullName { get; }
 Type: `string`
 The namespace and name combined with a dot separator.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasBaseType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasBaseType
 
 Gets a value indicating whether this entity type inherits from another entity type.
 
@@ -149,7 +162,7 @@ public bool HasBaseType { get; }
 Type: `bool`
 `true` if the entity type has a base type; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasNavigationProperties
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasNavigationProperties
 
 Gets a value indicating whether this entity type has any navigation properties.
 
@@ -164,7 +177,7 @@ public bool HasNavigationProperties { get; }
 Type: `bool`
 `true` if the entity type has navigation properties; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasStream
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasStream
 
 Gets or sets a value indicating whether this entity type has a stream.
 
@@ -184,7 +197,7 @@ Type: `bool`
 When true, instances of this entity type can have an associated media resource
             (such as a photo or document) that can be accessed via streaming operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsAbstract
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsAbstract
 
 Gets a value indicating whether this entity type is abstract.
 
@@ -203,7 +216,7 @@ Type: `bool`
 
 This is an alias for the [EdmEntityType.Abstract](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntityType#abstract) property for compatibility.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Key
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Key
 
 Gets or sets the key properties of the entity type.
 
@@ -223,7 +236,7 @@ A collection of property names that form the entity key.
 Key properties uniquely identify instances of the entity type. They are used
             for addressing individual entities and establishing relationships.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  KeyProperties
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> KeyProperties
 
 Gets the key properties as [EdmProperty](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmProperty) objects.
 
@@ -238,7 +251,22 @@ public System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.Ed
 Type: `System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmProperty>`
 A collection of properties that form the entity key.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Name
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
+
+Gets or sets the CSDL long description or `Core.LongDescription` for this type.
+
+#### Syntax
+
+```csharp
+public string LongDescription { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A longer documentation string from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
 Gets or sets the name of the entity type.
 
@@ -253,7 +281,7 @@ public required string Name { get; set; }
 Type: `string`
 The local name of the entity type within its namespace.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Namespace
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Namespace
 
 Gets or sets the namespace of the entity type.
 
@@ -268,7 +296,7 @@ public required string Namespace { get; set; }
 Type: `string`
 The namespace that contains this entity type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  NavigationProperties
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NavigationProperties
 
 Gets or sets the navigation properties of the entity type.
 
@@ -288,7 +316,7 @@ A collection of navigation properties that define relationships to other entitie
 Navigation properties enable traversal between related entities and define the
             relationship structure of the data model.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  NonKeyProperties
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NonKeyProperties
 
 Gets the non-key properties of the entity type.
 
@@ -303,7 +331,7 @@ public System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.Ed
 Type: `System.Collections.Generic.IEnumerable<Microsoft.OData.Mcp.Core.Models.EdmProperty>`
 A collection of properties that are not part of the entity key.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  OpenType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OpenType
 
 Gets or sets a value indicating whether this entity type is open.
 
@@ -324,7 +352,7 @@ Open entity types allow additional properties beyond those explicitly defined
             in the metadata. This provides flexibility for dynamic scenarios where the
             complete structure may not be known at design time.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Properties
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Properties
 
 Gets or sets the properties of the entity type.
 
@@ -343,10 +371,12 @@ A collection of structural properties that define the data elements of the entit
 
 These properties represent the data that can be stored and retrieved for instances
             of this entity type. They include both key and non-key properties.
+            This collection is the declared EDM surface only. Properties ignored on an
+            `IEdmModel` or absent from CSDL must never be added here.
 
 ## Methods
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="blue">Override</Badge>
 
 Determines whether the specified object is equal to the current entity type.
 
@@ -367,7 +397,7 @@ public override bool Equals(object obj)
 Type: `bool`
 `true` if the specified object is equal to the current entity type; otherwise, `false`.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -387,7 +417,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -408,7 +438,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="blue">Override</Badge>
 
 Returns a hash code for the current entity type.
 
@@ -423,7 +453,7 @@ public override int GetHashCode()
 Type: `int`
 A hash code for the current entity type.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -437,7 +467,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetNavigationProperty
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetNavigationProperty
 
 Gets a navigation property by name.
 
@@ -458,7 +488,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmNavigationProperty GetNavigationProper
 Type: `Microsoft.OData.Mcp.Core.Models.EdmNavigationProperty?`
 The navigation property with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetProperty
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetProperty
 
 Gets a property by name.
 
@@ -479,7 +509,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmProperty GetProperty(string propertyNa
 Type: `Microsoft.OData.Mcp.Core.Models.EdmProperty?`
 The property with the specified name, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -493,7 +523,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasNavigationProperty
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasNavigationProperty
 
 Determines whether the entity type has a navigation property with the specified name.
 
@@ -514,7 +544,7 @@ public bool HasNavigationProperty(string propertyName)
 Type: `bool`
 `true` if the entity type has the navigation property; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasProperty
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasProperty
 
 Determines whether the entity type has a property with the specified name.
 
@@ -535,7 +565,7 @@ public bool HasProperty(string propertyName)
 Type: `bool`
 `true` if the entity type has the property; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -549,7 +579,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -570,7 +600,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the entity type.
 
@@ -585,7 +615,7 @@ public override string ToString()
 Type: `string`
 The fully qualified name of the entity type.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

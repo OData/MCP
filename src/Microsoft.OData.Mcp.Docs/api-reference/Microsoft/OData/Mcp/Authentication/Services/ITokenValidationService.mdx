@@ -5,8 +5,6 @@ icon: plug
 keywords: ['ITokenValidationService', 'Microsoft.OData.Mcp.Authentication.Services.ITokenValidationService', 'Microsoft.OData.Mcp.Authentication.Services', 'interface']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -31,7 +29,7 @@ This service handles the core token validation logic, including signature verifi
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ExtractUserContext <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExtractUserContext <Badge color="orange">Abstract</Badge>
 
 Extracts the user context from a validated claims principal.
 
@@ -58,7 +56,7 @@ The user context containing identity and authorization information.
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *principal* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAuthorizationMetadataAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAuthorizationMetadataAsync <Badge color="orange">Abstract</Badge>
 
 Gets the authorization metadata from the JWT token for downstream services.
 
@@ -85,7 +83,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentException` | Thrown when *token* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetTokenLifetime <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTokenLifetime <Badge color="orange">Abstract</Badge>
 
 Gets the remaining lifetime of a token.
 
@@ -112,7 +110,7 @@ The remaining time before the token expires, or null if the token has no expirat
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *principal* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasRequiredScopes <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasRequiredScopes <Badge color="orange">Abstract</Badge>
 
 Checks if a user has the required scopes for a specific operation.
 
@@ -140,7 +138,7 @@ Type: `bool`
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *userContext* or *requiredScopes* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsTokenExpired <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsTokenExpired <Badge color="orange">Abstract</Badge>
 
 Determines if a token is expired based on its claims.
 
@@ -167,7 +165,7 @@ Type: `bool`
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *principal* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateTokenAsync <Badge color="orange">Abstract</Badge>
 
 Validates a JWT token and returns the principal if valid.
 
@@ -195,7 +193,7 @@ A task that represents the asynchronous validation operation. The task result co
 |-----------|-------------|
 | `ArgumentException` | Thrown when *token* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateTokenAsync <Badge color="orange">Abstract</Badge>
 
 Validates a JWT token with additional validation parameters.
 

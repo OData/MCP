@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['UserContext', 'Microsoft.OData.Mcp.Authentication.Models.UserContext', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -33,7 +31,7 @@ This class encapsulates the user's identity, authorization information, and
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [UserContext](/api-reference/Microsoft/OData/Mcp/Authentication/Models/UserContext) class.
 
@@ -43,7 +41,7 @@ Initializes a new instance of the [UserContext](/api-reference/Microsoft/OData/M
 public UserContext()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [UserContext](/api-reference/Microsoft/OData/Mcp/Authentication/Models/UserContext) class with the specified user ID.
 
@@ -65,7 +63,7 @@ public UserContext(string userId)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *userId* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -77,7 +75,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AdditionalClaims
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdditionalClaims
 
 Gets or sets additional user claims.
 
@@ -97,7 +95,7 @@ A dictionary of additional claims extracted from the token.
 This contains any custom claims that are not covered by the standard
             properties but may be needed for authorization or business logic.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Audience
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Audience
 
 Gets or sets the audience for which the token was issued.
 
@@ -117,7 +115,7 @@ The audience identifier from the JWT token.
 This identifies the intended recipient of the token, which should
             match the MCP server's configuration.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AuthenticatedAt
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthenticatedAt
 
 Gets or sets the time when the user was authenticated.
 
@@ -137,7 +135,7 @@ The UTC date and time when authentication occurred.
 This timestamp is used for session management, auditing, and
             security analysis.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AuthenticationMethod
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthenticationMethod
 
 Gets or sets the authentication method used.
 
@@ -157,7 +155,7 @@ The method used to authenticate the user (e.g., "Bearer", "JWT").
 This indicates how the user was authenticated, which can be useful
             for security auditing and compliance reporting.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ClientId
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientId
 
 Gets or sets the client application identifier.
 
@@ -177,7 +175,7 @@ The identifier of the client application that initiated the request.
 This identifies which application the user is accessing the MCP server
             through, which can be useful for auditing and access control.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  DisplayName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DisplayName
 
 Gets or sets the user's display name.
 
@@ -197,7 +195,7 @@ The display name or username of the authenticated user.
 This is typically extracted from claims like 'name', 'preferred_username',
             or 'upn' and is used for display purposes in logs and audit trails.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Email
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Email
 
 Gets or sets the user's email address.
 
@@ -217,7 +215,7 @@ The email address of the authenticated user.
 This is typically extracted from the 'email' claim and can be used
             for notifications or audit purposes.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Issuer
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Issuer
 
 Gets or sets the issuer of the authentication token.
 
@@ -237,7 +235,7 @@ The issuer identifier from the JWT token.
 This identifies which authorization server issued the token, which is
             important for multi-provider scenarios and security auditing.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Roles
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Roles
 
 Gets or sets the user's roles.
 
@@ -257,7 +255,7 @@ A collection of roles assigned to the user.
 Roles provide a higher-level grouping of permissions and are typically
             extracted from 'roles' or similar claims in the token.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Scopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
 
 Gets or sets the OAuth2 scopes granted to the user.
 
@@ -277,7 +275,7 @@ A collection of OAuth2 scopes that define the user's permissions.
 These scopes are extracted from the token and determine what operations
             the user is authorized to perform through the MCP server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TenantId
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TenantId
 
 Gets or sets the tenant identifier for multi-tenant scenarios.
 
@@ -297,7 +295,7 @@ The identifier of the tenant the user belongs to.
 This is used in multi-tenant deployments to isolate data and operations
             between different organizational units or customers.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Token
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Token
 
 Gets or sets the original JWT token.
 
@@ -317,7 +315,7 @@ The raw JWT token that was used for authentication.
 This token can be forwarded to downstream services for delegation
             scenarios while maintaining the user's identity.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TokenExpiresAt
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenExpiresAt
 
 Gets or sets the token expiration time.
 
@@ -337,7 +335,7 @@ The UTC date and time when the token expires.
 This is used to determine when the user's session will expire and
             when token refresh might be needed.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  UserId
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UserId
 
 Gets or sets the user's unique identifier.
 
@@ -359,7 +357,7 @@ This is typically extracted from the 'sub' (subject) claim in the JWT token
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -379,7 +377,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -400,7 +398,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  FromClaimsPrincipal
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FromClaimsPrincipal
 
 Creates a user context from a claims principal.
 
@@ -429,7 +427,7 @@ A user context populated with information from the claims principal.
 | `ArgumentNullException` | Thrown when *principal* is null. |
 | `InvalidOperationException` | Thrown when the principal does not contain a subject claim. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAdditionalClaim
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAdditionalClaim
 
 Gets an additional claim value by type.
 
@@ -450,7 +448,7 @@ public string GetAdditionalClaim(string claimType)
 Type: `string?`
 The claim value if found; otherwise, null.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -464,7 +462,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetRemainingTokenLifetime
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetRemainingTokenLifetime
 
 Gets the remaining time before the token expires.
 
@@ -479,7 +477,7 @@ public System.Nullable<System.TimeSpan> GetRemainingTokenLifetime()
 Type: `System.Nullable<System.TimeSpan?>?`
 The remaining time before token expiration, or null if no expiration is set.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -493,7 +491,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasAllScopes
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasAllScopes
 
 Determines whether the user has all of the specified scopes.
 
@@ -520,7 +518,7 @@ Type: `bool`
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *requiredScopes* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasAnyRole
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasAnyRole
 
 Determines whether the user has any of the specified roles.
 
@@ -547,7 +545,7 @@ Type: `bool`
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *requiredRoles* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasAnyScope
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasAnyScope
 
 Determines whether the user has any of the specified scopes.
 
@@ -574,7 +572,7 @@ Type: `bool`
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *requiredScopes* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsTokenExpired
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsTokenExpired
 
 Determines whether the user's token is expired.
 
@@ -589,7 +587,7 @@ public bool IsTokenExpired()
 Type: `bool`
 `true` if the token is expired; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -603,7 +601,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -624,7 +622,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the user context.
 
@@ -639,7 +637,7 @@ public override string ToString()
 Type: `string`
 A summary of the user context.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['TargetServiceOptions', 'Microsoft.OData.Mcp.Authentication.Models.TargetServiceOptions', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ These options define how tokens should be handled when making requests to a spec
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TargetServiceOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TargetServiceOptions) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [TargetServiceOptions](/api-reference/Microsof
 public TargetServiceOptions()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TargetServiceOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TargetServiceOptions) class with the specified service ID and base URL.
 
@@ -67,7 +65,7 @@ public TargetServiceOptions(string serviceId, string baseUrl)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *serviceId* or *baseUrl* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -79,7 +77,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AdditionalHeaders
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdditionalHeaders
 
 Gets or sets additional headers to include in requests to this service.
 
@@ -100,7 +98,7 @@ These headers are added to all requests made to this service, in addition
             to the authentication token. They can be used for service-specific
             requirements like API versions or custom authentication schemes.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  BaseUrl
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BaseUrl
 
 Gets or sets the base URL of the target service.
 
@@ -121,7 +119,7 @@ This URL is used to determine which requests should use this service's
             delegation configuration. Requests to URLs starting with this base URL
             will use these settings.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ClientCredentials
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientCredentials
 
 Gets or sets the client credentials for service-to-service authentication.
 
@@ -142,7 +140,7 @@ These credentials are used for OAuth2 flows that require client authentication,
             such as on-behalf-of or token exchange. They identify the MCP server to the
             authorization server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Scopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
 
 Gets or sets the scopes to request for this service.
 
@@ -163,7 +161,7 @@ These scopes define the level of access requested for the target service.
             They should be the minimum scopes required for the MCP server to perform
             its operations on behalf of the user.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ServiceId
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ServiceId
 
 Gets or sets the unique identifier for the target service.
 
@@ -184,7 +182,7 @@ This identifier is used to look up the appropriate delegation configuration
             when making requests to downstream services. It should be unique within
             the MCP server's configuration.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Strategy
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Strategy
 
 Gets or sets the token forwarding strategy for this service.
 
@@ -205,7 +203,7 @@ If not specified, the global token delegation strategy will be used.
             Service-specific strategies allow for fine-grained control over how
             different services receive authentication tokens.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TargetAudience
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TargetAudience
 
 Gets or sets the target audience for token exchange operations.
 
@@ -226,7 +224,7 @@ When using token exchange or on-behalf-of flows, this audience identifies
             the target service for the new token. It's typically the service's API
             identifier or base URL.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Timeout
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Timeout
 
 Gets or sets the timeout for requests to this service.
 
@@ -246,7 +244,7 @@ The timeout duration for requests to this service.
 If not specified, the global delegation timeout will be used. Service-specific
             timeouts allow for different performance expectations for different services.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TokenEndpoint
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenEndpoint
 
 Gets or sets the token endpoint URL for this service.
 
@@ -267,7 +265,7 @@ If not specified, the token endpoint will be discovered from the authorization
             server's metadata. Specifying this directly can improve performance and
             provide more control over token operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateBeforeForwarding
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateBeforeForwarding
 
 Gets or sets a value indicating whether to validate tokens before sending to this service.
 
@@ -290,7 +288,7 @@ This setting overrides the global token validation setting for this specific
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -310,7 +308,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -331,7 +329,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEffectiveStrategy
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEffectiveStrategy
 
 Gets the effective token forwarding strategy for this service.
 
@@ -352,7 +350,7 @@ public Microsoft.OData.Mcp.Authentication.Models.TokenForwardingStrategy GetEffe
 Type: `Microsoft.OData.Mcp.Authentication.Models.TokenForwardingStrategy`
 The strategy to use for this service.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEffectiveTimeout
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEffectiveTimeout
 
 Gets the effective timeout for this service.
 
@@ -373,7 +371,7 @@ public System.TimeSpan GetEffectiveTimeout(System.TimeSpan globalTimeout)
 Type: `System.TimeSpan`
 The timeout to use for this service.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetEffectiveValidation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEffectiveValidation
 
 Gets the effective validation setting for this service.
 
@@ -394,7 +392,7 @@ public bool GetEffectiveValidation(bool globalValidation)
 Type: `bool`
 The validation setting to use for this service.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -408,7 +406,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -422,7 +420,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MatchesUrl
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MatchesUrl
 
 Determines whether a URL matches this target service configuration.
 
@@ -443,7 +441,7 @@ public bool MatchesUrl(string url)
 Type: `bool`
 `true` if the URL matches this service; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MatchesUrl
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MatchesUrl
 
 Determines whether a URI matches this target service configuration.
 
@@ -464,7 +462,7 @@ public bool MatchesUrl(System.Uri uri)
 Type: `bool`
 `true` if the URI matches this service; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -478,7 +476,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -499,7 +497,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the target service options.
 
@@ -514,7 +512,7 @@ public override string ToString()
 Type: `string`
 A summary of the target service configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -528,7 +526,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the target service options for consistency and completeness.
 

@@ -32,6 +32,18 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string Namespace { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the CSDL documentation summary or <c>Core.Description</c> for this function.
+        /// </summary>
+        /// <value>A human-readable summary from metadata, or <c>null</c> when none is declared.</value>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this function.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
         /// Gets the fully qualified name of the function.
         /// </summary>
         /// <value>The namespace and name separated by a dot.</value>

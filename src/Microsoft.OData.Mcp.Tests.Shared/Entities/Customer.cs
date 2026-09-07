@@ -27,6 +27,11 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public string Email { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets a CLR-only secret that OData <c>Ignore()</c> must omit from the EDM.
+        /// </summary>
+        public string InternalSecret { get; set; } = string.Empty;
+
         public List<Order> Orders { get; set; } = [];
 
         public string Phone { get; set; } = string.Empty;

@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['JwtBearerOptions', 'Microsoft.OData.Mcp.Authentication.Models.JwtBearerOptions', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ These options control how JWT tokens are validated by the MCP server when acting
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [JwtBearerOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/JwtBearerOptions) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [JwtBearerOptions](/api-reference/Microsoft/OD
 public JwtBearerOptions()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -56,7 +54,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AdditionalValidationParameters
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdditionalValidationParameters
 
 Gets or sets additional token validation parameters.
 
@@ -77,7 +75,7 @@ These parameters allow for custom token validation logic beyond the
             standard JWT validation. They can be used to enforce additional
             security requirements specific to the deployment environment.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Audience
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Audience
 
 Gets or sets the expected audience for JWT tokens.
 
@@ -98,7 +96,7 @@ The audience identifies this MCP server as a valid recipient for the token.
             Tokens without the correct audience claim will be rejected. This is typically
             the API identifier or base URL of the MCP server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Authority
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Authority
 
 Gets or sets the authority URL of the OAuth2 authorization server.
 
@@ -119,7 +117,7 @@ This URL is used to discover the authorization server's metadata, including
             the JWKS endpoint for token validation keys. The authority must support
             OpenID Connect discovery.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ClockSkew
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClockSkew
 
 Gets or sets the clock skew tolerance for token validation.
 
@@ -140,7 +138,7 @@ Clock skew tolerance accounts for small time differences between the
             authorization server and MCP server clocks. This prevents valid tokens
             from being rejected due to minor time synchronization issues.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Issuer
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Issuer
 
 Gets or sets the expected issuer for JWT tokens.
 
@@ -161,7 +159,7 @@ The issuer identifies the authorization server that issued the token.
             When specified, tokens from other issuers will be rejected. If not specified,
             the issuer will be derived from the Authority during metadata discovery.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MetadataAddress
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MetadataAddress
 
 Gets or sets the URL of the JWKS (JSON Web Key Set) endpoint.
 
@@ -182,7 +180,7 @@ If not specified, the JWKS URL will be discovered from the authorization
             server's metadata. Manually specifying this can improve startup performance
             and provide more control over key retrieval.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RequiredScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequiredScopes
 
 Gets or sets the required OAuth2 scopes for accessing the MCP server.
 
@@ -203,7 +201,7 @@ When specified, tokens must contain at least one of these scopes to be
             considered valid. Scopes provide fine-grained authorization control
             beyond basic authentication.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RequireHttpsMetadata
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequireHttpsMetadata
 
 Gets or sets a value indicating whether to require HTTPS for metadata retrieval.
 
@@ -224,7 +222,7 @@ Requiring HTTPS for metadata retrieval ensures the integrity and confidentiality
             of validation keys and other security-critical information. This should be
             enabled in production environments.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateAudience
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateAudience
 
 Gets or sets a value indicating whether to validate the token audience.
 
@@ -245,7 +243,7 @@ Audience validation ensures tokens are intended for this service.
             Disabling this validation allows tokens intended for other services,
             which may be a security risk.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateIssuer
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateIssuer
 
 Gets or sets a value indicating whether to validate the token issuer.
 
@@ -266,7 +264,7 @@ Issuer validation ensures tokens come from trusted authorization servers.
             Disabling this validation reduces security and should only be done in
             development scenarios.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateIssuerSigningKey
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateIssuerSigningKey
 
 Gets or sets a value indicating whether to validate the token signature.
 
@@ -287,7 +285,7 @@ Signature validation ensures tokens haven't been tampered with and come
             from trusted sources. Disabling this validation should never be done
             in production as it completely undermines token security.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateLifetime
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateLifetime
 
 Gets or sets a value indicating whether to validate the token lifetime.
 
@@ -310,7 +308,7 @@ Lifetime validation ensures tokens are not expired or used before their
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -330,7 +328,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -351,7 +349,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -365,7 +363,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -379,7 +377,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -393,7 +391,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -414,7 +412,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the JWT bearer options.
 
@@ -429,7 +427,7 @@ public override string ToString()
 Type: `string`
 A summary of the JWT bearer configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -443,7 +441,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the JWT bearer options for consistency and completeness.
 

@@ -41,19 +41,15 @@ builder.Services.AddControllers()
     .AddOData(options => options
         .AddRouteComponents("odata", GetEdmModel()));
 
-// 3. Enable MCP - that's it!
 builder.Services.AddODataMcp();
 
 var app = builder.Build();
-app.UseODataMcp();
 app.UseRouting();
 app.MapControllers();
+app.UseODataMcp();
 ```
 
-Your OData service now has MCP endpoints:
-- `/odata/mcp` - Server information
-- `/odata/mcp/tools` - Available AI tools
-- `/odata/mcp/tools/execute` - Execute operations
+`AddODataMcp` registers services. `UseODataMcp` maps official MCP at `{prefix}/mcp` (for example `/odata/mcp`). Do not call the SDK `MapMcp` yourself.
 
 ## 📖 What is MCP?
 

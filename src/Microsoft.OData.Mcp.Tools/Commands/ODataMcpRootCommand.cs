@@ -12,6 +12,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
     /// </summary>
     [Command(Name = "odata-mcp", Description = "OData MCP Server - Turn any OData API into an MCP service for AI assistants")]
     [Subcommand(typeof(StartCommand))]
+    [Subcommand(typeof(TestCommand))]
     [Subcommand(typeof(AddCommand))]
     [HelpOption("-?|-h|--help")]
     public class ODataMcpRootCommand

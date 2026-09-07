@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -17,10 +18,33 @@ namespace Microsoft.OData.Mcp.Tools.Commands
     /// <remarks>
     /// This command provides an interactive experience for users to configure their OData
     /// service connection and generates the appropriate /mcp add command for Claude Code.
+    /// Tests must assign <see cref="Input"/> and <see cref="Output"/> instead of calling
+    /// <see cref="Console.SetIn(TextReader)"/>. Windows testhost wraps <c>SetIn</c> in
+    /// <c>SyncTextReader</c> and leaves <see cref="Console.IsInputRedirected"/> false, so
+    /// <see cref="Console.ReadKey(bool)"/> blocks the Visual Studio Test Explorer.
     /// </remarks>
     [Command(Name = "add", Description = "Interactive wizard to generate Claude Code MCP registration command")]
     public class AddCommand
     {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the error writer. Defaults to <see cref="Console.Error"/>.
+        /// </summary>
+        internal TextWriter Error { get; set; } = Console.Error;
+
+        /// <summary>
+        /// Gets or sets the input reader. Defaults to <see cref="Console.In"/>.
+        /// </summary>
+        internal TextReader Input { get; set; } = Console.In;
+
+        /// <summary>
+        /// Gets or sets the output writer. Defaults to <see cref="Console.Out"/>.
+        /// </summary>
+        internal TextWriter Output { get; set; } = Console.Out;
+
+        #endregion
 
         #region Public Methods
 
@@ -30,35 +54,23 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// <returns>Exit code (0 for success).</returns>
         public async Task<int> OnExecuteAsync()
         {
-            Console.WriteLine("🚀 OData MCP Setup Wizard for Claude Code");
-            Console.WriteLine("==========================================\n");
-            Console.WriteLine("Let's set up your OData connection!\n");
+            Output.WriteLine("🚀 OData MCP Setup Wizard for Claude Code");
+            Output.WriteLine("==========================================\n");
+            Output.WriteLine("Let's set up your OData connection!\n");
 
             try
             {
-                // Question 1: URL
                 var url = PromptForUrl();
-
-                // Question 2: Name (with smart default)
                 var name = PromptForName(url);
-
-                // Question 3: Authentication
-                var (needsAuth, authToken, authType) = await PromptForAuthentication();
-
-                // Question 4: Scope
+                var (_, authToken, _) = await PromptForAuthentication();
                 var scope = PromptForScope();
-
-                // Question 5: Verbose logging
                 var verbose = PromptForVerboseLogging();
-
-                // Question 6: Test connection (optional)
                 var shouldTest = PromptConfirm("Would you like to test the connection first?", true);
                 if (shouldTest)
                 {
                     await TestConnection(url, authToken);
                 }
 
-                // Build and display the command
                 var command = BuildMcpCommand(name, url, authToken, scope, verbose);
                 DisplayResult(command);
 
@@ -66,16 +78,14 @@ namespace Microsoft.OData.Mcp.Tools.Commands
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\n❌ Error: {ex.Message}");
-                Console.ResetColor();
+                WriteColoredLine(ConsoleColor.Red, $"\n❌ Error: {ex.Message}");
                 return 1;
             }
         }
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Builds the MCP command string based on user inputs.
@@ -86,29 +96,24 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// <param name="scope">The scope for the MCP server (user or project).</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
         /// <returns>The formatted MCP command string.</returns>
-        private string BuildMcpCommand(string name, string url, string? authToken, string scope, bool verbose)
+        internal string BuildMcpCommand(string name, string url, string? authToken, string scope, bool verbose)
         {
             var sb = new StringBuilder($"claude mcp add {name}");
 
-            // Add scope
             sb.Append($" --scope {scope}");
 
-            // Add environment variable for auth if needed
             if (!string.IsNullOrWhiteSpace(authToken))
             {
                 sb.Append($" --env ODATA_AUTH_TOKEN={authToken}");
             }
 
-            // Add the -- separator before the command           
             sb.Append($" -- dotnet odata-mcp -- start \"{url}\"");
 
-            // Add auth token parameter if provided
             if (!string.IsNullOrWhiteSpace(authToken))
             {
                 sb.Append($" --auth-token \"{authToken}\"");
             }
 
-            // Add verbose flag if requested
             if (verbose)
             {
                 sb.Append(" --verbose");
@@ -122,7 +127,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// </summary>
         /// <param name="url">The OData service URL.</param>
         /// <returns>A suggested name for the connection.</returns>
-        private string DeriveNameFromUrl(string url)
+        internal string DeriveNameFromUrl(string url)
         {
             try
             {
@@ -132,13 +137,16 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                     .Select(s => s.TrimEnd('/'))
                     .ToList();
 
-                // Look for common patterns
                 if (segments.Any(s => s.Equals("Northwind", StringComparison.OrdinalIgnoreCase)))
+                {
                     return "northwind";
+                }
+
                 if (segments.Any(s => s.Contains("TripPin", StringComparison.OrdinalIgnoreCase)))
+                {
                     return "trippin";
-                
-                // Use the last meaningful segment
+                }
+
                 if (segments.Count > 0)
                 {
                     var lastSegment = segments.Last()
@@ -146,12 +154,13 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                         .Replace("Service", "")
                         .Replace("OData", "")
                         .ToLowerInvariant();
-                    
+
                     if (!string.IsNullOrWhiteSpace(lastSegment))
+                    {
                         return lastSegment;
+                    }
                 }
 
-                // Fall back to host name
                 return uri.Host.Split('.').First().ToLowerInvariant();
             }
             catch
@@ -164,21 +173,19 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// Displays the generated command and instructions to the user.
         /// </summary>
         /// <param name="command">The generated MCP command.</param>
-        private void DisplayResult(string command)
+        internal void DisplayResult(string command)
         {
-            Console.WriteLine("\n✨ Perfect! Here's your command:\n");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(command);
-            Console.ResetColor();
+            Output.WriteLine("\n✨ Perfect! Here's your command:\n");
+            WriteColoredLine(ConsoleColor.Green, command);
 
-            Console.WriteLine("\nNext steps:");
-            Console.WriteLine("1. Open Claude Code terminal (not chat)");
-            Console.WriteLine("2. Type or paste this command exactly as shown");
-            Console.WriteLine("3. Press Enter");
-            Console.WriteLine("4. The server will start automatically");
-            Console.WriteLine("5. Return to Claude chat and query your OData service!");
-            Console.WriteLine("\nExample query: 'Show me all products from the OData service'");
-            Console.WriteLine("\nNote: Make sure you have the .NET 10 SDK installed and the tool has been installed globally.");
+            Output.WriteLine("\nNext steps:");
+            Output.WriteLine("1. Open Claude Code terminal (not chat)");
+            Output.WriteLine("2. Type or paste this command exactly as shown");
+            Output.WriteLine("3. Press Enter");
+            Output.WriteLine("4. The server will start automatically");
+            Output.WriteLine("5. Return to Claude chat and query your OData service!");
+            Output.WriteLine("\nExample query: 'Show me all products from the OData service'");
+            Output.WriteLine("\nNote: Make sure you have the .NET 10 SDK installed and the tool has been installed globally.");
         }
 
         /// <summary>
@@ -187,114 +194,35 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// <param name="message">The message to display.</param>
         /// <param name="defaultValue">The default value if user just presses Enter.</param>
         /// <returns>True if user confirms, false otherwise.</returns>
-        private bool PromptConfirm(string message, bool defaultValue)
+        internal bool PromptConfirm(string message, bool defaultValue)
         {
             var defaultText = defaultValue ? "Y/n" : "y/N";
-            Console.Write($"{message} ({defaultText}): ");
-            var response = Console.ReadLine()?.Trim().ToLowerInvariant();
-            
-            if (string.IsNullOrEmpty(response))
+            Output.Write($"{message} ({defaultText}): ");
+            var response = ReadLineRequired().Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(response))
+            {
                 return defaultValue;
-            
-            return response == "y" || response == "yes";
-        }
-
-        /// <summary>
-        /// Prompts for a string input with an optional default value.
-        /// </summary>
-        /// <param name="message">The message to display.</param>
-        /// <param name="defaultValue">Optional default value.</param>
-        /// <returns>The user's input or default value.</returns>
-        private string PromptInput(string message, string? defaultValue = null)
-        {
-            if (!string.IsNullOrEmpty(defaultValue))
-                Console.Write($"{message} (default: {defaultValue}): ");
-            else
-                Console.Write($"{message}: ");
-            
-            var input = Console.ReadLine()?.Trim();
-            
-            if (string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(defaultValue))
-                return defaultValue;
-            
-            return input ?? "";
-        }
-
-        /// <summary>
-        /// Prompts for a password (masked input).
-        /// </summary>
-        /// <param name="message">The message to display.</param>
-        /// <returns>The entered password.</returns>
-        private string PromptPassword(string message)
-        {
-            Console.Write($"{message}: ");
-            var password = new StringBuilder();
-            
-            while (true)
-            {
-                var key = Console.ReadKey(true);
-                
-                if (key.Key == ConsoleKey.Enter)
-                {
-                    Console.WriteLine();
-                    break;
-                }
-                else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
-                {
-                    password.Length--;
-                    Console.Write("\b \b");
-                }
-                else if (!char.IsControl(key.KeyChar))
-                {
-                    password.Append(key.KeyChar);
-                    Console.Write("*");
-                }
             }
-            
-            return password.ToString();
-        }
 
-        /// <summary>
-        /// Prompts for a selection from a list of options.
-        /// </summary>
-        /// <param name="message">The message to display.</param>
-        /// <param name="options">The list of options.</param>
-        /// <returns>The selected option.</returns>
-        private string PromptSelect(string message, string[] options)
-        {
-            Console.WriteLine(message);
-            for (int i = 0; i < options.Length; i++)
-            {
-                Console.WriteLine($"  {i + 1}. {options[i]}");
-            }
-            
-            while (true)
-            {
-                Console.Write("Select (1-" + options.Length + "): ");
-                var input = Console.ReadLine()?.Trim();
-                
-                if (int.TryParse(input, out var choice) && choice >= 1 && choice <= options.Length)
-                {
-                    return options[choice - 1];
-                }
-                
-                Console.WriteLine("Invalid selection. Please try again.");
-            }
+            return response is "y" or "yes";
         }
 
         /// <summary>
         /// Prompts the user for authentication details.
         /// </summary>
         /// <returns>A tuple containing authentication information.</returns>
-        private async Task<(bool needsAuth, string? authToken, string? authType)> PromptForAuthentication()
+        internal async Task<(bool needsAuth, string? authToken, string? authType)> PromptForAuthentication()
         {
             var needsAuth = PromptConfirm("Does your service require authentication?", false);
-            
-            if (!needsAuth)
-                return (false, null, null);
 
-            var authType = PromptSelect("What type of authentication?", 
-                new[] { "Bearer Token", "API Key", "Basic Auth (Username/Password)" });
+            if (!needsAuth)
+            {
+                return (false, null, null);
+            }
+
+            var authType = PromptSelect("What type of authentication?",
+                ["Bearer Token", "API Key", "Basic Auth (Username/Password)"]);
 
             string? authToken = null;
 
@@ -304,34 +232,33 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                     authToken = PromptPassword("Enter your bearer token");
                     if (string.IsNullOrWhiteSpace(authToken))
                     {
-                        Console.WriteLine("Token cannot be empty");
+                        Output.WriteLine("Token cannot be empty");
                         return await PromptForAuthentication();
                     }
                     break;
-                    
+
                 case "API Key":
                     authToken = PromptPassword("Enter your API key");
                     if (string.IsNullOrWhiteSpace(authToken))
                     {
-                        Console.WriteLine("API key cannot be empty");
+                        Output.WriteLine("API key cannot be empty");
                         return await PromptForAuthentication();
                     }
                     break;
-                    
+
                 case "Basic Auth (Username/Password)":
                     var username = PromptInput("Username");
                     if (string.IsNullOrWhiteSpace(username))
                     {
-                        Console.WriteLine("Username cannot be empty");
+                        Output.WriteLine("Username cannot be empty");
                         return await PromptForAuthentication();
                     }
                     var password = PromptPassword("Password");
                     if (string.IsNullOrWhiteSpace(password))
                     {
-                        Console.WriteLine("Password cannot be empty");
+                        Output.WriteLine("Password cannot be empty");
                         return await PromptForAuthentication();
                     }
-                    // For basic auth, we'll pass the token as-is and let the start command handle encoding
                     authToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
                     break;
             }
@@ -344,77 +271,208 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// </summary>
         /// <param name="url">The OData service URL to derive a default from.</param>
         /// <returns>The chosen connection name.</returns>
-        private string PromptForName(string url)
+        internal string PromptForName(string url)
         {
             var defaultName = DeriveNameFromUrl(url);
-            
             var name = PromptInput("What would you like to name this connection?", defaultName);
-            
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-z0-9-]+$"))
+
+            if (!Regex.IsMatch(name, @"^[a-z0-9-]+$"))
             {
-                Console.WriteLine("Name must be lowercase alphanumeric with hyphens only (e.g., 'my-service')");
+                Output.WriteLine("Name must be lowercase alphanumeric with hyphens only (e.g., 'my-service')");
                 return PromptForName(url);
             }
-            
+
             return name;
-        }
-
-        /// <summary>
-        /// Prompts the user for the OData service URL.
-        /// </summary>
-        /// <returns>The validated OData service URL.</returns>
-        private string PromptForUrl()
-        {
-            Console.WriteLine("Examples:");
-            Console.WriteLine("  • https://services.odata.org/V4/Northwind/Northwind.svc");
-            Console.WriteLine("  • https://services.odata.org/V4/TripPinServiceRW");
-            Console.WriteLine();
-
-            var url = PromptInput("What's your OData service URL?");
-            
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                Console.WriteLine("URL cannot be empty");
-                return PromptForUrl();
-            }
-            
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            {
-                Console.WriteLine("Please enter a valid URL");
-                return PromptForUrl();
-            }
-            
-            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
-            {
-                Console.WriteLine("URL must be HTTP or HTTPS");
-                return PromptForUrl();
-            }
-            
-            return url;
         }
 
         /// <summary>
         /// Prompts the user for the MCP server scope.
         /// </summary>
         /// <returns>The selected scope (user or project).</returns>
-        private string PromptForScope()
+        internal string PromptForScope()
         {
-            Console.WriteLine("Where should this MCP server be available?");
-            Console.WriteLine("  • user - Available globally for all Claude Code sessions");
-            Console.WriteLine("  • project - Only available in the current project");
-            Console.WriteLine();
-            
-            var scope = PromptSelect("Select scope", new[] { "user", "project" });
-            return scope;
+            Output.WriteLine("Where should this MCP server be available?");
+            Output.WriteLine("  • user - Available globally for all Claude Code sessions");
+            Output.WriteLine("  • project - Only available in the current project");
+            Output.WriteLine();
+
+            return PromptSelect("Select scope", ["user", "project"]);
+        }
+
+        /// <summary>
+        /// Prompts the user for the OData service URL.
+        /// </summary>
+        /// <returns>The validated OData service URL.</returns>
+        internal string PromptForUrl()
+        {
+            Output.WriteLine("Examples:");
+            Output.WriteLine("  • https://services.odata.org/V4/Northwind/Northwind.svc");
+            Output.WriteLine("  • https://services.odata.org/V4/TripPinServiceRW");
+            Output.WriteLine();
+
+            var url = PromptInput("What's your OData service URL?");
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Output.WriteLine("URL cannot be empty");
+                return PromptForUrl();
+            }
+
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                Output.WriteLine("Please enter a valid URL");
+                return PromptForUrl();
+            }
+
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+            {
+                Output.WriteLine("URL must be HTTP or HTTPS");
+                return PromptForUrl();
+            }
+
+            return url;
         }
 
         /// <summary>
         /// Prompts the user for verbose logging preference.
         /// </summary>
         /// <returns>True if verbose logging should be enabled.</returns>
-        private bool PromptForVerboseLogging()
+        internal bool PromptForVerboseLogging()
         {
             return PromptConfirm("Would you like to enable verbose logging?", false);
+        }
+
+        /// <summary>
+        /// Prompts for a string input with an optional default value.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        /// <param name="defaultValue">Optional default value.</param>
+        /// <returns>The user's input or default value.</returns>
+        internal string PromptInput(string message, string? defaultValue = null)
+        {
+            if (!string.IsNullOrWhiteSpace(defaultValue))
+            {
+                Output.Write($"{message} (default: {defaultValue}): ");
+            }
+            else
+            {
+                Output.Write($"{message}: ");
+            }
+
+            var input = ReadLineRequired().Trim();
+
+            if (string.IsNullOrWhiteSpace(input) && !string.IsNullOrWhiteSpace(defaultValue))
+            {
+                return defaultValue;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Prompts for a password. Uses line input when stdin is redirected, when
+        /// <see cref="Input"/> is not the process console, or when an explicit key
+        /// reader is omitted in tests. Otherwise masks keystrokes.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        /// <param name="readKey">Optional key reader used by tests to drive the masked path.</param>
+        /// <returns>The entered password.</returns>
+        /// <remarks>
+        /// Never call <see cref="Console.ReadKey(bool)"/> unless <paramref name="readKey"/> is
+        /// supplied or the process console is the live TTY. Visual Studio testhost does not set
+        /// <see cref="Console.IsInputRedirected"/> after <c>SetIn</c>, and <c>ReadKey</c> ignores
+        /// a redirected <see cref="StringReader"/>.
+        /// </remarks>
+        internal string PromptPassword(string message, Func<ConsoleKeyInfo>? readKey = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(message);
+
+            Output.Write($"{message}: ");
+            if (readKey is null && UsesLinePasswordInput())
+            {
+                return Input.ReadLine() ?? string.Empty;
+            }
+
+            readKey ??= static () => Console.ReadKey(intercept: true);
+            var password = new StringBuilder();
+
+            while (true)
+            {
+                var key = readKey();
+
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    Output.WriteLine();
+                    break;
+                }
+
+                if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password.Length--;
+                    Output.Write("\b \b");
+                    continue;
+                }
+
+                if (!char.IsControl(key.KeyChar))
+                {
+                    password.Append(key.KeyChar);
+                    Output.Write('*');
+                }
+            }
+
+            return password.ToString();
+        }
+
+        /// <summary>
+        /// Prompts for a selection from a list of options.
+        /// </summary>
+        /// <param name="message">The message to display.</param>
+        /// <param name="options">The list of options.</param>
+        /// <returns>The selected option.</returns>
+        internal string PromptSelect(string message, string[] options)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(message);
+            ArgumentNullException.ThrowIfNull(options);
+            if (options.Length == 0)
+            {
+                throw new ArgumentException("At least one option is required.", nameof(options));
+            }
+
+            Output.WriteLine(message);
+            for (var i = 0; i < options.Length; i++)
+            {
+                Output.WriteLine($"  {i + 1}. {options[i]}");
+            }
+
+            while (true)
+            {
+                Output.Write("Select (1-" + options.Length + "): ");
+                var input = ReadLineRequired();
+
+                if (int.TryParse(input.Trim(), out var choice) && choice >= 1 && choice <= options.Length)
+                {
+                    return options[choice - 1];
+                }
+
+                Output.WriteLine("Invalid selection. Please try again.");
+            }
+        }
+
+        /// <summary>
+        /// Reads a line from <see cref="Input"/> or throws when the stream ends.
+        /// </summary>
+        /// <returns>
+        /// The line, which may be empty.
+        /// </returns>
+        internal string ReadLineRequired()
+        {
+            var line = Input.ReadLine();
+            if (line is null)
+            {
+                throw new EndOfStreamException("Input ended before the wizard finished.");
+            }
+
+            return line;
         }
 
         /// <summary>
@@ -423,49 +481,83 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         /// <param name="url">The OData service URL.</param>
         /// <param name="authToken">Optional authentication token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task TestConnection(string url, string? authToken)
+        internal async Task TestConnection(string url, string? authToken)
         {
-            Console.Write("\n⏳ Testing connection...");
-            
+            Output.Write("\n⏳ Testing connection...");
+
             try
             {
-                using var client = new System.Net.Http.HttpClient();
-                
-                // Add auth header if provided
+                using var client = new System.Net.Http.HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
+
                 if (!string.IsNullOrWhiteSpace(authToken))
                 {
-                    client.DefaultRequestHeaders.Authorization = 
+                    client.DefaultRequestHeaders.Authorization =
                         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
                 }
 
-                // Try to fetch metadata
                 var metadataUrl = url.TrimEnd('/') + "/$metadata";
                 var response = await client.GetAsync(metadataUrl);
-                
+
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("\r✅ Connection successful!     ");
-                    
-                    // Try to parse and show entity count
+                    Output.WriteLine("\r✅ Connection successful!     ");
+
                     var content = await response.Content.ReadAsStringAsync();
-                    var entityCount = System.Text.RegularExpressions.Regex.Matches(content, "<EntityType").Count;
-                    var entitySetCount = System.Text.RegularExpressions.Regex.Matches(content, "<EntitySet").Count;
-                    
+                    var entityCount = Regex.Matches(content, "<EntityType").Count;
+                    var entitySetCount = Regex.Matches(content, "<EntitySet").Count;
+
                     if (entityCount > 0 || entitySetCount > 0)
                     {
-                        Console.WriteLine($"   Found {entitySetCount} entity sets and {entityCount} entity types.");
+                        Output.WriteLine($"   Found {entitySetCount} entity sets and {entityCount} entity types.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"\r⚠️  Connection returned {response.StatusCode}. This might still work with proper authentication.");
+                    Output.WriteLine($"\r⚠️  Connection returned {response.StatusCode}. This might still work with proper authentication.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\r⚠️  Could not connect: {ex.Message}");
-                Console.WriteLine("   The service might still work when properly configured.");
+                Output.WriteLine($"\r⚠️  Could not connect: {ex.Message}");
+                Output.WriteLine("   The service might still work when properly configured.");
             }
+        }
+
+        /// <summary>
+        /// Returns whether a password should be read as a line instead of masked keystrokes.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> when stdin is redirected, <see cref="Input"/> is not the process
+        /// console, or <see cref="Input"/> is a <see cref="StringReader"/>.
+        /// </returns>
+        internal bool UsesLinePasswordInput()
+        {
+            return Console.IsInputRedirected
+                || !ReferenceEquals(Input, Console.In)
+                || Input is StringReader;
+        }
+
+        /// <summary>
+        /// Writes a colored line when <see cref="Output"/> is the process console.
+        /// </summary>
+        /// <param name="color">The console color.</param>
+        /// <param name="text">The text to write.</param>
+        internal void WriteColoredLine(ConsoleColor color, string text)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(text);
+
+            if (!ReferenceEquals(Output, Console.Out))
+            {
+                Output.WriteLine(text);
+                return;
+            }
+
+            Console.ForegroundColor = color;
+            Output.WriteLine(text);
+            Console.ResetColor();
         }
 
         #endregion

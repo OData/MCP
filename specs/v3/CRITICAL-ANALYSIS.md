@@ -56,5 +56,5 @@ CLI registers factory tools **and** attribute tools. That is the agent-poison ca
 - `AddODataMcp()` / `.WithMcp()` is the public host API; `MapMcp` is private.
 - `shutdown_server` is a local Tools development tool.
 - AOT for the CLI host.
-- Breakdance + real OData. No mocks.
+- Breakdance + real OData. No mocks. OData 7 and 8 in separate test processes. Restier on OData 7 only until Restier hosts on 8. Host must not PackageReference Microsoft.AspNetCore.OData.
 - Unused config types do not ship.

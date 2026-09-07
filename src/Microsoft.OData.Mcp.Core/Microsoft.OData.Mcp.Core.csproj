@@ -39,8 +39,5 @@
         <PackageReference Include="System.Text.Json" Version="10.*" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
-    </ItemGroup>
 
 </Project>

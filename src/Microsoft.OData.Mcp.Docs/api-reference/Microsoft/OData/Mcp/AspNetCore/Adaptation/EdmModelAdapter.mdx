@@ -1,0 +1,50 @@
+---
+title: EdmModelAdapter
+description: "Copies declared [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) members into the Core EDM projection.             CLR prope..."
+icon: bolt
+tag: "STATIC"
+keywords: ['EdmModelAdapter', 'Microsoft.OData.Mcp.AspNetCore.Adaptation.EdmModelAdapter', 'Microsoft.OData.Mcp.AspNetCore.Adaptation', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Adaptation
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Adaptation.EdmModelAdapter
+```
+
+## Summary
+
+Copies declared [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) members into the Core EDM projection.
+            CLR properties ignored on the OData model are never copied.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToCoreModel
+
+Projects an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) into the Core EDM used by catalogs.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Core.Models.EdmModel ToCoreModel(Microsoft.OData.Edm.IEdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.IEdmModel` | The ASP.NET Core OData model. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmModel`
+The Core projection containing only declared members and vocabulary documentation.
+

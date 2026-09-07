@@ -1,3 +1,5 @@
+> **Superseded for test layout and OData 7/8 isolation.** Authoritative testing spec: [`specs/v3/TESTING.md`](./v3/TESTING.md). Host compatibility: [`specs/v3/ODATA-HOSTING.md`](./v3/ODATA-HOSTING.md). OData 7 and OData 8 must not share a test process. Restier is tested only with OData 7 until Restier hosts on 8.
+
 > Thanks! Now, I have an interesting problem you can help me with. The implementation works now. It clearly still
   needs cleanup, but it works. What is the best way to proceed through these next steps without losing
   functionality. Would it be better to write a bunch of tests for the features that you're not planning on

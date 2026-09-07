@@ -247,6 +247,11 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 var parsedContainer = ParseEntityContainer(entityContainer, schemaNamespace);
                 model.AddEntityContainer(parsedContainer);
             }
+
+            foreach (var annotations in schemaElement.Elements(EdmNamespace + "Annotations"))
+            {
+                ApplyTargetedAnnotations(annotations, model, schemaNamespace);
+            }
         }
 
         /// <summary>
@@ -269,6 +274,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 OpenType = bool.Parse(entityTypeElement.Attribute("OpenType")?.Value ?? "false"),
                 HasStream = bool.Parse(entityTypeElement.Attribute("HasStream")?.Value ?? "false")
             };
+
+            ApplyDocumentation(entityTypeElement, description => entityType.Description = description, longDescription => entityType.LongDescription = longDescription);
 
             _logger?.LogDebug("Parsing entity type: {FullName}", entityType.FullName);
 
@@ -327,6 +334,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 OpenType = bool.Parse(complexTypeElement.Attribute("OpenType")?.Value ?? "false")
             };
 
+            ApplyDocumentation(complexTypeElement, description => complexType.Description = description, longDescription => complexType.LongDescription = longDescription);
+
             _logger?.LogDebug("Parsing complex type: {FullName}", complexType.FullName);
 
             // Parse properties
@@ -376,7 +385,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 SRID = propertyElement.Attribute("SRID")?.Value
             };
 
-            ApplyDocumentation(propertyElement, description => property.Description = description);
+            ApplyDocumentation(propertyElement, description => property.Description = description, longDescription => property.LongDescription = longDescription);
 
             // Parse MaxLength
             var maxLengthAttr = propertyElement.Attribute("MaxLength");
@@ -443,6 +452,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 ContainsTarget = bool.Parse(navigationPropertyElement.Attribute("ContainsTarget")?.Value ?? "false")
             };
 
+            ApplyDocumentation(navigationPropertyElement, description => navigationProperty.Description = description, longDescription => navigationProperty.LongDescription = longDescription);
+
             // Parse OnDelete
             var onDeleteElement = navigationPropertyElement.Element(EdmNamespace + "OnDelete");
             if (onDeleteElement is not null)
@@ -488,6 +499,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 Namespace = schemaNamespace,
                 Extends = containerElement.Attribute("Extends")?.Value
             };
+
+            ApplyDocumentation(containerElement, description => container.Description = description, longDescription => container.LongDescription = longDescription);
 
             _logger?.LogDebug("Parsing entity container: {FullName}", container.FullName);
 
@@ -552,6 +565,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 IncludeInServiceDocument = bool.Parse(entitySetElement.Attribute("IncludeInServiceDocument")?.Value ?? "true")
             };
 
+            ApplyDocumentation(entitySetElement, description => entitySet.Description = description, longDescription => entitySet.LongDescription = longDescription);
+
             // Parse navigation property bindings
             var navigationPropertyBindings = entitySetElement.Elements(EdmNamespace + "NavigationPropertyBinding");
             foreach (var binding in navigationPropertyBindings)
@@ -593,6 +608,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 Type = typeAttr.Value
             };
 
+            ApplyDocumentation(singletonElement, description => singleton.Description = description, longDescription => singleton.LongDescription = longDescription);
+
             // Parse navigation property bindings
             var navigationPropertyBindings = singletonElement.Elements(EdmNamespace + "NavigationPropertyBinding");
             foreach (var binding in navigationPropertyBindings)
@@ -610,29 +627,339 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         }
 
         /// <summary>
-        /// Applies CSDL documentation or Core.Description to a target.
+        /// Applies CSDL documentation and Core.Description / Core.LongDescription to a target.
         /// </summary>
         /// <param name="element">The CSDL element.</param>
-        /// <param name="setDescription">Receives the documentation string when present.</param>
-        internal void ApplyDocumentation(XElement element, Action<string> setDescription)
+        /// <param name="setDescription">Receives the summary or description when present.</param>
+        /// <param name="setLongDescription">Receives the long description when present.</param>
+        /// <remarks>
+        /// Preference order is CSDL <c>Documentation/Summary</c> and <c>Documentation/LongDescription</c>,
+        /// then <c>Org.OData.Core.V1.Description</c> and <c>Org.OData.Core.V1.LongDescription</c>.
+        /// The description callback receives the summary, or the long description when no summary exists.
+        /// </remarks>
+        internal void ApplyDocumentation(XElement element, Action<string> setDescription, Action<string>? setLongDescription = null)
         {
             ArgumentNullException.ThrowIfNull(element);
             ArgumentNullException.ThrowIfNull(setDescription);
 
-            var summary = element.Element(EdmNamespace + "Documentation")?.Element(EdmNamespace + "Summary")?.Value;
+            var documentation = element.Element(EdmNamespace + "Documentation");
+            var summary = documentation?.Element(EdmNamespace + "Summary")?.Value;
+            var longDescription = documentation?.Element(EdmNamespace + "LongDescription")?.Value;
+
+            if (string.IsNullOrWhiteSpace(summary) || string.IsNullOrWhiteSpace(longDescription))
+            {
+                ReadVocabularyDescriptions(element, out var vocabularyDescription, out var vocabularyLongDescription);
+
+                if (string.IsNullOrWhiteSpace(summary))
+                {
+                    summary = vocabularyDescription;
+                }
+
+                if (string.IsNullOrWhiteSpace(longDescription))
+                {
+                    longDescription = vocabularyLongDescription;
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(summary))
             {
-                setDescription(summary);
+                setDescription(summary.Trim());
+            }
+            else if (!string.IsNullOrWhiteSpace(longDescription))
+            {
+                setDescription(longDescription.Trim());
+            }
+
+            if (setLongDescription is not null && !string.IsNullOrWhiteSpace(longDescription))
+            {
+                setLongDescription(longDescription.Trim());
+            }
+        }
+
+        /// <summary>
+        /// Applies schema-level <c>Annotations</c> whose <c>Target</c> addresses a model element.
+        /// </summary>
+        /// <param name="annotationsElement">The annotations element.</param>
+        /// <param name="model">The model being built.</param>
+        /// <param name="schemaNamespace">The schema namespace.</param>
+        internal void ApplyTargetedAnnotations(XElement annotationsElement, EdmModel model, string schemaNamespace)
+        {
+            ArgumentNullException.ThrowIfNull(annotationsElement);
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentException.ThrowIfNullOrWhiteSpace(schemaNamespace);
+
+            var target = annotationsElement.Attribute("Target")?.Value;
+            if (string.IsNullOrWhiteSpace(target))
+            {
                 return;
             }
 
-            var annotation = element.Elements(EdmNamespace + "Annotation")
-                .FirstOrDefault(candidate =>
-                    (candidate.Attribute("Term")?.Value ?? string.Empty).EndsWith("Core.V1.Description", StringComparison.Ordinal));
-            var annotationValue = annotation?.Attribute("String")?.Value;
-            if (!string.IsNullOrWhiteSpace(annotationValue))
+            ApplyDocumentation(annotationsElement, description => AssignDescription(model, target, description, isLong: false), longDescription => AssignDescription(model, target, longDescription, isLong: true));
+        }
+
+        /// <summary>
+        /// Assigns documentation onto the model element identified by an annotation target.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="target">The CSDL target path.</param>
+        /// <param name="value">The documentation string.</param>
+        /// <param name="isLong">Whether this is a long description.</param>
+        internal static void AssignDescription(EdmModel model, string target, string value, bool isLong)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentException.ThrowIfNullOrWhiteSpace(target);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            var slash = target.LastIndexOf('/');
+            var owner = slash >= 0 ? target[..slash] : target;
+            var member = slash >= 0 ? target[(slash + 1)..] : null;
+
+            var entityType = model.GetEntityType(owner) ?? model.EntityTypes.FirstOrDefault(type => type.Name.Equals(owner, StringComparison.Ordinal));
+            if (entityType is not null)
             {
-                setDescription(annotationValue);
+                if (member is null)
+                {
+                    AssignIfEmpty(isLong ? () => entityType.LongDescription : () => entityType.Description, text =>
+                    {
+                        if (isLong)
+                        {
+                            entityType.LongDescription = text;
+                        }
+                        else
+                        {
+                            entityType.Description = text;
+                        }
+                    }, value);
+
+                    return;
+                }
+
+                var property = entityType.GetProperty(member);
+                if (property is not null)
+                {
+                    AssignIfEmpty(isLong ? () => property.LongDescription : () => property.Description, text =>
+                    {
+                        if (isLong)
+                        {
+                            property.LongDescription = text;
+                        }
+                        else
+                        {
+                            property.Description = text;
+                        }
+                    }, value);
+
+                    return;
+                }
+
+                var navigation = entityType.GetNavigationProperty(member);
+                if (navigation is not null)
+                {
+                    AssignIfEmpty(isLong ? () => navigation.LongDescription : () => navigation.Description, text =>
+                    {
+                        if (isLong)
+                        {
+                            navigation.LongDescription = text;
+                        }
+                        else
+                        {
+                            navigation.Description = text;
+                        }
+                    }, value);
+                }
+
+                return;
+            }
+
+            var complexType = model.ComplexTypes.FirstOrDefault(type => type.FullName.Equals(owner, StringComparison.Ordinal) || type.Name.Equals(owner, StringComparison.Ordinal));
+            if (complexType is not null && member is null)
+            {
+                AssignIfEmpty(isLong ? () => complexType.LongDescription : () => complexType.Description, text =>
+                {
+                    if (isLong)
+                    {
+                        complexType.LongDescription = text;
+                    }
+                    else
+                    {
+                        complexType.Description = text;
+                    }
+                }, value);
+
+                return;
+            }
+
+            var function = model.Functions.FirstOrDefault(item => item.FullName.Equals(owner, StringComparison.Ordinal) || item.Name.Equals(owner, StringComparison.Ordinal));
+            if (function is not null && member is null)
+            {
+                AssignIfEmpty(isLong ? () => function.LongDescription : () => function.Description, text =>
+                {
+                    if (isLong)
+                    {
+                        function.LongDescription = text;
+                    }
+                    else
+                    {
+                        function.Description = text;
+                    }
+                }, value);
+
+                return;
+            }
+
+            var action = model.Actions.FirstOrDefault(item => item.FullName.Equals(owner, StringComparison.Ordinal) || item.Name.Equals(owner, StringComparison.Ordinal));
+            if (action is not null && member is null)
+            {
+                AssignIfEmpty(isLong ? () => action.LongDescription : () => action.Description, text =>
+                {
+                    if (isLong)
+                    {
+                        action.LongDescription = text;
+                    }
+                    else
+                    {
+                        action.Description = text;
+                    }
+                }, value);
+
+                return;
+            }
+
+            foreach (var container in model.EntityContainers)
+            {
+                if (member is null && (container.FullName.Equals(owner, StringComparison.Ordinal) || container.Name.Equals(owner, StringComparison.Ordinal)))
+                {
+                    AssignIfEmpty(isLong ? () => container.LongDescription : () => container.Description, text =>
+                    {
+                        if (isLong)
+                        {
+                            container.LongDescription = text;
+                        }
+                        else
+                        {
+                            container.Description = text;
+                        }
+                    }, value);
+
+                    return;
+                }
+
+                if (container.FullName.Equals(owner, StringComparison.Ordinal) || container.Name.Equals(owner, StringComparison.Ordinal) || $"{container.Namespace}.{container.Name}".Equals(owner, StringComparison.Ordinal))
+                {
+                    var set = container.EntitySets.FirstOrDefault(item => item.Name.Equals(member, StringComparison.Ordinal));
+                    if (set is not null)
+                    {
+                        AssignIfEmpty(isLong ? () => set.LongDescription : () => set.Description, text =>
+                        {
+                            if (isLong)
+                            {
+                                set.LongDescription = text;
+                            }
+                            else
+                            {
+                                set.Description = text;
+                            }
+                        }, value);
+
+                        return;
+                    }
+
+                    var singleton = container.Singletons.FirstOrDefault(item => item.Name.Equals(member, StringComparison.Ordinal));
+                    if (singleton is not null)
+                    {
+                        AssignIfEmpty(isLong ? () => singleton.LongDescription : () => singleton.Description, text =>
+                        {
+                            if (isLong)
+                            {
+                                singleton.LongDescription = text;
+                            }
+                            else
+                            {
+                                singleton.Description = text;
+                            }
+                        }, value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes documentation only when the target does not already have a value.
+        /// </summary>
+        /// <param name="current">Returns the current value.</param>
+        /// <param name="assign">Assigns the new value.</param>
+        /// <param name="value">The documentation string.</param>
+        internal static void AssignIfEmpty(Func<string?> current, Action<string> assign, string value)
+        {
+            ArgumentNullException.ThrowIfNull(current);
+            ArgumentNullException.ThrowIfNull(assign);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            if (string.IsNullOrWhiteSpace(current()))
+            {
+                assign(value);
+            }
+        }
+
+        /// <summary>
+        /// Reads Core description annotations from an element in a single pass.
+        /// </summary>
+        /// <param name="element">The CSDL element.</param>
+        /// <param name="description">The <c>Core.Description</c> value, if any.</param>
+        /// <param name="longDescription">The <c>Core.LongDescription</c> value, if any.</param>
+        /// <remarks>
+        /// <c>LongDescription</c> is matched first so it is consumed before the shorter
+        /// <c>Description</c> suffix. A remaining <c>EndsWith("Description")</c> hit is the
+        /// real description. If more than one leftover hit remains, the term whose suffix is
+        /// a token boundary (preceded by <c>.</c> or the start of the string) wins.
+        /// </remarks>
+        internal void ReadVocabularyDescriptions(XElement element, out string? description, out string? longDescription)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+
+            description = null;
+            longDescription = null;
+            string? descriptionExact = null;
+            var descriptionHits = 0;
+
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                var term = annotation.Attribute("Term")?.Value;
+                if (string.IsNullOrWhiteSpace(term))
+                {
+                    continue;
+                }
+
+                var value = annotation.Attribute("String")?.Value ?? annotation.Element(EdmNamespace + "String")?.Value;
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    continue;
+                }
+
+                if (term.EndsWith("LongDescription", StringComparison.Ordinal))
+                {
+                    longDescription ??= value;
+                    continue;
+                }
+
+                if (!term.EndsWith("Description", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                descriptionHits++;
+                description ??= value;
+
+                var prefixLength = term.Length - "Description".Length;
+                if (prefixLength == 0 || term[prefixLength - 1] == '.')
+                {
+                    descriptionExact = value;
+                }
+            }
+
+            if (descriptionHits > 1)
+            {
+                description = descriptionExact;
             }
         }
 
@@ -659,6 +986,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 Namespace = schemaNamespace,
                 ReturnType = actionElement.Element(EdmNamespace + "ReturnType")?.Attribute("Type")?.Value
             };
+
+            ApplyDocumentation(actionElement, description => action.Description = description, longDescription => action.LongDescription = longDescription);
 
             foreach (var parameter in actionElement.Elements(EdmNamespace + "Parameter"))
             {
@@ -698,6 +1027,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 ReturnType = functionElement.Element(EdmNamespace + "ReturnType")?.Attribute("Type")?.Value
             };
 
+            ApplyDocumentation(functionElement, description => function.Description = description, longDescription => function.LongDescription = longDescription);
+
             foreach (var parameter in functionElement.Elements(EdmNamespace + "Parameter"))
             {
                 function.Parameters.Add(ParseOperationParameter(parameter));
@@ -727,12 +1058,16 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             var typeAttr = parameterElement.Attribute("Type") ??
                 throw new InvalidOperationException($"Parameter '{nameAttr.Value}' missing Type attribute");
 
-            return new EdmParameter(nameAttr.Value, typeAttr.Value)
+            var parameter = new EdmParameter(nameAttr.Value, typeAttr.Value)
             {
                 Name = nameAttr.Value,
                 Nullable = bool.Parse(parameterElement.Attribute("Nullable")?.Value ?? "true"),
                 Type = typeAttr.Value
             };
+
+            ApplyDocumentation(parameterElement, description => parameter.Description = description, longDescription => parameter.LongDescription = longDescription);
+
+            return parameter;
         }
 
         /// <summary>

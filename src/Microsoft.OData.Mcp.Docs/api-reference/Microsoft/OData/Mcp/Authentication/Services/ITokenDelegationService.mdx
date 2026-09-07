@@ -5,8 +5,6 @@ icon: plug
 keywords: ['ITokenDelegationService', 'Microsoft.OData.Mcp.Authentication.Services.ITokenDelegationService', 'Microsoft.OData.Mcp.Authentication.Services', 'interface']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -31,7 +29,7 @@ This service handles the complexities of token delegation, including token forwa
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ClearCachedTokensAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClearCachedTokensAsync <Badge color="orange">Abstract</Badge>
 
 Clears all cached tokens for a specific user.
 
@@ -59,7 +57,7 @@ A task that represents the asynchronous operation.
 |-----------|-------------|
 | `ArgumentException` | Thrown when *userId* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ExchangeTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExchangeTokenAsync <Badge color="orange">Abstract</Badge>
 
 Exchanges a token for a new token with different scopes or audience.
 
@@ -89,7 +87,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentException` | Thrown when *originalToken* or *targetAudience* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetCachedTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetCachedTokenAsync <Badge color="orange">Abstract</Badge>
 
 Gets the cached token for a specific service and user, if available.
 
@@ -118,7 +116,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentException` | Thrown when *userId* or *targetServiceId* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetOnBehalfOfTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetOnBehalfOfTokenAsync <Badge color="orange">Abstract</Badge>
 
 Performs an OAuth2 on-behalf-of flow to get a token for a downstream service.
 
@@ -150,7 +148,7 @@ A task that represents the asynchronous operation. The task result contains the 
 | `ArgumentException` | Thrown when *originalToken* or *targetAudience* is null or whitespace. |
 | `ArgumentNullException` | Thrown when *clientCredentials* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetTokenForServiceAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTokenForServiceAsync <Badge color="orange">Abstract</Badge>
 
 Gets an authentication token for making requests to a specific target service.
 
@@ -179,7 +177,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentException` | Thrown when *originalToken* or *targetServiceId* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetTokenForUrlAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTokenForUrlAsync <Badge color="orange">Abstract</Badge>
 
 Gets an authentication token for making requests to a target URL.
 
@@ -208,7 +206,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentException` | Thrown when *originalToken* or *targetUrl* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RefreshTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RefreshTokenAsync <Badge color="orange">Abstract</Badge>
 
 Refreshes a delegated token if it supports refresh operations.
 
@@ -236,7 +234,7 @@ A task that represents the asynchronous operation. The task result contains the 
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *delegatedToken* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RevokeTokenAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RevokeTokenAsync <Badge color="orange">Abstract</Badge>
 
 Revokes a delegated token if the target service supports token revocation.
 
@@ -264,7 +262,7 @@ A task that represents the asynchronous operation.
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *delegatedToken* is null. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateTokenForDelegationAsync <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateTokenForDelegationAsync <Badge color="orange">Abstract</Badge>
 
 Validates that a token is suitable for delegation to a specific service.
 

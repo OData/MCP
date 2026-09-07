@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['RetryPolicyOptions', 'Microsoft.OData.Mcp.Authentication.Models.RetryPolicyOptions', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ Retry policies help handle transient failures in authentication and token
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [RetryPolicyOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/RetryPolicyOptions) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [RetryPolicyOptions](/api-reference/Microsoft/
 public RetryPolicyOptions()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -56,7 +54,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  BackoffStrategy
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BackoffStrategy
 
 Gets or sets the backoff strategy for calculating retry delays.
 
@@ -77,7 +75,7 @@ Different backoff strategies provide different trade-offs between
             recovery speed and load on the target service. Exponential backoff
             is generally recommended for most scenarios.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  BaseDelay
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BaseDelay
 
 Gets or sets the base delay between retry attempts.
 
@@ -98,7 +96,7 @@ The actual delay may be modified by the backoff strategy.
             This value should be chosen based on the expected recovery time
             for transient failures.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CircuitBreakerFailureThreshold
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CircuitBreakerFailureThreshold
 
 Gets or sets the circuit breaker failure threshold.
 
@@ -119,7 +117,7 @@ Once this many consecutive failures occur, the circuit breaker will
             "open" and prevent further attempts for a period of time. This helps
             avoid overwhelming a failing service.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CircuitBreakerTimeout
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CircuitBreakerTimeout
 
 Gets or sets the circuit breaker recovery timeout.
 
@@ -139,7 +137,7 @@ The time to wait before attempting to close an open circuit breaker.
 After the circuit breaker opens, it will remain open for this duration
             before allowing a test request to check if the service has recovered.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Enabled
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Enabled
 
 Gets or sets a value indicating whether retry is enabled.
 
@@ -160,7 +158,7 @@ When disabled, failed operations will not be retried and will fail
             immediately. Enabling retries can improve reliability but may
             increase latency for operations that ultimately fail.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  JitterFactor
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> JitterFactor
 
 Gets or sets the jitter factor for randomizing retry delays.
 
@@ -181,7 +179,7 @@ Jitter helps prevent the "thundering herd" problem when multiple
             clients retry simultaneously. A value of 0.0 disables jitter, while
             1.0 allows delays to vary by up to 100% of the calculated value.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MaxAttempts
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxAttempts
 
 Gets or sets the maximum number of retry attempts.
 
@@ -202,7 +200,7 @@ This count does not include the initial attempt. For example, a value
             of 3 means the operation will be attempted up to 4 times total.
             Higher values provide more resilience but may cause longer delays.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MaxDelay
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxDelay
 
 Gets or sets the maximum delay between retry attempts.
 
@@ -223,7 +221,7 @@ This prevents exponential backoff from creating extremely long
             delays. The actual delay will be capped at this value regardless
             of the backoff calculation.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RetryableExceptionTypes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RetryableExceptionTypes
 
 Gets or sets the exception types that should trigger retries.
 
@@ -244,7 +242,7 @@ Exceptions of these types will trigger retries. The type names should
             be the full type name including namespace. This is typically used for
             network-related exceptions like timeouts and connection failures.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RetryableStatusCodes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RetryableStatusCodes
 
 Gets or sets the HTTP status codes that should trigger retries.
 
@@ -266,7 +264,7 @@ Only failures with these status codes will be retried. Other status
             codes include 429 (Too Many Requests), 502 (Bad Gateway), and
             503 (Service Unavailable).
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  UseCircuitBreaker
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UseCircuitBreaker
 
 Gets or sets a value indicating whether to use circuit breaker pattern.
 
@@ -289,7 +287,7 @@ The circuit breaker pattern prevents cascading failures by temporarily
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CalculateDelay
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CalculateDelay
 
 Calculates the delay for a specific retry attempt.
 
@@ -310,7 +308,7 @@ public System.TimeSpan CalculateDelay(int attemptNumber)
 Type: `System.TimeSpan`
 The delay to wait before the retry attempt.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -330,7 +328,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -351,7 +349,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -365,7 +363,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -379,7 +377,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -393,7 +391,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -414,7 +412,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ShouldRetry
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ShouldRetry
 
 Determines whether an exception should trigger a retry.
 
@@ -435,7 +433,7 @@ public bool ShouldRetry(System.Exception exception)
 Type: `bool`
 `true` if the exception should trigger a retry; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ShouldRetry
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ShouldRetry
 
 Determines whether an HTTP status code should trigger a retry.
 
@@ -456,7 +454,7 @@ public bool ShouldRetry(int statusCode)
 Type: `bool`
 `true` if the status code should trigger a retry; otherwise, `false`.
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the retry policy options.
 
@@ -471,7 +469,7 @@ public override string ToString()
 Type: `string`
 A summary of the retry policy configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -485,7 +483,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the retry policy options for consistency and completeness.
 

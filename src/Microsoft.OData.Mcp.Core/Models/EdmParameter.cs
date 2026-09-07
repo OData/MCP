@@ -28,6 +28,18 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string Type { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the CSDL documentation summary or <c>Core.Description</c> for this parameter.
+        /// </summary>
+        /// <value>A human-readable summary from metadata, or <c>null</c> when none is declared.</value>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this parameter.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the parameter is nullable.
         /// </summary>
         /// <value><c>true</c> if the parameter accepts null values; otherwise, <c>false</c>.</value>

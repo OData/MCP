@@ -123,7 +123,7 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 | `ODataMcpRouteConvention` 501s | DELETE |
 | `AddMcp` no-op | DELETE |
 | `DEPRECATE_ServiceCollectionExtensions` | DELETE |
-| `UseODataMcp` | DELETE (convention + `MapControllers` is enough) |
+| `UseODataMcp` | KEEP — pipeline activation after OData routes are mapped |
 | Health checks that lie | DELETE |
 | `IEdmModel` adapter | **NEW** |
 | In-app `IOdataExecutor` | **NEW** |

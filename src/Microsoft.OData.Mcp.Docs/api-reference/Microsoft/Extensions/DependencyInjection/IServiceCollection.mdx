@@ -5,8 +5,6 @@ icon: file-brackets-curly
 keywords: ['IServiceCollection', 'Microsoft.Extensions.DependencyInjection.IServiceCollection', 'Microsoft.Extensions.DependencyInjection', 'error']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.Extensions.DependencyInjection.Abstractions.dll
@@ -29,95 +27,15 @@ See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.e
 
 ## Methods
 
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataHttpClient <DocsBadge text="Extension" variant="success" />
-
-<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_ServiceCollectionExtensions`</Note>
-
-Adds a configured HTTP client for OData service communication.
-
-#### Syntax
-
-```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataHttpClient(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
-```
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-
-#### Returns
-
-Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
-
-#### Examples
-
-```csharp
-services.AddODataHttpClient();
-```
-
-#### Remarks
-
-Registers a named HTTP client "OData" configured with standard OData headers and authentication.
-            This method is called automatically by AddODataMcpCore but can be used independently if needed.
-
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataHttpClient <DocsBadge text="Extension" variant="success" />
-
-<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_ServiceCollectionExtensions`</Note>
-
-Adds a configured HTTP client for OData service communication with a custom name.
-
-#### Syntax
-
-```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataHttpClient(Microsoft.Extensions.DependencyInjection.IServiceCollection services, string clientName)
-```
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-| `clientName` | `string` | The name for the HTTP client. |
-
-#### Returns
-
-Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
-
-#### Exceptions
-
-| Exception | Description |
-|-----------|-------------|
-| `ArgumentNullException` | Thrown when *services* is null. |
-| `ArgumentException` | Thrown when *clientName* is null or whitespace. |
-
-#### Examples
-
-```csharp
-// Register multiple OData clients for different services
-services.AddODataHttpClient("NorthwindClient");
-services.AddODataHttpClient("AdventureWorksClient");
-
-// Use the named client
-var client = httpClientFactory.CreateClient("NorthwindClient");
-```
-
-#### Remarks
-
-Registers a named HTTP client configured for OData communication. The client is configured with:
-            - Standard OData headers (Accept, OData-Version, OData-MaxVersion)
-            - Base URL from configuration
-            - Authentication headers based on configuration (Bearer, API Key, or Basic)
-            - Timeout settings from configuration
-
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataMcp <DocsBadge text="Extension" variant="success" />
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcp <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
 
-Adds OData MCP automatic routing services to the service collection.
+Enables MCP for every OData prefix discovered on ASP.NET Core endpoint routing
+             (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8 conventional endpoints),
+             plus any routes registered with [IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix
+             must stay hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
+             [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
 
 #### Syntax
 
@@ -134,29 +52,41 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 #### Returns
 
 Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
+The service collection.
 
 #### Examples
 
 ```csharp
-builder.Services.AddControllers()
-    .AddOData(options =&gt; options
-        .AddRouteComponents("api/v1", GetV1Model())
-        .AddRouteComponents("api/v2", GetV2Model()));
+builder.Services
+    .AddControllers()
+    .AddOData(options =&gt;
+    {
+        options.AddRouteComponents("odata", GetPublicModel());
+        options.AddRouteComponents("reporting", GetReportingModel());
+    });
 
-builder.Services.AddODataMcp(); // Automatically enables MCP for all routes
+builder.Services.AddODataMcp();
 ```
 
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataMcp <DocsBadge text="Extension" variant="success" />
+#### Remarks
+
+This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
+             SDK `MapMcp` is invoked internally at `{prefix}/mcp`. Do not call `MapMcp` yourself.
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcp <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
 
-Adds OData MCP automatic routing services to the service collection with configuration.
+Enables MCP for every OData prefix discovered on ASP.NET Core endpoint routing
+            (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8 conventional endpoints),
+            plus any routes registered with [IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix
+            must stay hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
+            [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
 
 #### Syntax
 
 ```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcp(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.Core.ODataMcpOptions> configureOptions)
+public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcp(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions> configure)
 ```
 
 #### Parameters
@@ -164,40 +94,39 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 | Name | Type | Description |
 |------|------|-------------|
 | `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-| `configureOptions` | `System.Action<Microsoft.OData.Mcp.Core.ODataMcpOptions>` | The options configuration delegate. |
+| `configure` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions>` | Configures host options. |
 
 #### Returns
 
 Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
-
-#### Exceptions
-
-| Exception | Description |
-|-----------|-------------|
-| `ArgumentNullException` | Thrown when *services* or *configureOptions* is null. |
+The service collection.
 
 #### Examples
 
 ```csharp
 builder.Services.AddODataMcp(options =&gt;
 {
-    options.AutoRegisterRoutes = true;
-    options.ExcludeRoutes = new[] { "internal", "legacy" };
-    options.EnableDynamicModels = false;
+    options.IncludePrefixes.Add("odata");
+    options.Catalog.MaxNamedTools = 80;
+    options.RateLimitingPolicyName = "mcp";
 });
 ```
 
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataMcpCore <DocsBadge text="Extension" variant="success" />
+#### Remarks
+
+This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
+            SDK `MapMcp` is invoked internally at `{prefix}/mcp`. Do not call `MapMcp` yourself.
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcpCore <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_ServiceCollectionExtensions`</Note>
 
-Adds core OData MCP Server services to the service collection.
+Adds the CSDL parser and a named OData [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient).
 
 #### Syntax
 
 ```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcpCore(Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
+public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcpCore(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<System.Net.Http.HttpClient> configureClient = null)
 ```
 
 #### Parameters
@@ -205,74 +134,10 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 | Name | Type | Description |
 |------|------|-------------|
 | `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-| `configuration` | `Microsoft.Extensions.Configuration.IConfiguration` | The configuration root. |
+| `configureClient` | `System.Action<System.Net.Http.HttpClient>?` | Optional named-client configuration. |
 
 #### Returns
 
 Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
-
-#### Exceptions
-
-| Exception | Description |
-|-----------|-------------|
-| `ArgumentNullException` | Thrown when *services* or *configuration* is null. |
-
-#### Examples
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddODataMcpCore(builder.Configuration);
-```
-
-#### Remarks
-
-Registers all core services required for OData MCP functionality, including parsers, tool generators,
-            and HTTP clients. Configuration is loaded from the "McpServer" section of the provided IConfiguration.
-
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddODataMcpCore <DocsBadge text="Extension" variant="success" />
-
-<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_ServiceCollectionExtensions`</Note>
-
-Adds OData MCP Server with custom configuration.
-
-#### Syntax
-
-```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcpCore(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.Core.Configuration.McpServerConfiguration> configureOptions)
-```
-
-#### Parameters
-
-| Name | Type | Description |
-|------|------|-------------|
-| `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-| `configureOptions` | `System.Action<Microsoft.OData.Mcp.Core.Configuration.McpServerConfiguration>` | Action to configure server options. |
-
-#### Returns
-
-Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
-The service collection for chaining.
-
-#### Exceptions
-
-| Exception | Description |
-|-----------|-------------|
-| `ArgumentNullException` | Thrown when *services* or *configureOptions* is null. |
-
-#### Examples
-
-```csharp
-services.AddODataMcpCore(config =&gt;
-{
-    config.ODataService.BaseUrl = Environment.GetEnvironmentVariable("ODATA_URL");
-    config.ODataService.RequestTimeout = TimeSpan.FromMinutes(5);
-    config.Caching.Enabled = true;
-});
-```
-
-#### Remarks
-
-Registers all core services required for OData MCP functionality with programmatic configuration.
-            This overload is useful when configuration needs to be built dynamically or when not using IConfiguration.
+The service collection.
 

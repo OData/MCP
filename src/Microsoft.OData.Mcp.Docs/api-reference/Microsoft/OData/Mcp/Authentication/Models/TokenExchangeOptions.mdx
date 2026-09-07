@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['TokenExchangeOptions', 'Microsoft.OData.Mcp.Authentication.Models.TokenExchangeOptions', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ Token exchange allows the MCP server to exchange user tokens for new tokens
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenExchangeOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenExchangeOptions) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [TokenExchangeOptions](/api-reference/Microsof
 public TokenExchangeOptions()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -56,7 +54,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AdditionalParameters
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdditionalParameters
 
 Gets or sets additional parameters to include in token exchange requests.
 
@@ -76,7 +74,7 @@ A dictionary of parameter names and values to include in exchange requests.
 These parameters can be used to pass additional context or configuration
             to the authorization server during token exchange operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ClientCredentials
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientCredentials
 
 Gets or sets the client credentials used for token exchange.
 
@@ -96,7 +94,7 @@ The credentials that identify the MCP server to the authorization server.
 These credentials are required for token exchange operations as they
             authenticate the MCP server's right to exchange tokens on behalf of users.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  DefaultScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DefaultScopes
 
 Gets or sets the default scopes to request during token exchange.
 
@@ -117,7 +115,7 @@ These scopes define the permissions requested for the new token.
             The actual scopes granted may be a subset based on the original
             token's scopes and the authorization server's policies.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MaxRetryAttempts
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxRetryAttempts
 
 Gets or sets the maximum number of retry attempts for failed token exchange operations.
 
@@ -138,7 +136,7 @@ Retries help handle transient network issues or temporary service
             unavailability. The retry policy includes exponential backoff
             to avoid overwhelming the authorization server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RequestedTokenType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequestedTokenType
 
 Gets or sets the requested token type for token exchange.
 
@@ -158,7 +156,7 @@ The token type of the output token being requested.
 This specifies what type of token should be returned from the exchange.
             Common values include access tokens and refresh tokens.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RetryDelay
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RetryDelay
 
 Gets or sets the base delay between retry attempts.
 
@@ -179,7 +177,7 @@ The actual delay uses exponential backoff, so subsequent retries
             will have progressively longer delays to reduce load on the
             authorization server.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  SubjectTokenType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SubjectTokenType
 
 Gets or sets the default subject token type for token exchange.
 
@@ -199,7 +197,7 @@ The token type of the input token being exchanged.
 Common values include "urn:ietf:params:oauth:token-type:access_token" for
             access tokens and "urn:ietf:params:oauth:token-type:jwt" for JWT tokens.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Timeout
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Timeout
 
 Gets or sets the timeout for token exchange operations.
 
@@ -219,7 +217,7 @@ The maximum time to wait for token exchange operations to complete.
 Token exchange operations that exceed this timeout will be cancelled.
             This helps prevent hanging requests from impacting system performance.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TokenEndpoint
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenEndpoint
 
 Gets or sets the token endpoint URL for token exchange operations.
 
@@ -242,7 +240,7 @@ This endpoint must support the RFC 8693 OAuth 2.0 Token Exchange specification.
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -262,7 +260,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -283,7 +281,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -297,7 +295,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -311,7 +309,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -325,7 +323,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -346,7 +344,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the token exchange options.
 
@@ -361,7 +359,7 @@ public override string ToString()
 Type: `string`
 A summary of the token exchange configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -375,7 +373,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the token exchange options for consistency and completeness.
 

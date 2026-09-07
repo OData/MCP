@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EntityScopeRequirements', 'Microsoft.OData.Mcp.Authentication.Models.EntityScopeRequirements', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ Entity scope requirements allow fine-grained authorization control at the
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EntityScopeRequirements](/api-reference/Microsoft/OData/Mcp/Authentication/Models/EntityScopeRequirements) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [EntityScopeRequirements](/api-reference/Micro
 public EntityScopeRequirements()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EntityScopeRequirements](/api-reference/Microsoft/OData/Mcp/Authentication/Models/EntityScopeRequirements) class with the same scopes for all operations.
 
@@ -66,7 +64,7 @@ public EntityScopeRequirements(System.Collections.Generic.IEnumerable<string> al
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *allOperationsScopes* is null. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EntityScopeRequirements](/api-reference/Microsoft/OData/Mcp/Authentication/Models/EntityScopeRequirements) class with separate read and write scopes.
 
@@ -89,7 +87,7 @@ public EntityScopeRequirements(System.Collections.Generic.IEnumerable<string> re
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *readScopes* or *writeScopes* is null. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -101,7 +99,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CreateScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CreateScopes
 
 Gets or sets the scopes required for creating entities of this type.
 
@@ -121,7 +119,7 @@ A collection of scopes that allow create access to the entity.
 Users must have at least one of these scopes to create new instances
             of this entity type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CustomOperationScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CustomOperationScopes
 
 Gets or sets custom scope requirements for specific operations.
 
@@ -142,7 +140,7 @@ This allows defining scope requirements for custom operations beyond
             the standard CRUD operations. The operation names should match those
             used in the MCP tool definitions.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  DeleteScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DeleteScopes
 
 Gets or sets the scopes required for deleting entities of this type.
 
@@ -162,7 +160,7 @@ A collection of scopes that allow delete access to the entity.
 Users must have at least one of these scopes to delete instances
             of this entity type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  NavigateScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NavigateScopes
 
 Gets or sets the scopes required for navigating to related entities.
 
@@ -182,7 +180,7 @@ A collection of scopes that allow navigation to related entities.
 Users must have at least one of these scopes to follow navigation
             properties from this entity type to related entities.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  QueryScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> QueryScopes
 
 Gets or sets the scopes required for querying entities of this type.
 
@@ -202,7 +200,7 @@ A collection of scopes that allow query access to the entity.
 Users must have at least one of these scopes to perform complex
             queries, filtering, and sorting on this entity type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReadScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReadScopes
 
 Gets or sets the scopes required for reading entities of this type.
 
@@ -222,7 +220,7 @@ A collection of scopes that allow read access to the entity.
 Users must have at least one of these scopes to query, retrieve, or
             navigate to entities of this type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  UpdateScopes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UpdateScopes
 
 Gets or sets the scopes required for updating entities of this type.
 
@@ -244,7 +242,7 @@ Users must have at least one of these scopes to modify existing
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddCustomOperation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddCustomOperation
 
 Adds a custom operation with its required scopes.
 
@@ -268,7 +266,7 @@ public void AddCustomOperation(string operationName, System.Collections.Generic.
 | `ArgumentException` | Thrown when *operationName* is null or whitespace. |
 | `ArgumentNullException` | Thrown when *scopes* is null. |
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -288,7 +286,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -309,7 +307,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAllScopes
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAllScopes
 
 Gets all unique scopes defined for this entity across all operations.
 
@@ -324,7 +322,7 @@ public System.Collections.Generic.IEnumerable<string> GetAllScopes()
 Type: `System.Collections.Generic.IEnumerable<string>`
 A collection of all unique scopes defined for this entity.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -338,7 +336,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetScopesForOperation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetScopesForOperation
 
 Gets the required scopes for a specific operation.
 
@@ -359,7 +357,7 @@ public System.Collections.Generic.IEnumerable<string> GetScopesForOperation(stri
 Type: `System.Collections.Generic.IEnumerable<string>`
 The required scopes for the operation, or an empty collection if no specific requirement exists.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -373,7 +371,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasAnyScopes
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasAnyScopes
 
 Determines whether any scopes are defined for this entity.
 
@@ -388,7 +386,7 @@ public bool HasAnyScopes()
 Type: `bool`
 `true` if any scopes are defined; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -402,7 +400,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -423,7 +421,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  SetScopesForOperation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SetScopesForOperation
 
 Sets the required scopes for a specific operation.
 
@@ -447,7 +445,7 @@ public void SetScopesForOperation(string operation, System.Collections.Generic.I
 | `ArgumentException` | Thrown when *operation* is null or whitespace. |
 | `ArgumentNullException` | Thrown when *scopes* is null. |
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the entity scope requirements.
 
@@ -462,7 +460,7 @@ public override string ToString()
 Type: `string`
 A summary of the scope requirements for this entity.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -476,7 +474,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the entity scope requirements for consistency and completeness.
 

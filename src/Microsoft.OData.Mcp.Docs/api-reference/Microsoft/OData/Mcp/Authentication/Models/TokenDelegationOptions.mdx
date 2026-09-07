@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['TokenDelegationOptions', 'Microsoft.OData.Mcp.Authentication.Models.TokenDelegationOptions', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ These options control how authentication tokens are forwarded from the MCP serve
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenDelegationOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Models/TokenDelegationOptions) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [TokenDelegationOptions](/api-reference/Micros
 public TokenDelegationOptions()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -56,7 +54,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CacheDuration
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CacheDuration
 
 Gets or sets the cache duration for delegated tokens.
 
@@ -77,7 +75,7 @@ This duration should be shorter than the token's actual lifetime to ensure
             cached tokens don't expire unexpectedly. The cache automatically handles
             token refresh when possible.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CacheTokens
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CacheTokens
 
 Gets or sets a value indicating whether to cache delegated tokens.
 
@@ -98,7 +96,7 @@ Caching delegated tokens can improve performance by avoiding repeated
             token exchange operations. Cached tokens are automatically refreshed
             before expiration.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Enabled
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Enabled
 
 Gets or sets a value indicating whether token delegation is enabled.
 
@@ -119,7 +117,7 @@ When enabled, the MCP server will forward authentication tokens to downstream
             services. When disabled, the server may use alternative authentication methods
             for downstream calls, such as service-to-service authentication.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RetryPolicy
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RetryPolicy
 
 Gets or sets the retry policy for failed token delegation operations.
 
@@ -140,7 +138,7 @@ Retry policies help handle transient failures in token delegation, such as
             network issues or temporary service unavailability. They should be configured
             carefully to avoid overwhelming downstream services.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Strategy
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Strategy
 
 Gets or sets the token forwarding strategy.
 
@@ -162,7 +160,7 @@ Different strategies provide different levels of security and functionality:
             - Exchange: Exchange the token for a new one scoped to the downstream service
             - OnBehalfOf: Use OAuth2 on-behalf-of flow for token delegation
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TargetServices
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TargetServices
 
 Gets or sets the target services for token delegation.
 
@@ -182,7 +180,7 @@ A collection of service configurations for token forwarding.
 Each target service can have its own delegation configuration, including
             different forwarding strategies, scopes, and authentication parameters.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Timeout
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Timeout
 
 Gets or sets the timeout for token delegation operations.
 
@@ -203,7 +201,7 @@ This timeout applies to operations like token exchange, on-behalf-of flows,
             and communication with token endpoints. Operations that exceed this timeout
             will be cancelled.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  TokenExchange
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenExchange
 
 Gets or sets the token exchange options for services that support token exchange.
 
@@ -223,7 +221,7 @@ Configuration for OAuth2 token exchange flows.
 Token exchange allows the MCP server to obtain tokens with different scopes
             or audiences for downstream services while maintaining the user's identity.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateBeforeForwarding
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateBeforeForwarding
 
 Gets or sets a value indicating whether to validate delegated tokens before forwarding.
 
@@ -246,7 +244,7 @@ Validating delegated tokens ensures they are properly formatted and not expired
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddOrUpdateTargetService
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddOrUpdateTargetService
 
 Adds or updates target service options.
 
@@ -268,7 +266,7 @@ public void AddOrUpdateTargetService(Microsoft.OData.Mcp.Authentication.Models.T
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *targetService* is null. |
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -288,7 +286,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -309,7 +307,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -323,7 +321,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetTargetService
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTargetService
 
 Gets the target service options for a specific service identifier.
 
@@ -344,7 +342,7 @@ public Microsoft.OData.Mcp.Authentication.Models.TargetServiceOptions GetTargetS
 Type: `Microsoft.OData.Mcp.Authentication.Models.TargetServiceOptions?`
 The target service options, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -358,7 +356,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -372,7 +370,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -393,7 +391,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the token delegation options.
 
@@ -408,7 +406,7 @@ public override string ToString()
 Type: `string`
 A summary of the token delegation configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -422,7 +420,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the token delegation options for consistency and completeness.
 

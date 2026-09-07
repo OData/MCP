@@ -5,8 +5,6 @@ icon: plug
 keywords: ['ICsdlMetadataParser', 'Microsoft.OData.Mcp.Core.Parsing.ICsdlMetadataParser', 'Microsoft.OData.Mcp.Core.Parsing', 'interface']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -31,7 +29,7 @@ This interface abstracts the parsing of CSDL XML documents that describe the str
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ParseFromFile <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ParseFromFile <Badge color="orange">Abstract</Badge>
 
 Parses a CSDL XML document from a file.
 
@@ -61,7 +59,7 @@ The parsed EDM model.
 | `XmlException` | Thrown when the XML is malformed. |
 | `InvalidOperationException` | Thrown when the CSDL structure is invalid. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ParseFromStream <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ParseFromStream <Badge color="orange">Abstract</Badge>
 
 Parses a CSDL XML document from a stream.
 
@@ -90,7 +88,7 @@ The parsed EDM model.
 | `XmlException` | Thrown when the XML is malformed. |
 | `InvalidOperationException` | Thrown when the CSDL structure is invalid. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ParseFromString <DocsBadge text="Abstract" variant="warning" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ParseFromString <Badge color="orange">Abstract</Badge>
 
 Parses a CSDL XML document from a string.
 

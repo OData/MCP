@@ -123,6 +123,7 @@
     <ItemGroup Condition=" $(IsTestProject) != 'true' and $(IsSampleProject) != 'true' and $(IsTemplateProject) != 'true' ">
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.*" PrivateAssets="All" />
         <InternalsVisibleTo Include="$(AssemblyName.Replace('Microsoft.OData.Mcp', 'Microsoft.OData.Mcp.Tests'))" />
+        <InternalsVisibleTo Include="Microsoft.OData.Mcp.Tests.AspNetCore.Restier" />
     </ItemGroup>
 
     <ItemGroup Condition=" $(IsTestProject) == 'true' and $(IsSampleProject) != 'true' ">
@@ -130,6 +131,7 @@
         <PackageReference Include="FluentAssertions.Analyzers" Version="0.*" PrivateAssets="All" />
         <PackageReference Include="MSTest" Version="4.*" />
         <PackageReference Include="Breakdance.Extensions.MSTest2" Version="8.*-*" />
+        <PackageReference Include="coverlet.msbuild" Version="6.*" PrivateAssets="All" />
 
         <!-- Enable parallel test execution in MSTest 4 and later. -->
         <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.Parallelize">

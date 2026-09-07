@@ -1,0 +1,75 @@
+---
+title: ODataOptions
+description: "Extension methods for ODataOptions from Microsoft.AspNetCore.OData"
+icon: file-brackets-curly
+keywords: ['ODataOptions', 'Microsoft.AspNetCore.OData.ODataOptions', 'Microsoft.AspNetCore.OData', 'error']
+---
+
+## Definition
+
+**Assembly:** Microsoft.AspNetCore.OData.dll
+
+**Namespace:** Microsoft.AspNetCore.OData
+
+## Syntax
+
+```csharp
+Microsoft.AspNetCore.OData.ODataOptions
+```
+
+## Summary
+
+This type is defined in Microsoft.AspNetCore.OData.
+
+## Remarks
+
+See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.odata.odataoptions) for more information about the rest of the API.
+
+## Methods
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithMcp <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.AspNetCore.OData.ODataOptionsMcpExtensions`</Note>
+
+Enables MCP for this OData route only. Use when some routes must not be exposed to agents. Do not also call `AddODataMcp`.
+
+#### Syntax
+
+```csharp
+public static Microsoft.AspNetCore.OData.ODataOptions WithMcp(Microsoft.AspNetCore.OData.ODataOptions options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `options` | `Microsoft.AspNetCore.OData.ODataOptions` | The OData options whose most recently added route component should be exposed. |
+
+#### Returns
+
+Type: `Microsoft.AspNetCore.OData.ODataOptions`
+The same [ODataOptions](/api-reference/Microsoft/AspNetCore/OData/ODataOptions) instance.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *options* is null. |
+| `InvalidOperationException` | Thrown when no route component has been added yet. |
+
+#### Examples
+
+```csharp
+builder.Services
+    .AddControllers()
+    .AddOData(options =&gt;
+    {
+        options.AddRouteComponents("odata", GetPublicModel()).WithMcp();
+        options.AddRouteComponents("internal", GetInternalModel());
+    });
+```
+
+#### Remarks
+
+Marks the last `AddRouteComponents` prefix. Do not call `AddODataMcp` in the same application.
+

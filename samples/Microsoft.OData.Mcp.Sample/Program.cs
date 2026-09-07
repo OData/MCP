@@ -53,22 +53,11 @@ public class Program
         // Register the OData options provider bridge
         //builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
 
-        // Enable the magical OData MCP integration!
         builder.Services.AddODataMcp(options =>
         {
-            // Optional: Exclude any routes from MCP
-            // options.ExcludeRoutes = new[] { "internal" };
-            
-            // Optional: Customize tool naming
-            options.ToolNamingPattern = "{route}.{entity}.{operation}";
-            
-            // Optional: Enable dynamic models (for changing schemas)
-            options.EnableDynamicModels = false;
-            
-            // Performance settings
-            options.UseAggressiveCaching = true;
-            options.DefaultPageSize = 50;
-            options.MaxPageSize = 500;
+            options.Catalog.IncludeEntitySets.Add("Customers");
+            options.Catalog.IncludeEntitySets.Add("Products");
+            options.Catalog.MaxNamedTools = 80;
         });
 
         builder.Services.AddEndpointsApiExplorer();

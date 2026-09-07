@@ -21,7 +21,8 @@
 - `shutdown_server` on Tools host only.
 - `AddODataMcp()` and `.WithMcp()` are mutually exclusive; calling both throws.
 - SDK `MapMcp` is internal, never public product API.
-- Tests: Breakdance + **live** `https://services.odata.org/V4/Northwind/Northwind.svc` and `https://services.odata.org/TripPinRESTierService`. In-process Restier OData uses `Microsoft.Restier.Breakdance.RestierBreakdanceTestBase<TApi>` (`D:\GitHub\RESTier\src\Microsoft.Restier.Breakdance`). Convention `AddOData` host tests use `AspNetCoreBreakdanceTestBase`.
+- Tests: Breakdance + **live** `https://services.odata.org/V4/Northwind/Northwind.svc` and `https://services.odata.org/TripPinRESTierService`. **OData 7 and OData 8 must not share a test process.** Restier lives in `Microsoft.OData.Mcp.Tests.AspNetCore.Restier` (OData 7 only, `RestierBreakdanceTestBase<TApi>`, endpoint routing). Convention OData 8 tests live in `Microsoft.OData.Mcp.Tests.AspNetCore`. See `specs/v3/TESTING.md` and `specs/v3/ODATA-HOSTING.md`.
+- AspNetCore host **must not** `PackageReference` `Microsoft.AspNetCore.OData`. Discover prefix + `IEdmModel` from `EndpointDataSource`.
 - **Never mock** HttpClient, OData, MCP, or metadata. If a test uses a mock, it is wrong.
 - Always pass `-c Debug` (or `-c Release`) to `dotnet` commands.
 - XML docs on every public API; `<param>` on the same line as content; `<remarks>` last. Examples on `AddODataMcp` / `WithMcp`.
@@ -58,7 +59,8 @@ src/Microsoft.OData.Mcp.AspNetCore/
 
 src/Microsoft.OData.Mcp.Tests.Core/Parsing/, Catalog/, Execution/, Models/
 src/Microsoft.OData.Mcp.Tests.Tools/
-src/Microsoft.OData.Mcp.Tests.AspNetCore/
+src/Microsoft.OData.Mcp.Tests.AspNetCore/           # OData 8 convention host only
+src/Microsoft.OData.Mcp.Tests.AspNetCore.Restier/  # OData 7 + Restier only
 src/Microsoft.OData.Mcp.Tests.Integration/
 ```
 
@@ -1050,7 +1052,7 @@ XML docs **required** (copy into code):
 
 `WithMcp`: *Enables MCP for this OData route only. Use when some routes must not be exposed to agents. Do not also call `AddODataMcp`.*
 
-Internal: endpoint data source reads `ODataOptions` route components, maps SDK MCP at `{prefix}/mcp` for enabled prefixes. `MapControllers()` is enough; no public `MapODataMcp`, no `UseODataMcp`.
+Internal: endpoint data source reads prefixes and `IEdmModel`. `AddODataMcp` registers services. `UseODataMcp` maps SDK MCP at `{prefix}/mcp` after OData routes exist. Do not call SDK `MapMcp` in app code.
 
 - [ ] **Step 1: Breakdance TestServer**
 
@@ -1167,18 +1169,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 
 **Files:**
 - Create: `src/Microsoft.OData.Mcp.AspNetCore/Execution/InProcessODataExecutor.cs`
-- Test: `src/Microsoft.OData.Mcp.Tests.AspNetCore/InProcessQueryTests.cs`
-- Test project: PackageReference `Microsoft.Restier.Breakdance`
+- Test (OData 8 convention): `src/Microsoft.OData.Mcp.Tests.AspNetCore/`
+- Test (Restier / OData 7): `src/Microsoft.OData.Mcp.Tests.AspNetCore.Restier/` — **separate project; must not reference OData 8**
 
 **Interfaces:**
-- Consumes: same-host HTTP to the Restier OData route (not a remote URL)
-- Produces: `tools/call` `odata_query` on `/odata/mcp` returns JSON from the Restier entity set
+- Consumes: same-host HTTP to the app’s OData route (not a remote URL)
+- Produces: `tools/call` `odata_query` on `{prefix}/mcp` returns JSON from that route
 
-- [ ] **Step 1: Subclass `RestierBreakdanceTestBase<TApi>` (`Microsoft.Restier.Breakdance`). `TApi` is a small in-memory Restier API with a `Customer` entity set and one seeded row. Set `AddRestierAction` / `MapRestierAction` (endpoint routing) before `TestSetup()`. Also `AddODataMcp()`. POST `tools/call` `odata_query` entitySet=Customers. Response JSON contains the seeded name. No mocks.**
+- [ ] **Step 1 (OData 8):** Convention `AddOData` host in `Tests.AspNetCore`. `AddODataMcp()`. POST `odata_query` against the in-app entity set. No Restier references in this project.
 
-- [ ] **Step 2: Executor must hit the Restier OData route on the same `TestServer`, not a remote URL. Preserve `Authorization` if present.**
+- [ ] **Step 2 (Restier / OData 7):** New project `Microsoft.OData.Mcp.Tests.AspNetCore.Restier`. Subclass `RestierBreakdanceTestBase<TApi>` with **endpoint routing**. Seed `Customers`. `AddODataMcp()` must not pull OData 8. POST `odata_query` entitySet=Customers; JSON contains the seeded name. No mocks. Do **not** `[Ignore]` this class.
 
-- [ ] **Step 3: PASS + commit** `feat: in-process OData executor for AspNetCore MCP`
+- [ ] **Step 3:** Executor hits the same `TestServer`, not a remote URL. Preserve `Authorization` if present.
+
+- [ ] **Step 4: PASS + commit** `feat: in-process OData executor for AspNetCore MCP`
 
 ---
 

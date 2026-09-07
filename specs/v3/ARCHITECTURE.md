@@ -33,7 +33,7 @@ Agents run real OData operations through MCP 2.
 
 ```
 Microsoft.OData.Mcp.Core            # Models/ (IEdmModel-shaped EDM), CSDL, catalogs, IOdataExecutor
-Microsoft.OData.Mcp.AspNetCore      # AddODataMcp / WithMcp; IEdmModel adapter; in-app routing
+Microsoft.OData.Mcp.AspNetCore      # AddODataMcp; EndpointDataSource discovery; IEdmModel adapter; in-app HTTP
 Microsoft.OData.Mcp.Tools           # AOT / dotnet tool; stdio; shutdown_server
 Microsoft.OData.Mcp.Authentication  # Optional inbound JWT / outbound helpers
 ```
@@ -42,13 +42,16 @@ Microsoft.OData.Mcp.Authentication  # Optional inbound JWT / outbound helpers
 Tools ──────────► Core
 AspNetCore ─────► Core
 AspNetCore ─────► ModelContextProtocol.AspNetCore 2.x
-AspNetCore ─────► Microsoft.OData.Edm          (adapter only)
-AspNetCore ─────► Microsoft.AspNetCore.OData   (peer)
+AspNetCore ─────► Microsoft.OData.Edm          (adapter only; IEdmModel, 7.x band)
+AspNetCore ─────► Microsoft.AspNetCore.App     (EndpointDataSource, HTTP)
+AspNetCore ─ ✗ ─► Microsoft.AspNetCore.OData   (neither 7 nor 8 — app brings one)
 Core / Tools ───► ModelContextProtocol 2.x
 Core ───────────► no Edm, no OData.Core, no ASP.NET, no Authentication
 Tools ─optional─► Authentication
 AspNetCore ─opt─► Authentication
 ```
+
+OData 7 vs 8 hosting assemblies must not be a compile-time dependency of the MCP host. See [ODATA-HOSTING.md](./ODATA-HOSTING.md).
 
 Pin MCP 2.x. Tools: `IsAotCompatible`, `PublishAot` profile, JSON source-gen, explicit tool registration.
 
@@ -74,7 +77,9 @@ Hosts:  Tools (stdio / optional HTTP, AOT)     AspNetCore (internal MapMcp per p
 
 ### 4.1 Public AspNetCore API
 
-**All registered OData routes:**
+Discovery is **ASP.NET Core Endpoint Routing**, not `ODataOptions`. After the app maps OData (OData 8 `MapControllers` / `AddRouteComponents`, OData 7 `MapODataRoute`, Restier `MapApiRoute`), `AddODataMcp()` walks `EndpointDataSource` for prefixes and `IEdmModel` values. It does not `PackageReference` `Microsoft.AspNetCore.OData`.
+
+**All discovered OData routes:**
 
 ```csharp
 builder.Services.AddControllers()
@@ -87,28 +92,30 @@ builder.Services.AddControllers()
 builder.Services.AddODataMcp();
 
 app.MapControllers();
+app.UseODataMcp();
 ```
 
-MCP appears at `/api/v1/mcp` and `/odata/mcp` (sibling of `$metadata`). XML docs on `AddODataMcp` must say: *enables MCP for every OData route component; prefer this unless a route must stay hidden from agents.*
-
-**One route only:**
+Restier / OData 7:
 
 ```csharp
-builder.Services.AddControllers()
-    .AddOData(options =>
-    {
-        options.AddRouteComponents("odata", mainModel).WithMcp();
-        options.AddRouteComponents("internal", adminModel);
-    });
-
-app.MapControllers();
+app.MapRestier(builder => builder.MapApiRoute<SomeApi>("odata", "odata"));
+// AddODataMcp() already registered — discovers prefix "odata" from the catch-all endpoint
 ```
 
-`WithMcp()` is an extension on the `ODataOptions` chain. It enables MCP for the **most recently added** route component. XML docs must say: *Call immediately after `AddRouteComponents` for the route that should speak MCP. Do not also call `AddODataMcp()`.*
+MCP appears at `{prefix}/mcp` (sibling of `$metadata`). `AddODataMcp` registers services. `UseODataMcp` maps MCP after OData routes exist. XML docs on `AddODataMcp` must say: *registers MCP for every OData prefix on the endpoint data source (OData 7 and 8); call `UseODataMcp` after mapping OData. Prefer this unless a route must stay hidden from agents.*
 
-**Mutual exclusion:** `AddODataMcp()` = all current and future route components. `.WithMcp()` = opt-in list. Calling both is invalid and must throw at startup with a message that names both APIs.
+**One prefix only (version-neutral):**
 
-`ExcludeRoutes` on `AddODataMcp` covers “all except these” without switching to per-route opt-in.
+```csharp
+builder.Services.AddODataMcp(options =>
+{
+    options.IncludePrefixes.Add("odata");
+});
+```
+
+`ExcludeRoutes` / `IncludePrefixes` cover “all except these” / opt-in without touching `ODataOptions`. All-routes vs opt-in remain mutually exclusive; calling both throws at startup.
+
+Fluent `ODataOptions.WithMcp()` after `AddRouteComponents` is OData **8** sugar only. It must not live in a package that pulls OData 8 into Restier apps. See [ODATA-HOSTING.md](./ODATA-HOSTING.md).
 
 Internally each enabled prefix calls SDK `MapMcp("{prefix}/mcp")` with a catalog bound to that prefix’s model. Developers never call `MapMcp`.
 
@@ -173,9 +180,11 @@ Inbound MCP HTTP: ASP.NET schemes. Outbound: configured credentials or forward `
 
 ## 8. Testing
 
-Breakdance for DI. Official Northwind (read) and TripPin (read/write). In-process Restier OData via `Microsoft.Restier.Breakdance.RestierBreakdanceTestBase<TApi>` (subclass of `AspNetCoreBreakdanceTestBase`). Convention-model host tests may use `AspNetCoreBreakdanceTestBase` directly. MCP SDK client for protocol. PublishAot smoke for Tools.
+See [TESTING.md](./TESTING.md).
 
-**Never mock `HttpClient`, OData, MCP, or metadata.**
+Breakdance for DI. Official Northwind (read) and TripPin (read/write). **OData 7 and OData 8 must not share a test process.** Restier is tested only with OData 7 (`Microsoft.OData.Mcp.Tests.AspNetCore.Restier`, `RestierBreakdanceTestBase<TApi>`, endpoint routing) until Restier hosts on OData 8. Convention OData 8 tests stay in `Microsoft.OData.Mcp.Tests.AspNetCore`. PublishAot smoke for Tools.
+
+**Never mock `HttpClient`, OData, MCP, or metadata.** Do not `[Ignore]` Restier because of OData 8.
 
 ---
 

@@ -14,7 +14,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
     /// <summary>
     /// Executes OData requests against a remote service using a named HttpClient.
     /// </summary>
-    public sealed class RemoteODataExecutor : IOdataExecutor
+    public sealed class RemoteODataExecutor : IODataExecutor
     {
 
         #region Fields
@@ -60,13 +60,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
             using var response = await client.SendAsync(message, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-            return new ODataExecuteResult
-            {
-                Body = body,
-                IsSuccess = response.IsSuccessStatusCode,
-                MediaType = response.Content.Headers.ContentType?.MediaType,
-                StatusCode = (int)response.StatusCode
-            };
+            return ODataExecuteResult.FromHttp(response, body);
         }
 
         #endregion

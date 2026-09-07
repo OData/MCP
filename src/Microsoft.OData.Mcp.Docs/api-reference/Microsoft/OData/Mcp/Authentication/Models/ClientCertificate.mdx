@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['ClientCertificate', 'Microsoft.OData.Mcp.Authentication.Models.ClientCertificate', 'Microsoft.OData.Mcp.Authentication.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -34,7 +32,7 @@ Client certificates provide a secure method for authenticating the MCP server
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [ClientCertificate](/api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientCertificate) class.
 
@@ -44,7 +42,7 @@ Initializes a new instance of the [ClientCertificate](/api-reference/Microsoft/O
 public ClientCertificate()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [ClientCertificate](/api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientCertificate) class for store-based lookup by thumbprint.
 
@@ -68,7 +66,7 @@ public ClientCertificate(string thumbprint, System.Security.Cryptography.X509Cer
 |-----------|-------------|
 | `ArgumentException` | Thrown when *thumbprint* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [ClientCertificate](/api-reference/Microsoft/OData/Mcp/Authentication/Models/ClientCertificate) class for file-based certificates.
 
@@ -91,7 +89,7 @@ public ClientCertificate(string filePath, string password = null)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *filePath* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -103,7 +101,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Base64Data
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Base64Data
 
 Gets or sets the Base64-encoded certificate data.
 
@@ -124,7 +122,7 @@ This allows certificates to be embedded directly in configuration.
             While convenient for some scenarios, this method should be used
             carefully to avoid exposing internal keys in configuration files.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  CheckRevocation
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CheckRevocation
 
 Gets or sets a value indicating whether to check certificate revocation.
 
@@ -145,7 +143,7 @@ Revocation checking ensures the certificate hasn't been revoked
             by the issuing authority. This requires network access to
             revocation services and may impact performance.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  FilePath
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FilePath
 
 Gets or sets the file path for file-based certificates.
 
@@ -166,7 +164,7 @@ The file path can point to various certificate formats including
             .pfx, .p12, .cer, and .crt files. Password-protected files require
             the Password property to be set.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Password
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Password
 
 Gets or sets the password for encrypted certificate files.
 
@@ -186,7 +184,7 @@ The password to decrypt the certificate file.
 This password is used when loading encrypted certificate files such
             as .pfx or .p12 files. It should be stored securely and not logged.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Source
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Source
 
 Gets or sets the source of the client certificate.
 
@@ -207,7 +205,7 @@ Different certificate sources provide different levels of security and
             management complexity. Store-based certificates are typically more secure
             in production environments.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  StoreLocation
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StoreLocation
 
 Gets or sets the certificate store location.
 
@@ -228,7 +226,7 @@ The store location determines which certificate store to search.
             CurrentUser is typically used for development, while LocalMachine
             is used for production services.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  StoreName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StoreName
 
 Gets or sets the certificate store name.
 
@@ -249,7 +247,7 @@ The store name determines which certificate store to search within
             the specified location. "My" (Personal) is the most common store
             for client certificates.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  SubjectName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SubjectName
 
 Gets or sets the certificate subject name for store-based lookup.
 
@@ -270,7 +268,7 @@ The subject name provides an alternative way to locate certificates
             when the thumbprint is not known. It should match the certificate's
             subject field exactly.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Thumbprint
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Thumbprint
 
 Gets or sets the certificate thumbprint for store-based lookup.
 
@@ -290,7 +288,7 @@ The thumbprint (SHA-1 hash) of the certificate to locate.
 The thumbprint uniquely identifies a certificate within a store.
             It should be specified without spaces or special characters.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateChain
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateChain
 
 Gets or sets a value indicating whether to validate the certificate chain.
 
@@ -313,7 +311,7 @@ Chain validation ensures the certificate is issued by a trusted
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -333,7 +331,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -354,7 +352,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -368,7 +366,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -382,7 +380,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  LoadCertificate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LoadCertificate
 
 Loads the certificate based on the configured source.
 
@@ -403,7 +401,7 @@ The loaded X.509 certificate.
 |-----------|-------------|
 | `InvalidOperationException` | Thrown when the certificate cannot be loaded. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -417,7 +415,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -438,7 +436,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the client certificate configuration.
 
@@ -453,7 +451,7 @@ public override string ToString()
 Type: `string`
 A summary of the certificate configuration.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -467,7 +465,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Validate
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
 
 Validates the client certificate configuration for consistency and completeness.
 

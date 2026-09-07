@@ -11,7 +11,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
     /// Executes one OData HTTP request. Query option keys must not include '$';
     /// implementations add the prefix on the wire.
     /// </summary>
-    public interface IOdataExecutor
+    public interface IODataExecutor
     {
 
         /// <summary>

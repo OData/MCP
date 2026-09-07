@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['TokenValidationService', 'Microsoft.OData.Mcp.Authentication.Services.TokenValidationService', 'Microsoft.OData.Mcp.Authentication.Services', 'class', 'System.Object', 'Microsoft.OData.Mcp.Authentication.Services.ITokenValidationService']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
@@ -33,7 +31,7 @@ This service handles JWT token validation using Microsoft's IdentityModel librar
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [TokenValidationService](/api-reference/Microsoft/OData/Mcp/Authentication/Services/TokenValidationService) class.
 
@@ -56,7 +54,7 @@ public TokenValidationService(Microsoft.Extensions.Options.IOptions<Microsoft.OD
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *options* or *logger* is null. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -68,7 +66,7 @@ public Object()
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -88,7 +86,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -109,7 +107,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ExtractUserContext
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExtractUserContext
 
 Extracts the user context from a validated claims principal.
 
@@ -130,7 +128,7 @@ public Microsoft.OData.Mcp.Authentication.Models.UserContext ExtractUserContext(
 Type: `Microsoft.OData.Mcp.Authentication.Models.UserContext`
 The user context containing identity and authorization information.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAuthorizationMetadataAsync
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAuthorizationMetadataAsync
 
 Gets the authorization metadata from the JWT token for downstream services.
 
@@ -151,7 +149,7 @@ public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Models.Aut
 Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Models.AuthorizationMetadata>`
 A task that represents the asynchronous operation. The task result contains the authorization metadata.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -165,7 +163,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetTokenLifetime
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTokenLifetime
 
 Gets the remaining lifetime of a token.
 
@@ -186,7 +184,7 @@ public System.Nullable<System.TimeSpan> GetTokenLifetime(System.Security.Claims.
 Type: `System.Nullable<System.TimeSpan>`
 The remaining time before the token expires, or null if the token has no expiration.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -200,7 +198,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasRequiredScopes
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasRequiredScopes
 
 Checks if a user has the required scopes for a specific operation.
 
@@ -222,7 +220,7 @@ public bool HasRequiredScopes(Microsoft.OData.Mcp.Authentication.Models.UserCont
 Type: `bool`
 `true` if the user has at least one of the required scopes; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsTokenExpired
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsTokenExpired
 
 Determines if a token is expired based on its claims.
 
@@ -243,7 +241,7 @@ public bool IsTokenExpired(System.Security.Claims.ClaimsPrincipal principal)
 Type: `bool`
 `true` if the token is expired; otherwise, `false`.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -257,7 +255,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -278,7 +276,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -292,7 +290,7 @@ public virtual string ToString()
 
 Type: `string?`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateTokenAsync
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateTokenAsync
 
 Validates a JWT token and returns the principal if valid.
 
@@ -314,7 +312,7 @@ public System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal> Valid
 Type: `System.Threading.Tasks.Task<System.Security.Claims.ClaimsPrincipal?>`
 A task that represents the asynchronous validation operation. The task result contains the claims principal if the token is valid, or null if invalid.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ValidateTokenAsync
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateTokenAsync
 
 Validates a JWT token with additional validation parameters.
 
