@@ -2,7 +2,8 @@
 
 **Status:** Living (authoritative for CLI → remote OData auth)  
 **Author:** TBD  
-**Revised:** 2026-09-07 (rev 8 — Latchkey store; on-request expiry check, no background refresh)  
+**Revised:** 2026-09-08 (rev 10 — `AddODataProtectedResource`: the other end of this hop, so an OData API can publish what the discovery algorithm below is looking for; see [Zero-config protected resource (`AddODataProtectedResource`)](#zero-config-protected-resource-addodataprotectedresource) and [Revision notes (rev 10)](#revision-notes-rev-10))  
+**Previously:** 2026-09-08 (rev 9 — `ToolsMcpHost.CreateAsync` `configureServices` hook and `verbose`; `OutboundOAuthClient` owns the service root; `PrmCandidates` ordered list; RFC 8707 `resource` gated on advertisement or `--resource`; `VerifyPersistence` on first acquisition, not startup; DCR for client credentials registers `client_secret_post`; see [Revision notes (rev 9)](#revision-notes-rev-9))  
 **Protocol:** MCP `2026-07-28` via **ModelContextProtocol C# SDK 2.2**  
 **Hop:** `odata-mcp` (stdio) → remote OData HTTP we do not own  
 **Not this hop:** agent → MCP HTTP (`ClientOAuthProvider` / RFC 9728 on the MCP resource)
@@ -394,6 +395,43 @@ Continue with `authorization_uri` `https://login.microsoftonline.com/common/oaut
 OIDC metadata is public. `grant_types_supported` includes `urn:ietf:params:oauth:grant-type:device_code`. `registration_endpoint` absent → require `--client-id` of **the operator’s** public client, never `00000003-0000-0000-c000-000000000000`. Resource/audience is step 8b: PRM `resource` if present, else `--resource`, else origin `https://graph.microsoft.com` (not `/v1.0`).
 
 `ODataMcpAuthConstants.MicrosoftGraphResourceAppId = "00000003-0000-0000-c000-000000000000"` exists so tests and logs can **detect** the trap, not so we can use it as a client id.
+
+### Zero-config protected resource (`AddODataProtectedResource`)
+
+Every step above is the client's half of the handshake. The steps only pay off when the API answered with something. Most real OData services answer `401` with a bare `WWW-Authenticate: Bearer` and publish no RFC 9728 document at all, and the algorithm's only honest response to that is `Could not discover an authorization server; pass --auth-server.` — an operator typing an issuer URL that the API already knows.
+
+`AddODataProtectedResource` closes that gap from the API's side, in one line, in `Microsoft.OData.Mcp.AspNetCore`:
+
+```csharp
+builder.Services
+    .AddControllers()
+    .AddOData(options => options.AddRouteComponents("odata", GetEdmModel()));
+
+builder.Services.AddODataProtectedResource(options =>
+{
+    options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+    options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+});
+```
+
+**What it emits.** Both RFC 9728 URL forms, one document per OData route prefix, with prefixes taken from `ODataMcpRouteDiscovery.Discover` on the first request — the same discovery `ODataMcpSessionFactory` runs, so `IncludePrefixes` / `ExcludeRoutes` apply when the app also called `AddODataMcp`:
+
+- origin `/.well-known/oauth-protected-resource` → the document for the **first** discovered prefix (which is *the* document when the host serves one OData service);
+- path-suffixed `/.well-known/oauth-protected-resource/{prefix}` → one per prefix.
+
+Body is the SDK's `ProtectedResourceMetadata`, written through a source-generated `JsonSerializerContext`, `Content-Type: application/json`, `Cache-Control: public, max-age=300`. `resource` is `{scheme}://{host}{pathBase}/{prefix}` with **no** trailing slash — the same value step 8b then feeds to the token endpoint as the RFC 8707 audience, so an API that publishes this must accept it as the audience it validates. `bearer_methods_supported` is `["header"]`.
+
+**The annotated challenge.** Any `401` under a covered prefix has its `WWW-Authenticate` rewritten on the way out: the first `Bearer` challenge that lacks `resource_metadata` gains `resource_metadata="{path-suffixed URL}"`, plus `scope="{space-joined scopes}"` when scopes are published and the challenge carried none. A bare `Bearer` therefore becomes
+
+```
+WWW-Authenticate: Bearer resource_metadata="https://api.contoso.com/.well-known/oauth-protected-resource/odata"
+```
+
+which collapses step 4 from two speculative GETs to one. A `401` that carried no header at all gets that whole challenge. Everything else is left byte-for-byte alone: a challenge that already names a document, a non-`Bearer` scheme sharing the header, a non-`401`, a path outside every prefix, and any header the RFC 9110 grammar cannot parse (left untouched, logged at Debug). Prefix matching is segment-safe, so `odata` never claims `/odatafoo`.
+
+**Anonymous readability is the whole point.** The middleware goes in at the front of the pipeline through an `IStartupFilter`, before authentication and authorization. A protected resource metadata document that answers `401` teaches a client nothing — that is the Graph trap above, seen from the serving side. There is no `UseODataProtectedResource` to add, and therefore no way to put it after `UseAuthentication` by mistake. `ODataProtectedResourceOptions.Validate` runs in that filter, so a missing, relative, or non-`https` (non-loopback) authorization server fails the host rather than the first client.
+
+**What it does not do.** It does not validate tokens, register an authentication scheme, or host an MCP server — `AddODataMcp` remains independent and unnecessary. It publishes no `jwks_uri` and no signed-response algorithms. It does not reference `Microsoft.OData.Mcp.Authentication`: the dependency direction in [`ARCHITECTURE.md`](./ARCHITECTURE.md) is one way, so the four wire strings it needs live in `Constants/ProtectedResourceConstants.cs` instead.
 
 ---
 
@@ -835,7 +873,7 @@ PR 2 must add package refs on `Microsoft.OData.Mcp.Tests.Authentication.csproj`:
 
 Minimum endpoints:
 
-- Protected OData-shaped `$metadata` (static CSDL is fine) that **401s** with `WWW-Authenticate: Bearer resource_metadata="…", scope="read"`.
+- The protected resource is not a static-CSDL stand-in: it is the real rich convention API / Restier API linked verbatim from `Tests.AspNetCore` / `Tests.AspNetCore.Restier` into the secured test projects, fronted by a startup-filter middleware that authenticates with the JwtBearer scheme and challenges every request under the OData prefix. See [`TESTING.md`](./TESTING.md) §8 for the project layout, the linked-file mechanism, and what each fixture drives. `$metadata` **401s** with `WWW-Authenticate: Bearer resource_metadata="…", scope="read"`.
 - RFC 9728 PRM JSON (200).
 - A well-known that **401s** (Graph trap) — assert **one** GET on `"OAuth"`, not N, and discovery continues.
 - A well-known that **404s** + challenge `authorization_uri` — discovery still finds the AS.
@@ -945,6 +983,34 @@ If `ODATA_MCP_LIVE_OAUTH_URL` / `ODATA_MCP_CLIENT_ID` are unset → `Assert.Inco
 15. **Identity Assertion CLI needs a concrete `IdTokenCallback`.** `--idp-id-token-file` / `ODATA_MCP_ID_TOKEN` via `FileIdTokenCallback`. Flags alone cannot construct SDK options. If the SDK hits MCP well-known, replace with top-level `IdentityAssertionGrant` POSTs in the same PR.
 16. **AS issuer probes prefer `{B}/v2.0` before unversioned OIDC.** Collect **all** strip remainders (`/oauth2/v2.0/authorize`, `/oauth2/authorize`, `/authorize`). First `token_endpoint` still wins, but v1 Entra OIDC cannot starve v2. Local-AS test: both 200 → selected contains `/v2.0`. `--auth-server` overrides.
 17. **Resource/audience is step 8b:** PRM `resource` else `--resource` else URI origin (no path). RFC 8707 `resource` only when advertised or `--resource` is set.
+
+---
+
+## Revision notes (rev 9)
+
+Implementation landed ahead of the spec text in a few places. This section is authoritative where it disagrees with the narrative sections above; those sections are not rewritten line-by-line.
+
+1. **`ToolsMcpHost.CreateAsync` final signature** is `CreateAsync(string serviceUrl, OutboundOAuthOptions options, bool includeStdioMcp, bool verbose, CancellationTokenSource? lifetime, CancellationToken cancellationToken, Action<IServiceCollection>? configureServices = null)`, superseding the four-parameter shape in §API / Interface Changes and §Unify `ToolsMcpHost` lifetime. `verbose` toggles console logging the same way `StartCommand`/`TestCommand` already did before the unify. `lifetime` lets a caller (tests included) tear down the host deterministically instead of relying on process exit. `configureServices` is the hook `Tests.Shared.Authentication`'s `OutboundToolsHostFixture` uses to point the named `"OData"` / `"OAuth"` clients at a `TestServer` handler (§8.3 of `TESTING.md`); it runs before `Build()`, same rule as everything else in that method.
+2. **`OutboundOAuthClient.AcquireAsync(IReadOnlyList<string> wwwAuthenticate, HttpStatusCode statusCode, bool interactiveAllowed, CancellationToken cancellationToken)`** is the entry point `ODataOutboundAuthHandler` calls on a 401/403; the client — not the handler — owns the service root (constructor parameter), so discovery and every grant POST resolve relative well-known and token URLs against that stored root rather than a value threaded through each call.
+3. **`OAuthDiscovery.DiscoverAsync(Uri serviceRoot, IReadOnlyList<string> wwwAuthenticate, HttpStatusCode statusCode, Uri? authorizationServerOverride, Uri? resourceOverride, CancellationToken cancellationToken)`** takes the `--auth-server` and `--resource` overrides as explicit nullable parameters instead of reading them off a shared options object mid-algorithm, keeping discovery a pure function of its inputs.
+4. **`PrmCandidates` returns an ordered `IReadOnlyList<Uri>`**, not a single URL: `resource_metadata` first (if the challenge carried one), then origin `/.well-known/oauth-protected-resource`, then the path-prefixed form (§Discovery algorithm step 4). Callers try them in that order and keep the non-fatal skip-on-401/403/404 behavior per candidate.
+5. **RFC 8707 `resource` is sent only when PRM `resource` is present or `--resource` is set** — not merely when the AS "supports resource indicators," because **RFC 8414 defines no such advertisement field**; §Discovery algorithm step 8b is corrected accordingly (the parenthetical "AS metadata advertises resource indicators" language there is superseded by this rule).
+6. **`VerifyPersistence` runs lazily, on the first token acquisition, not unconditionally at `ToolsMcpHost` startup.** §Unify `ToolsMcpHost` lifetime step 5 described a startup check; the shipped behavior defers it so a service that never challenges (no `--auth-token`, no discovery ever triggered) never touches the credential store at all — an unauthenticated Northwind/TripPin run has zero Latchkey I/O.
+7. **Identity Assertion configured-but-not-advertised fails first.** If `--idp-url` / `--idp-token-endpoint` and the id-token source are set but the discovered AS does not advertise the RFC 8693/7523 grant, `GrantSelector` throws before any network call rather than silently falling back to another grant.
+8. **DCR for client credentials registers `client_secret_post`** (not `client_secret_basic`) as the token-endpoint auth method in the RFC 7591 registration request; `ClientCredentialsGrant` still prefers `client_secret_post` then `client_secret_basic` per the AS's advertised `token_endpoint_auth_methods_supported` when authenticating.
+9. **`LatchkeyBackend.MacOSKeychain`** is the actual SDK enum member for macOS (§Data Model Changes' backend map referred to it as "Keychain"); the pinned backend map targets `LatchkeyBackend.MacOSKeychain` on `OSPlatform.OSX`.
+10. **SDK `AuthorizationServerMetadata` and `TokenResponse` are `internal` to `ModelContextProtocol`**, not public types we can reuse. This confirms (rather than changes) the Type map decision to ship our own `AuthorizationServerMetadata` and `TokenEndpointResponse` DTOs — those are not optional convenience wrappers, they are required because the SDK shapes are inaccessible.
+11. **The linked authenticated suites live in `Microsoft.OData.Mcp.Tests.Authentication` (OData 8) and `Microsoft.OData.Mcp.Tests.Authentication.Restier` (OData 7)**, each carrying a same-fully-qualified-name swapped base class over `OutboundToolsHostFixture`; §Testing defers to [`TESTING.md`](./TESTING.md) §8 for their layout.
+
+---
+
+## Revision notes (rev 10)
+
+1. **`AddODataProtectedResource` lands in `Microsoft.OData.Mcp.AspNetCore`,** namespace `Microsoft.OData.Mcp.AspNetCore.Authentication`: `ODataProtectedResourceOptions`, `ODataProtectedResourceMiddleware`, `ODataProtectedResourceStartupFilter`, `ODataProtectedResourceJsonContext`, plus `Constants/ProtectedResourceConstants.cs`. See [Zero-config protected resource](#zero-config-protected-resource-addodataprotectedresource). This is the serving side of the discovery algorithm and changes nothing about the client side.
+2. **The published `resource` carries the route path** (`{scheme}://{host}{pathBase}/{prefix}`), not the bare origin. Step 8b is unchanged — it takes PRM `resource` verbatim — but an API that turns this on is asserting that path is the audience its token validation accepts. The origin-only default in `LocalAuthorizationServerOptions.ResourceUri` is why the zero-config end-to-end sets `ResourceUri = "http://localhost/odata"`.
+3. **Challenge annotation stops at the first `Bearer` that lacks `resource_metadata`.** A challenge that already names a document, a `token68` credential, a second `Bearer`, and every other scheme are copied verbatim. Anything the RFC 9110 grammar rejects leaves the header exactly as the app wrote it; `OnStarting` never throws.
+4. **`ProtectedResourceMetadata.ScopesSupported` is non-nullable in SDK 2.2**, so a resource that publishes no scopes emits `"scopes_supported": []` rather than omitting the member. `ScopeResolver` already treats an empty list as "not advertised" (`is { Count: > 0 }`), so this is cosmetic on the wire and inert in the algorithm.
+5. **`OutboundToolsHostFixture.OAuthHandler`** is a new opt-in on the shared fixture. In process the authorization server and the resource share `http://localhost`, so a test that needs the PRM GET answered by the *resource* — which is the only way to prove the document came from this feature — routes the `"OAuth"` client by well-known path through `WellKnownRoutingHandler`. Every existing fixture leaves it null and dispatches straight into the authorization server as before.
 
 ---
 

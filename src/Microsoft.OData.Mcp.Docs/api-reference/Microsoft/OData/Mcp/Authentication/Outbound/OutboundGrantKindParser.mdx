@@ -1,0 +1,105 @@
+---
+title: OutboundGrantKindParser
+description: "Parses and formats the CLI `--grant` wire names for [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind)."
+icon: bolt
+tag: "STATIC"
+keywords: ['OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKindParser
+```
+
+## Summary
+
+Parses and formats the CLI `--grant` wire names for [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind).
+
+## Remarks
+
+[OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#refreshtoken) is intentionally excluded from
+[OutboundGrantKind@)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundgrantkindparser.tryparse(system.string,microsoft.odata.mcp.authentication.outbound.outboundgrantkind@)): it is never a value an operator passes on the
+command line, only a kind the outbound auth handler selects internally once a refresh token is cached.
+[OutboundGrantKind)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundgrantkindparser.towirename(microsoft.odata.mcp.authentication.outbound.outboundgrantkind)) still formats it, because log lines and cache diagnostics
+need a name for every defined value.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToWireName
+
+Formats a grant kind as its RFC wire name.
+
+#### Syntax
+
+```csharp
+public static string ToWireName(Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind kind)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind` | The grant kind to format. |
+
+#### Returns
+
+Type: `string`
+`device_code`, `authorization_code`, `client_credentials`, `identity_assertion`,
+or `refresh_token`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentOutOfRangeException` | Thrown when *kind* is not a defined [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) value. |
+
+#### Examples
+
+```csharp
+OutboundGrantKindParser.ToWireName(OutboundGrantKind.DeviceCode); // "device_code"
+```
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TryParse
+
+Parses a CLI `--grant` wire name into an [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind).
+
+#### Syntax
+
+```csharp
+public static bool TryParse(string value, out Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind kind)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `value` | `string?` | The wire name to parse; matched case-insensitively after trimming surrounding white space. |
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?` | The parsed grant kind when parsing succeeds; otherwise the default enum value. |
+
+#### Returns
+
+Type: `bool`
+[`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when *value* is `device_code`, `authorization_code`,
+`client_credentials`, or `identity_assertion`; otherwise [`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+#### Examples
+
+```csharp
+OutboundGrantKindParser.TryParse("  Device_Code  ", out var kind); // true, OutboundGrantKind.DeviceCode
+OutboundGrantKindParser.TryParse("refresh_token", out _);         // false: not CLI-selectable
+```
+
+#### Remarks
+
+`null`, empty, and white-space-only values return [`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) rather than throwing,
+so a caller can use this directly against an optional CLI option value.
+

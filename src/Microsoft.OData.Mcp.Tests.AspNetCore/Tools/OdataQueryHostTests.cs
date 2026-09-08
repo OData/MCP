@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
@@ -340,7 +338,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataQuery_JsonRpcToolsCall_OData8_Customers()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
                 "/odata/mcp",
@@ -825,7 +823,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.GetAsync(path);
             var body = await response.Content.ReadAsStringAsync();
 
@@ -927,7 +925,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataQuery_PagingClient_FilterSkipTopOrderbySelect_MatchTwin()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/ClientCustomers?$filter=CustomerId gt 1&$orderby=CustomerId&$skip=1&$top=2&$select=CompanyName&$count=true");
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)twin.StatusCode, twinBody);
@@ -960,7 +958,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataQuery_PagingServer_OmitTop_ReturnsPageSizeAndNextLink()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/ServerCustomers?$orderby=CustomerId");
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)twin.StatusCode, twinBody);
@@ -984,7 +982,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataQuery_PagingServer_SkipTop_SecondPageMatchesNextLinkPayload()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var first = await client.GetAsync("/odata/ServerCustomers?$orderby=CustomerId");
             var firstBody = await first.Content.ReadAsStringAsync();
             first.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)first.StatusCode, firstBody);

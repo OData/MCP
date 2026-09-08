@@ -9,14 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;
-using Microsoft.Restier.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
@@ -46,6 +44,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             : base(useEndpointRouting: true)
         {
             ApplicationBuilderAction = app => app.UseRateLimiter();
+            ApplicationBuilderLastAction = app => app.UseODataMcp();
             AddRestierAction = apiBuilder =>
             {
                 apiBuilder.AddRestierApi<McpCustomerApi>(restierServices =>

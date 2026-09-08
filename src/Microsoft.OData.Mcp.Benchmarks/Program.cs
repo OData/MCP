@@ -2,7 +2,6 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using BenchmarkDotNet.Running;
 //using Microsoft.OData.Mcp.Benchmarks;
 
 //var summary = BenchmarkRunner.Run<RouteParsingBenchmarks>();

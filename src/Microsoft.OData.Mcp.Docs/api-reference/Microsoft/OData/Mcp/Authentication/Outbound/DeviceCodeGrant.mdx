@@ -1,0 +1,303 @@
+---
+title: DeviceCodeGrant
+description: "Runs the RFC 8628 device authorization grant: start the grant at the device authorization endpoint, then poll the token endpoint honoring `interval`, `slow_d..."
+icon: lock
+tag: "SEALED"
+keywords: ['DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant
+```
+
+## Summary
+
+Runs the RFC 8628 device authorization grant: start the grant at the device authorization endpoint, then
+poll the token endpoint honoring `interval`, `slow_down`, and `authorization_pending`
+until a token is issued, the code expires, or the end user denies it.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` "Grants → Device code (RFC 8628)" the
+`device_authorization_endpoint` from metadata is always preferred; `{issuer}/devicecode` is a
+last-resort fallback, logged at Warning, used only when the server advertises the device code grant but
+publishes no endpoint for it. Per `AUTH-12` the device code, user code, and every issued token stay
+out of the log: poll entries carry only the attempt number and the RFC error code. The device
+authorization request goes out on the `"OAuth"` named client directly; every token POST goes
+through [TokenEndpointClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient) so that all token traffic in this package shares one code path.
+
+## Examples
+
+```csharp
+var device = await deviceCodeGrant.StartAsync(metadata, clientId, "read offline_access", resource, cancellationToken);
+
+Console.Error.WriteLine($"Enter {device.UserCode} at {device.VerificationUri}");
+
+var response = await deviceCodeGrant.PollAsync(metadata, device, clientId, resource, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [DeviceCodeGrant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceCodeGrant) class.
+
+#### Syntax
+
+```csharp
+public DeviceCodeGrant(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient tokenEndpointClient, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory used to create the `"OAuth"` named client for the device authorization request. |
+| `tokenEndpointClient` | `Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient` | The client every token POST this grant sends goes through. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant>` | The logger this instance records the endpoint fallback and each poll outcome to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *httpClientFactory*, *tokenEndpointClient*, or
+*logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PollAsync
+
+Polls the token endpoint until the end user completes the grant, the device code expires, or the
+request is cancelled.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse> PollAsync(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse device, string clientId, System.Uri resource, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `token_endpoint` is polled. |
+| `device` | `Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse` | The device authorization response [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.devicecodegrant.startasync(microsoft.odata.mcp.authentication.outbound.authorizationservermetadata,system.string,system.string,system.uri,system.threading.cancellationtoken)) returned. |
+| `clientId` | `string` | The public client identifier the grant was started with. |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant sends none. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels both the poll requests and the waits between them. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse>`
+The successful token response.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata* or *device* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *clientId* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace, when
+*device* carries no device code, or when it carries no positive `expires_in`. |
+| `InvalidOperationException` | Thrown when *metadata* carries no token endpoint. |
+| `OAuthTokenException` | Thrown with [ODataMcpAuthConstants.ErrorExpiredToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#errorexpiredtoken) when the device code's lifetime
+runs out, with [ODataMcpAuthConstants.ErrorAccessDenied](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#erroraccessdenied) when the end user refuses, and
+with whatever the server returned for any other error. |
+
+#### Examples
+
+```csharp
+using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+timeout.CancelAfter(TimeSpan.FromSeconds(300));
+
+var response = await deviceCodeGrant.PollAsync(metadata, device, clientId, resource, timeout.Token);
+var container = response.ToTokenContainer(null, clientId, null, metadata.Issuer!, TokenEndpointClient.AuthMethodNone);
+```
+
+#### Remarks
+
+The first wait is [DeviceAuthorizationResponse.Interval](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#interval) seconds, floored at one second so
+a server that advertises zero cannot turn this into a hot loop; each `slow_down` adds
+[DeviceCodeGrant.SlowDownIncrementSeconds](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceCodeGrant#slowdownincrementseconds) seconds for the rest of the grant, per RFC 8628 section 3.5.
+The deadline is computed once from [DeviceAuthorizationResponse.ExpiresIn](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#expiresin) at the first
+poll, so a slow server cannot extend the code's life.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StartAsync
+
+Starts a device authorization grant and returns the codes the end user needs.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse> StartAsync(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, string clientId, string scope, System.Uri resource, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose device authorization endpoint is used. |
+| `clientId` | `string` | The public client identifier the grant is started for. |
+| `scope` | `string?` | The space-delimited scope to request, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to request none. |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant sends none. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse>`
+The device authorization response, whose device code, user code, and verification URI are guaranteed
+non-empty.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *clientId* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+| `NotSupportedException` | Thrown when *metadata* publishes no device authorization endpoint and does not
+advertise the device code grant either. |
+| `OAuthTokenException` | Thrown when the server answers with a non-success status, when the response cannot be parsed, or
+when it omits the device code, user code, or verification URI. |
+
+#### Remarks
+
+*scope* and *resource* are sent only when supplied, so a server
+that rejects an empty `scope` or an unexpected `resource` never sees either.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

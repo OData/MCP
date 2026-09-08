@@ -32,7 +32,7 @@ Adds list/call/resource/complete handlers that resolve an [ODataMcpSession](/api
 #### Syntax
 
 ```csharp
-public static Microsoft.Extensions.DependencyInjection.IMcpServerBuilder WithODataCatalogHandlers(Microsoft.Extensions.DependencyInjection.IMcpServerBuilder builder, System.Func<System.IServiceProvider, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession> resolveSession, System.Func<System.IServiceProvider, System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Protocol.Tool>> listExtraTools = null, System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>> tryHandleExtra = null)
+public static Microsoft.Extensions.DependencyInjection.IMcpServerBuilder WithODataCatalogHandlers(Microsoft.Extensions.DependencyInjection.IMcpServerBuilder builder, System.Func<System.IServiceProvider, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession> resolveSession, System.Func<System.IServiceProvider, System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Protocol.Tool>> listExtraTools = null, System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>> tryHandleExtra = null, System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Exception, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>> tryHandleCallException = null)
 ```
 
 #### Parameters
@@ -43,9 +43,17 @@ public static Microsoft.Extensions.DependencyInjection.IMcpServerBuilder WithODa
 | `resolveSession` | `System.Func<System.IServiceProvider, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession>` | Resolves the session for the current request. |
 | `listExtraTools` | `System.Func<System.IServiceProvider, System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Protocol.Tool>>?` | Optional extra tools (for example, `shutdown_server`). |
 | `tryHandleExtra` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>` | Optional extra call handler that runs before catalog tools. |
+| `tryHandleCallException` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Exception, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>` | Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself. |
 
 #### Returns
 
 Type: `Microsoft.Extensions.DependencyInjection.IMcpServerBuilder`
 The builder.
+
+#### Remarks
+
+*tryHandleCallException* exists so a host can recover from a failure Core has no
+vocabulary for — an outbound sign-in that needs a human, for instance — without Core learning
+anything about authentication: it is handed the exception and either answers the call or returns
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), in which case the original exception propagates unchanged.
 

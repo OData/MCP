@@ -2,11 +2,9 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using ModelContextProtocol.AspNetCore;
 
 namespace Microsoft.AspNetCore.Builder
 {

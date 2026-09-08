@@ -1,0 +1,314 @@
+---
+title: LoopbackAuthorizationCallback
+description: "The RFC 8252 loopback redirect endpoint the authorization code grant hands to the authorization server: an [HttpListener](https://learn.microsoft.com/dotnet/..."
+icon: lock
+tag: "SEALED"
+keywords: ['LoopbackAuthorizationCallback', 'Microsoft.OData.Mcp.Authentication.Outbound.LoopbackAuthorizationCallback', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object', 'System.IDisposable']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.LoopbackAuthorizationCallback
+```
+
+## Summary
+
+The RFC 8252 loopback redirect endpoint the authorization code grant hands to the authorization server:
+an [HttpListener](https://learn.microsoft.com/dotnet/api/system.net.httplistener) bound to `http://127.0.0.1:{ephemeral}/callback/` that accepts exactly
+one authorization response, binds it to the expected `state`, and hands back the SDK
+`AuthorizationResult`.
+
+## Remarks
+
+The default host is the literal `127.0.0.1` and never `localhost`, per
+`specs/v3/AUTHENTICATION.md` "Security &amp; Privacy": a DNS name can resolve somewhere else and a
+second process listening on the same name would be handed the authorization code. The port is chosen by
+binding a [TcpListener](https://learn.microsoft.com/dotnet/api/system.net.sockets.tcplistener) to port zero and reading back what the operating system assigned, so
+two concurrent sign-ins never collide. Per `AUTH-12` nothing here logs, echoes, or renders the
+`code`: the browser page says only that the window can be closed.
+
+## Examples
+
+```csharp
+using var callback = LoopbackAuthorizationCallback.Start(redirectOverride: null);
+
+var begin = grant.Begin(metadata, clientId, scope, resource, callback.RedirectUri);
+// ... the operator completes sign-in in a browser ...
+var result = await callback.WaitAsync(begin.State, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RedirectUri
+
+Gets the absolute redirect URI this instance is listening on, which is exactly the
+`redirect_uri` the authorization request and the token request must both carry.
+
+#### Syntax
+
+```csharp
+public System.Uri RedirectUri { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Dispose
+
+#### Syntax
+
+```csharp
+public void Dispose()
+```
+
+#### Remarks
+
+Idempotent: a callback whose [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.loopbackauthorizationcallback.waitasync(system.string,system.threading.cancellationtoken)) already ran is
+disposed a second time by the caller's `using` without error.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Start
+
+Binds a loopback listener for the authorization response and starts accepting connections.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Authentication.Outbound.LoopbackAuthorizationCallback Start(System.Uri redirectOverride)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `redirectOverride` | `System.Uri?` | The operator's `--redirect-uri`, used verbatim; or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to bind `http://127.0.0.1:{ephemeral}/callback/`. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.LoopbackAuthorizationCallback`
+A started callback whose [LoopbackAuthorizationCallback.RedirectUri](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/LoopbackAuthorizationCallback#redirecturi) is the effective redirect URI.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *redirectOverride* is not an absolute URI. |
+| `OutboundDiscoveryException` | Thrown when *redirectOverride* is not `http` on a loopback host, and when the
+operating system refuses to bind the redirect URI. |
+
+#### Examples
+
+```csharp
+using var callback = LoopbackAuthorizationCallback.Start(options.RedirectUri);
+
+Console.Error.WriteLine($"Waiting for the authorization response on {callback.RedirectUri}");
+```
+
+#### Remarks
+
+The free port is discovered by binding a [TcpListener](https://learn.microsoft.com/dotnet/api/system.net.sockets.tcplistener) to port zero and immediately
+releasing it, then handing that port to [HttpListener](https://learn.microsoft.com/dotnet/api/system.net.httplistener). A bind failure — an override
+naming a port another process already owns, or a platform where [HttpListener](https://learn.microsoft.com/dotnet/api/system.net.httplistener) needs a
+URL reservation — fails first here with the prefix in the message, rather than half way through a
+sign-in the operator has already started in a browser.
+
+An override is also held to the RFC 8252 section 7.3 policy this class exists to implement: it must
+be `http` on `127.0.0.1`, `localhost`, or `::1`. A public `https` redirect
+cannot be listened on here at all, and accepting one would leave the operator waiting on a listener
+the authorization server is never going to reach.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WaitAsync
+
+Accepts exactly one authorization response, validates its `state`, and returns the SDK result
+the token exchange runs on.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.AuthorizationResult> WaitAsync(string expectedState, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `expectedState` | `string` | The `state` the authorization request was started with, matched exactly. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that abandons the wait, aborting the listener. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.AuthorizationResult>`
+The authorization response's `code`, `state`, and RFC 9207 `iss`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *expectedState* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+| `OperationCanceledException` | Thrown when *cancellationToken* is cancelled before a response arrives. |
+| `OutboundDiscoveryException` | Thrown when the response carries no `state`, a `state` that is not an exact match, or no
+`code`; and when the listener stops before a response arrives. |
+| `OAuthTokenException` | Thrown when the authorization server redirected an RFC 6749 section 4.1.2.1 error instead of a code. |
+
+#### Examples
+
+```csharp
+using var callback = LoopbackAuthorizationCallback.Start(null);
+var begin = grant.Begin(metadata, clientId, scope, resource, callback.RedirectUri);
+
+var result = await callback.WaitAsync(begin.State, cancellationToken);
+var response = await grant.ExchangeAsync(metadata, result, begin.CodeVerifier, clientId, callback.RedirectUri, resource, cancellationToken);
+```
+
+#### Remarks
+
+The listener is closed before this method returns or throws, so a mismatched `state` — the
+loopback CSRF case — leaves no socket a second attacker could reach. The comparison is
+[Ordinal](https://learn.microsoft.com/dotnet/api/system.stringcomparison.ordinal) on the whole value: a prefix match would defeat the point of
+binding the request to the response.
+
+## Related APIs
+
+- System.IDisposable
+

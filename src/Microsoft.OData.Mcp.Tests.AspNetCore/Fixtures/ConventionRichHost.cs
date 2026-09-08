@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
@@ -123,6 +122,21 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
             var capture = new CapturingODataExecutor(inner);
 
             return (new ODataToolRuntime(session.Catalog, capture), capture);
+        }
+
+        /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        /// <remarks>
+        /// Tool tests must use this instead of <c>TestServer.CreateClient()</c> so a linked copy of the
+        /// test can attach credentials (see <c>specs/v3/TESTING.md</c> §8).
+        /// </remarks>
+        internal virtual HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
         }
 
         /// <summary>

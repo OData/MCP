@@ -9,7 +9,6 @@ using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Tests.Core.Parsing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ModelContextProtocol.Protocol;
 
 namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 {

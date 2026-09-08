@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
-using CustomersController = Microsoft.OData.Mcp.Tests.AspNetCore.CustomersController;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.CatalogShapes

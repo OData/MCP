@@ -4,18 +4,10 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.Shared;
-using Microsoft.Restier.Breakdance;
-using Microsoft.Restier.Core;
-using Microsoft.Restier.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
@@ -25,14 +17,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
     /// Restier API tests for create, update, delete, call, and named CRUD. No OData controller.
     /// </summary>
     [TestClass]
-    public class RestierGenericWriteToolTests : RestierBreakdanceTestBase<McpCustomerApi>
+    public class RestierGenericWriteToolTests : RestierToolTestBase
     {
-
-        #region Fields
-
-        internal readonly string _databaseName = "RestierWrite-" + Guid.NewGuid().ToString("N");
-
-        #endregion
 
         #region Constructors
 
@@ -40,49 +26,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Initializes Restier endpoint routing for <see cref="McpCustomerApi"/>.
         /// </summary>
         public RestierGenericWriteToolTests()
-            : base(useEndpointRouting: true)
+            : base("RestierWrite")
         {
-            AddRestierAction = apiBuilder =>
-            {
-                apiBuilder.AddRestierApi<McpCustomerApi>(restierServices =>
-                {
-                    restierServices.AddEFCoreProviderServices<McpCustomerContext>((_, options) =>
-                    {
-                        options.UseInMemoryDatabase(_databaseName);
-                    });
-                    RestierTestSeed.EnsureCustomers(restierServices);
-                });
-            };
-            MapRestierAction = routeBuilder =>
-            {
-                routeBuilder.MapApiRoute<McpCustomerApi>("odata", "odata");
-            };
-        }
-
-        #endregion
-
-        #region Test Lifecycle
-
-        /// <summary>
-        /// Enables MCP and starts the Restier host.
-        /// </summary>
-        [TestInitialize]
-        public void Setup()
-        {
-            TestHostBuilder.ConfigureServices((_, services) =>
-            {
-                services.AddODataMcp();
-            });
-            TestSetup();
-        }
-
-        /// <summary>
-        /// Tears down the Restier host.
-        /// </summary>
-        [TestCleanup]
-        public void TearDown()
-        {
-            TestTearDown();
         }
 
         #endregion
@@ -116,7 +61,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
                 CancellationToken.None);
 
             created.IsError.Should().BeFalse(created.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var body = await client.GetStringAsync("odata/Customers?$filter=CompanyName eq 'RestierCo'");
             body.Should().Contain("RestierCo");
         }
@@ -133,7 +78,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
                 CancellationToken.None);
 
             updated.IsError.Should().BeFalse(updated.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var body = await client.GetStringAsync("odata/Customers(1)");
             body.Should().Contain("ContosoUpdated");
         }
@@ -155,7 +100,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
                 CancellationToken.None);
 
             deleted.IsError.Should().BeFalse(deleted.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var missing = await client.GetAsync("odata/Customers(11)");
             missing.IsSuccessStatusCode.Should().BeFalse();
         }
@@ -225,7 +170,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var result = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":4,"CompanyName":"Northwind"}"""), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             (await client.GetStringAsync("odata/Customers?$filter=CompanyName eq 'Northwind'")).Should().Contain("Northwind");
         }
 
@@ -235,7 +180,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task OdataCreate_JsonRpcToolsCall_Restier()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_create", """{"entitySet":"Customers","body":"{\"Id\":57,\"CompanyName\":\"JsonRpcCo\"}"}""");
             var body = await response.Content.ReadAsStringAsync();
             response.StatusCode.Should().Be(HttpStatusCode.OK, body);
@@ -263,7 +208,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var result = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":65,"CompanyName":"北風 😀"}"""), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var body = await client.GetStringAsync("odata/Customers(65)");
             body.Should().MatchRegex("北風|\\\\u5317\\\\u98a8");
         }
@@ -300,7 +245,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             (await Runtime().InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "62"), CancellationToken.None)).StructuredContent.Should().Contain("Lifecycle");
             (await Runtime().InvokeAsync("odata_update", ToolArguments.Of("entitySet", "Customers", "key", "62", "body", """{"CompanyName":"Lifecycle2"}"""), CancellationToken.None)).IsError.Should().BeFalse();
             (await Runtime().InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", "62"), CancellationToken.None)).IsError.Should().BeFalse();
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             ((int)(await client.GetAsync("odata/Customers(62)")).StatusCode).Should().Be(404);
         }
 
@@ -310,7 +255,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task OdataUpdate_Restier_PatchCompanyName_VisibleToHttpGet()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = RestierJsonContent.Json("""{"CompanyName":"HttpPatched"}""");
             var twin = await client.PatchAsync("odata/Customers(2)", content);
             twin.IsSuccessStatusCode.Should().BeTrue();
@@ -325,7 +270,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task OdataUpdate_JsonRpcToolsCall_Restier()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_update", """{"entitySet":"Customers","key":"2","body":"{\"CompanyName\":\"RpcPatch\"}"}""");
             var body = await response.Content.ReadAsStringAsync();
             response.StatusCode.Should().Be(HttpStatusCode.OK, body);
@@ -363,7 +308,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             (await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":78,"CompanyName":"HttpDel"}"""), CancellationToken.None)).IsError.Should().BeFalse();
             var result = await Runtime().InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", "78"), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             ((int)(await client.GetAsync("odata/Customers(78)")).StatusCode).Should().Be(404);
         }
 
@@ -374,7 +319,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task OdataDelete_JsonRpcToolsCall_Restier()
         {
             await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":76,"CompanyName":"RpcDel"}"""), CancellationToken.None);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_delete", """{"entitySet":"Customers","key":"76"}""");
             var body = await response.Content.ReadAsStringAsync();
             response.StatusCode.Should().Be(HttpStatusCode.OK, body);
@@ -400,7 +345,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task OdataDelete_UnknownKey999_404()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var twin = await client.DeleteAsync("odata/Customers(999)");
             ((int)twin.StatusCode).Should().Be(404);
             var result = await Runtime().InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", "999"), CancellationToken.None);
@@ -425,7 +370,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task ListOperations_AgreesWithMetadataFunctionsAndActions()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var metadata = await client.GetStringAsync("odata/$metadata");
             var result = await Runtime().InvokeAsync("odata_list_operations", null, CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
@@ -475,37 +420,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task Auth_Restier_OpenCreate_No401()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = RestierJsonContent.Json("""{"Id":50,"CompanyName":"OpenCo"}""");
             var posted = await client.PostAsync("odata/Customers", content);
             posted.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
             posted.IsSuccessStatusCode.Should().BeTrue();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Gets the odata session.
-        /// </summary>
-        /// <returns>
-        /// The session.
-        /// </returns>
-        internal ODataMcpSession Session()
-        {
-            return TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"];
-        }
-
-        /// <summary>
-        /// Gets the odata runtime.
-        /// </summary>
-        /// <returns>
-        /// The runtime.
-        /// </returns>
-        internal ODataToolRuntime Runtime()
-        {
-            return Session().Runtime;
         }
 
         #endregion

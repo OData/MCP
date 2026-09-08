@@ -1,6 +1,6 @@
-<Project Sdk="DotNetDocs.Sdk/1.2.0-preview.3">
+<Project Sdk="DotNetDocs.Sdk/1.5.5-preview.1">
 
-	<PropertyGroup>
+    <PropertyGroup>
 		<DocumentationType>Mintlify</DocumentationType>
 		<GenerateDocumentation>true</GenerateDocumentation>
 		<NamespaceMode>Folder</NamespaceMode>

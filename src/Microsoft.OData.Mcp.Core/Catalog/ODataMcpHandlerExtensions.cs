@@ -30,21 +30,29 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="resolveSession">Resolves the session for the current request.</param>
         /// <param name="listExtraTools">Optional extra tools (for example, <c>shutdown_server</c>).</param>
         /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
+        /// <param name="tryHandleCallException">Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself.</param>
         /// <returns>
         /// The builder.
         /// </returns>
+        /// <remarks>
+        /// <paramref name="tryHandleCallException"/> exists so a host can recover from a failure Core has no
+        /// vocabulary for — an outbound sign-in that needs a human, for instance — without Core learning
+        /// anything about authentication: it is handed the exception and either answers the call or returns
+        /// <see langword="null"/>, in which case the original exception propagates unchanged.
+        /// </remarks>
         public static IMcpServerBuilder WithODataCatalogHandlers(
             this IMcpServerBuilder builder,
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<IServiceProvider, IReadOnlyList<Tool>>? listExtraTools = null,
-            Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra = null)
+            Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra = null,
+            Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(resolveSession);
 
             return builder
                 .WithListToolsHandler((request, cancellationToken) => ListToolsAsync(RequireServices(request.Services), resolveSession, listExtraTools, cancellationToken))
-                .WithCallToolHandler((request, cancellationToken) => CallToolAsync(request, resolveSession, tryHandleExtra, cancellationToken))
+                .WithCallToolHandler((request, cancellationToken) => CallToolAsync(request, resolveSession, tryHandleExtra, tryHandleCallException, cancellationToken))
                 .WithListResourcesHandler((request, cancellationToken) => ListResourcesAsync(RequireServices(request.Services), resolveSession, cancellationToken))
                 .WithReadResourceHandler((request, cancellationToken) => ReadResourceAsync(request, resolveSession, cancellationToken))
                 .WithListResourceTemplatesHandler((request, cancellationToken) => ListTemplatesAsync(RequireServices(request.Services), resolveSession, cancellationToken))
@@ -61,14 +69,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="request">The call request.</param>
         /// <param name="resolveSession">Session resolver.</param>
         /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
+        /// <param name="tryHandleCallException">Optional recovery handler that sees an exception the catalog tool threw.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>
         /// The call result.
         /// </returns>
+        /// <remarks>
+        /// Only the tool invocation itself is guarded: a missing tool name and the extra call handler run
+        /// outside the <c>try</c>, so <paramref name="tryHandleCallException"/> never sees a failure that has
+        /// nothing to do with executing a catalog tool. A recovery handler that returns <see langword="null"/>
+        /// leaves the original exception to propagate with its stack intact.
+        /// </remarks>
         internal static async ValueTask<CallToolResult> CallToolAsync(
             RequestContext<CallToolRequestParams> request,
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra,
+            Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException,
             CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(request);
@@ -95,7 +111,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var session = resolveSession(RequireServices(request.Services));
             var arguments = request.Params?.Arguments;
-            var result = await session.Runtime.InvokeAsync(name, arguments, cancellationToken).ConfigureAwait(false);
+
+            ODataToolInvocationResult result;
+            try
+            {
+                result = await session.Runtime.InvokeAsync(name, arguments, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (tryHandleCallException is not null)
+            {
+                var recovered = await tryHandleCallException(request, exception, cancellationToken).ConfigureAwait(false);
+                if (recovered is null)
+                {
+                    throw;
+                }
+
+                return recovered;
+            }
 
             return new CallToolResult
             {
@@ -103,7 +134,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 IsError = result.IsError,
                 StructuredContent = string.IsNullOrWhiteSpace(result.StructuredContent)
                     ? null
-                    : JsonSerializer.Deserialize<JsonElement>(result.StructuredContent)
+                    : ParseElement(result.StructuredContent)
             };
         }
 
@@ -239,6 +270,29 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Parses a JSON document into a detached <see cref="JsonElement"/>.
+        /// </summary>
+        /// <param name="json">The JSON text to parse.</param>
+        /// <returns>
+        /// The document's root element, detached from the parser's pooled buffer.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/>, empty, or whitespace.</exception>
+        /// <exception cref="JsonException">Thrown when <paramref name="json"/> is not valid JSON.</exception>
+        /// <remarks>
+        /// Used instead of <c>JsonSerializer.Deserialize&lt;JsonElement&gt;</c> because that overload is
+        /// annotated <c>RequiresUnreferencedCode</c> and <c>RequiresDynamicCode</c>, which makes every caller a
+        /// trim and AOT warning even though the destination type needs no reflection at all.
+        /// </remarks>
+        internal static JsonElement ParseElement(string json)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+            using var document = JsonDocument.Parse(json);
+
+            return document.RootElement.Clone();
+        }
+
+        /// <summary>
         /// Reads a catalog resource.
         /// </summary>
         /// <param name="request">The read request.</param>
@@ -354,7 +408,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     ReadOnlyHint = descriptor.ReadOnlyHint
                 },
                 Description = descriptor.Description,
-                InputSchema = JsonSerializer.Deserialize<JsonElement>(descriptor.InputSchema),
+                InputSchema = ParseElement(descriptor.InputSchema),
                 Name = descriptor.Name,
                 Title = descriptor.Title
             };

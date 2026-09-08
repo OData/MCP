@@ -1,0 +1,174 @@
+---
+title: OAuthConsentRequiredException
+description: "Thrown when interactive sign-in is required to complete an outbound OAuth grant and [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mc..."
+icon: file-brackets-curly
+keywords: ['OAuthConsentRequiredException', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthConsentRequiredException', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Exception']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Exception
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OAuthConsentRequiredException
+```
+
+## Summary
+
+Thrown when interactive sign-in is required to complete an outbound OAuth grant and
+[OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#consentpresenter) is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) — the mid-session path,
+where the caller (an MCP tool invocation) must elicit the operator instead of blocking on stderr.
+
+## Remarks
+
+This type lives in `Microsoft.OData.Mcp.Authentication.Outbound`, not Tools, so Authentication never
+references Tools. Per `AUTH-12` the wrapped [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request) never carries an access token, a
+refresh token, or a `device_code` — only what is needed to complete sign-in out of band. This type
+is not marked `[Serializable]`.
+
+## Examples
+
+```csharp
+throw new OAuthConsentRequiredException(consentRequest);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException) class.
+
+#### Syntax
+
+```csharp
+public OAuthConsentRequiredException(Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest request)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `request` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest` | The consent request that must be completed before the interrupted call can succeed. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *request* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException) class with the
+exception that caused sign-in to become necessary, such as a failed token refresh.
+
+#### Syntax
+
+```csharp
+public OAuthConsentRequiredException(Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest request, System.Exception inner)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `request` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest` | The consent request that must be completed before the interrupted call can succeed. |
+| `inner` | `System.Exception` | The exception that caused sign-in to become necessary. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *request* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitationId
+
+Gets [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request)'s [OutboundConsentRequest.ElicitationId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#elicitationid).
+
+#### Syntax
+
+```csharp
+public string ElicitationId { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Kind
+
+Gets [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request)'s [OutboundConsentRequest.Kind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#kind).
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind Kind { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Request
+
+Gets the consent request that must be completed before the interrupted call can succeed.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest Request { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Url
+
+Gets [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request)'s [OutboundConsentRequest.Url](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#url).
+
+#### Syntax
+
+```csharp
+public System.Uri Url { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UserCode
+
+Gets [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request)'s [OutboundConsentRequest.UserCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#usercode).
+
+#### Syntax
+
+```csharp
+public string UserCode { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> VerificationUri
+
+Gets [OAuthConsentRequiredException.Request](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException#request)'s [OutboundConsentRequest.VerificationUri](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#verificationuri).
+
+#### Syntax
+
+```csharp
+public System.Uri VerificationUri { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+

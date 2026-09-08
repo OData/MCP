@@ -27,8 +27,8 @@ Represents a navigation property in an OData entity type.
 ## Remarks
 
 Navigation properties define relationships between entity types, allowing traversal
-            from one entity to related entities. They can represent both single-valued and
-            collection-valued relationships.
+from one entity to related entities. They can represent both single-valued and
+collection-valued relationships.
 
 ## Constructors
 
@@ -95,7 +95,7 @@ Type: `bool`
 #### Remarks
 
 When true, this indicates that the target entities depend on the source entity for their existence.
-            Deleting the source entity should cascade to delete the dependent entities.
+Deleting the source entity should cascade to delete the dependent entities.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -175,7 +175,7 @@ A string indicating the relationship multiplicity.
 #### Remarks
 
 Returns "Many" for collection-valued properties, "One" for non-nullable single-valued properties,
-            and "ZeroOrOne" for nullable single-valued properties.
+and "ZeroOrOne" for nullable single-valued properties.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
@@ -210,7 +210,7 @@ Type: `bool`
 #### Remarks
 
 This property is typically relevant for to-one relationships. Collection-valued
-            navigation properties are generally non-nullable (the collection itself, not its elements).
+navigation properties are generally non-nullable (the collection itself, not its elements).
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OnDelete
 
@@ -230,7 +230,7 @@ The action to take when the target entity is deleted, or `null` if not specified
 #### Remarks
 
 Common values include "Cascade" for cascading deletes and "SetNull" for setting the
-            foreign key to null. The specific behavior depends on the underlying data store.
+foreign key to null. The specific behavior depends on the underlying data store.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Partner
 
@@ -250,7 +250,7 @@ The name of the corresponding navigation property on the target entity type, or 
 #### Remarks
 
 The partner property represents the inverse side of a bidirectional relationship.
-            For example, if Customer has Orders navigation property, Order might have a Customer partner property.
+For example, if Customer has Orders navigation property, Order might have a Customer partner property.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferentialConstraints
 
@@ -270,7 +270,7 @@ A collection of referential constraints that define the foreign key relationship
 #### Remarks
 
 Referential constraints specify how the navigation property relates to properties
-            in the source and target entity types, effectively defining foreign key relationships.
+in the source and target entity types, effectively defining foreign key relationships.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TargetType
 
@@ -290,7 +290,7 @@ The fully qualified name of the target entity type.
 #### Remarks
 
 For collection-valued navigation properties, this returns the element type within the Collection().
-            For single-valued properties, this returns the type directly.
+For single-valued properties, this returns the type directly.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TargetTypeName
 

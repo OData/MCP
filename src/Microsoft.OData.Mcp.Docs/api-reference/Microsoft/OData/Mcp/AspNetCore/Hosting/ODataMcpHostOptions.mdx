@@ -63,7 +63,7 @@ Type: `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions`
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExcludeRoutes
 
 Gets prefixes that must not be exposed over MCP, matched without regard to case or leading slashes.
-            Applied after [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes).
+Applied after [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes).
 
 #### Syntax
 
@@ -78,7 +78,7 @@ Type: `System.Collections.Generic.List<string>`
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExplicitRoutes
 
 Gets routes registered explicitly when endpoint discovery cannot see an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel).
-            Discovered routes with the same prefix replace these entries.
+Discovered routes with the same prefix replace these entries.
 
 #### Syntax
 
@@ -93,7 +93,7 @@ Type: `System.Collections.Generic.List<Microsoft.OData.Mcp.AspNetCore.Hosting.OD
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludePrefixes
 
 Gets prefixes that should be exposed over MCP. When empty, every discovered (and explicit) prefix is enabled.
-            When non-empty, only matching prefixes are enabled. Prefer this over an OData-version-specific helper.
+When non-empty, only matching prefixes are enabled. Prefer this over an OData-version-specific helper.
 
 #### Syntax
 
@@ -117,7 +117,7 @@ builder.Services.AddODataMcp(options =&gt;
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RateLimitingPolicyName
 
 Gets or sets the ASP.NET Core rate-limiting policy name attached to each MCP endpoint.
-            When null, the endpoint still participates in a global limiter configured with `UseRateLimiter`.
+When null, the endpoint still participates in a global limiter configured with `UseRateLimiter`.
 
 #### Syntax
 
@@ -149,8 +149,8 @@ builder.Services.AddODataMcp(options =&gt;
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequireAuthorization
 
 Gets or sets a value indicating whether MCP endpoints require an authenticated user.
-            When `true`, the mapped MCP endpoints call `RequireAuthorization` and participate
-            in the host's authentication and authorization pipeline.
+When `true`, the mapped MCP endpoints call `RequireAuthorization` and participate
+in the host's authentication and authorization pipeline.
 
 #### Syntax
 
@@ -167,7 +167,7 @@ Type: `bool`
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddRoute
 
 Registers an explicit *prefix* and *model* when the routing table
-            does not carry an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) (for example a custom host that never wrote OData metadata).
+does not carry an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) (for example a custom host that never wrote OData metadata).
 
 #### Syntax
 

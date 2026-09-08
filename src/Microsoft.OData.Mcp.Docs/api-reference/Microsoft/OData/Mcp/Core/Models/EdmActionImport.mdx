@@ -27,9 +27,9 @@ Represents an action import in an OData entity container.
 ## Remarks
 
 Action imports expose actions as addressable resources in the OData service.
-            They allow actions to be called through the service interface, providing custom
-            operations that can have side effects. Actions are typically invoked using POST requests
-            and can modify the state of the service.
+They allow actions to be called through the service interface, providing custom
+operations that can have side effects. Actions are typically invoked using POST requests
+and can modify the state of the service.
 
 ## Constructors
 
@@ -96,7 +96,7 @@ The namespace and name of the action that this import exposes.
 #### Remarks
 
 This references an action defined elsewhere in the model. The action import
-            makes the action accessible as part of the entity container's interface.
+makes the action accessible as part of the entity container's interface.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Annotations
 
@@ -116,7 +116,7 @@ A dictionary of annotations that provide additional metadata about the action im
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySet
 
@@ -136,8 +136,8 @@ The name of the entity set, or `null` if the action doesn't return entities from
 #### Remarks
 
 When the action returns entities, this property specifies which entity set
-            those entities belong to. This is important for establishing the correct context
-            for navigation properties and other operations.
+those entities belong to. This is important for establishing the correct context
+for navigation properties and other operations.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 

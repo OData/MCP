@@ -43,9 +43,11 @@
   <Folder Name="/Tests/">
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore.Restier/Microsoft.OData.Mcp.Tests.AspNetCore.Restier.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
+    <Project Path="Microsoft.OData.Mcp.Tests.Authentication.Restier/Microsoft.OData.Mcp.Tests.Authentication.Restier.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Authentication/Microsoft.OData.Mcp.Tests.Authentication.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Integration/Microsoft.OData.Mcp.Tests.Integration.csproj" />
+    <Project Path="Microsoft.OData.Mcp.Tests.Shared.Authentication/Microsoft.OData.Mcp.Tests.Shared.Authentication.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Shared/Microsoft.OData.Mcp.Tests.Shared.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Tools/Microsoft.OData.Mcp.Tests.Tools.csproj" />
   </Folder>

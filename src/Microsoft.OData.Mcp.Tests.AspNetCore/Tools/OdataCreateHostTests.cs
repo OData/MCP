@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
@@ -78,7 +77,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_412Precondition()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"CompanyName":"EtagCo"}""", Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Post, "/odata/Etags")
             {
@@ -122,7 +121,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_415UnsupportedMedia()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var content = new StringContent("CompanyName=Plain", Encoding.UTF8, "text/plain");
             using var twin = await client.PostAsync("/odata/Customers", content);
@@ -193,7 +192,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_AuthorizationForwardedFromMcpHttpContext_Succeeds()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -477,7 +476,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{"));
             var body = await McpJsonRpc.ReadBodyAsync(response);
 
@@ -492,7 +491,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_JsonRpc_WrongContentTypeOnMcp()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("""{"jsonrpc":"2.0","id":"1","method":"tools/call"}""", "text/plain"));
 
             response.StatusCode.Should().BeOneOf(HttpStatusCode.UnsupportedMediaType, HttpStatusCode.BadRequest, HttpStatusCode.NotAcceptable);
@@ -542,7 +541,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_OData8_WithAuthorization_Returns201AndVisibleToGet()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var twinContent = new StringContent("""{"CompanyName":"FabrikamTwin"}""", Encoding.UTF8, "application/json");
             using var twin = await client.PostAsync("/odata/Customers", twinContent);
@@ -564,28 +563,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var got = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "2"), CancellationToken.None);
             got.IsError.Should().BeFalse(got.Text);
             got.StructuredContent.Should().Contain("Fabrikam");
-        }
-
-        /// <summary>
-        /// Unauthenticated create is tool <c>IsError</c> with status 401.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCreate_OData8_WithoutAuthorization_IsError401()
-        {
-            using var client = TestServer.CreateClient();
-            using var twinContent = new StringContent("""{"CompanyName":"NoAuth"}""", Encoding.UTF8, "application/json");
-            using var twin = await client.PostAsync("/odata/Customers", twinContent);
-            twin.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-
-            var (runtime, capture) = CreateCapturingRuntime();
-            var result = await runtime.InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"NoAuth"}"""),
-                CancellationToken.None);
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
-            capture.Requests.Should().NotBeEmpty();
         }
 
         /// <summary>
@@ -622,7 +599,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_MissingRequiredCompanyName_OData8_400()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var twinContent = new StringContent("""{"CompanyName":""}""", Encoding.UTF8, "application/json");
             using var twin = await client.PostAsync("/odata/Customers", twinContent);
@@ -724,29 +701,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 CancellationToken.None);
             query.IsError.Should().BeFalse(query.Text);
             query.StructuredContent.Should().Contain("FilterCo");
-        }
-
-        /// <summary>
-        /// Unauthenticated create 401s; authenticated create then succeeds.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCreate_UnauthenticatedThenAuthenticated_OData8()
-        {
-            var (runtime, capture) = CreateCapturingRuntime();
-            var denied = await runtime.InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"NeedAuth"}"""),
-                CancellationToken.None);
-            denied.IsError.Should().BeTrue();
-            denied.Text.Should().Contain("status 401");
-
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var allowed = await runtime.InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"NeedAuth"}"""),
-                CancellationToken.None);
-            allowed.IsError.Should().BeFalse(allowed.Text);
-            capture.Requests.Should().HaveCountGreaterThanOrEqualTo(2);
         }
 
         /// <summary>
@@ -958,7 +912,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             result.Text.Should().Contain("top");
             capture.Requests.Should().NotBeEmpty();
 
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var listed = await client.GetStringAsync("/odata/Customers?$filter=CompanyName eq 'TinyResp'");
             listed.Should().Contain("TinyResp");
         }
@@ -1026,7 +980,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
             first.StatusCode.Should().NotBe((HttpStatusCode)429);
@@ -1138,6 +1092,21 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 CancellationToken.None);
             result.IsError.Should().BeTrue();
             result.Text.Should().NotContain("Unknown tool");
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
         }
 
         #endregion

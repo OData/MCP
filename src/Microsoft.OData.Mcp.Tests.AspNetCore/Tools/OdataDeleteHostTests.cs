@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +26,6 @@ using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
-using Microsoft.OData.Mcp.Tests.Shared.Models;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -249,7 +247,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataDelete_412()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var request = new HttpRequestMessage(HttpMethod.Delete, "/odata/Etags(1)");
             request.Headers.TryAddWithoutValidation("If-Match", "\"bad\"");
             using var twin = await client.SendAsync(request);
@@ -351,7 +349,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataDelete_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{"));
             response.StatusCode.Should().NotBe(HttpStatusCode.NotFound);
         }
@@ -362,7 +360,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataDelete_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}", "text/plain"));
             response.StatusCode.Should().BeOneOf(HttpStatusCode.UnsupportedMediaType, HttpStatusCode.BadRequest, HttpStatusCode.NotAcceptable);
         }
@@ -380,7 +378,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 CancellationToken.None);
             var key = ReadCustomerId(created.StructuredContent!).ToString();
 
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
                 "/odata/mcp",
@@ -445,7 +443,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataDelete_OData8_ExistingKey_204ThenGet404()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var (runtime, capture) = AuthorizedCapture();
             var created = await runtime.InvokeAsync(
                 "odata_create",
@@ -739,6 +737,21 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
         #endregion
 
+        #region Internal Methods
+
+        /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
+
+        #endregion
+
     }
 
     /// <summary>
@@ -756,7 +769,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataDelete_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
             first.StatusCode.Should().NotBe((HttpStatusCode)429);
             using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));

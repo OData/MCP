@@ -1,0 +1,75 @@
+---
+title: ODataOutboundAuthHandler
+description: "The `'OData'` named client's delegating handler: it attaches whatever credential the operator configured, and when none was configured it drives [OutboundOAu..."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataOutboundAuthHandler', 'Microsoft.OData.Mcp.Authentication.Outbound.ODataOutboundAuthHandler', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Net.Http.DelegatingHandler']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Net.Http.DelegatingHandler
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.ODataOutboundAuthHandler
+```
+
+## Summary
+
+The `"OData"` named client's delegating handler: it attaches whatever credential the operator
+configured, and when none was configured it drives [OutboundOAuthClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient) through the send
+path — attach a still-valid token, refresh one that has fallen inside the skew, or run a grant off the
+challenge the resource answered with.
+
+## Remarks
+
+This handler belongs on the `"OData"` client only. The `"OAuth"` client — protected resource
+          metadata, authorization server metadata, device authorization, token, refresh — is registered without it,
+          so a `401` on a well-known document can never re-enter discovery and recurse.
+          
+
+[OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#consentpresenter) is read at the moment a grant is needed and never
+          captured in the constructor, because a host swaps a blocking stderr presenter for an MCP elicitation once
+          its session is up.
+
+## Examples
+
+```csharp
+services.AddTransient&lt;ODataOutboundAuthHandler&gt;();
+services.AddHttpClient(ODataMcpAuthConstants.ODataHttpClientName, client =&gt; client.BaseAddress = serviceRoot)
+    .AddHttpMessageHandler(sp =&gt; sp.GetRequiredService&lt;ODataOutboundAuthHandler&gt;());
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ODataOutboundAuthHandler](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataOutboundAuthHandler) class.
+
+#### Syntax
+
+```csharp
+public ODataOutboundAuthHandler(Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient client, Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ODataOutboundAuthHandler> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `client` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient` | The outbound OAuth state machine this handler asks for tokens. |
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The operator's outbound OAuth settings. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ODataOutboundAuthHandler>` | The logger this instance records each attach, challenge, and retry to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *client*, *options*, or *logger* is
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+

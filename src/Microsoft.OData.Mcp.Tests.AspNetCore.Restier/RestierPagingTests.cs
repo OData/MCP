@@ -14,7 +14,6 @@ using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;
-using Microsoft.Restier.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier

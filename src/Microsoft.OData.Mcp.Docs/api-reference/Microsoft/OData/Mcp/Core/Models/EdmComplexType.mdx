@@ -27,9 +27,9 @@ Represents a complex type in an OData model.
 ## Remarks
 
 Complex types are structured types that consist of a set of properties but do not have a key.
-            They are used to define reusable data structures that can be used as property types in
-            entity types or other complex types. Complex types cannot exist independently; they must
-            be contained within an entity or another complex type.
+They are used to define reusable data structures that can be used as property types in
+entity types or other complex types. Complex types cannot exist independently; they must
+be contained within an entity or another complex type.
 
 ## Constructors
 
@@ -96,7 +96,7 @@ Type: `bool`
 #### Remarks
 
 Abstract complex types cannot be instantiated directly but can serve as base types
-            for other complex types. They are useful for defining common properties and behaviors.
+for other complex types. They are useful for defining common properties and behaviors.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BaseType
 
@@ -116,7 +116,7 @@ The fully qualified name of the base complex type, or `null` if this type has no
 #### Remarks
 
 When specified, this complex type inherits all properties from the base type.
-            The inheritance hierarchy must be consistent within the model.
+The inheritance hierarchy must be consistent within the model.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -260,7 +260,7 @@ A collection of navigation properties that define relationships to entities.
 #### Remarks
 
 Navigation properties in complex types enable navigation from the complex type
-            to related entities, but the complex type itself cannot be the target of navigation.
+to related entities, but the complex type itself cannot be the target of navigation.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OpenType
 
@@ -280,8 +280,8 @@ Type: `bool`
 #### Remarks
 
 Open complex types allow additional properties beyond those explicitly defined
-            in the metadata. This provides flexibility for dynamic scenarios where the
-            complete structure may not be known at design time.
+in the metadata. This provides flexibility for dynamic scenarios where the
+complete structure may not be known at design time.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Properties
 
@@ -301,7 +301,7 @@ A collection of structural properties that define the data elements of the compl
 #### Remarks
 
 These properties represent the data that can be stored and retrieved for instances
-            of this complex type. Unlike entity types, complex types do not have key properties.
+of this complex type. Unlike entity types, complex types do not have key properties.
 
 ## Methods
 

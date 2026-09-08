@@ -1,0 +1,85 @@
+---
+title: StdioConsentPresenter
+description: "The Tools host's consent presenter: it writes the sign-in URL and user code to stderr and tries to open the operator's browser, then returns so the outbound ..."
+icon: bolt
+tag: "STATIC"
+keywords: ['StdioConsentPresenter', 'Microsoft.OData.Mcp.Tools.Hosting.StdioConsentPresenter', 'Microsoft.OData.Mcp.Tools.Hosting', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Tools.dll
+
+**Namespace:** Microsoft.OData.Mcp.Tools.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Tools.Hosting.StdioConsentPresenter
+```
+
+## Summary
+
+The Tools host's consent presenter: it writes the sign-in URL and user code to stderr and tries to open
+the operator's browser, then returns so the outbound OAuth client can complete the grant.
+
+## Remarks
+
+Deliberately free of any dependency on an MCP server: this runs during host construction, before a
+session exists, and blocking the console at that point is the intended behavior. stdout belongs to the
+MCP transport, so every byte this writes goes to stderr. Nothing here ever prints an access token, a
+refresh token, or a device code — a user code and a verification URL are the only things a human needs.
+
+## Examples
+
+```csharp
+options.ConsentPresenter ??= StdioConsentPresenter.PresentAsync;
+```
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PresentAsync
+
+Presents a consent request on stderr and best-effort opens it in the operator's browser.
+
+#### Syntax
+
+```csharp
+public static System.Threading.Tasks.Task PresentAsync(Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest request, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `request` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest` | The consent request the outbound OAuth client produced. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the presentation. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task`
+A completed task once the request has been written; the grant itself is completed by the caller.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *request* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `OperationCanceledException` | Thrown when *cancellationToken* is already cancelled. |
+
+#### Examples
+
+```csharp
+await StdioConsentPresenter.PresentAsync(request, cancellationToken);
+// stderr: Sign in at http://localhost/oauth/v2.0/device?user_code=ABCD1234
+// stderr: Code: ABCD1234
+```
+
+#### Remarks
+
+A browser that cannot be launched — a headless container, a locked-down desktop, no shell handler —
+is not an error: the URL is already on stderr and the operator can open it anywhere, so the failure
+is swallowed rather than aborting a sign-in that can still succeed.
+

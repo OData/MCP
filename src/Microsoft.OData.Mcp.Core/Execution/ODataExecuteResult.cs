@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
@@ -41,6 +42,14 @@ namespace Microsoft.OData.Mcp.Core.Execution
         /// </summary>
         public int StatusCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets raw <c>WWW-Authenticate</c> header values, when the service sent any.
+        /// </summary>
+        /// <remarks>
+        /// Values are unparsed challenge strings. OAuth interpretation lives outside Core.
+        /// </remarks>
+        public IReadOnlyList<string> WwwAuthenticate { get; set; } = [];
+
         #endregion
 
         #region Public Methods
@@ -63,7 +72,8 @@ namespace Microsoft.OData.Mcp.Core.Execution
                 IsSuccess = response.IsSuccessStatusCode,
                 MediaType = response.Content.Headers.ContentType?.MediaType,
                 RetryAfter = ReadRetryAfter(response),
-                StatusCode = (int)response.StatusCode
+                StatusCode = (int)response.StatusCode,
+                WwwAuthenticate = ReadWwwAuthenticate(response)
             };
         }
 
@@ -93,6 +103,25 @@ namespace Microsoft.OData.Mcp.Core.Execution
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Reads raw, deduplicated <c>WWW-Authenticate</c> header values from the response.
+        /// </summary>
+        /// <param name="response">The HTTP response.</param>
+        /// <returns>
+        /// The distinct header values, in the order received, or an empty list when the header is absent.
+        /// </returns>
+        internal static IReadOnlyList<string> ReadWwwAuthenticate(HttpResponseMessage response)
+        {
+            ArgumentNullException.ThrowIfNull(response);
+
+            if (response.Headers.TryGetValues("WWW-Authenticate", out var values))
+            {
+                return values.Distinct(StringComparer.Ordinal).ToList();
+            }
+
+            return [];
         }
 
         #endregion

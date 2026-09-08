@@ -27,8 +27,8 @@ Represents a complete OData Entity Data Model (EDM).
 ## Remarks
 
 The EDM defines the structure of data exposed by an OData service, including entity types,
-            complex types, entity containers, and their relationships. This class serves as the root
-            model that contains all metadata necessary to understand and interact with an OData service.
+complex types, entity containers, and their relationships. This class serves as the root
+model that contains all metadata necessary to understand and interact with an OData service.
 
 ## Constructors
 
@@ -94,7 +94,7 @@ A collection of actions that can be invoked on the service.
 #### Remarks
 
 Actions are operations that may have side effects and are used to modify
-            data or perform operations that cannot be expressed through standard CRUD operations.
+data or perform operations that cannot be expressed through standard CRUD operations.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AllEntitySets
 
@@ -144,7 +144,7 @@ A dictionary of annotations that provide additional metadata about the model.
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ComplexTypes
 
@@ -164,7 +164,7 @@ A collection of complex types that define reusable structured data elements.
 #### Remarks
 
 Complex types are structured types without keys that can be used as property types
-            in entity types or other complex types.
+in entity types or other complex types.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityContainer
 
@@ -199,7 +199,7 @@ A collection of entity containers that define the service interface.
 #### Remarks
 
 Entity containers define the addressable resources in the OData service.
-            Typically, there is one primary entity container per service.
+Typically, there is one primary entity container per service.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityTypes
 
@@ -219,7 +219,7 @@ A collection of entity types that define the structure of entities in the servic
 #### Remarks
 
 Entity types are the primary structural elements in the EDM, defining the properties
-            and relationships that make up the data model.
+and relationships that make up the data model.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Functions
 
@@ -239,7 +239,7 @@ A collection of functions that can be called on the service.
 #### Remarks
 
 Functions are operations that can be called to retrieve data or perform calculations.
-            They are side-effect free and can be composed with other query operations.
+They are side-effect free and can be composed with other query operations.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasComplexTypes
 
@@ -304,7 +304,7 @@ A collection of namespace strings that organize the types in the model.
 #### Remarks
 
 Namespaces provide organizational structure and help avoid naming conflicts
-            between types from different sources.
+between types from different sources.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PrimaryContainer
 
@@ -324,7 +324,7 @@ The first entity container, or `null` if no containers are defined.
 #### Remarks
 
 Most OData services have a single entity container that serves as the primary
-            interface. This property provides convenient access to that container.
+interface. This property provides convenient access to that container.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Version
 
@@ -344,7 +344,7 @@ The version string (e.g., "4.0", "4.01").
 #### Remarks
 
 This indicates which version of the OData standard the model conforms to.
-            Different versions have different capabilities and syntax.
+Different versions have different capabilities and syntax.
 
 ## Methods
 

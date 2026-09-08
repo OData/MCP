@@ -1,0 +1,242 @@
+---
+title: ScopeResolver
+description: "Resolves the space-delimited OAuth `scope` a token request should ask for, per step 8 of the discovery algorithm and matching the SDK 2.2 `ScopeSelectorDeleg..."
+icon: lock
+tag: "SEALED"
+keywords: ['ScopeResolver', 'Microsoft.OData.Mcp.Authentication.Outbound.ScopeResolver', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.ScopeResolver
+```
+
+## Summary
+
+Resolves the space-delimited OAuth `scope` a token request should ask for, per step 8 of the
+discovery algorithm and matching the SDK 2.2 `ScopeSelectorDelegate` order exactly.
+
+## Remarks
+
+Per Key Decision 9 of `specs/v3/AUTHENTICATION.md`, the base scope order is: the
+`WWW-Authenticate` challenge `scope`, then RFC 9728 protected resource metadata
+`scopes_supported`, then the operator's `--scopes`, then no scope at all.
+`offline_access` is appended whenever the authorization server or protected resource metadata
+advertises it, or the authorization server advertises the `refresh_token` grant, so an interactive
+grant can refresh instead of re-prompting. Finally, [OutboundOAuthOptions.ScopeSelector](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#scopeselector) — the
+SDK's `ScopeSelectorDelegate` reused as-is — runs last and may remove
+`offline_access`, which this type logs a warning about rather than silently accepting.
+
+## Examples
+
+```csharp
+var resolver = new ScopeResolver(logger);
+var scope = resolver.Resolve(discovery, options);
+
+var device = await deviceCodeGrant.StartAsync(discovery.AuthorizationServer, clientId, scope, discovery.Resource, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ScopeResolver](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ScopeResolver) class.
+
+#### Syntax
+
+```csharp
+public ScopeResolver(Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ScopeResolver> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ScopeResolver>` | The logger this instance records the `offline_access` removal warning to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resolve
+
+Resolves the scope a token request should ask for, per step 8 of the discovery algorithm.
+
+#### Syntax
+
+```csharp
+public string Resolve(Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult discovery, Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `discovery` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult` | The discovery result whose challenge scope, protected resource metadata, and authorization server are consulted. |
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The operator's outbound OAuth settings, carrying the `--scopes` fallback and an optional scope selector. |
+
+#### Returns
+
+Type: `string?`
+The resolved space-delimited scope, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when nothing resolves to a non-empty
+scope.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *discovery* or *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+var scope = resolver.Resolve(discovery, options); // "openid offline_access", or null
+```
+
+#### Remarks
+
+[OutboundOAuthOptions.ScopeSelector](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#scopeselector) receives the individual scope tokens as an
+[IReadOnlyCollection`1](https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1) — exactly the SDK 2.2 `ScopeSelectorDelegate`
+signature — and its returned scopes are re-joined with single spaces.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

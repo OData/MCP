@@ -110,6 +110,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
+
+        /// <summary>
         /// Invokes a catalog tool on the odata session.
         /// </summary>
         /// <param name="name">The tool name.</param>
@@ -190,6 +201,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
+
+        /// <summary>
         /// Invokes a catalog tool on the odata session.
         /// </summary>
         /// <param name="name">The tool name.</param>
@@ -257,6 +279,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
+
+        /// <summary>
         /// Invokes a catalog tool on the odata session.
         /// </summary>
         /// <param name="name">The tool name.</param>
@@ -288,7 +321,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_AgreesWithMetadataFunctionsAndActions()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var metadata = await client.GetAsync("/odata/$metadata");
             var metadataBody = await metadata.Content.ReadAsStringAsync();
             if (metadata.IsSuccessStatusCode)
@@ -309,7 +342,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_AspNetCore_NoShutdownInToolsList()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue(body);
@@ -381,7 +414,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = McpJsonRpc.Content("{");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -395,7 +428,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_list_operations","arguments":{}}}""", Encoding.UTF8, "text/plain");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -408,7 +441,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_JsonRpcToolsCall_RichHost()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_list_operations", "{}");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue(body);
@@ -527,7 +560,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_JsonRpcToolsCall_OperationsOnlyHost()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_list_operations", "{}");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue(body);
@@ -640,7 +673,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListOperations_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             first.StatusCode.Should().NotBe(HttpStatusCode.NotFound);

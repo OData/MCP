@@ -27,9 +27,9 @@ Represents a function import in an OData entity container.
 ## Remarks
 
 Function imports expose functions as addressable resources in the OData service.
-            They allow functions to be called through the service interface, providing custom
-            operations that don't fit the standard CRUD pattern. Functions are side-effect free
-            and can be invoked using GET requests.
+They allow functions to be called through the service interface, providing custom
+operations that don't fit the standard CRUD pattern. Functions are side-effect free
+and can be invoked using GET requests.
 
 ## Constructors
 
@@ -96,7 +96,7 @@ A dictionary of annotations that provide additional metadata about the function 
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySet
 
@@ -116,8 +116,8 @@ The name of the entity set, or `null` if the function doesn't return entities fr
 #### Remarks
 
 When the function returns entities, this property specifies which entity set
-            those entities belong to. This is important for establishing the correct context
-            for navigation properties and other operations.
+those entities belong to. This is important for establishing the correct context
+for navigation properties and other operations.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Function
 
@@ -137,7 +137,7 @@ The namespace and name of the function that this import exposes.
 #### Remarks
 
 This references a function defined elsewhere in the model. The function import
-            makes the function accessible as part of the entity container's interface.
+makes the function accessible as part of the entity container's interface.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeInServiceDocument
 
@@ -157,8 +157,8 @@ Type: `bool`
 #### Remarks
 
 When true, the function import will be listed in the service document, making it
-            discoverable by clients. When false, clients must know the function import name
-            in advance to use it.
+discoverable by clients. When false, clients must know the function import name
+in advance to use it.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 

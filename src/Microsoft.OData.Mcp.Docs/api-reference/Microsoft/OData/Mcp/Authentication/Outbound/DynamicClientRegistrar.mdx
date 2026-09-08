@@ -1,0 +1,259 @@
+---
+title: DynamicClientRegistrar
+description: "Registers this process as an OAuth client at an authorization server's RFC 7591 `registration_endpoint`, so an operator who has no pre-registered application..."
+icon: lock
+tag: "SEALED"
+keywords: ['DynamicClientRegistrar', 'Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrar', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrar
+```
+
+## Summary
+
+Registers this process as an OAuth client at an authorization server's RFC 7591
+`registration_endpoint`, so an operator who has no pre-registered application can still sign in.
+
+## Remarks
+
+The request goes out on the handler-free `"OAuth"` named client, the same one discovery and every
+token request use, so a `401` from a registration endpoint can never re-enter the outbound auth
+handler and recurse. The caller persists the returned identifier on the cached
+`TokenContainer` — per step 9 of the discovery algorithm — so the next process start reuses it
+instead of registering a second client. Per `AUTH-12` a returned `client_secret` is never
+logged.
+
+## Examples
+
+```csharp
+var registration = await registrar.RegisterAsync(
+    metadata,
+    new DynamicClientRegistrationOptions { ClientName = "odata-mcp" },
+    redirectUri: callback.RedirectUri,
+    grantTypes: [ODataMcpAuthConstants.GrantTypeAuthorizationCode, ODataMcpAuthConstants.GrantTypeRefreshToken],
+    cancellationToken);
+
+var clientId = registration.ClientId;
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [DynamicClientRegistrar](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DynamicClientRegistrar) class.
+
+#### Syntax
+
+```csharp
+public DynamicClientRegistrar(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrar> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory used to create the `"OAuth"` named client per call. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrar>` | The logger this instance records each registration to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *httpClientFactory* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RegisterAsync
+
+Registers a new client and returns the identifier the grant then runs as.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.DynamicClientRegistrationResponse> RegisterAsync(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, ModelContextProtocol.Authentication.DynamicClientRegistrationOptions options, System.Uri redirectUri, System.Collections.Generic.IReadOnlyList<string> grantTypes, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `registration_endpoint` is posted to. |
+| `options` | `ModelContextProtocol.Authentication.DynamicClientRegistrationOptions` | The SDK registration options carrying the client name, home page, application type, and optional initial access token. |
+| `redirectUri` | `System.Uri?` | The loopback redirect URI to register, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for a grant that uses no redirect. |
+| `grantTypes` | `System.Collections.Generic.IReadOnlyList<string>` | The grant types this client intends to use. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.DynamicClientRegistrationResponse>`
+The registration response, whose `ClientId` is
+guaranteed non-empty.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata*, *options*, or *grantTypes* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *grantTypes* is empty. |
+| `InvalidOperationException` | Thrown when *metadata* publishes no registration endpoint. |
+| `OAuthTokenException` | Thrown when the registration endpoint answers with a non-success status, returns a body that is not a
+registration response, or returns one without a `client_id`. |
+
+#### Examples
+
+```csharp
+var registration = await registrar.RegisterAsync(
+    metadata,
+    new DynamicClientRegistrationOptions { ClientName = "odata-mcp" },
+    redirectUri: null,
+    grantTypes: [ODataMcpAuthConstants.DeviceCodeGrantType],
+    cancellationToken);
+```
+
+#### Remarks
+
+`response_types` is sent only when *grantTypes* includes
+`authorization_code`, because RFC 7591 ties the two together and an authorization server that
+sees `["code"]` from a device-code-only client may reject the registration. Both `201` and
+`200` are accepted: RFC 7591 section 3.2.1 specifies `201`, and deployments answer
+`200` often enough that refusing it would strand operators for no security gain.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

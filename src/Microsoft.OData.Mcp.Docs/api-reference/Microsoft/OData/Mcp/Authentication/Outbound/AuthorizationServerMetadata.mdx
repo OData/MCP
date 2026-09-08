@@ -1,0 +1,463 @@
+---
+title: AuthorizationServerMetadata
+description: "The RFC 8414 authorization server metadata document, or its OpenID Connect discovery document counterpart, restricted to the endpoints, advertised grants and..."
+icon: lock
+tag: "SEALED"
+keywords: ['AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata
+```
+
+## Summary
+
+The RFC 8414 authorization server metadata document, or its OpenID Connect discovery document
+counterpart, restricted to the endpoints, advertised grants and scopes, and PKCE / dynamic client
+registration capability flags outbound OAuth discovery actually reads.
+
+## Remarks
+
+Deserialized exclusively through [OutboundOAuthJsonContext](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthjsoncontext); this type is never read with
+reflection-based `System.Text.Json` serialization (AOT: JSON source-gen; no reflection). Unknown
+fields the discovery document may carry (signing algorithms, UI locales, and similar) are intentionally
+not modeled here per `specs/v3/AUTHENTICATION.md` "Authentication outbound" type map.
+
+## Examples
+
+```csharp
+var json = await client.GetStringAsync(wellKnownUri);
+var metadata = JsonSerializer.Deserialize(json, OutboundOAuthJsonContext.Default.AuthorizationServerMetadata);
+if (metadata is not null &amp;&amp; metadata.AdvertisesGrant(ODataMcpAuthConstants.DeviceCodeGrantType))
+{
+    // Start a device code grant.
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public AuthorizationServerMetadata()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationEndpoint
+
+Gets or sets the RFC 6749 authorization endpoint.
+
+#### Syntax
+
+```csharp
+public System.Uri AuthorizationEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationResponseIssParameterSupported
+
+Gets or sets whether the authorization response carries the RFC 9207 `iss` parameter.
+
+#### Syntax
+
+```csharp
+public System.Nullable<bool> AuthorizationResponseIssParameterSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<bool>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientIdMetadataDocumentSupported
+
+Gets or sets whether this server accepts a client id metadata document (CIMD) in place of a
+pre-registered client id.
+
+#### Syntax
+
+```csharp
+public System.Nullable<bool> ClientIdMetadataDocumentSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<bool>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CodeChallengeMethodsSupported
+
+Gets or sets the RFC 7636 PKCE code challenge methods this server accepts, such as `S256`.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> CodeChallengeMethodsSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DeviceAuthorizationEndpoint
+
+Gets or sets the RFC 8628 device authorization endpoint.
+
+#### Syntax
+
+```csharp
+public System.Uri DeviceAuthorizationEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GrantTypesSupported
+
+Gets or sets the OAuth 2.0 / OpenID Connect grant types this server advertises.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> GrantTypesSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Issuer
+
+Gets or sets the issuer identifier, exactly as the document spells it.
+
+#### Syntax
+
+```csharp
+public string Issuer { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+Deliberately a [String](https://learn.microsoft.com/dotnet/api/system.string) rather than a [Uri](https://learn.microsoft.com/dotnet/api/system.uri). RFC 8414 section 2 and RFC 9207
+both compare issuer identifiers by simple string comparison, and [Uri](https://learn.microsoft.com/dotnet/api/system.uri) normalizes: it
+turns the authority-only issuer `https://accounts.google.com` into
+`https://accounts.google.com/`, which would make a conforming authorization server's
+`iss` look like a mix-up attack. Use [AuthorizationServerMetadata.IssuerUri](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#issueruri) where a URI is genuinely needed.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IssuerUri
+
+Gets [AuthorizationServerMetadata.Issuer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#issuer) as an absolute URI, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when it is absent or is not
+an absolute URI.
+
+#### Syntax
+
+```csharp
+public System.Uri IssuerUri { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+Never used for an issuer comparison — that is [AuthorizationServerMetadata.Issuer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#issuer)'s job — only where a collaborator
+requires a [Uri](https://learn.microsoft.com/dotnet/api/system.uri), such as the SDK identity assertion provider.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RegistrationEndpoint
+
+Gets or sets the RFC 7591 dynamic client registration endpoint, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when this
+server requires a pre-registered client id.
+
+#### Syntax
+
+```csharp
+public System.Uri RegistrationEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResponseTypesSupported
+
+Gets or sets the response types this server's authorization endpoint accepts.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> ResponseTypesSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RevocationEndpoint
+
+Gets or sets the RFC 7009 token revocation endpoint.
+
+#### Syntax
+
+```csharp
+public System.Uri RevocationEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ScopesSupported
+
+Gets or sets the scopes this server advertises.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> ScopesSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenEndpoint
+
+Gets or sets the RFC 6749 token endpoint.
+
+#### Syntax
+
+```csharp
+public System.Uri TokenEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenEndpointAuthMethodsSupported
+
+Gets or sets the client authentication methods the token endpoint accepts.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> TokenEndpointAuthMethodsSupported { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdvertisesGrant
+
+Determines whether this server advertises a grant type, treating the RFC 8628 short form
+`device_code` and the [ODataMcpAuthConstants.DeviceCodeGrantType](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#devicecodegranttype) URN as
+equivalent in either direction.
+
+#### Syntax
+
+```csharp
+public bool AdvertisesGrant(string grantType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `grantType` | `string` | The grant type to look for, such as `authorization_code` or `device_code`. |
+
+#### Returns
+
+Type: `bool`
+[`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when [AuthorizationServerMetadata.GrantTypesSupported](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#granttypessupported) contains an ordinal match for
+*grantType*, or its device-code counterpart; otherwise [`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *grantType* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+
+#### Remarks
+
+Advertised grant lists use either spelling depending on the authorization server, so a caller that
+asks for either one gets the same answer regardless of which spelling was actually published.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdvertisesScope
+
+Determines whether this server advertises a scope.
+
+#### Syntax
+
+```csharp
+public bool AdvertisesScope(string scope)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `scope` | `string` | The scope to look for. |
+
+#### Returns
+
+Type: `bool`
+[`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when [AuthorizationServerMetadata.ScopesSupported](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#scopessupported) contains an ordinal match for
+*scope*; otherwise [`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *scope* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

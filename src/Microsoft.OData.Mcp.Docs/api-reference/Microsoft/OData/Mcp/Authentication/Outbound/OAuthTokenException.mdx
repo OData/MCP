@@ -1,0 +1,175 @@
+---
+title: OAuthTokenException
+description: "The single exception type an outbound token, device authorization, or polling request throws when the authorization server answers with an RFC 6749 section 5..."
+icon: file-brackets-curly
+keywords: ['OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Exception']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Exception
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OAuthTokenException
+```
+
+## Summary
+
+The single exception type an outbound token, device authorization, or polling request throws when the
+authorization server answers with an RFC 6749 section 5.2 error payload, or when the request never
+reached one.
+
+## Remarks
+
+Per `AUTH-12` no member of this type ever carries an access token, refresh token, device code, or
+client secret: [OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) and [OAuthTokenException.ErrorDescription](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#errordescription) are copied straight from the
+server's error payload, and the composed [Message](https://learn.microsoft.com/dotnet/api/system.exception.message) repeats only those two values
+and the HTTP status. RFC 8628 device code polling reuses this type for its `authorization_pending`,
+`slow_down`, `expired_token`, and `access_denied` answers, which is why
+[OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) is exposed as a value a caller can branch on rather than only formatted into the
+message.
+
+## Examples
+
+```csharp
+try
+{
+    var response = await tokenEndpointClient.PostAsync(tokenEndpoint, form, clientId, clientSecret, authMethod, cancellationToken);
+}
+catch (OAuthTokenException ex) when (ex.Error == ODataMcpAuthConstants.ErrorAuthorizationPending)
+{
+    // Keep polling.
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthTokenException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException) class for an error payload the
+authorization server returned.
+
+#### Syntax
+
+```csharp
+public OAuthTokenException(string error, string errorDescription, int statusCode)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `error` | `string` | The RFC 6749 error code, such as `invalid_grant`. |
+| `errorDescription` | `string?` | The human readable description, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the server supplied none. |
+| `statusCode` | `int` | The HTTP status code the request failed with, or `0` when there was no response. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *error* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthTokenException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException) class for an error payload the
+authorization server returned, or a transport failure, that another exception caused.
+
+#### Syntax
+
+```csharp
+public OAuthTokenException(string error, string errorDescription, int statusCode, System.Exception inner)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `error` | `string` | The RFC 6749 error code, or `transport_error` for a request that never reached a server. |
+| `errorDescription` | `string?` | The human readable description, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when there is none. |
+| `statusCode` | `int` | The HTTP status code the request failed with, or `0` when there was no response. |
+| `inner` | `System.Exception` | The exception that caused this failure. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *error* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthTokenException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException) class with a message and the
+exception that caused this failure.
+
+#### Syntax
+
+```csharp
+public OAuthTokenException(string message, System.Exception inner)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string` | The error message. Must never carry a token, device code, or client secret. |
+| `inner` | `System.Exception` | The exception that caused this failure. |
+
+#### Remarks
+
+[OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) reads as [Empty](https://learn.microsoft.com/dotnet/api/system.string.empty) and [OAuthTokenException.StatusCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#statuscode) as `0` for
+an instance built this way, because neither an error code nor a response status is known.
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Error
+
+Gets the RFC 6749 error code the authorization server returned, such as `invalid_grant`, or
+`transport_error` when the request never reached a server.
+
+#### Syntax
+
+```csharp
+public string Error { get; }
+```
+
+#### Property Value
+
+Type: `string`
+[Empty](https://learn.microsoft.com/dotnet/api/system.string.empty) when this instance was constructed with only a message and an inner
+exception.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ErrorDescription
+
+Gets the human readable `error_description` the authorization server returned, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when it supplied none.
+
+#### Syntax
+
+```csharp
+public string ErrorDescription { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StatusCode
+
+Gets the HTTP status code the failing request returned.
+
+#### Syntax
+
+```csharp
+public int StatusCode { get; }
+```
+
+#### Property Value
+
+Type: `int`
+`0` when the request never produced a response, such as a transport failure.
+

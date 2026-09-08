@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -63,20 +62,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"StringCo"}"""));
 
             created.IsError.Should().BeFalse(created.Text);
-        }
-
-        /// <summary>
-        /// Unauthenticated create is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCreate_WithoutAuthorization_IsError401()
-        {
-            var created = await InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"NoAuth"}"""));
-
-            created.IsError.Should().BeTrue();
-            created.Text.Should().Contain("status 401");
         }
 
         /// <summary>
@@ -145,7 +130,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCreate_JsonRpcToolsCall_WithAuthorization()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -167,20 +152,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             created.IsError.Should().BeTrue();
             created.Text.Should().Contain("entitySet");
-        }
-
-        /// <summary>
-        /// Update without auth is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_WithoutAuthorization_IsError401()
-        {
-            var updated = await InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"Nope"}"""));
-
-            updated.IsError.Should().BeTrue();
-            updated.Text.Should().Contain("status 401");
         }
 
         /// <summary>
@@ -256,7 +227,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var deleted = await InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", key.ToString()));
 
             deleted.IsError.Should().BeFalse(deleted.Text);
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var missing = await client.GetAsync($"/odata/Customers({key})");
             missing.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }

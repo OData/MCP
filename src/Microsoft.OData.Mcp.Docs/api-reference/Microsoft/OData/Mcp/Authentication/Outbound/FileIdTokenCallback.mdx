@@ -1,0 +1,262 @@
+---
+title: FileIdTokenCallback
+description: "Supplies the enterprise OpenID Connect id token the identity assertion grant exchanges, reading it from the file `--idp-id-token-file` names or from the [ODa..."
+icon: lock
+tag: "SEALED"
+keywords: ['FileIdTokenCallback', 'Microsoft.OData.Mcp.Authentication.Outbound.FileIdTokenCallback', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.FileIdTokenCallback
+```
+
+## Summary
+
+Supplies the enterprise OpenID Connect id token the identity assertion grant exchanges, reading it from
+the file `--idp-id-token-file` names or from the
+[ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) environment variable.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` "Grants → Identity Assertion Grant" the id token is never passed on
+argv: a process list is world-readable on every platform this tool ships to, and an id token is a bearer
+credential for the end user's enterprise identity. The file is re-read on every call rather than cached,
+so a daemon whose sidecar rotates the token picks the new one up without a restart, and per
+`AUTH-12` nothing here ever logs, elicits, or echoes the token itself — only the path it came from.
+
+## Examples
+
+```csharp
+var callback = new FileIdTokenCallback(options.IdpIdTokenFile);
+
+var providerOptions = new IdentityAssertionGrantProviderOptions
+{
+    ClientId = options.ClientId,
+    IdpClientId = options.IdpClientId,
+    IdTokenCallback = callback.ReadAsync
+};
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [FileIdTokenCallback](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/FileIdTokenCallback) class.
+
+#### Syntax
+
+```csharp
+public FileIdTokenCallback(string path)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `path` | `string?` | The path of the file holding a UTF-8 id token, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to read [ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) instead. |
+
+#### Remarks
+
+A [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) path is not an error: the environment variable is the other documented
+source, and which of the two an operator configured is only knowable when the token is actually
+needed.
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Path
+
+Gets the path of the file the id token is read from, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when only the
+environment variable is consulted.
+
+#### Syntax
+
+```csharp
+public string Path { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReadAsync
+
+Reads the id token, preferring the configured file over the environment variable.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<string> ReadAsync(ModelContextProtocol.Authentication.IdentityAssertionGrantContext context, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `context` | `ModelContextProtocol.Authentication.IdentityAssertionGrantContext` | The resource and authorization server URLs the SDK discovered, unused by this source. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the file read. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<string>`
+The trimmed id token.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `InvalidOperationException` | Thrown when the configured file does not exist, when it is empty, or when neither a file nor
+[ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) supplies a token. |
+
+#### Examples
+
+```csharp
+SdkAuth.IdentityAssertionGrantIdTokenCallback callback = new FileIdTokenCallback(path).ReadAsync;
+```
+
+#### Remarks
+
+The token is trimmed because both sources routinely pick up a trailing newline — a shell
+redirection, a Kubernetes projected volume — and a JWT with a newline on the end is rejected by
+every token endpoint with an error that says nothing about whitespace. Failures name the source,
+never the value.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

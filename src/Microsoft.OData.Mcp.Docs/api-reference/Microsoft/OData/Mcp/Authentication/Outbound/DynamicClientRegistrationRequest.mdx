@@ -1,0 +1,292 @@
+---
+title: DynamicClientRegistrationRequest
+description: "The RFC 7591 section 2 client metadata document [DynamicClientRegistrar](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DynamicClientRegistrar) P..."
+icon: lock
+sidebarTitle: DynamicClientRegistrationRequest
+tag: "SEALED"
+keywords: ['DynamicClientRegistrationRequest', 'Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrationRequest', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.DynamicClientRegistrationRequest
+```
+
+## Summary
+
+The RFC 7591 section 2 client metadata document [DynamicClientRegistrar](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DynamicClientRegistrar) POSTs to an
+authorization server's `registration_endpoint`.
+
+## Remarks
+
+This exists because the SDK's own registration request type is not public — only its
+`DynamicClientRegistrationResponse` counterpart is — and outbound OAuth serializes
+exclusively through [OutboundOAuthJsonContext](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthjsoncontext) (AOT: JSON source-gen; no reflection).
+Properties left [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) are omitted from the wire document, so an authorization server
+that rejects an empty `redirect_uris` never sees one.
+
+## Examples
+
+```csharp
+var request = new DynamicClientRegistrationRequest
+{
+    ClientName = "odata-mcp",
+    GrantTypes = [ODataMcpAuthConstants.GrantTypeAuthorizationCode],
+    RedirectUris = ["http://127.0.0.1:53219/callback/"],
+    ResponseTypes = [ODataMcpAuthConstants.ResponseTypeCode],
+    TokenEndpointAuthMethod = TokenEndpointClient.AuthMethodNone
+};
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public DynamicClientRegistrationRequest()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApplicationType
+
+Gets or sets the RFC 7591 `application_type`, such as `native`, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null)
+to let the authorization server default it.
+
+#### Syntax
+
+```csharp
+public string ApplicationType { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientName
+
+Gets or sets the human-readable client name shown on a consent screen.
+
+#### Syntax
+
+```csharp
+public string ClientName { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientUri
+
+Gets or sets the informational home page of the client, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when there is none.
+
+#### Syntax
+
+```csharp
+public string ClientUri { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GrantTypes
+
+Gets or sets the grant types this client intends to use.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> GrantTypes { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RedirectUris
+
+Gets or sets the redirect URIs the authorization server may redirect to, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null)
+for a client that never uses a redirect-based grant.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> RedirectUris { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResponseTypes
+
+Gets or sets the response types this client's authorization requests use.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IList<string> ResponseTypes { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IList<string>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenEndpointAuthMethod
+
+Gets or sets the token endpoint authentication method this client will use, normally
+[TokenEndpointClient.AuthMethodNone](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodnone) for a public CLI.
+
+#### Syntax
+
+```csharp
+public string TokenEndpointAuthMethod { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

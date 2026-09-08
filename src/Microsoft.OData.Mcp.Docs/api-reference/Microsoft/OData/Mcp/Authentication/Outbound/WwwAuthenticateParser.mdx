@@ -1,0 +1,177 @@
+---
+title: WwwAuthenticateParser
+description: "Parses `WWW-Authenticate` response header values into [OAuthChallenge](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge) instances u..."
+icon: bolt
+tag: "STATIC"
+keywords: ['WwwAuthenticateParser', 'Microsoft.OData.Mcp.Authentication.Outbound.WwwAuthenticateParser', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.WwwAuthenticateParser
+```
+
+## Summary
+
+Parses `WWW-Authenticate` response header values into [OAuthChallenge](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge) instances using
+the RFC 9110 section 11.6.1 challenge grammar and the RFC 6750 / RFC 9728 OAuth auth-params.
+
+## Remarks
+
+The grammar implemented is `challenge = auth-scheme [ 1*SP ( token68 / #auth-param ) ]` with
+`auth-param = token BWS "=" BWS ( token / quoted-string )`. A hand written tokenizer is used rather
+than a regular expression so that a comma inside a quoted-string never splits a challenge, and so that
+the scheme of a following challenge (a token that is not followed by `=`) is recognized correctly.
+A `token68` credential is consumed so that it cannot masquerade as an extra challenge, but it is
+not surfaced: OAuth challenges always use auth-params.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Parse
+
+Parses a single `WWW-Authenticate` header value and returns its first challenge.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge Parse(string headerValue)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `headerValue` | `string` | The raw header value, for example `Bearer realm="", scope="read"`. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge`
+The first [OAuthChallenge](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge) in *headerValue*.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | *headerValue* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | *headerValue* is empty or white space. |
+| `FormatException` | *headerValue* does not contain a well formed challenge. |
+
+#### Examples
+
+```csharp
+var challenge = WwwAuthenticateParser.Parse("Bearer realm=\"\", client_id=\"00000003-0000-0000-c000-000000000000\"");
+
+Console.WriteLine(challenge.Scheme);           // Bearer
+Console.WriteLine(challenge.Realm);            // (empty string)
+Console.WriteLine(challenge.ResourceClientId); // 00000003-0000-0000-c000-000000000000
+```
+
+#### Remarks
+
+Use [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.wwwauthenticateparser.parseall(system.string)) when a header value may advertise more than one scheme; this
+method deliberately keeps only the first challenge.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ParseAll
+
+Parses a sequence of `WWW-Authenticate` header values, in order, into a flat challenge list.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge> ParseAll(System.Collections.Generic.IEnumerable<string> values)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `values` | `System.Collections.Generic.IEnumerable<string>` | The header values, typically the ones surfaced on an OData execute result. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge>`
+Every challenge advertised across *values*, in the order encountered.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | *values* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `FormatException` | One of the values is not a well formed challenge. |
+
+#### Remarks
+
+A response may repeat the header instead of comma joining it, and each value may itself carry more
+than one challenge. Entries that are [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or white space carry no
+challenge and are skipped, so a response with no usable challenge yields an empty list rather than
+an exception; callers apply the "401 with no WWW-Authenticate" rule themselves.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ParseAll
+
+Parses a single `WWW-Authenticate` header value that may advertise several challenges.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge> ParseAll(string headerValue)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `headerValue` | `string` | The raw header value, for example `Bearer realm="a", Basic realm="b"`. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge>`
+Every challenge in *headerValue*, in the order encountered.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | *headerValue* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | *headerValue* is empty or white space. |
+| `FormatException` | *headerValue* is not a well formed challenge list. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SelectBearer
+
+Selects the first `Bearer` challenge from a parsed challenge list.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge SelectBearer(System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge> challenges)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `challenges` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge>` | The challenges to search, in the order the server advertised them. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge?`
+The first challenge whose scheme is `Bearer`, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when none is.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | *challenges* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Remarks
+
+Authentication schemes are case-insensitive, so `bearer` and `Bearer` both match.
+

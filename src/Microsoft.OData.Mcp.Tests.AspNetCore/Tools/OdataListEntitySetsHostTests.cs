@@ -13,10 +13,8 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Security;
@@ -63,7 +61,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("odata_list_entity_sets");
             Session().Catalog.Tools.Select(tool => tool.Name).Should().NotContain("shutdown_server");
 
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp");
             var body = await McpJsonRpc.ReadBodyAsync(response);
 
@@ -134,7 +132,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_JsonRpcToolsCall_AspNetCoreStreamableHttp()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_list_entity_sets", "{}");
             var body = await McpJsonRpc.ReadBodyAsync(response);
 
@@ -149,7 +147,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_JsonRpc_BinaryBody_Rejected()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new ByteArrayContent([0x00, 0x01, 0x02, 0xFF, 0xFE]);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
             using var response = await client.PostAsync("/odata/mcp", content);
@@ -165,7 +163,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_JsonRpc_EmptyBody_IsProtocolErrorNotToolSuccess()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonContent.EmptyObject());
             var body = await response.Content.ReadAsStringAsync();
 
@@ -179,7 +177,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_JsonRpc_InvalidJson_IsProtocolError()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("{", Encoding.UTF8, "application/json");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await response.Content.ReadAsStringAsync();
@@ -194,7 +192,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_JsonRpc_WrongContentTypeTextPlain_RejectedOrUnsupported()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent(
                 """{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_list_entity_sets","arguments":{}}}""",
                 Encoding.UTF8,
@@ -240,7 +238,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_OData8_ReturnsCustomersOrdersProductsOrderItems()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var metadata = await client.GetAsync("/odata/$metadata");
             var metadataBody = await metadata.Content.ReadAsStringAsync();
             if (metadata.IsSuccessStatusCode)
@@ -643,7 +641,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_McpTransportRateLimit_SecondPost429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var firstContent = McpJsonRpc.Content(
                 """{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_list_entity_sets","arguments":{}}}""");
             using var first = await client.PostAsync("/odata/mcp", firstContent);
@@ -661,7 +659,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListEntitySets_ODataSetRateLimit_DoesNotAffectThisTool()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             (await client.GetAsync("/odata/Customers")).StatusCode.Should().Be(HttpStatusCode.OK);
             (await client.GetAsync("/odata/Customers")).StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
 

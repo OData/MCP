@@ -59,8 +59,8 @@ public Object()
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Sessions
 
-Gets sessions keyed by OData route prefix. Discovery runs on first access when the startup filter
-            has not already rebuilt after endpoints exist.
+Gets sessions keyed by OData route prefix. Discovery runs on first access when
+`UseODataMcp` has not already rebuilt after endpoints exist.
 
 #### Syntax
 
@@ -160,7 +160,7 @@ Type: `object`
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Rebuild
 
 Discovers routes from the current endpoint data source and rebuilds sessions.
-            Called by the startup filter after routing is built so Restier/OData catch-alls are visible.
+Called by the startup filter after routing is built so Restier/OData catch-alls are visible.
 
 #### Syntax
 

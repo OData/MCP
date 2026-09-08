@@ -127,6 +127,12 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 | Health checks that lie | DELETE |
 | `IEdmModel` adapter | **NEW** |
 | In-app `IOdataExecutor` | **NEW** |
+| `AddODataProtectedResource()` | **NEW — landed.** One line that publishes RFC 9728 protected resource metadata for every discovered OData prefix and annotates the `401` challenge with `resource_metadata`. Independent of `AddODataMcp`. See [AUTHENTICATION.md](./AUTHENTICATION.md) §Zero-config protected resource. |
+| `Authentication/ODataProtectedResourceOptions` | **NEW — landed.** Authorization servers, scopes, display metadata, optional explicit prefixes, `AnnotateChallenges`, and a `Validate()` the startup filter calls. |
+| `Authentication/ODataProtectedResourceMiddleware` | **NEW — landed.** Serves both well-known forms anonymously, 405s other verbs, passes an unknown prefix through, and rewrites the `Bearer` challenge on a `401` beneath a covered prefix. Lazy, locked, cached prefix discovery via `ODataMcpRouteDiscovery`. |
+| `Authentication/ODataProtectedResourceStartupFilter` | **NEW — landed.** Validates at startup and puts the middleware at the front of the pipeline, which is what keeps the document readable without a token. |
+| `Authentication/ODataProtectedResourceJsonContext` | **NEW — landed.** Source-generated writer for the SDK `ProtectedResourceMetadata`; no reflection JSON in this package. |
+| `Constants/ProtectedResourceConstants` | **NEW — landed.** `WellKnownPath`, `BearerScheme`, `ResourceMetadataParameter`, `ScopeParameter`, and the served content type / cache header. Deliberately duplicated rather than referencing `Microsoft.OData.Mcp.Authentication`. |
 
 ---
 
@@ -134,7 +140,11 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 
 | Type | Fate |
 |------|------|
-| Outbound Bearer/API key/Basic on HttpClient | REWRITE in `Authentication/Outbound` + Tools host. Tokens in `LatchkeyTokenCache` (SDK `ITokenCache`). Core copies raw `WWW-Authenticate` only. See [AUTHENTICATION.md](./AUTHENTICATION.md). |
+| `Microsoft.OData.Mcp.Authentication.Outbound`: `ODataMcpAuthConstants`, `OAuthChallenge`, `WwwAuthenticateParser`, `ProtectedResourceMetadataClient`, `AuthorizationServerMetadata` (+ `AuthorizationServerMetadataClient`), `OAuthDiscovery` (+ `OAuthDiscoveryResult`), `OutboundDiscoveryHttp`, `OutboundDiscoveryException`, `OAuthErrorPayload`, `DeviceAuthorizationResponse`, `TokenEndpointResponse`, `OutboundOAuthJsonContext`, `OutboundAuthLogRedactor`, `LatchkeyTokenCache`, `OutboundOAuthOptions`, `OutboundGrantKind` (+ `OutboundGrantKindParser`), `OutboundConsentRequest`, `OAuthConsentRequiredException`, `TokenEndpointClient`, `OAuthTokenException`, `DeviceCodeGrant`, `RefreshTokenGrant`, `GrantSelector`, `ScopeResolver`, `OutboundOAuthClient` (+ `OutboundTokenResult`), `ODataOutboundAuthHandler`, `LoopbackAuthorizationCallback`, `AuthorizationCodePkceGrant`, `ClientCredentialsGrant`, `DynamicClientRegistrar` (+ `DynamicClientRegistrationRequest`) | **KEEP — landed.** Discovery, grants, cache, and the outbound handler on the named `"OData"` client. See [AUTHENTICATION.md](./AUTHENTICATION.md). |
+| Core `ODataExecuteResult.WwwAuthenticate` (raw challenge strings) | **KEEP — landed.** No OAuth parsing in Core; `RemoteODataExecutor` does not retry. |
+| Tools: `OutboundOptionsBinder`, `StdioConsentPresenter`, `ToolsMcpSessionHolder` | **KEEP — landed.** CLI flag binding onto `OutboundOAuthOptions`, stderr/browser consent presenter, and the pre-`Build()` session holder `ToolsMcpHost.CreateAsync` assigns after metadata parse. |
+| `Microsoft.OData.Mcp.Tests.Shared.Authentication` (local authorization server + protected-resource fixtures, no OData package), `Microsoft.OData.Mcp.Tests.Authentication` (outbound unit tests + secured rich convention API, OData 8 only) | **KEEP — landed.** See [TESTING.md](./TESTING.md) §8. |
+| `Microsoft.OData.Mcp.Tests.Authentication.Restier` (secured Restier API, OData 7 only) | **KEEP — landed.** In `Microsoft.OData.Mcp.slnx`; linked `RestierToolTestBase`-derived suites per [TESTING.md](./TESTING.md) §8.2. |
 | `TokenValidationService`, `ITokenValidationService`, `McpAuthenticationOptions`, `JwtBearerOptions` (ours) | DELETE |
 | `ITokenDelegationService`, `DelegatedToken`, `TokenForwardingStrategy`, `TokenDelegationOptions`, `TokenExchangeOptions` | DELETE |
 | `ClientCredentials`, `ClientCertificate`, `CertificateSource`, `ClientAuthenticationMethod` | DELETE |

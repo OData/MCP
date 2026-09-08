@@ -231,7 +231,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = McpJsonRpc.Content("{");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -245,7 +245,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_call","arguments":{"name":"MostValuable"}}}""", Encoding.UTF8, "text/plain");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -258,7 +258,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_JsonRpcToolsCall_MostValuable()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_call", """{"name":"MostValuable"}""");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue(body);
@@ -284,7 +284,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_MissingFunctionParam_OData400()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/GetStatus");
             var (result, capture) = await CallCapturedAsync("name", "GetStatus");
             capture.Last!.Method.Should().Be(HttpMethod.Get);
@@ -329,7 +329,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_OData8_UnboundActionReset_Post()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.PostAsync("/odata/Reset", new StringContent("{}", Encoding.UTF8, "application/json"));
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue(twinBody);
@@ -350,7 +350,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var (result, capture) = await CallCapturedAsync("name", "GetStatus", "code", "open");
             capture.Last!.Method.Should().Be(HttpMethod.Get);
             capture.Last.RelativePath.Should().Be("GetStatus(code='open')");
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/" + capture.Last.RelativePath);
             var twinBody = await twin.Content.ReadAsStringAsync();
             if (twin.IsSuccessStatusCode)
@@ -371,7 +371,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_OData8_UnboundFunctionMostValuable_GetMatchesHttp()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/MostValuable");
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue(twinBody);
@@ -575,7 +575,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var second = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
             second.IsError.Should().BeTrue(second.Text);
             second.Text.Should().Contain("status 429");
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var mcpFirst = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             using var mcpSecond = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             mcpFirst.StatusCode.Should().NotBe(HttpStatusCode.NotFound);

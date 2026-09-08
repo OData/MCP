@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Core.Catalog;
-using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Tests.Core.Parsing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
@@ -182,6 +181,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 Context(new CallToolRequestParams { Name = "shutdown_server" }),
                 _ => Session(),
                 (_, _) => ValueTask.FromResult<CallToolResult?>(extra),
+                null,
                 CancellationToken.None);
 
             result.Should().BeSameAs(extra);
@@ -196,6 +196,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await ODataMcpHandlerExtensions.CallToolAsync(
                 Context(new CallToolRequestParams { Name = " " }),
                 _ => Session(),
+                null,
                 null,
                 CancellationToken.None);
 
@@ -216,6 +217,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 }),
                 _ => Session(),
                 (_, _) => ValueTask.FromResult<CallToolResult?>(null),
+                null,
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse();
@@ -260,9 +262,80 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 Context(new CallToolRequestParams { Name = "nope" }),
                 _ => Session(),
                 null,
+                null,
                 CancellationToken.None);
 
             result.IsError.Should().BeTrue();
+        }
+
+        /// <summary>
+        /// A recovery handler that declines the exception leaves it to propagate, so a host that cannot help
+        /// never turns a real failure into a silent success.
+        /// </summary>
+        [TestMethod]
+        public async Task CallToolAsync_ExceptionHandlerDeclines_Propagates()
+        {
+            var boom = new InvalidOperationException("sign-in required");
+            var seen = 0;
+
+            Func<Task> act = async () => await ODataMcpHandlerExtensions.CallToolAsync(
+                Context(new CallToolRequestParams
+                {
+                    Name = "odata_query",
+                    Arguments = new Dictionary<string, JsonElement>
+                    {
+                        ["entitySet"] = JsonSerializer.SerializeToElement("People")
+                    }
+                }),
+                _ => ThrowingSession(boom),
+                null,
+                (_, _, _) =>
+                {
+                    seen++;
+
+                    return ValueTask.FromResult<CallToolResult?>(null);
+                },
+                CancellationToken.None);
+
+            (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(boom);
+            seen.Should().Be(1);
+        }
+
+        /// <summary>
+        /// An exception a catalog tool throws reaches the recovery handler, and the result that handler returns
+        /// is the call's result.
+        /// </summary>
+        [TestMethod]
+        public async Task CallToolAsync_ExceptionHandlerRecovers_ReturnsHandlerResult()
+        {
+            var boom = new InvalidOperationException("sign-in required");
+            var recovered = new CallToolResult
+            {
+                Content = [new TextContentBlock { Text = "recovered" }]
+            };
+            Exception? observed = null;
+
+            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+                Context(new CallToolRequestParams
+                {
+                    Name = "odata_query",
+                    Arguments = new Dictionary<string, JsonElement>
+                    {
+                        ["entitySet"] = JsonSerializer.SerializeToElement("People")
+                    }
+                }),
+                _ => ThrowingSession(boom),
+                null,
+                (_, exception, _) =>
+                {
+                    observed = exception;
+
+                    return ValueTask.FromResult<CallToolResult?>(recovered);
+                },
+                CancellationToken.None);
+
+            result.Should().BeSameAs(recovered);
+            observed.Should().BeSameAs(boom);
         }
 
         /// <summary>
@@ -335,6 +408,22 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         {
             var catalog = ODataMcpCatalogMoreTests.Catalog();
             var runtime = new ODataToolRuntime(catalog, new RecordingODataExecutor());
+
+            return new ODataMcpSession(catalog, runtime, CsdlParserDocumentationTests.DocumentedCsdl);
+        }
+
+        /// <summary>
+        /// Builds a session whose executor always throws, so a data tool fails rather than returning an error
+        /// result.
+        /// </summary>
+        /// <param name="exception">The exception every execution throws.</param>
+        /// <returns>
+        /// The session.
+        /// </returns>
+        internal static ODataMcpSession ThrowingSession(Exception exception)
+        {
+            var catalog = ODataMcpCatalogMoreTests.Catalog();
+            var runtime = new ODataToolRuntime(catalog, new ThrowingODataExecutor { Exception = exception });
 
             return new ODataMcpSession(catalog, runtime, CsdlParserDocumentationTests.DocumentedCsdl);
         }

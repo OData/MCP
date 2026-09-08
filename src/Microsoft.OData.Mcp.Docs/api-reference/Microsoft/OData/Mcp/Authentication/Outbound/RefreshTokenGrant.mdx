@@ -1,0 +1,260 @@
+---
+title: RefreshTokenGrant
+description: "Runs the RFC 6749 section 6 refresh token grant: exchange the refresh token on a cached `TokenContainer` for a fresh access token, preserving rotation and th..."
+icon: lock
+tag: "SEALED"
+keywords: ['RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant
+```
+
+## Summary
+
+Runs the RFC 6749 section 6 refresh token grant: exchange the refresh token on a cached
+`TokenContainer` for a fresh access token, preserving rotation and the client and
+server identity the container already carried.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` "Grants → Refresh": a response that carries a new
+`refresh_token` replaces the old one, and a response that omits it leaves the previous one in force
+— that rule lives in
+[String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.tokenendpointresponse.totokencontainer(system.string,system.string,system.string,system.string,system.string)), which
+this class calls with the container's current refresh token. The caller owns persistence; this class
+never touches the cache. Per `AUTH-12` the only thing logged is the redacted shape from
+[TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)).
+
+## Examples
+
+```csharp
+var refreshed = await refreshTokenGrant.RefreshAsync(metadata, current, resource, cancellationToken);
+await tokenCache.StoreTokensAsync(refreshed, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [RefreshTokenGrant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/RefreshTokenGrant) class.
+
+#### Syntax
+
+```csharp
+public RefreshTokenGrant(Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient tokenEndpointClient, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `tokenEndpointClient` | `Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient` | The client the token POST goes through. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant>` | The logger this instance records the redacted shape of each refreshed token to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *tokenEndpointClient* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RefreshAsync
+
+Exchanges the refresh token on *current* for a fresh access token.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer> RefreshAsync(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, ModelContextProtocol.Authentication.TokenContainer current, System.Uri resource, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `token_endpoint` is posted to. |
+| `current` | `ModelContextProtocol.Authentication.TokenContainer` | The container holding the refresh token, client identity, and authorization server to reuse. |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant sends none. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer>`
+A new container carrying the fresh access token and the effective refresh token: the rotated one when
+the server issued it, the previous one when the server omitted it.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata* or *current* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InvalidOperationException` | Thrown when *current* carries no refresh token, no client identifier, or no
+authorization server that *metadata* can supply either; or when
+*metadata* carries no token endpoint. |
+| `OAuthTokenException` | Thrown when the authorization server rejects the refresh token — a rotated-away token answers
+`invalid_grant` — or when the request fails at the transport. |
+
+#### Examples
+
+```csharp
+try
+{
+    var refreshed = await refreshTokenGrant.RefreshAsync(metadata, current, resource, cancellationToken);
+    await tokenCache.StoreTokensAsync(refreshed, cancellationToken);
+}
+catch (OAuthTokenException ex) when (ex.Error == "invalid_grant")
+{
+    // The refresh token is gone; re-run the interactive grant.
+}
+```
+
+#### Remarks
+
+The token endpoint authentication method comes from
+`TokenEndpointAuthMethod` when the container recorded one, so a
+cold start refreshes exactly the way the original grant authenticated; absent that, a container with
+a client secret uses [TokenEndpointClient.AuthMethodClientSecretPost](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodclientsecretpost) and one without
+uses [TokenEndpointClient.AuthMethodNone](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodnone). `scope` is echoed back only when the
+container recorded one, because RFC 6749 section 6 treats an absent scope as "the scope originally
+granted".
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

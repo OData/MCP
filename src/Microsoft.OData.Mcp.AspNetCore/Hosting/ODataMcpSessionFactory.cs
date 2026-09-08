@@ -104,7 +104,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
                     var executor = new InProcessODataExecutor(_httpClientFactory, _httpContextAccessor, binding.Prefix);
-                    sessions[binding.Prefix] = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), metadataXml: null);
+                    sessions[binding.Prefix] = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
                 }
 
                 _sessions = sessions;

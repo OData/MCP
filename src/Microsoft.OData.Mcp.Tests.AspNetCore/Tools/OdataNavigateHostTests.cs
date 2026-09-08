@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -109,7 +108,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_InjectionNavigation_OrdersCommaHack_404Or400()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Customers(1)/Orders/$count");
             var (result, capture) = await NavigateCapturedAsync("entitySet", "Customers", "key", "1", "navigation", "Orders/$count");
             capture.Last!.RelativePath.Should().Be("Customers(1)/Orders/$count");
@@ -123,7 +122,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = McpJsonRpc.Content("{");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -137,7 +136,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_navigate","arguments":{"entitySet":"Customers","key":"1","navigation":"Orders"}}}""", Encoding.UTF8, "text/plain");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -150,7 +149,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_JsonRpcToolsCall_OData8_Customer1Orders()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_navigate", """{"entitySet":"Customers","key":"1","navigation":"Orders"}""");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.StatusCode.Should().NotBe(HttpStatusCode.NotFound, body);
@@ -162,7 +161,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_KeyNotFound_404()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Customers(999)/Orders");
             var (result, capture) = await NavigateCapturedAsync("entitySet", "Customers", "key", "999", "navigation", "Orders");
             capture.Last!.RelativePath.Should().Be("Customers(999)/Orders");
@@ -278,7 +277,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_OData8_Customer1Orders_MatchesGetCustomers1Orders()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var odata = await client.GetAsync("/odata/Customers(1)/Orders");
             var odataBody = await odata.Content.ReadAsStringAsync();
             var (result, capture) = await NavigateCapturedAsync("entitySet", "Customers", "key", "1", "navigation", "Orders");
@@ -302,7 +301,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_OData8_OrdersToCustomer_ToOne()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Orders(1)/Customer");
             var (result, capture) = await NavigateCapturedAsync("entitySet", "Orders", "key", "1", "navigation", "Customer");
             capture.Last!.RelativePath.Should().Be("Orders(1)/Customer");
@@ -365,7 +364,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_ToOneMissingRelated_204OrNullOr404()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Orders(999)/Customer");
             var result = await InvokeAsync("odata_navigate", ToolArguments.Of("entitySet", "Orders", "key", "999", "navigation", "Customer"));
             AssertTwinParity(result, twin.StatusCode);
@@ -444,7 +443,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_WrongNameNotANav_IsError404or400()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Customers(1)/NotANav");
             var (result, capture) = await NavigateCapturedAsync("entitySet", "Customers", "key", "1", "navigation", "NotANav");
             result.IsError.Should().BeTrue(result.Text);
@@ -527,7 +526,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataNavigate_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             first.StatusCode.Should().NotBe(HttpStatusCode.NotFound);

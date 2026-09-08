@@ -1,0 +1,339 @@
+---
+title: OAuthChallenge
+description: "One parsed `WWW-Authenticate` challenge: the authentication scheme, the OAuth-relevant auth-params promoted to typed properties, and the complete, case-insen..."
+icon: file-brackets-curly
+keywords: ['OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge
+```
+
+## Summary
+
+One parsed `WWW-Authenticate` challenge: the authentication scheme, the OAuth-relevant auth-params
+promoted to typed properties, and the complete, case-insensitive parameter set exactly as it arrived.
+
+## Remarks
+
+Instances are produced by [WwwAuthenticateParser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/WwwAuthenticateParser) and are immutable once created.
+[OAuthChallenge.ResourceClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge#resourceclientid) carries the challenge `client_id`, which is the &lt;em&gt;resource&lt;/em&gt;
+application id (Microsoft Graph advertises
+[ODataMcpAuthConstants.MicrosoftGraphResourceAppId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#microsoftgraphresourceappid)). It is never our public client id and
+must never be copied onto an outbound OAuth client id; that is why no member of this type is named
+`ClientId`.
+
+## Examples
+
+```csharp
+var challenge = WwwAuthenticateParser.SelectBearer(WwwAuthenticateParser.ParseAll(result.WwwAuthenticate));
+if (challenge is not null &amp;&amp; challenge.ResourceMetadata is not null)
+{
+    // Fetch RFC 9728 protected resource metadata from challenge.ResourceMetadata.
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public OAuthChallenge()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationUri
+
+The challenge `authorization_uri` as an absolute URI, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the
+parameter is absent or not an absolute URI.
+
+#### Syntax
+
+```csharp
+public System.Uri AuthorizationUri { get; init; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+A non-absolute value is still available verbatim through [OAuthChallenge.Parameters](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge#parameters).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Error
+
+The RFC 6750 `error` code, such as `invalid_token`, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when absent.
+
+#### Syntax
+
+```csharp
+public string Error { get; init; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ErrorDescription
+
+The RFC 6750 `error_description` human readable text, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when absent.
+
+#### Syntax
+
+```csharp
+public string ErrorDescription { get; init; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Parameters
+
+Every auth-param of the challenge, including the ones promoted to typed properties, keyed
+case-insensitively with values unescaped but otherwise verbatim.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyDictionary<string, string> Parameters { get; init; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyDictionary<string, string>`
+
+#### Remarks
+
+Defaults to an empty dictionary so callers never have to null-check it.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Realm
+
+The RFC 7235 `realm`, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when absent. An advertised but empty realm
+(Microsoft Graph sends `realm=""`) is preserved as an empty string.
+
+#### Syntax
+
+```csharp
+public string Realm { get; init; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceClientId
+
+The challenge `client_id`, which identifies the protected &lt;em&gt;resource&lt;/em&gt; application, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when absent.
+
+#### Syntax
+
+```csharp
+public string ResourceClientId { get; init; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+Per AUTH-13 this value is never used as the client id of the OAuth client this process runs.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceMetadata
+
+The RFC 9728 `resource_metadata` location as an absolute URI, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when
+the parameter is absent or not an absolute URI.
+
+#### Syntax
+
+```csharp
+public System.Uri ResourceMetadata { get; init; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+A non-absolute value is still available verbatim through [OAuthChallenge.Parameters](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge#parameters).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scheme
+
+The authentication scheme, such as `Bearer` or `Basic`, exactly as the server spelled it.
+
+#### Syntax
+
+```csharp
+public string Scheme { get; init; }
+```
+
+#### Property Value
+
+Type: `string`
+
+#### Remarks
+
+Schemes are case-insensitive; compare with [OrdinalIgnoreCase](https://learn.microsoft.com/dotnet/api/system.stringcomparison.ordinalignorecase) or use
+[OAuthChallenge})](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.wwwauthenticateparser.selectbearer(system.collections.generic.ireadonlylist{microsoft.odata.mcp.authentication.outbound.oauthchallenge})).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scope
+
+The space-delimited `scope` the server asks for, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when absent.
+
+#### Syntax
+
+```csharp
+public string Scope { get; init; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

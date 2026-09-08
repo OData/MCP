@@ -27,8 +27,8 @@ Represents an entity container in an OData model.
 ## Remarks
 
 An entity container defines the scope of addressable resources in an OData service.
-            It contains entity sets, singletons, function imports, and action imports that
-            comprise the service's interface. Each OData service must have exactly one entity container.
+It contains entity sets, singletons, function imports, and action imports that
+comprise the service's interface. Each OData service must have exactly one entity container.
 
 ## Constructors
 
@@ -95,7 +95,7 @@ A collection of action imports that expose actions as addressable resources.
 #### Remarks
 
 Action imports allow actions to be called as part of the OData service interface.
-            Unlike functions, actions can have side effects and are typically invoked via POST requests.
+Unlike functions, actions can have side effects and are typically invoked via POST requests.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Annotations
 
@@ -115,7 +115,7 @@ A dictionary of annotations that provide additional metadata about the entity co
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -150,7 +150,7 @@ A collection of entity sets that define the collections of entities available in
 #### Remarks
 
 Entity sets are the primary addressable resources in an OData service, allowing clients
-            to query, create, update, and delete entities.
+to query, create, update, and delete entities.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Extends
 
@@ -170,7 +170,7 @@ The fully qualified name of the base entity container, or `null` if this contain
 #### Remarks
 
 When specified, this entity container extends the base container, inheriting all its
-            entity sets, singletons, and operations. This allows for modular composition of services.
+entity sets, singletons, and operations. This allows for modular composition of services.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
 
@@ -205,7 +205,7 @@ A collection of function imports that expose functions as addressable resources.
 #### Remarks
 
 Function imports allow functions to be called as part of the OData service interface.
-            They provide a way to expose custom operations that don't fit the standard CRUD pattern.
+They provide a way to expose custom operations that don't fit the standard CRUD pattern.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasActionImports
 
@@ -345,7 +345,7 @@ A collection of singletons that define individual entity resources.
 #### Remarks
 
 Singletons represent entities that exist as single instances rather than collections.
-            They are useful for representing unique resources like service configuration or user profiles.
+They are useful for representing unique resources like service configuration or user profiles.
 
 ## Methods
 

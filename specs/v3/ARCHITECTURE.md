@@ -156,7 +156,7 @@ Ship options that drive a code path:
 |------|---------|
 | Remote service | Base URL, metadata path |
 | Catalog | Max named tools, include/exclude sets |
-| Outbound auth | None / Bearer / API key / Basic / Forward |
+| Outbound auth | None / discovered OAuth (device code, authorization code + PKCE, client credentials, identity assertion) via `Microsoft.OData.Mcp.Authentication` / `--auth-token` Bearer / API key / Basic escape hatches. See [AUTHENTICATION.md](./AUTHENTICATION.md) |
 | AspNetCore | ExcludeRoutes (with `AddODataMcp` only) |
 | Logging | stderr for stdio |
 

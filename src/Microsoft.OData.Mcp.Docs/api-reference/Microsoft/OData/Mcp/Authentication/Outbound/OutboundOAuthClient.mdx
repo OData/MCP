@@ -1,0 +1,444 @@
+---
+title: OutboundOAuthClient
+description: "The outbound OAuth state machine: it owns one OData service root's cached token, decides whether that token can still be attached, refreshes it exactly once ..."
+icon: lock
+tag: "SEALED"
+keywords: ['OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient
+```
+
+## Summary
+
+The outbound OAuth state machine: it owns one OData service root's cached token, decides whether that
+token can still be attached, refreshes it exactly once when several callers race, and runs the advertised
+grant when there is nothing left to refresh.
+
+## Remarks
+
+Nothing here ever logs an access token, a refresh token, a device code, an authorization code, or a PKCE
+code verifier: every token that reaches a log goes through
+[TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)) first. There is
+no background refresh — an idle process sends no token requests at all — because the send path checks
+remaining lifetime against [ODataMcpAuthConstants.TokenRefreshSkew](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#tokenrefreshskew) and a
+`401 invalid_token` remains the fallback for a token whose lifetime the client cannot compute.
+
+The credential store is proved usable inside
+[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.acquireasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.boolean,system.threading.cancellationtoken)) rather than at host
+construction, and only when no explicit credential was configured, so a service that needs no sign-in at
+all never touches the operating system keyring.
+
+## Examples
+
+```csharp
+var client = new OutboundOAuthClient(
+    new Uri("https://api.example.com/odata/"),
+    httpClientFactory,
+    options,
+    tokenCache,
+    discovery,
+    loggerFactory);
+
+var token = await client.GetValidTokenAsync(cancellationToken)
+    ?? await client.AcquireAsync(challenges, 401, interactiveAllowed: true, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OutboundOAuthClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient) class.
+
+#### Syntax
+
+```csharp
+public OutboundOAuthClient(System.Uri serviceRoot, System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options, ModelContextProtocol.Authentication.ITokenCache tokenCache, Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery discovery, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The absolute OData service root every token this client holds authorizes. |
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory the composed grants create the `"OAuth"` named client from. |
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The operator's outbound OAuth settings. |
+| `tokenCache` | `ModelContextProtocol.Authentication.ITokenCache` | The credential store this client's single token slot lives in. |
+| `discovery` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery` | The discovery algorithm that turns a challenge into an authorization server. |
+| `loggerFactory` | `Microsoft.Extensions.Logging.ILoggerFactory` | The factory every composed collaborator's logger is created from. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *serviceRoot*, *httpClientFactory*,
+*options*, *tokenCache*, *discovery*, or
+*loggerFactory* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *serviceRoot* is not an absolute URI. |
+
+#### Remarks
+
+The token endpoint client, every grant, the dynamic client registrar, and the scope resolver are
+composed here rather than injected: they are implementation detail of this state machine and
+registering half a dozen more services would let a caller wire an inconsistent set.
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AcquireAsync
+
+Runs discovery and the advertised grant to obtain a brand new token, and persists it.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer> AcquireAsync(System.Collections.Generic.IReadOnlyList<string> wwwAuthenticate, int statusCode, bool interactiveAllowed, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `wwwAuthenticate` | `System.Collections.Generic.IReadOnlyList<string>` | The raw `WWW-Authenticate` header values the challenge arrived on. |
+| `statusCode` | `int` | The HTTP status code the challenge arrived with. |
+| `interactiveAllowed` | `bool` | Whether this process may run an interactive grant such as device code. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels discovery and the grant. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer>`
+The acquired token, already written to the cache.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *wwwAuthenticate* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InvalidOperationException` | Thrown when this host's credential store cannot round-trip a value. |
+| `OutboundDiscoveryException` | Thrown when no authorization server can be discovered, when no client identifier is available, or
+when the authorization server advertises no grant this build can run. |
+| `OAuthConsentRequiredException` | Thrown when the selected grant needs a human and [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#consentpresenter)
+is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). The grant stays pending so a caller that elicits the URL can finish it
+with [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.completeinteractivegrantasync(system.threading.cancellationtoken)). |
+| `OAuthTokenException` | Thrown when the grant fails, including when it outlives [OutboundOAuthOptions.AuthTimeout](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtimeout). |
+| `NotSupportedException` | Thrown when the selected grant is not implemented in this build. |
+
+#### Examples
+
+```csharp
+var challenges = response.Headers.WwwAuthenticate.Select(x =&gt; x.ToString()).ToList();
+
+var token = await client.AcquireAsync(challenges, (int)response.StatusCode, interactiveAllowed: true, cancellationToken);
+```
+
+#### Remarks
+
+The whole interactive wait runs under a linked cancellation source that fires after
+[OutboundOAuthOptions.AuthTimeout](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtimeout), so a human who walks away cannot pin the send path
+open forever; the caller's own cancellation still surfaces as
+[OperationCanceledException](https://learn.microsoft.com/dotnet/api/system.operationcanceledexception) rather than a timeout. The client credentials grant takes
+none of that path: it needs no human, so it neither starts a timeout nor consults a presenter.
+
+When a presenter is configured and the wait fails for any reason — the presenter threw, the timeout
+fired, the end user refused — the pending grant is cleared, so the next call starts a fresh one
+instead of failing forever with "an interactive sign-in is already pending". The deliberate
+[OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException) thrown when no presenter is configured is the one path
+that keeps the pending state, because a caller that elicits the URL finishes that same grant later.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CompleteInteractiveGrantAsync
+
+Finishes the interactive grant a previous
+[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.startinteractivegrantasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.threading.cancellationtoken)) left pending:
+polls the token endpoint or waits on the loopback redirect, persists the result, and clears the
+pending state.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer> CompleteInteractiveGrantAsync(System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the poll or the loopback wait and, on cancellation, abandons the pending grant. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer>`
+The acquired token, already written to the cache.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `InvalidOperationException` | Thrown when no interactive grant is pending. |
+| `OutboundDiscoveryException` | Thrown when the authorization response fails its `state` or RFC 9207 `iss` check. |
+| `OAuthTokenException` | Thrown when the end user refuses, the device code expires, or the token endpoint fails. |
+
+#### Remarks
+
+The pending state is cleared — and the loopback listener disposed — in a `finally`, so a refusal
+or a timeout leaves this client ready to start a fresh grant rather than wedged on a device code the
+authorization server has forgotten or a socket nothing is reading.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ForceRefreshAsync
+
+Refreshes the cached token even when its remaining lifetime says it is still good, for the
+`401 invalid_token` path where the resource server disagrees with the token's own
+`expires_in`.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer> ForceRefreshAsync(System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the refresh. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer?>`
+The refreshed token, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when there is nothing cached to refresh or the
+authorization server rejected the refresh token.
+
+#### Examples
+
+```csharp
+if (challenge?.Error == ODataMcpAuthConstants.ErrorInvalidToken)
+{
+    var refreshed = await client.ForceRefreshAsync(cancellationToken);
+}
+```
+
+#### Remarks
+
+Coalesced through the same gate as the lifetime-driven refresh, so a burst of simultaneous
+`invalid_token` answers costs one token POST rather than one per request. A client credentials
+token has no refresh token to spend, so this returns [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) and the caller falls
+through to a fresh grant.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetValidTokenAsync
+
+Returns a token that can be attached to the next `"OData"` request, refreshing it first when its
+remaining lifetime has fallen inside [ODataMcpAuthConstants.TokenRefreshSkew](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#tokenrefreshskew).
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer> GetValidTokenAsync(System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the cache read and any refresh it triggers. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer?>`
+The token to attach, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when nothing is cached, nothing can be refreshed, or
+the refresh failed — in which case the caller runs
+[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.acquireasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.boolean,system.threading.cancellationtoken)) off the resulting
+challenge.
+
+#### Examples
+
+```csharp
+var token = await client.GetValidTokenAsync(cancellationToken);
+if (token is not null)
+{
+    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+}
+```
+
+#### Remarks
+
+A token whose `expires_in` the authorization server omitted is attached as-is: the client cannot
+prove it has expired, and a `401 invalid_token` is a cheaper way to find out than throwing away
+a token that may still have hours left.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StartInteractiveGrantAsync
+
+Starts an interactive grant and returns the consent request a human — or an MCP elicitation — has to
+act on, without waiting for them to act.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest> StartInteractiveGrantAsync(System.Collections.Generic.IReadOnlyList<string> wwwAuthenticate, int statusCode, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `wwwAuthenticate` | `System.Collections.Generic.IReadOnlyList<string>` | The raw `WWW-Authenticate` header values the challenge arrived on. |
+| `statusCode` | `int` | The HTTP status code the challenge arrived with. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels discovery and the device authorization request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest>`
+The consent request, carrying the URL to open, the user code to type when the grant uses one, and a
+fresh `D`-format GUID [OutboundConsentRequest.ElicitationId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#elicitationid).
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *wwwAuthenticate* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InvalidOperationException` | Thrown when an interactive sign-in is already pending, or when this host's credential store cannot round-trip a value. |
+| `OutboundDiscoveryException` | Thrown when discovery fails, no client identifier is available, or the loopback redirect cannot be bound. |
+| `NotSupportedException` | Thrown when the selected grant is not an interactive one. |
+| `OAuthTokenException` | Thrown when the device authorization request fails. |
+
+#### Remarks
+
+Split from [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.completeinteractivegrantasync(system.threading.cancellationtoken)) so an MCP host never polls
+a token endpoint — or blocks on a loopback socket — on the thread that is servicing an OData request.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

@@ -219,7 +219,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_409()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var create = new StringContent("""{"CompanyName":"OtherCo"}""", Encoding.UTF8, "application/json");
             using var posted = await client.PostAsync("/odata/Duplicates", create);
             posted.IsSuccessStatusCode.Should().BeTrue();
@@ -240,7 +240,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_412IfMatchFailure()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"CompanyName":"Nope"}""", Encoding.UTF8, "application/json");
             using var request = new HttpRequestMessage(HttpMethod.Patch, "/odata/Etags(1)") { Content = content };
             request.Headers.TryAddWithoutValidation("If-Match", "\"bad\"");
@@ -280,7 +280,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_415()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var content = new StringContent("CompanyName=Plain", Encoding.UTF8, "text/plain");
             using var twin = await client.PatchAsync("/odata/Customers(1)", content);
@@ -379,7 +379,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{"));
             response.StatusCode.Should().NotBe(HttpStatusCode.NotFound);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -392,7 +392,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}", "text/xml"));
             response.StatusCode.Should().BeOneOf(HttpStatusCode.UnsupportedMediaType, HttpStatusCode.BadRequest, HttpStatusCode.NotAcceptable);
         }
@@ -403,7 +403,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_JsonRpcToolsCall_OData8WithAuth()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -485,7 +485,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_OData8_WithAuthorization_PatchesCompanyName_MatchesTwin()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var twinContent = new StringContent("""{"CompanyName":"TwinUpdated"}""", Encoding.UTF8, "application/json");
             using var twin = await client.PatchAsync("/odata/Customers(1)", twinContent);
@@ -507,33 +507,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Unauthenticated PATCH is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_OData8_WithoutAuthorization_401()
-        {
-            using var client = TestServer.CreateClient();
-            using var twinContent = new StringContent("""{"CompanyName":"Updated"}""", Encoding.UTF8, "application/json");
-            using var twin = await client.PatchAsync("/odata/Customers(1)", twinContent);
-            twin.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-
-            var (runtime, _) = CreateCapturingRuntime();
-            var result = await runtime.InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"Updated"}"""),
-                CancellationToken.None);
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
-        }
-
-        /// <summary>
         /// Authorization on the MCP HTTP context is forwarded.
         /// </summary>
         [TestMethod]
         public async Task OdataUpdate_OData8_AuthorizationForwarded_Succeeds()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -961,7 +940,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataUpdate_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
             first.StatusCode.Should().NotBe((HttpStatusCode)429);

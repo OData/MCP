@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
@@ -111,7 +109,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_JsonRpcToolsCall_OData8()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
                 "/odata/mcp",
@@ -203,7 +201,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_OData8_ByEntitySetCustomers_ContainsCustomerIdAndOrdersNav()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var metadata = await client.GetAsync("/odata/$metadata");
             var metadataBody = await metadata.Content.ReadAsStringAsync();
             if (metadata.IsSuccessStatusCode)
@@ -264,7 +262,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             described.IsError.Should().BeFalse(described.Text);
             ReadNavigationNames(described.StructuredContent).Should().Contain("Orders");
 
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Customers(1)/Orders");
             var result = await InvokeAsync(
                 "odata_navigate",

@@ -1,0 +1,34 @@
+---
+title: ODataMcpAuthConstants
+description: "Protocol identifiers for outbound OAuth: header and scheme names, well-known suffixes, grant type identifiers, wire parameter and error names, and the named ..."
+icon: bolt
+tag: "STATIC"
+keywords: ['ODataMcpAuthConstants', 'Microsoft.OData.Mcp.Authentication.Outbound.ODataMcpAuthConstants', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.ODataMcpAuthConstants
+```
+
+## Summary
+
+Protocol identifiers for outbound OAuth: header and scheme names, well-known suffixes, grant type
+identifiers, wire parameter and error names, and the named `HttpClient`s and Latchkey service
+name outbound OAuth wires into DI.
+
+## Remarks
+
+Names and values in this class are normative per `specs/v3/AUTHENTICATION.md` "Constants (excerpt)".
+[ODataMcpAuthConstants.MicrosoftGraphResourceAppId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#microsoftgraphresourceappid) exists so tests and logs can detect the Microsoft Graph
+challenge trap, not so it can be used as a client id.
+

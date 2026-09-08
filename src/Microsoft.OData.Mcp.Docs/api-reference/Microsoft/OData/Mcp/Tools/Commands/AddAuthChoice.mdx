@@ -1,0 +1,45 @@
+---
+title: AddAuthChoice
+description: "The authentication paths the `odata-mcp add` wizard offers an operator."
+icon: list-ol
+tag: "ENUM"
+keywords: ['AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands.AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Enum']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Tools.dll
+
+**Namespace:** Microsoft.OData.Mcp.Tools.Commands
+
+**Inheritance:** System.Enum
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Tools.Commands.AddAuthChoice
+```
+
+## Summary
+
+The authentication paths the `odata-mcp add` wizard offers an operator.
+
+## Remarks
+
+Per `AUTH-5` this is a top-level type. The order is the order the menu presents, and it is
+deliberate: the four OAuth paths come before the two credential-in-config paths, which come before the
+escape hatch, because the warning text the wizard prints for the last three refers to "OAuth (1–4)".
+
+## Values
+
+| Name | Value | Description |
+|------|-------|-------------|
+| `None` | 0 | The service needs no credential at all. |
+| `Discover` | 1 | Probe the service's <c>$metadata</c>, read the challenge, run OAuth discovery, and recommend a grant. |
+| `DeviceCode` | 2 | RFC 8628 device authorization grant. |
+| `AuthorizationCode` | 3 | RFC 6749 authorization code grant with PKCE over a loopback redirect. |
+| `ClientCredentials` | 4 | RFC 6749 client credentials grant, for a daemon acting as itself. |
+| `ApiKey` | 5 | A raw API key sent in an operator-named header. |
+| `Basic` | 6 | HTTP Basic authentication. |
+| `PasteToken` | 7 | A bearer token the operator already holds, written into the generated command. |
+

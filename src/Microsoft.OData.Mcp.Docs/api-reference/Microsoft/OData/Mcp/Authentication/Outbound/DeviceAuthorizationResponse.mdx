@@ -1,0 +1,272 @@
+---
+title: DeviceAuthorizationResponse
+description: "The RFC 8628 section 3.2 device authorization response returned from a device authorization endpoint."
+icon: lock
+tag: "SEALED"
+keywords: ['DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse
+```
+
+## Summary
+
+The RFC 8628 section 3.2 device authorization response returned from a device authorization endpoint.
+
+## Remarks
+
+Deserialized exclusively through [OutboundOAuthJsonContext](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthjsoncontext) (AOT: JSON source-gen; no
+reflection). [DeviceAuthorizationResponse.Interval](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#interval) is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the server omits it; RFC 8628
+callers treat an absent interval as five seconds, but this type does not bake that default in so the
+distinction between "absent" and "explicitly five" survives for callers that care.
+
+## Examples
+
+```csharp
+var response = JsonSerializer.Deserialize(json, OutboundOAuthJsonContext.Default.DeviceAuthorizationResponse);
+var pollInterval = response!.Interval ?? 5;
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public DeviceAuthorizationResponse()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DeviceCode
+
+Gets or sets the device verification code the client polls the token endpoint with.
+
+#### Syntax
+
+```csharp
+public string DeviceCode { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExpiresIn
+
+Gets or sets the lifetime, in seconds, of [DeviceAuthorizationResponse.DeviceCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#devicecode) and [DeviceAuthorizationResponse.UserCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#usercode).
+
+#### Syntax
+
+```csharp
+public int ExpiresIn { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Interval
+
+Gets or sets the minimum number of seconds the client must wait between token endpoint polls, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the server did not advertise one.
+
+#### Syntax
+
+```csharp
+public System.Nullable<int> Interval { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<int>`
+
+#### Remarks
+
+A caller should treat a [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) value as five seconds per RFC 8628 section 3.2.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UserCode
+
+Gets or sets the end-user verification code.
+
+#### Syntax
+
+```csharp
+public string UserCode { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> VerificationUri
+
+Gets or sets the end-user verification URI the client displays or opens.
+
+#### Syntax
+
+```csharp
+public string VerificationUri { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> VerificationUriComplete
+
+Gets or sets a verification URI that already carries [DeviceAuthorizationResponse.UserCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceAuthorizationResponse#usercode), or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null)
+when the server did not advertise one.
+
+#### Syntax
+
+```csharp
+public string VerificationUriComplete { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CloudNimble.Breakdance.AspNetCore;
@@ -16,14 +15,11 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Security;
@@ -294,7 +290,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// resources/read $metadata is CSDL XML (twin GET always has EntityContainer).
+        /// resources/read $metadata is the CSDL XML document the in-process host serialized from its model, so it
+        /// carries the same EntityContainer the twin GET returns.
         /// </summary>
         [TestMethod]
         public async Task ResourcesRead_Metadata_ReturnsCsdlXml()
@@ -312,6 +309,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.StatusCode.Should().Be(HttpStatusCode.OK, body);
             body.Should().Contain("application/xml");
+
+            body.Should().NotContain("\"text\":\"\"");
+            body.Should().Contain("EntityContainer");
+            body.Should().Contain("Customers");
         }
 
         /// <summary>

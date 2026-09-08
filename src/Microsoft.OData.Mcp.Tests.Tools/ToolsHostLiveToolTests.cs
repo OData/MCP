@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tools.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,7 +31,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_Northwind_CatalogOmitsShutdownServer()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var names = host.Catalog.Tools.Select(tool => tool.Name).ToList();
 
             names.Should().Contain("odata_query");
@@ -68,7 +69,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_Northwind_OdataDescribeType_Customer()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
                 "odata_describe_type",
                 new Dictionary<string, JsonElement>
@@ -94,7 +95,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             var odata = await client.GetStringAsync($"{LiveOData.Northwind}/Customers('ALFKI')");
             odata.Should().Contain("Alfreds Futterkiste");
 
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
                 "odata_get",
                 new Dictionary<string, JsonElement>
@@ -116,7 +117,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_Northwind_OdataListEntitySets()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync("odata_list_entity_sets", null, CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
@@ -137,7 +138,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             var odata = await client.GetStringAsync($"{LiveOData.Northwind}/Products(1)/Category");
             odata.Should().Contain("Beverages");
 
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
                 "odata_navigate",
                 new Dictionary<string, JsonElement>
@@ -159,7 +160,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_Northwind_OdataQuery_Products()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
                 "odata_query",
                 new Dictionary<string, JsonElement>
@@ -180,7 +181,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_TripPin_CreateAsync_LoadsCatalog()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.TripPin, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.TripPin, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var names = host.Catalog.Tools.Select(tool => tool.Name).ToList();
 
             names.Should().Contain("odata_query");

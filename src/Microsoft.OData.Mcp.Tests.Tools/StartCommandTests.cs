@@ -8,7 +8,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tools.Commands;
 using Microsoft.OData.Mcp.Tools.Hosting;
@@ -102,7 +105,8 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         }
 
         /// <summary>
-        /// BuildHostAsync constructs a stdio host from live Northwind metadata.
+        /// BuildHostAsync constructs a stdio host from live Northwind metadata, wired to the authenticating
+        /// <c>"OData"</c> client rather than to a bearer token pasted onto three separate clients.
         /// </summary>
         [TestMethod]
         public async Task BuildHostAsync_Northwind_ConstructsHost()
@@ -114,11 +118,15 @@ namespace Microsoft.OData.Mcp.Tests.Tools
                 Url = LiveOData.Northwind,
                 Verbose = true
             };
-            using var host = await command.BuildHostAsync(lifetime);
-            var client = host.Services.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient("OData");
+            using var toolsHost = await command.BuildHostAsync(lifetime);
+            var client = toolsHost.Host.Services
+                .GetRequiredService<System.Net.Http.IHttpClientFactory>()
+                .CreateClient(ODataMcpAuthConstants.ODataHttpClientName);
 
-            host.Should().NotBeNull();
-            client.DefaultRequestHeaders.Authorization.Should().NotBeNull();
+            toolsHost.Host.Should().NotBeNull();
+            toolsHost.Catalog.Tools.Should().NotBeEmpty();
+            client.BaseAddress.Should().NotBeNull();
+            client.DefaultRequestHeaders.Authorization.Should().BeNull();
         }
 
         /// <summary>
@@ -132,10 +140,10 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             {
                 Url = LiveOData.Northwind
             };
-            using var host = await command.BuildHostAsync(lifetime);
+            using var toolsHost = await command.BuildHostAsync(lifetime);
             lifetime.Cancel();
 
-            var exit = await StartCommand.RunHostAsync(host, lifetime.Token);
+            var exit = await StartCommand.RunHostAsync(toolsHost.Host, lifetime.Token);
 
             exit.Should().Be(0);
         }
@@ -146,7 +154,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_QueryProducts_ReturnsJson()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, "token", CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
                 "odata_query",
                 new Dictionary<string, JsonElement>
@@ -166,9 +174,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task CreateAsync_InvalidUrls_Throw()
         {
-            var empty = async () => await ToolsMcpHost.CreateAsync(" ", null, CancellationToken.None);
-            var relative = async () => await ToolsMcpHost.CreateAsync("not-a-url", null, CancellationToken.None);
-            var scheme = async () => await ToolsMcpHost.CreateAsync("ftp://example.com", null, CancellationToken.None);
+            var empty = async () => await ToolsMcpHost.CreateAsync(" ", new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
+            var relative = async () => await ToolsMcpHost.CreateAsync("not-a-url", new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
+            var scheme = async () => await ToolsMcpHost.CreateAsync("ftp://example.com", new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
 
             await empty.Should().ThrowAsync<ArgumentException>();
             await relative.Should().ThrowAsync<ArgumentException>();
@@ -301,18 +309,171 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         }
 
         /// <summary>
-        /// BuildStdioHost without verbose logging still constructs.
+        /// A host built without the stdio transport registers no MCP server at all, so the <c>test</c> and
+        /// <c>add</c> paths cannot accidentally claim stdout.
         /// </summary>
         [TestMethod]
-        public async Task BuildStdioHost_NonVerbose_Constructs()
+        public async Task CreateAsync_NoStdio_NoMcpServer()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
-            using var lifetime = new CancellationTokenSource();
-            using var stdio = host.BuildStdioHost(lifetime, verbose: false, authToken: null);
-            var client = stdio.Services.GetRequiredService<System.Net.Http.IHttpClientFactory>().CreateClient("OData");
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
+            var client = host.Host.Services
+                .GetRequiredService<System.Net.Http.IHttpClientFactory>()
+                .CreateClient(ODataMcpAuthConstants.ODataHttpClientName);
 
-            stdio.Should().NotBeNull();
-            client.BaseAddress.Should().NotBeNull();
+            host.Host.Services.GetServices<IHostedService>().Should().BeEmpty();
+            host.Host.Services.GetService<ShutdownServerTool>().Should().BeNull();
+            client.BaseAddress.Should().Be(host.ServiceRoot);
+            client.DefaultRequestHeaders.Accept.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// Parsing every outbound OAuth flag produces a fully populated, validated options instance.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_ParsesAllFlags_BuildsOptions()
+        {
+            var app = new CommandLineApplication<StartCommand>();
+            app.Conventions.UseDefaultConventions();
+            app.Parse(
+                "https://example.com/odata",
+                "--client-id", "cid",
+                "--client-secret", "csecret",
+                "--scopes", "read write",
+                "--auth-server", "https://as.example.com",
+                "--resource", "https://resource.example.com",
+                "--grant", "device_code",
+                "--redirect-uri", "https://127.0.0.1:5000/callback/",
+                "--token-cache", "/tmp/cache",
+                "--auth-timeout", "45",
+                "--api-key", "key",
+                "--api-key-header", "X-Api-Key",
+                "--basic-user", "user",
+                "--basic-password", "pass",
+                "--client-metadata-document", "https://cimd.example.com/doc.json",
+                "--idp-url", "https://idp.example.com",
+                "--idp-token-endpoint", "https://idp.example.com/token",
+                "--idp-client-id", "idp-cid",
+                "--idp-client-secret", "idp-secret",
+                "--idp-scope", "openid",
+                "--idp-id-token-file", "/tmp/idtoken.txt");
+            var command = app.Model;
+
+            var options = command.BuildOptions();
+
+            options.ClientId.Should().Be("cid");
+            options.ClientSecret.Should().Be("csecret");
+            options.Scopes.Should().BeEquivalentTo(["read", "write"], o => o.WithStrictOrdering());
+            options.AuthServer.Should().Be(new Uri("https://as.example.com"));
+            options.Resource.Should().Be(new Uri("https://resource.example.com"));
+            options.Grant.Should().Be(OutboundGrantKind.DeviceCode);
+            options.RedirectUri.Should().Be(new Uri("https://127.0.0.1:5000/callback/"));
+            options.TokenCachePath.Should().Be("/tmp/cache");
+            options.AuthTimeout.Should().Be(TimeSpan.FromSeconds(45));
+            options.ApiKey.Should().Be("key");
+            options.ApiKeyHeader.Should().Be("X-Api-Key");
+            options.BasicUser.Should().Be("user");
+            options.BasicPassword.Should().Be("pass");
+            options.ClientMetadataDocumentUri.Should().Be(new Uri("https://cimd.example.com/doc.json"));
+            options.IdpUrl.Should().Be(new Uri("https://idp.example.com"));
+            options.IdpTokenEndpoint.Should().Be(new Uri("https://idp.example.com/token"));
+            options.IdpClientId.Should().Be("idp-cid");
+            options.IdpClientSecret.Should().Be("idp-secret");
+            options.IdpScope.Should().Be("openid");
+            options.IdpIdTokenFile.Should().Be("/tmp/idtoken.txt");
+        }
+
+        /// <summary>
+        /// <c>--api-key</c> without <c>--api-key-header</c> fails validation.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_ApiKeyWithoutHeader_BuildOptionsThrows()
+        {
+            var command = new StartCommand
+            {
+                ApiKey = "key",
+                Url = LiveOData.Northwind
+            };
+
+            var act = command.BuildOptions;
+
+            act.Should().Throw<ArgumentException>().WithMessage("*--api-key-header*");
+        }
+
+        /// <summary>
+        /// An unrecognized <c>--grant</c> value fails validation.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_InvalidGrant_BuildOptionsThrows()
+        {
+            var command = new StartCommand
+            {
+                Grant = "not-a-grant",
+                Url = LiveOData.Northwind
+            };
+
+            var act = command.BuildOptions;
+
+            act.Should().Throw<ArgumentException>().WithMessage("*--grant*");
+        }
+
+        /// <summary>
+        /// A relative <c>--auth-server</c> value fails validation.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_RelativeAuthServer_BuildOptionsThrows()
+        {
+            var command = new StartCommand
+            {
+                AuthServer = "not-absolute",
+                Url = LiveOData.Northwind
+            };
+
+            var act = command.BuildOptions;
+
+            act.Should().Throw<ArgumentException>().WithMessage("*--auth-server*");
+        }
+
+        /// <summary>
+        /// An unset <c>--client-secret</c> falls back to the <c>ODATA_MCP_CLIENT_SECRET</c> environment variable.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_ClientSecretFromEnvironment_Binds()
+        {
+            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "env-secret");
+            try
+            {
+                var command = new StartCommand
+                {
+                    Url = LiveOData.Northwind
+                };
+
+                var options = command.BuildOptions();
+
+                options.ClientSecret.Should().Be("env-secret");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, null);
+            }
+        }
+
+        /// <summary>
+        /// With no outbound OAuth flags set, options fall back to their documented defaults.
+        /// </summary>
+        [TestMethod]
+        public void StartCommand_NoFlags_BuildOptionsDefaults()
+        {
+            var command = new StartCommand
+            {
+                Url = LiveOData.Northwind
+            };
+
+            var options = command.BuildOptions();
+
+            options.Scopes.Should().BeEmpty();
+            options.AuthTimeout.Should().Be(TimeSpan.FromSeconds(300));
+            options.Grant.Should().BeNull();
+            options.HasExplicitCredentials.Should().BeFalse();
         }
 
         #endregion

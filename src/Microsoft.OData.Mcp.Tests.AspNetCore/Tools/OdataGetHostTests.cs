@@ -13,7 +13,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
@@ -303,7 +302,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task OdataGet_GuidKey_Unquoted()
         {
             var key = Widget.SeedId.ToString();
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var twin = await client.GetStringAsync($"/odata/Widgets({key})");
             twin.Should().Contain("Alpha");
             var (result, capture) = await GetCapturedAsync("entitySet", "Widgets", "key", key);
@@ -330,7 +329,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_JsonRpc_Malformed()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = McpJsonRpc.Content("{");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -344,7 +343,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_JsonRpc_WrongContentType()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var content = new StringContent("""{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"odata_get","arguments":{"entitySet":"Customers","key":"1"}}}""", Encoding.UTF8, "text/plain");
             using var response = await client.PostAsync("/odata/mcp", content);
             var body = await McpJsonRpc.ReadBodyAsync(response);
@@ -357,7 +356,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_JsonRpcToolsCall_OData8_Customer1()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_get", """{"entitySet":"Customers","key":"1"}""");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue(body);
@@ -500,7 +499,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_OData8_Customer1_MatchesGetCustomers1()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var odata = await client.GetStringAsync("/odata/Customers(1)");
             odata.Should().Contain("Contoso");
             var (result, capture) = await GetCapturedAsync("entitySet", "Customers", "key", "1");
@@ -516,7 +515,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_OData8_ExpandOrders()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var odata = await client.GetAsync("/odata/Customers(1)?$expand=Orders");
             var body = await odata.Content.ReadAsStringAsync();
             odata.IsSuccessStatusCode.Should().BeTrue(body);
@@ -535,7 +534,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_OData8_OrderDetails_CompositeKey()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/OrderDetails(OrderID=10248,ProductID=11)");
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)twin.StatusCode, twinBody);
@@ -555,7 +554,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_OData8_SelectCompanyName()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var odata = await client.GetStringAsync("/odata/Customers(1)?$select=CompanyName");
             odata.Should().Contain("Contoso");
             var (result, capture) = await GetCapturedAsync("entitySet", "Customers", "key", "1", "select", "CompanyName");
@@ -717,7 +716,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataGet_McpHttp429()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
             first.StatusCode.Should().NotBe(HttpStatusCode.NotFound);

@@ -2,8 +2,11 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Xml;
 using Microsoft.OData.Edm;
+using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
 using CoreModel = Microsoft.OData.Mcp.Core.Models.EdmModel;
 using CoreAction = Microsoft.OData.Mcp.Core.Models.EdmAction;
@@ -67,6 +70,35 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
             }
 
             return core;
+        }
+
+        /// <summary>
+        /// Serializes an <see cref="IEdmModel"/> to a CSDL XML document, the same representation the
+        /// service returns from <c>$metadata</c>.
+        /// </summary>
+        /// <param name="model">The ASP.NET Core OData model.</param>
+        /// <returns>
+        /// The CSDL XML, or <c>null</c> when the model cannot be written (the writer reports validation errors).
+        /// </returns>
+        /// <remarks>
+        /// In-process hosts do not fetch <c>$metadata</c> over HTTP, so this is how the
+        /// <c>odata://{prefix}/$metadata</c> MCP resource gets its text. A <c>null</c> result leaves that resource
+        /// empty rather than failing session construction.
+        /// </remarks>
+        public static string? ToCsdlXml(IEdmModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            using var buffer = new StringWriter();
+            using (var writer = XmlWriter.Create(buffer, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = false }))
+            {
+                if (!CsdlWriter.TryWriteCsdl(model, writer, CsdlTarget.OData, out _))
+                {
+                    return null;
+                }
+            }
+
+            return buffer.ToString();
         }
 
         #endregion

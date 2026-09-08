@@ -45,6 +45,62 @@ public Object()
 
 ## Properties
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKey
+
+Gets or sets the raw API key value for the API key escape hatch.
+
+#### Syntax
+
+```csharp
+public string ApiKey { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKeyHeader
+
+Gets or sets the header name [StartCommand.ApiKey](/api-reference/Microsoft/OData/Mcp/Tools/Commands/StartCommand#apikey) is sent under.
+
+#### Syntax
+
+```csharp
+public string ApiKeyHeader { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthServer
+
+Gets or sets the operator's authorization server override.
+
+#### Syntax
+
+```csharp
+public string AuthServer { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthTimeout
+
+Gets or sets how long, in seconds, an interactive grant may run before it is abandoned.
+
+#### Syntax
+
+```csharp
+public System.Nullable<int> AuthTimeout { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<int>?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
 
 Gets or sets the authentication token.
@@ -53,6 +109,230 @@ Gets or sets the authentication token.
 
 ```csharp
 public string AuthToken { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicPassword
+
+Gets or sets the RFC 7617 Basic authentication password.
+
+#### Syntax
+
+```csharp
+public string BasicPassword { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicUser
+
+Gets or sets the RFC 7617 Basic authentication user name.
+
+#### Syntax
+
+```csharp
+public string BasicUser { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientId
+
+Gets or sets the OAuth client id this process authenticates as.
+
+#### Syntax
+
+```csharp
+public string ClientId { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientMetadataDocument
+
+Gets or sets the client identity metadata document (CIMD) URI.
+
+#### Syntax
+
+```csharp
+public string ClientMetadataDocument { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientSecret
+
+Gets or sets the OAuth client secret for a confidential client.
+
+#### Syntax
+
+```csharp
+public string ClientSecret { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Grant
+
+Gets or sets the operator's `--grant` selection.
+
+#### Syntax
+
+```csharp
+public string Grant { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientId
+
+Gets or sets the enterprise IdP client id used to obtain the id token the identity assertion grant exchanges.
+
+#### Syntax
+
+```csharp
+public string IdpClientId { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientSecret
+
+Gets or sets the enterprise IdP client secret.
+
+#### Syntax
+
+```csharp
+public string IdpClientSecret { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpIdTokenFile
+
+Gets or sets the path to a UTF-8 OIDC id token file for the identity assertion grant.
+
+#### Syntax
+
+```csharp
+public string IdpIdTokenFile { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpScope
+
+Gets or sets the scope requested from the enterprise IdP.
+
+#### Syntax
+
+```csharp
+public string IdpScope { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpTokenEndpoint
+
+Gets or sets the enterprise IdP token endpoint.
+
+#### Syntax
+
+```csharp
+public string IdpTokenEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpUrl
+
+Gets or sets the enterprise IdP base URL.
+
+#### Syntax
+
+```csharp
+public string IdpUrl { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RedirectUri
+
+Gets or sets the loopback redirect URI override for the authorization code grant.
+
+#### Syntax
+
+```csharp
+public string RedirectUri { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resource
+
+Gets or sets the RFC 8707 resource indicator / audience override.
+
+#### Syntax
+
+```csharp
+public string Resource { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
+
+Gets or sets the fallback scope list requested when the authorization server advertises none.
+
+#### Syntax
+
+```csharp
+public string Scopes { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenCache
+
+Gets or sets the directory the Latchkey File and Dpapi backends store cached tokens in.
+
+#### Syntax
+
+```csharp
+public string TokenCache { get; set; }
 ```
 
 #### Property Value

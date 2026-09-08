@@ -27,8 +27,8 @@ Represents an entity type in an OData model.
 ## Remarks
 
 Entity types define the structure of entities in an OData service, including their
-            properties, navigation properties, and key definitions. They form the foundation
-            of the entity data model and determine how data is structured and accessed.
+properties, navigation properties, and key definitions. They form the foundation
+of the entity data model and determine how data is structured and accessed.
 
 ## Constructors
 
@@ -95,7 +95,7 @@ Type: `bool`
 #### Remarks
 
 Abstract entity types cannot be instantiated directly but can serve as base types
-            for other entity types. They are useful for defining common properties and behaviors.
+for other entity types. They are useful for defining common properties and behaviors.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BaseType
 
@@ -115,7 +115,7 @@ The fully qualified name of the base entity type, or `null` if this type has no 
 #### Remarks
 
 When specified, this entity type inherits all properties and navigation properties
-            from the base type. The inheritance hierarchy must be consistent within the model.
+from the base type. The inheritance hierarchy must be consistent within the model.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -195,7 +195,7 @@ Type: `bool`
 #### Remarks
 
 When true, instances of this entity type can have an associated media resource
-            (such as a photo or document) that can be accessed via streaming operations.
+(such as a photo or document) that can be accessed via streaming operations.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsAbstract
 
@@ -234,7 +234,7 @@ A collection of property names that form the entity key.
 #### Remarks
 
 Key properties uniquely identify instances of the entity type. They are used
-            for addressing individual entities and establishing relationships.
+for addressing individual entities and establishing relationships.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> KeyProperties
 
@@ -314,7 +314,7 @@ A collection of navigation properties that define relationships to other entitie
 #### Remarks
 
 Navigation properties enable traversal between related entities and define the
-            relationship structure of the data model.
+relationship structure of the data model.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NonKeyProperties
 
@@ -349,8 +349,8 @@ Type: `bool`
 #### Remarks
 
 Open entity types allow additional properties beyond those explicitly defined
-            in the metadata. This provides flexibility for dynamic scenarios where the
-            complete structure may not be known at design time.
+in the metadata. This provides flexibility for dynamic scenarios where the
+complete structure may not be known at design time.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Properties
 
@@ -370,9 +370,9 @@ A collection of structural properties that define the data elements of the entit
 #### Remarks
 
 These properties represent the data that can be stored and retrieved for instances
-            of this entity type. They include both key and non-key properties.
-            This collection is the declared EDM surface only. Properties ignored on an
-            `IEdmModel` or absent from CSDL must never be added here.
+of this entity type. They include both key and non-key properties.
+This collection is the declared EDM surface only. Properties ignored on an
+`IEdmModel` or absent from CSDL must never be added here.
 
 ## Methods
 

@@ -1,0 +1,677 @@
+---
+title: OutboundOAuthOptions
+description: "Operator-supplied and discovered outbound OAuth settings for a single remote OData service — the options CLI hop 2 (`ODataOutboundAuthHandler`, `OutboundOAut..."
+icon: lock
+tag: "SEALED"
+keywords: ['OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions
+```
+
+## Summary
+
+Operator-supplied and discovered outbound OAuth settings for a single remote OData service — the
+options CLI hop 2 (`ODataOutboundAuthHandler`, `OutboundOAuthClient`, and the grant classes)
+runs on.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` this type is named `OutboundOAuthOptions`, deliberately not
+`ClientOAuthOptions` — that SDK type is hop 1's MCP-transport options and must not be reused here.
+It carries no certificate properties in v1.
+
+## Examples
+
+```csharp
+var options = new OutboundOAuthOptions
+{
+    ClientId = "my-cli-client",
+    Scopes = ["offline_access"],
+    Grant = OutboundGrantKind.DeviceCode
+};
+
+options = OutboundOAuthOptions.FromEnvironment(options);
+options.Validate();
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public OutboundOAuthOptions()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKey
+
+Gets or sets the raw API key value for the API key escape hatch, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string ApiKey { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKeyHeader
+
+Gets or sets the header name [OutboundOAuthOptions.ApiKey](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikey) is sent under, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string ApiKeyHeader { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+Required whenever [OutboundOAuthOptions.ApiKey](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikey) is set; see [OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthServer
+
+Gets or sets the operator's `--auth-server` override, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to discover the
+authorization server from the challenge and protected resource metadata.
+
+#### Syntax
+
+```csharp
+public System.Uri AuthServer { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthTimeout
+
+Gets or sets how long an interactive grant may run before it is abandoned. Defaults to 300 seconds.
+
+#### Syntax
+
+```csharp
+public System.TimeSpan AuthTimeout { get; set; }
+```
+
+#### Property Value
+
+Type: `System.TimeSpan?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
+
+Gets or sets the escape-hatch bearer token that skips OAuth entirely, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string AuthToken { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicPassword
+
+Gets or sets the RFC 7617 Basic authentication password, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string BasicPassword { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+Required whenever [OutboundOAuthOptions.BasicUser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicuser) is set; see [OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicUser
+
+Gets or sets the RFC 7617 Basic authentication user name, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string BasicUser { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientId
+
+Gets or sets the OAuth client id this process authenticates as, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when dynamic
+client registration will supply one.
+
+#### Syntax
+
+```csharp
+public string ClientId { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientMetadataDocumentUri
+
+Gets or sets the client identity metadata document (CIMD) URI, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public System.Uri ClientMetadataDocumentUri { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientSecret
+
+Gets or sets the OAuth client secret for a confidential client, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string ClientSecret { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+[OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)) binds this from
+[ODataMcpAuthConstants.ClientSecretEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#clientsecretenvironmentvariable) when it is unset. Never logged or
+printed.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ConsentPresenter
+
+Gets or sets the delegate invoked to present a consent request to the operator or an MCP client, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when interactive sign-in should throw [OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException)
+instead.
+
+#### Syntax
+
+```csharp
+public System.Func<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task> ConsentPresenter { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Func<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task>`
+
+#### Remarks
+
+Deliberately a delegate, not a new DI interface, per `AUTH-7`. The auth handler reads this
+property on every 401 rather than capturing it in a constructor, because `IHttpClientFactory`
+may cache the handler across a presenter change.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Grant
+
+Gets or sets the operator's `--grant` selection, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to let
+`GrantSelector` pick from advertised `grant_types_supported`.
+
+#### Syntax
+
+```csharp
+public System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind> Grant { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasEnvironmentIdToken
+
+Gets or sets whether [ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) was present when
+[OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)) last ran.
+
+#### Syntax
+
+```csharp
+public bool HasEnvironmentIdToken { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+Set by [OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)), never by an operator flag, so
+[OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate) can treat the environment variable as a valid identity assertion id-token
+source without reading [String)](https://learn.microsoft.com/dotnet/api/system.environment.getenvironmentvariable(system.string)) itself.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasExplicitCredentials
+
+Gets whether any of [OutboundOAuthOptions.AuthToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtoken), [OutboundOAuthOptions.ApiKey](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikey), or [OutboundOAuthOptions.BasicUser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicuser) is set,
+meaning this process authenticates without running an OAuth grant at all.
+
+#### Syntax
+
+```csharp
+public bool HasExplicitCredentials { get; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientId
+
+Gets or sets the enterprise IdP client id used to obtain the id token the identity assertion grant
+exchanges, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string IdpClientId { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientSecret
+
+Gets or sets the enterprise IdP client secret, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string IdpClientSecret { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpIdTokenFile
+
+Gets or sets the path to a UTF-8 OIDC id token file for the identity assertion grant, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string IdpIdTokenFile { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+[ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) is the other id-token source; see
+[OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) and [OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)). The token
+is never passed on argv.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpScope
+
+Gets or sets the scope requested from the enterprise IdP, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public string IdpScope { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpTokenEndpoint
+
+Gets or sets the enterprise IdP token endpoint, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public System.Uri IdpTokenEndpoint { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+Either this or [OutboundOAuthOptions.IdpUrl](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpurl) satisfies the identity assertion endpoint requirement in
+[OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpUrl
+
+Gets or sets the enterprise IdP base URL, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public System.Uri IdpUrl { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+Either this or [OutboundOAuthOptions.IdpTokenEndpoint](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idptokenendpoint) satisfies the identity assertion endpoint requirement in
+[OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RedirectUri
+
+Gets or sets the loopback redirect URI override for the authorization code grant, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to use an ephemeral loopback port.
+
+#### Syntax
+
+```csharp
+public System.Uri RedirectUri { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resource
+
+Gets or sets the RFC 8707 resource indicator / audience override, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to derive
+it from protected resource metadata or the service root's origin.
+
+#### Syntax
+
+```csharp
+public System.Uri Resource { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
+
+Gets or sets the fallback scope list requested when the authorization server advertises none.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> Scopes { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ScopeSelector
+
+Gets or sets the delegate that filters or appends scopes after `offline_access` is appended, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset.
+
+#### Syntax
+
+```csharp
+public ModelContextProtocol.Authentication.ScopeSelectorDelegate ScopeSelector { get; set; }
+```
+
+#### Property Value
+
+Type: `ModelContextProtocol.Authentication.ScopeSelectorDelegate?`
+
+#### Remarks
+
+Runs last in scope resolution and may remove `offline_access`. Reused as-is from the SDK per
+`specs/v3/AUTHENTICATION.md`'s SDK reuse table.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenCachePath
+
+Gets or sets the directory the Latchkey File and Dpapi backends store cached tokens in, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for the per-user default (see `LatchkeyTokenCache.DefaultTokenCacheDirectory`).
+
+#### Syntax
+
+```csharp
+public string TokenCachePath { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FromEnvironment
+
+Binds settings this instance does not already carry from their environment variable equivalents.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions FromEnvironment(Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The options instance to bind into and return. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions`
+*options*, mutated in place: [OutboundOAuthOptions.ClientSecret](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#clientsecret) is set from
+[ODataMcpAuthConstants.ClientSecretEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#clientsecretenvironmentvariable) when it was unset, and
+[OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) is set to [`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when
+[ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) is present and
+[OutboundOAuthOptions.IdpIdTokenFile](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpidtokenfile) was unset.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+var options = OutboundOAuthOptions.FromEnvironment(new OutboundOAuthOptions());
+```
+
+#### Remarks
+
+Never logs or prints the values it reads. An explicit [OutboundOAuthOptions.ClientSecret](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#clientsecret) is left untouched
+even when the environment variable is also set, so a flag always wins over the environment.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
+
+Validates that this instance's settings are internally consistent before an outbound grant is attempted.
+
+#### Syntax
+
+```csharp
+public void Validate()
+```
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when [OutboundOAuthOptions.ApiKey](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikey) is set without [OutboundOAuthOptions.ApiKeyHeader](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikeyheader); when [OutboundOAuthOptions.BasicUser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicuser)
+is set without [OutboundOAuthOptions.BasicPassword](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicpassword); when [OutboundOAuthOptions.AuthTimeout](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtimeout) is not greater than zero;
+when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is set to an undefined [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) value; or when
+[OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.IdentityAssertion](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#identityassertion) and neither
+[OutboundOAuthOptions.IdpUrl](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpurl) nor [OutboundOAuthOptions.IdpTokenEndpoint](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idptokenendpoint) is set, neither [OutboundOAuthOptions.IdpIdTokenFile](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpidtokenfile)
+nor [OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) supplies an id token, or either [OutboundOAuthOptions.IdpClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpclientid) or
+[OutboundOAuthOptions.ClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#clientid) is unset. |
+
+#### Examples
+
+```csharp
+var options = new OutboundOAuthOptions { ApiKey = "secret" };
+
+options.Validate(); // throws: --api-key requires --api-key-header.
+```
+
+#### Remarks
+
+Every thrown message names the CLI flag that is missing or invalid, so a caller can surface it
+directly to the operator without translation.
+

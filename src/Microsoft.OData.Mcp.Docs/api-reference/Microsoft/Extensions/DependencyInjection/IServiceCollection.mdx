@@ -31,11 +31,13 @@ See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.e
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
 
-Enables MCP for every OData prefix discovered on ASP.NET Core endpoint routing
-             (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8 conventional endpoints),
-             plus any routes registered with [IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix
-             must stay hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
-             [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
+Registers OData MCP services. Call `UseODataMcp` after mapping OData routes
+to turn MCP on at `{prefix}/mcp`. Discovers prefixes from ASP.NET Core endpoint
+routing (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8
+conventional endpoints), plus any routes registered with
+[IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix must stay
+hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
+[ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
 
 #### Syntax
 
@@ -66,22 +68,29 @@ builder.Services
     });
 
 builder.Services.AddODataMcp();
+
+var app = builder.Build();
+app.MapControllers();
+app.UseODataMcp();
 ```
 
 #### Remarks
 
 This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
-             SDK `MapMcp` is invoked internally at `{prefix}/mcp`. Do not call `MapMcp` yourself.
+This method does not map endpoints. Call `UseODataMcp` to map MCP. Do not call
+the SDK `MapMcp` yourself.
 
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcp <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
 
-Enables MCP for every OData prefix discovered on ASP.NET Core endpoint routing
-            (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8 conventional endpoints),
-            plus any routes registered with [IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix
-            must stay hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
-            [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
+Registers OData MCP services. Call `UseODataMcp` after mapping OData routes
+to turn MCP on at `{prefix}/mcp`. Discovers prefixes from ASP.NET Core endpoint
+routing (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8
+conventional endpoints), plus any routes registered with
+[IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix must stay
+hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
+[ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
 
 #### Syntax
 
@@ -110,12 +119,17 @@ builder.Services.AddODataMcp(options =&gt;
     options.Catalog.MaxNamedTools = 80;
     options.RateLimitingPolicyName = "mcp";
 });
+
+var app = builder.Build();
+app.MapControllers();
+app.UseODataMcp();
 ```
 
 #### Remarks
 
 This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
-            SDK `MapMcp` is invoked internally at `{prefix}/mcp`. Do not call `MapMcp` yourself.
+This method does not map endpoints. Call `UseODataMcp` to map MCP. Do not call
+the SDK `MapMcp` yourself.
 
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcpCore <Badge color="green">Extension</Badge>
 
@@ -140,4 +154,65 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 
 Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
 The service collection.
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataProtectedResource <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
+
+Publishes RFC 9728 protected resource metadata for every OData route this app serves, and annotates
+the `WWW-Authenticate` challenge on a `401` beneath one of those routes with the URL of
+that document. This is how a client such as `odata-mcp start` discovers how to sign in to the
+API without being told.
+
+#### Syntax
+
+```csharp
+public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataProtectedResource(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions> configure)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
+| `configure` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions>` | Configures what the API publishes about itself. |
+
+#### Returns
+
+Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
+The service collection.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *services* or *configure* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+builder.Services
+    .AddControllers()
+    .AddOData(options =&gt; options.AddRouteComponents("odata", GetEdmModel()));
+
+builder.Services.AddODataProtectedResource(options =&gt;
+{
+    options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+    options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+});
+
+// GET /.well-known/oauth-protected-resource/odata now answers 200, anonymously.
+```
+
+#### Remarks
+
+This is independent of [IServiceCollection)](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.odatamcp_aspnetcore_servicecollectionextensions.addodatamcp(microsoft.extensions.dependencyinjection.iservicecollection)): an API that hosts no MCP server
+at all still benefits, because the discovery this feeds is the client's, not ours. When
+`AddODataMcp`&lt;em&gt;is&lt;/em&gt; present, its
+[ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) and [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes)
+filters apply here too, so a prefix hidden from agents is not advertised to them either.
+
+The middleware is inserted at the front of the pipeline through an `IStartupFilter`, which is
+what keeps the metadata document anonymously readable. There is no `Use` call to add. Calling
+this more than once adds the extra configuration and registers the filter once.
 

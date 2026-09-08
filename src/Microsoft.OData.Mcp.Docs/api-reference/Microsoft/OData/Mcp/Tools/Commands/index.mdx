@@ -3,7 +3,7 @@ title: Overview
 description: "Summary of the Microsoft.OData.Mcp.Tools.Commands Namespace"
 icon: folder-tree
 mode: wide
-keywords: ['Microsoft.OData.Mcp.Tools.Commands', 'namespace', 'AddCommand', 'ODataMcpRootCommand', 'StartCommand', 'TestCommand']
+keywords: ['Microsoft.OData.Mcp.Tools.Commands', 'namespace', 'AddAuthChoice', 'AddCommand', 'AddCommandAuthSettings', 'ODataMcpRootCommand', 'StartCommand', 'TestCommand']
 ---
 
 ## Types
@@ -12,8 +12,16 @@ keywords: ['Microsoft.OData.Mcp.Tools.Commands', 'namespace', 'AddCommand', 'ODa
 
 | Name | Summary |
 | ---- | ------- |
-| [AddCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommand) | Interactive wizard command to generate Claude Code MCP registration commands. |
+| [AddAuthChoice](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddAuthChoice) | The authentication paths the `odata-mcp add` wizard offers an operator. |
+| [AddCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommand) | Interactive wizard command that generates the `claude mcp add` registration line for a remote OData  service, including the outbound OAuth flags `odata-mcp start` needs to sign in. |
+| [AddCommandAuthSettings](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings) | Everything the `odata-mcp add` wizard collected about how the generated `start` command should  authenticate. |
 | [ODataMcpRootCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/ODataMcpRootCommand) | Root command for the OData MCP CLI tool. |
 | [StartCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/StartCommand) | Command to start the OData MCP server over stdio. |
 | [TestCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/TestCommand) | Fetches live metadata and prints the declared entity set count. |
+
+### <Icon icon="list-ol" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} /> Enums
+
+| Name | Summary |
+| ---- | ------- |
+| [AddAuthChoice](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddAuthChoice) | The authentication paths the `odata-mcp add` wizard offers an operator. |
 

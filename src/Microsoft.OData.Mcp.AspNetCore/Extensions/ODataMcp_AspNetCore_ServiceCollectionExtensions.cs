@@ -3,13 +3,14 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OData.Mcp.AspNetCore.Authentication;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
-using ModelContextProtocol.AspNetCore;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -125,6 +126,56 @@ namespace Microsoft.Extensions.DependencyInjection
 
                         return factory.Resolve(http);
                     });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Publishes RFC 9728 protected resource metadata for every OData route this app serves, and annotates
+        /// the <c>WWW-Authenticate</c> challenge on a <c>401</c> beneath one of those routes with the URL of
+        /// that document. This is how a client such as <c>odata-mcp start</c> discovers how to sign in to the
+        /// API without being told.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="configure">Configures what the API publishes about itself.</param>
+        /// <returns>
+        /// The service collection.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
+        /// <example>
+        /// <code>
+        /// builder.Services
+        ///     .AddControllers()
+        ///     .AddOData(options =&gt; options.AddRouteComponents("odata", GetEdmModel()));
+        ///
+        /// builder.Services.AddODataProtectedResource(options =&gt;
+        /// {
+        ///     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+        ///     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+        /// });
+        ///
+        /// // GET /.well-known/oauth-protected-resource/odata now answers 200, anonymously.
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This is independent of <see cref="AddODataMcp(IServiceCollection)"/>: an API that hosts no MCP server
+        /// at all still benefits, because the discovery this feeds is the client's, not ours. When
+        /// <c>AddODataMcp</c> <em>is</em> present, its
+        /// <see cref="ODataMcpHostOptions.IncludePrefixes"/> and <see cref="ODataMcpHostOptions.ExcludeRoutes"/>
+        /// filters apply here too, so a prefix hidden from agents is not advertised to them either.
+        /// <para>
+        /// The middleware is inserted at the front of the pipeline through an <c>IStartupFilter</c>, which is
+        /// what keeps the metadata document anonymously readable. There is no <c>Use</c> call to add. Calling
+        /// this more than once adds the extra configuration and registers the filter once.
+        /// </para>
+        /// </remarks>
+        public static IServiceCollection AddODataProtectedResource(this IServiceCollection services, Action<ODataProtectedResourceOptions> configure)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configure);
+
+            services.AddOptions<ODataProtectedResourceOptions>().Configure(configure);
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ODataProtectedResourceStartupFilter>());
 
             return services;
         }

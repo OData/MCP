@@ -27,8 +27,8 @@ Represents a property in an OData entity type or complex type.
 ## Remarks
 
 Properties define the structure and data characteristics of entity types and complex types.
-            They specify the name, type, and various constraints of the data elements.
-            Only members declared on the EDM belong here. Ignored CLR properties must not be added.
+They specify the name, type, and various constraints of the data elements.
+Only members declared on the EDM belong here. Ignored CLR properties must not be added.
 
 ## Constructors
 
@@ -95,7 +95,7 @@ The default value as a string, or `null` if not specified.
 #### Remarks
 
 The default value is represented as it appears in the CSDL metadata.
-            Type-specific parsing is required when using this value.
+Type-specific parsing is required when using this value.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -239,7 +239,7 @@ The maximum length, or `null` if not specified.
 #### Remarks
 
 This constraint applies primarily to string and binary properties.
-            A value of "Max" in the metadata is represented as `null` here.
+A value of "Max" in the metadata is represented as `null` here.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
@@ -274,7 +274,7 @@ Type: `bool`
 #### Remarks
 
 When not specified in the metadata, this property defaults to `true` for most types,
-            except for key properties which are typically non-nullable.
+except for key properties which are typically non-nullable.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Precision
 
@@ -313,7 +313,7 @@ The scale, or `null` if not specified.
 #### Remarks
 
 Scale applies to decimal types, indicating the number of digits after the decimal point.
-            A value of "Variable" in the metadata is represented as `null` here.
+A value of "Variable" in the metadata is represented as `null` here.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SRID
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tools.Commands;
 using Microsoft.OData.Mcp.Tools.Hosting;
@@ -42,7 +43,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_Northwind_IncludesQueryAndShutdown()
         {
-            var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, null, CancellationToken.None);
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var names = host.Catalog.Tools.Select(tool => tool.Name).ToList();
 
             names.Should().Contain("odata_query");

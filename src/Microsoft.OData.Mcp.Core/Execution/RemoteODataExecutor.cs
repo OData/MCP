@@ -4,9 +4,11 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.OData.Mcp.Core.Constants;
 
 namespace Microsoft.OData.Mcp.Core.Execution
 {
@@ -43,6 +45,11 @@ namespace Microsoft.OData.Mcp.Core.Execution
         #region Public Methods
 
         /// <inheritdoc />
+        /// <remarks>
+        /// <c>Accept</c> is set per request rather than as a default on the named client, because the same
+        /// client also fetches <c>$metadata</c>, which is XML. A JSON default would either draw a <c>406</c> or
+        /// return JSON CSDL the parser cannot read.
+        /// </remarks>
         public async Task<ODataExecuteResult> ExecuteAsync(ODataExecuteRequest request, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(request);
@@ -51,6 +58,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
             var client = _httpClientFactory.CreateClient(HttpClientName);
             var uri = BuildRelativeUri(request);
             using var message = new HttpRequestMessage(request.Method, uri);
+            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ODataMcpCatalogConstants.ApplicationJson));
 
             if (!string.IsNullOrWhiteSpace(request.JsonBody))
             {

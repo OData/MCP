@@ -27,9 +27,9 @@ Represents an entity set in an OData entity container.
 ## Remarks
 
 Entity sets define collections of entities that can be accessed through the OData service.
-            They provide the addressable resources that clients can query, create, update, and delete.
-            Each entity set is associated with a specific entity type and may include navigation
-            property bindings to establish relationships with other entity sets.
+They provide the addressable resources that clients can query, create, update, and delete.
+Each entity set is associated with a specific entity type and may include navigation
+property bindings to establish relationships with other entity sets.
 
 ## Constructors
 
@@ -96,7 +96,7 @@ A dictionary of annotations that provide additional metadata about the entity se
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
@@ -131,7 +131,7 @@ The fully qualified name of the entity type for entities in this set.
 #### Remarks
 
 All entities in the set must be instances of this entity type or its derived types.
-            This determines the structure and properties available for entities in the set.
+This determines the structure and properties available for entities in the set.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityTypeName
 
@@ -196,7 +196,7 @@ Type: `bool`
 #### Remarks
 
 When change tracking is enabled, the service can provide delta tokens and support
-            for change tracking queries, allowing clients to efficiently retrieve only changed data.
+for change tracking queries, allowing clients to efficiently retrieve only changed data.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
 
@@ -231,7 +231,7 @@ The name used to address this entity set in OData URLs.
 #### Remarks
 
 The entity set name appears in the URL path when accessing the collection
-            or individual entities within the set.
+or individual entities within the set.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NavigationPropertyBindings
 
@@ -251,8 +251,8 @@ A collection of navigation property bindings that establish relationships with o
 #### Remarks
 
 Navigation property bindings specify which entity set should be used when following
-            a navigation property from entities in this set. They establish the connections
-            between related entity sets in the model.
+a navigation property from entities in this set. They establish the connections
+between related entity sets in the model.
 
 ## Methods
 

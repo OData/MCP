@@ -31,7 +31,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [METADATA-STRATEGY.md](./METADATA-STRATEGY.md) | Custom EDM stays; AspNetCore adapts `IEdmModel` |
 | [TOOL-SURFACE.md](./TOOL-SURFACE.md) | Generic + named tools; local `shutdown_server` |
 | [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md) | Exhaustive per-tool test cases (happy, malformed, overwhelm) |
-| [TESTING.md](./TESTING.md) | Suites, OData 7 vs 8 process isolation, Restier on 7 |
+| [TESTING.md](./TESTING.md) | Suites, OData 7 vs 8 process isolation, Restier on 7; §8 authenticated OData end to end (outbound OAuth, hop 2) |
 | [AUTHENTICATION.md](./AUTHENTICATION.md) | CLI outbound OAuth to remote OData (SDK 2.2); not inbound MCP OAuth |
 | [INVENTORY.md](./INVENTORY.md) | Concept keep vs implementation delete |
 | [EXECUTION-PLAN.md](./EXECUTION-PLAN.md) | Agent task list |

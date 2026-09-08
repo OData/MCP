@@ -9,12 +9,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;
-using Microsoft.Restier.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
@@ -67,6 +67,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             {
                 routeBuilder.MapApiRoute<McpCustomerApi>("odata", "odata");
                 routeBuilder.MapApiRoute<McpProductApi>("shop", "shop");
+            };
+
+            ApplicationBuilderLastAction = app =>
+            {
+                app.UseODataMcp();
             };
         }
 

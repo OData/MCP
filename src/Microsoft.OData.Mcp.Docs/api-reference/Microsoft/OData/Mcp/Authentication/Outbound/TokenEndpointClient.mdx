@@ -1,0 +1,257 @@
+---
+title: TokenEndpointClient
+description: "Posts an RFC 6749 token request on the handler-free `'OAuth'` named [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient) and turns..."
+icon: lock
+tag: "SEALED"
+keywords: ['TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient
+```
+
+## Summary
+
+Posts an RFC 6749 token request on the handler-free `"OAuth"` named [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient) and
+turns the answer into either a [TokenEndpointResponse](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointResponse) or an
+[OAuthTokenException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException). Every grant in this package — device code, refresh, authorization
+code, client credentials — sends its token request through this one class.
+
+## Remarks
+
+A new `"OAuth"` client is requested from [IHttpClientFactory](https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory) on every call rather than
+cached, matching the "Two named HttpClients" table in `specs/v3/AUTHENTICATION.md`. Per
+`AUTH-12` neither the request form, the response body, nor any credential is ever logged: the Debug
+entries carry only the endpoint, the `grant_type`, the token type, the lifetime, and whether a
+refresh token came back. Unlike well-known discovery, a token request is never retried here — a token
+POST is not idempotent and a failed grant is a decision for the caller, not a transport retry.
+
+## Examples
+
+```csharp
+var form = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal)
+{
+    [ODataMcpAuthConstants.GrantTypeParameter] = ODataMcpAuthConstants.GrantTypeRefreshToken,
+    [ODataMcpAuthConstants.RefreshTokenProperty] = refreshToken
+};
+
+var response = await tokenEndpointClient.PostAsync(
+    metadata.TokenEndpoint!,
+    form,
+    clientId,
+    clientSecret,
+    TokenEndpointClient.AuthMethodClientSecretPost,
+    cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [TokenEndpointClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient) class.
+
+#### Syntax
+
+```csharp
+public TokenEndpointClient(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory used to create the `"OAuth"` named client per call. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient>` | The logger this instance records token request and response shapes to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *httpClientFactory* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PostAsync
+
+Posts a token request and returns the RFC 6749 section 5.1 success response.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse> PostAsync(System.Uri tokenEndpoint, System.Collections.Generic.IReadOnlyDictionary<string, string> form, string clientId, string clientSecret, string authMethod, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `tokenEndpoint` | `System.Uri` | The absolute token endpoint to post to. |
+| `form` | `System.Collections.Generic.IReadOnlyDictionary<string, string>` | The grant-specific form fields, such as `grant_type` and `device_code`. Client credentials are added by this method, not by the caller. |
+| `clientId` | `string?` | The client identifier, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant carries none. |
+| `clientSecret` | `string?` | The client secret, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for a public client. |
+| `authMethod` | `string` | The token endpoint authentication method: [TokenEndpointClient.AuthMethodClientSecretBasic](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodclientsecretbasic), [TokenEndpointClient.AuthMethodClientSecretPost](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodclientsecretpost), or [TokenEndpointClient.AuthMethodNone](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointClient#authmethodnone). |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse>`
+The parsed success response, whose [TokenEndpointResponse.AccessToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointResponse#accesstoken) is guaranteed
+non-empty.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *tokenEndpoint* or *form* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *authMethod* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, whitespace, or a method
+this client does not implement; when *tokenEndpoint* is relative or is an
+`http` URI whose host is not loopback; or when *authMethod* requires
+credentials that *clientId* or *clientSecret* does not supply. |
+| `OAuthTokenException` | Thrown when the server answers with a non-success status, when the success body carries no
+`access_token` or cannot be parsed, or when the request fails at the transport. |
+
+#### Remarks
+
+The RFC 8707 `resource` indicator and `scope` are the caller's to place in
+*form*; this method never invents either, so a grant that must omit `resource`
+simply leaves it out. Cancellation requested through *cancellationToken* propagates
+as [OperationCanceledException](https://learn.microsoft.com/dotnet/api/system.operationcanceledexception) rather than being wrapped.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

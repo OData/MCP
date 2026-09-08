@@ -4,9 +4,13 @@
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Tools.Commands;
 using Microsoft.OData.Mcp.Tools.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Tests.Tools
 {
@@ -69,12 +73,21 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             command.DeriveNameFromUrl("https://services.odata.org/V4/TripPinServiceRW").Should().Be("trippin");
             command.DeriveNameFromUrl("https://contoso.example.com/odata").Should().Be("odata");
             command.DeriveNameFromUrl("not-a-url").Should().Be("odata-service");
-            command.BuildMcpCommand("northwind", "https://example.com/odata", "token", "user", true)
+            command.BuildMcpCommand(
+                    "northwind",
+                    "https://example.com/odata",
+                    new AddCommandAuthSettings { ClientId = "the-app", Grant = OutboundGrantKind.DeviceCode },
+                    "user",
+                    true)
                 .Should().Contain("claude mcp add northwind")
-                .And.Contain("--auth-token")
-                .And.Contain("--verbose");
-            command.BuildMcpCommand("svc", "https://example.com/odata", null, "project", false)
+                .And.Contain("--client-id \"the-app\"")
+                .And.Contain("--grant device_code")
+                .And.Contain("--verbose")
+                .And.NotContain("--auth-token")
+                .And.NotContain("--env");
+            command.BuildMcpCommand("svc", "https://example.com/odata", new AddCommandAuthSettings(), "project", false)
                 .Should().NotContain("--auth-token")
+                .And.NotContain("--grant")
                 .And.NotContain("--verbose");
         }
 
@@ -92,8 +105,8 @@ namespace Microsoft.OData.Mcp.Tests.Tools
                 Output = output
             };
 
-            await command.TestConnection(Microsoft.OData.Mcp.Tests.Shared.LiveOData.Northwind, "token");
-            output.ToString().Should().MatchRegex("Connection successful|Connection returned|Could not connect");
+            await command.TestConnection(Microsoft.OData.Mcp.Tests.Shared.LiveOData.Northwind, new AddCommandAuthSettings());
+            output.ToString().Should().MatchRegex("Connection successful|Could not connect");
         }
 
         /// <summary>
@@ -133,7 +146,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         [TestMethod]
         public async Task ToolsMcpHost_InvalidUrl_Throws()
         {
-            var act = async () => await ToolsMcpHost.CreateAsync("ftp://example.com", null, System.Threading.CancellationToken.None);
+            var act = async () => await ToolsMcpHost.CreateAsync("ftp://example.com", new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, System.Threading.CancellationToken.None);
             await act.Should().ThrowAsync<System.ArgumentException>();
         }
 
@@ -200,16 +213,29 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         }
 
         /// <summary>
-        /// Stdio host construction includes shutdown_server.
+        /// A host built with the stdio transport registers the MCP server, the <c>shutdown_server</c> tool, and
+        /// a session holder the catalog handlers can already resolve.
         /// </summary>
         [TestMethod]
-        public async Task BuildStdioHost_Constructs()
+        public async Task CreateAsync_IncludeStdio_RegistersMcpServer()
         {
-            var host = await ToolsMcpHost.CreateAsync(Microsoft.OData.Mcp.Tests.Shared.LiveOData.Northwind, "token", System.Threading.CancellationToken.None);
             using var lifetime = new System.Threading.CancellationTokenSource();
-            using var stdio = host.BuildStdioHost(lifetime, verbose: true, authToken: "token");
+            var options = new OutboundOAuthOptions
+            {
+                AuthToken = "token"
+            };
+            using var host = await ToolsMcpHost.CreateAsync(
+                Microsoft.OData.Mcp.Tests.Shared.LiveOData.Northwind,
+                options,
+                includeStdioMcp: true,
+                verbose: true,
+                lifetime,
+                lifetime.Token);
 
-            stdio.Should().NotBeNull();
+            host.Host.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>().Should().NotBeEmpty();
+            host.Host.Services.GetService<IOptions<McpServerOptions>>()!.Value.Handlers.CallToolHandler.Should().NotBeNull();
+            host.Host.Services.GetService<ShutdownServerTool>().Should().NotBeNull();
+            host.Host.Services.GetRequiredService<ToolsMcpSessionHolder>().Session.Should().BeSameAs(host.Session);
             ToolsMcpHost.CreateShutdownTool().Description.Should().Contain("Local Tools host only");
         }
 

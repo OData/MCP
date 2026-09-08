@@ -179,24 +179,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Unauthenticated named create is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task CreateCustomer_OData8_NoAuth_401()
-        {
-            var result = await InvokeAsync("create_customer", ToolArguments.Of("CompanyName", "NoAuthNamed"));
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
-        }
-
-        /// <summary>
         /// JSON-RPC named create forwards Authorization.
         /// </summary>
         [TestMethod]
         public async Task CreateCustomer_OData8_AuthForwardedFromJsonRpc()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -255,7 +243,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task GetCustomer_OData8_Key1_MatchesOdataGetAndHttp()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var http = await client.GetStringAsync("/odata/Customers(1)");
             http.Should().Contain("Contoso");
 
@@ -402,7 +390,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListCustomers_OData8_SkipTopOrderby_MatchesGenericAndHttp()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             var http = await client.GetStringAsync("/odata/Customers?$orderby=CustomerId&$skip=0&$top=1");
             http.Should().Contain("Contoso");
 
@@ -499,7 +487,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task ListCustomers_ToolsListContains_WhenCapAllows()
         {
             Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("list_customers");
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             body.Should().Contain("list_customers");
@@ -545,20 +533,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             result.IsError.Should().BeFalse(result.Text);
             capture.Last!.Method.Method.Should().Be("PATCH");
             capture.Last.RelativePath.Should().Be("Customers(1)");
-        }
-
-        /// <summary>
-        /// Unauthenticated named update is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task UpdateCustomer_OData8_NoAuth_401()
-        {
-            var result = await InvokeAsync(
-                "update_customer",
-                ToolArguments.Of("key", "1", "body", """{"CompanyName":"X"}"""));
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
         }
 
         /// <summary>
@@ -660,7 +634,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task ListCustomers_JsonRpcToolsCall_Restier()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "list_customers", "{}");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -673,7 +647,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task GetCustomer_JsonRpcToolsCall()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "get_customer", """{"key":"1"}""");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             body.Should().Contain("Contoso");
@@ -685,7 +659,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task UpdateCustomer_JsonRpcToolsCall()
         {
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
             using var response = await McpJsonRpc.CallToolAsync(
                 client,
@@ -705,7 +679,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var (runtime, _) = AuthorizedCapture();
             var created = await runtime.InvokeAsync("create_customer", ToolArguments.Of("CompanyName", "RpcNamedDel"), CancellationToken.None);
             var key = ReadCustomerId(created.StructuredContent!).ToString();
-            using var client = TestServer.CreateClient();
+            using var client = CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "delete_customer", "{\"key\":\"" + key + "\"}");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             body.Should().NotContain("\"isError\":true");
@@ -960,6 +934,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
 
         /// <summary>
         /// Creates a capturing runtime against the paging TestServer.
@@ -1276,6 +1261,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Creates an HTTP client for direct OData calls against the host under test.
+        /// </summary>
+        /// <returns>
+        /// The client.
+        /// </returns>
+        internal HttpClient CreateClient()
+        {
+            return TestServer.CreateClient();
+        }
 
         /// <summary>
         /// Catalog tool names.
