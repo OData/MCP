@@ -418,3 +418,6 @@ FodyWeavers.xsd
 *.msp
 /nul
 /coverage
+
+# Local planning notes; never checked in.
+docs/superpowers/
