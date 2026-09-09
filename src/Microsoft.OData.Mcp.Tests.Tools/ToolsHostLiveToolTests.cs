@@ -79,9 +79,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().NotBeNullOrWhiteSpace();
-            result.StructuredContent.Should().Contain("Customer");
-            result.StructuredContent.Should().Contain("CompanyName");
+            result.StructuredContent.Should().BeNull("text is the default describe representation");
+            result.Text.Should().StartWith("Customer  (set: Customers, key: CustomerID)");
+            result.Text.Should().Contain("CompanyName?: string");
         }
 
         /// <summary>

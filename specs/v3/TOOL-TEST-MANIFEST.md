@@ -1,11 +1,11 @@
 # Tool Test Manifest — OData MCP Platform v3
 
 **Status:** Living (authoritative)  
-**Revised:** 2026-09-06  
+**Revised:** 2026-09-09  
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-The tables below describe the catalog **as shipped before optimization** (`odata_call` `body`, `odata_describe_type` `name` only, no `odata_describe_model`, `list_operations` includes bound). Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change ([OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md)).
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type` and the `resources/read` type card are on the **new** contract (compact grammar, `format`). `odata_call` (`body`), `odata_describe_model` (absent), `odata_list_operations` (includes bound), and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -69,7 +69,7 @@ From `ODataMcpCatalog.BuildGenericTools` (always, first in `tools/list`):
 | Name | Title | Hints | Input schema (no `$` on query keys) | Required |
 |------|-------|-------|-------------------------------------|----------|
 | `odata_list_entity_sets` | List entity sets | readOnly, idempotent | `{}` `additionalProperties:false` | none |
-| `odata_describe_type` | Describe type | readOnly, idempotent | `{ name: string }` | `name` |
+| `odata_describe_type` | Describe type | readOnly, idempotent | `{ name: string, format?: "text" \| "json" }` — `text` (default) returns the [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1 declaration as `content[0].text` with **no** `structuredContent`; `json` returns the §1.2 compact object as `structuredContent` | `name` |
 | `odata_query` | Query entity set | readOnly, idempotent | `entitySet`, `filter`, `select`, `orderby`, `expand`, `top` (number), `skip` (number), `count` (boolean) | `entitySet` |
 | `odata_get` | Get entity | readOnly, idempotent | `entitySet`, `key` | `entitySet`, `key` |
 | `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (string in schema; runtime also accepts a JSON object or remaining properties) | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
@@ -368,7 +368,12 @@ This tool does not call OData. Server failures are catalog/session failures:
 
 ### Purpose
 
-Describes declared properties, keys, navigations, and CSDL documentation for a type or entity set. Argument `name` is an entity set or type name (short or full). Returns JSON with `name`, `namespace`, `keys`, `properties` (nullable+type+description), `navigations`, `entitySet` (when resolved via set), documentation fields. Unknown name → `Type or entity set '{name}' is not declared in the model.`
+Describes declared properties, keys, navigations, **bound operations, and enums** for a type or entity set in the compact grammar of [TYPE-SHAPES.md](./TYPE-SHAPES.md). Argument `name` is an entity set or type name (short or full). `format` is `text` (default) or `json`; one representation per call, never both.
+
+- **text:** `Type  (set: Set, key: K)` header, `// docs` only when CSDL has them, `Name: type` (required on create) vs `Name?: type` (optional), `// key` / `// key, store-generated`, `Name -> Type[]` navigations, `enum(A|B)` members inline with one `// enum literal: NS.Enum'A'` hint, `string(n)` only when `MaxLength ≤ 16`, and an `operations` block listing **bound** operations only (`// writes` for actions, `// collection` for collection-bound). Returned as `content[0].text`; `structuredContent` is absent.
+- **json:** `{ "Type": { "set", "key": [...], "description"?, "longDescription"?, "setDescription"?, "enumLiteral"?, "props": { "Name": "type!" }, "docs"?, "navs"?, "ops"? } }`. `!` marks required on create. Empty sections are omitted; there is never a `null` value, no `nullable`, no `namespace`, no `entityTypeDescription`.
+
+The `resources/read` type card is the same JSON byte for byte. Unknown name → `Type or entity set '{name}' is not declared in the model.` Unknown format → `Unknown format '{value}'. Use text or json.`
 
 ### Matrix
 
@@ -386,7 +391,7 @@ Describes declared properties, keys, navigations, and CSDL documentation for a t
 
 34. **DescribeType_OData8_ByTypeNameCustomer_SameAsSet**  
     - **Call:** `{ "name": "Customer" }`.  
-    - **Expect:** same keys/properties as case 33; `entitySet` may be null when resolved by type.
+    - **Expect:** same keys/properties as case 33; identical text when the type has exactly one set. A type with no set renders `Type  (key: K)` with no `set:` part.
 
 35. **DescribeType_OData8_ByFullName_IfNamespacePresent**  
     - **Call:** `{ "name": "{namespace}.Customer" }`.  
@@ -408,7 +413,7 @@ Describes declared properties, keys, navigations, and CSDL documentation for a t
     - **Expect:** key `UserName`; navs `Friends`, `Trips`; CSDL docs if present.
 
 40. **DescribeType_DocumentedCsdl_PropertyAndNavDescriptions**  
-    - **Expect:** `Unique person name.`, `Other people this person knows.`, type docs `A person who travels.`
+    - **Expect:** text is exactly the §1.1 rendering: header `// A person who travels.` then the long description and set docs on their own `//` lines, `UserName: string // key; Unique person name.` with `    // Used as the entity key.` beneath, `Friends -> Person[] // Other people this person knows.`. Northwind (no CSDL docs) renders **no** `//` doc lines and no `description` keys in json.
 
 41. **DescribeType_BinaryStreamProperties_OmittedFromPropertiesArray**  
     - **Setup:** type with `Edm.Binary` / `Edm.Stream`.  
@@ -426,7 +431,11 @@ Describes declared properties, keys, navigations, and CSDL documentation for a t
 47. **DescribeType_UsesIdInsteadOfName_IsError** — `{ "id": "Customer" }`.  
 48. **DescribeType_NameWithDollarMetadata_IsErrorNotDeclared** — `{ "name": "$metadata" }`.  
 49. **DescribeType_ExtraFilterTop_IgnoredAndStillDescribes** — `{ "name": "Customers", "filter": "x", "top": 1 }`. No OData HTTP.  
-50. **DescribeType_WrongCase_PeopleVsPeople** — case-insensitive match (`customers` vs `Customers`) succeeds.
+50. **DescribeType_WrongCase_PeopleVsPeople** — case-insensitive match (`customers` vs `Customers`) succeeds.  
+50.1. **DescribeType_UnknownFormat_IsError** — `{ "name": "People", "format": "garbage" }` → `isError`, text names `format`, the bad value, `text`, and `json`.  
+50.2. **DescribeType_FormatCaseInsensitive_NullIsText** — `"format": "JSON"` returns `structuredContent`; `"format": null` behaves as `text`.  
+50.3. **DescribeType_Enum_RendersMembersLiteralFlagsAndComputed** — enum fixture: `Color: enum(Red|Green)`, one `// enum literal: NS.Color'Red'` header line, `Access?: enum(Read|Write) // flags, comma-separated`, `Id?: int // key, store-generated` for a `Core.Computed` key, `Code?: string(8)` for `MaxLength=8`, binary properties absent.  
+50.4. **DescribeType_Operations_ListsBoundOnlyWithMarkers** — `operations` block lists bound functions and actions only, binding parameter omitted, `// writes` on actions, `// collection` on collection-bound, operations bound to a base type appear on derived types; unbound operations are absent. TripPin `People` lists `GetFavoriteAirline() -> Airline`, `GetFriendsTrips(userName: string) -> Trip[]`, `UpdateLastName(lastName: string) -> bool // writes`, `ShareTrip(userName: string, tripId: int) // writes` and not `GetNearestAirport` / `ResetDataSource`.
 
 ### Malformed payloads
 
@@ -458,7 +467,7 @@ Catalog-only; unknown type is MCP-side, not HTTP 404:
 
 66. **DescribeType_ThenQueryThatSet_UsesAPropertyFromTheCardInSelect** — `select` of a described property succeeds.  
 67. **DescribeType_ThenNavigate_UsesANavigationFromTheCard** — TripPin `Friends` or OData8 `Orders`.  
-68. **DescribeType_AgreesWithResourceReadTypeCard** — `resources/read` `odata://odata/Customers` JSON keys/properties match describe (modulo extra describe fields `namespace`, `nullable`).  
+68. **DescribeType_AgreesWithResourceReadTypeCard** — `resources/read` `odata://odata/Customers` JSON **equals** `odata_describe_type` `format=json` byte for byte (same `key`, `props`, `navs`, `ops`).  
 69. **DescribeType_IgnoredPropertyNeverAppears_InternalSecret**
 
 ---

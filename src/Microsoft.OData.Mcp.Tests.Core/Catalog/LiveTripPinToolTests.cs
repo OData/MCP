@@ -31,9 +31,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var described = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
 
             described.IsError.Should().BeFalse(described.Text);
-            described.StructuredContent.Should().Contain("UserName");
-            described.StructuredContent.Should().Contain("Friends");
-            described.StructuredContent.Should().Contain("Trips");
+            described.Text.Should().Contain("UserName: string // key");
+            described.Text.Should().Contain("Friends -> Person[]");
+            described.Text.Should().Contain("Trips -> Trip[]");
         }
 
         /// <summary>

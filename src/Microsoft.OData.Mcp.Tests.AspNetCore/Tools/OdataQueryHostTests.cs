@@ -104,8 +104,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             var card = Session().Catalog.Resources.Single(resource => resource.Name == "Customers").ReadContents;
             card.Should().NotBeNullOrWhiteSpace();
-            card.Should().Contain("keys");
-            card.Should().Contain("properties");
+            card.Should().Contain("\"key\":[");
+            card.Should().Contain("\"props\":{");
             card.Should().NotContain("Contoso");
             query.StructuredContent.Should().NotBe(card);
         }

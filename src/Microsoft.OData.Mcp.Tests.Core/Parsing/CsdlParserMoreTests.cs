@@ -74,6 +74,34 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
         }
 
         /// <summary>
+        /// Documentation helper adds a key only for informative values and never repeats an already emitted one.
+        /// </summary>
+        [TestMethod]
+        public void EdmDocumentation_Add_SkipsBlankAndDuplicates()
+        {
+            var objects = new System.Collections.Generic.Dictionary<string, object?>();
+            var strings = new System.Collections.Generic.Dictionary<string, string>();
+
+            EdmDocumentation.Add(objects, "description", null);
+            EdmDocumentation.Add(objects, "description", "  ");
+            EdmDocumentation.Add(objects, "longDescription", "Same.", "Same.");
+            EdmDocumentation.Add(objects, "kept", " Kept. ");
+            EdmDocumentation.Add(strings, "Name", "Name");
+            EdmDocumentation.Add(strings, "Other", "Doc.", "Different.");
+
+            objects.Should().NotContainKey("description");
+            objects.Should().NotContainKey("longDescription");
+            objects["kept"].Should().Be("Kept.");
+            strings["Name"].Should().Be("Name");
+            strings["Other"].Should().Be("Doc.");
+
+            var nullTarget = () => EdmDocumentation.Add((System.Collections.Generic.IDictionary<string, string>)null!, "k", "v");
+            var blankKey = () => EdmDocumentation.Add(strings, " ", "v");
+            nullTarget.Should().Throw<ArgumentNullException>();
+            blankKey.Should().Throw<ArgumentException>();
+        }
+
+        /// <summary>
         /// A logger-backed parser still loads CSDL.
         /// </summary>
         [TestMethod]
@@ -761,6 +789,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
                     <Property Name="Notes" Type="Edm.String">
                       <Annotation Term="Org.OData.Core.V1.Computed" Bool="false" />
                     </Property>
+                    <Property Name="Access" Type="NS.Permissions" />
+                    <Property Name="Code" Type="Edm.String" MaxLength="8" />
                     <Property Name="RowVersion" Type="Edm.Binary" />
                   </EntityType>
                   <Annotations Target="NS.Widget/RowVersion">

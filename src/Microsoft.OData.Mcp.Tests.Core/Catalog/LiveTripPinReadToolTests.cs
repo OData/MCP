@@ -31,9 +31,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("UserName");
-            result.StructuredContent.Should().Contain("Friends");
-            result.StructuredContent.Should().Contain("Trips");
+            result.Text.Should().Contain("UserName: string // key");
+            result.Text.Should().Contain("Friends -> Person[]");
+            result.Text.Should().Contain("Trips -> Trip[]");
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var described = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
             described.IsError.Should().BeFalse(described.Text);
-            described.StructuredContent.Should().Contain("Friends");
+            described.Text.Should().Contain("Friends -> Person[]");
             var navigated = await runtime.InvokeAsync(
                 "odata_navigate",
                 ToolArguments.Of("entitySet", "People", "key", "russellwhyte", "navigation", "Friends"),

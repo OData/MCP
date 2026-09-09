@@ -40,6 +40,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
         internal const string NorthwindDescribeTypeCustomer = "northwind.describe_type.customer.json";
 
+        internal const string NorthwindDescribeTypeCustomerText = "northwind.describe_type.customer.txt";
+
         internal const string NorthwindListEntitySets = "northwind.list_entity_sets.json";
 
         internal const string NorthwindListOperations = "northwind.list_operations.json";
@@ -47,6 +49,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         internal const string NorthwindToolsList = "northwind.tools.list.json";
 
         internal const string TripPinDescribeTypePerson = "trippin.describe_type.person.json";
+
+        internal const string TripPinDescribeTypePersonText = "trippin.describe_type.person.txt";
 
         internal const string TripPinListOperations = "trippin.list_operations.json";
 
@@ -68,7 +72,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// <c>odata_describe_type</c> for Northwind Customers matches the current baseline.
+        /// <c>odata_describe_type</c> <c>format=json</c> for Northwind Customers matches the current baseline.
         /// </summary>
         [TestMethod]
         public async Task DescribeType_Northwind_Customer_MatchesCurrentBaseline()
@@ -79,7 +83,18 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// <c>odata_describe_type</c> for TripPin People matches the current baseline.
+        /// <c>odata_describe_type</c> default text for Northwind Customers matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeType_Northwind_Customer_TextMatchesCurrentBaseline()
+        {
+            var payloads = await BuildNorthwindPayloadsAsync();
+
+            payloads[NorthwindDescribeTypeCustomerText].Should().Be(ReadCurrent(NorthwindDescribeTypeCustomerText));
+        }
+
+        /// <summary>
+        /// <c>odata_describe_type</c> <c>format=json</c> for TripPin People matches the current baseline.
         /// </summary>
         [TestMethod]
         public async Task DescribeType_TripPin_Person_MatchesCurrentBaseline()
@@ -87,6 +102,17 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var payloads = await BuildTripPinPayloadsAsync();
 
             payloads[TripPinDescribeTypePerson].Should().Be(ReadCurrent(TripPinDescribeTypePerson));
+        }
+
+        /// <summary>
+        /// <c>odata_describe_type</c> default text for TripPin People matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeType_TripPin_Person_TextMatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinDescribeTypePersonText].Should().Be(ReadCurrent(TripPinDescribeTypePersonText));
         }
 
         /// <summary>
@@ -158,14 +184,15 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             Directory.CreateDirectory(beforePath);
             Directory.CreateDirectory(currentPath);
 
+            // Before/ is a one-time snapshot of the pre-optimization payloads. Once it holds anything it is never
+            // touched again, so files that only exist after the optimization never masquerade as "before".
+            var writeBefore = !Directory.EnumerateFiles(beforePath).Any();
             foreach (var pair in payloads)
             {
                 File.WriteAllText(Path.Combine(currentPath, pair.Key), pair.Value);
-
-                var beforeFile = Path.Combine(beforePath, pair.Key);
-                if (!File.Exists(beforeFile))
+                if (writeBefore)
                 {
-                    File.WriteAllText(beforeFile, pair.Value);
+                    File.WriteAllText(Path.Combine(beforePath, pair.Key), pair.Value);
                 }
             }
         }
@@ -188,7 +215,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             return new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 [NorthwindCreateCustomerInputSchema] = catalog.Tools.Single(tool => tool.Name == "create_customer").InputSchema,
-                [NorthwindDescribeTypeCustomer] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers")),
+                [NorthwindDescribeTypeCustomer] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json")),
+                [NorthwindDescribeTypeCustomerText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers")),
                 [NorthwindListEntitySets] = await InvokeStructuredAsync(runtime, "odata_list_entity_sets", null),
                 [NorthwindListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null),
                 [NorthwindToolsList] = BuildToolsList(catalog)
@@ -208,7 +236,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             return new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                [TripPinDescribeTypePerson] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People")),
+                [TripPinDescribeTypePerson] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People", "format", "json")),
+                [TripPinDescribeTypePersonText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People")),
                 [TripPinListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null)
             };
         }
@@ -253,6 +282,25 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             result.StructuredContent.Should().NotBeNullOrWhiteSpace();
 
             return result.StructuredContent!;
+        }
+
+        /// <summary>
+        /// Invokes a catalog-only tool and returns its text, asserting it carries no structured content.
+        /// </summary>
+        /// <param name="runtime">The runtime.</param>
+        /// <param name="name">The tool name.</param>
+        /// <param name="arguments">The arguments, if any.</param>
+        /// <returns>
+        /// The text content.
+        /// </returns>
+        internal static async Task<string> InvokeTextAsync(ODataToolRuntime runtime, string name, Dictionary<string, JsonElement>? arguments)
+        {
+            var result = await runtime.InvokeAsync(name, arguments, CancellationToken.None);
+            result.IsError.Should().BeFalse(result.Text);
+            result.StructuredContent.Should().BeNull();
+            result.Text.Should().NotBeNullOrWhiteSpace();
+
+            return result.Text;
         }
 
         /// <summary>

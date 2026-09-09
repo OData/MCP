@@ -145,10 +145,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse();
-            result.StructuredContent.Should().Contain("People who travel.");
-            result.StructuredContent.Should().Contain("A person who travels.");
-            result.StructuredContent.Should().Contain("Unique person name.");
-            result.StructuredContent.Should().Contain("Other people this person knows.");
+            result.Text.Should().Contain("// People who travel.");
+            result.Text.Should().Contain("// A person who travels.");
+            result.Text.Should().Contain("// key; Unique person name.");
+            result.Text.Should().Contain("// Other people this person knows.");
         }
 
         #endregion

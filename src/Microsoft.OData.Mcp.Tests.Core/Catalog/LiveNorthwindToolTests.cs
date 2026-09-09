@@ -193,7 +193,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("CustomerID");
+            result.Text.Should().Contain("CustomerID");
             capture.Requests.Should().BeEmpty();
         }
 
@@ -219,8 +219,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Order_Details"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("OrderID");
-            result.StructuredContent.Should().Contain("ProductID");
+            result.Text.Should().StartWith("Order_Detail  (set: Order_Details, key: OrderID, ProductID)");
         }
 
         /// <summary>
@@ -235,8 +234,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             bySet.IsError.Should().BeFalse(bySet.Text);
             byType.IsError.Should().BeFalse(byType.Text);
-            bySet.StructuredContent.Should().Contain("ProductID");
-            bySet.StructuredContent.Should().Contain("Category");
+            bySet.Text.Should().Contain("ProductID: int // key");
+            bySet.Text.Should().Contain("Category? -> Category");
+            byType.Text.Should().Be(bySet.Text);
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "customers"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("CustomerID");
+            result.Text.Should().Contain("CustomerID: string // key");
         }
 
         /// <summary>

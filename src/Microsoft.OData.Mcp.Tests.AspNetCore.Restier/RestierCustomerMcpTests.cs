@@ -298,7 +298,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("CompanyName");
+            result.Text.Should().Contain("CompanyName");
         }
 
         /// <summary>

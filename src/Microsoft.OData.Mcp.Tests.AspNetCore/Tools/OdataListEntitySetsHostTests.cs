@@ -276,7 +276,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             {
                 var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", name));
                 described.IsError.Should().BeFalse(described.Text);
-                described.StructuredContent.Should().Match(text => text.Contains(name, StringComparison.Ordinal) || text.Contains("keys", StringComparison.Ordinal));
+                described.Text.Should().Contain($"(set: {name}");
             }
         }
 

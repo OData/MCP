@@ -4,22 +4,44 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using Microsoft.OData.Mcp.Core.Models;
+using static Microsoft.OData.Mcp.Core.Constants.ODataMcpCatalogConstants;
 
 namespace Microsoft.OData.Mcp.Core.Catalog
 {
 
     /// <summary>
-    /// The shape facts for one entity type that every describe surface renders from: exposed properties,
-    /// required-on-create names, and the operations bound to the type.
+    /// The shape of one entity type as the calling AI reads it: the declaration-grammar text, the compact JSON,
+    /// the exposed properties, the required-on-create names, and the operations bound to the type.
     /// </summary>
     /// <remarks>
     /// Instances are computed once per type and cached for the catalog lifetime when the model is static
     /// (<see cref="ODataMcpCatalogOptions.IsDynamicModel"/> is <c>false</c>). Everything here comes from
-    /// declared EDM members; CLR entity types are never walked.
+    /// declared EDM members; CLR entity types are never walked. The grammar is specified in
+    /// <c>specs/v3/TYPE-SHAPES.md</c>.
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// Customer  (set: Customers, key: CustomerID)
+    ///   CustomerID: string // key
+    ///   CompanyName?: string
+    ///   Orders -> Order[]
+    ///   operations
+    ///     Discount(percentage: int) // writes
+    /// </code>
+    /// </example>
     public sealed class EdmTypeShape
     {
+
+        #region Fields
+
+        internal const int InlineMaxLength = 16;
+
+        internal readonly EdmModel _model;
+
+        #endregion
 
         #region Properties
 
@@ -54,6 +76,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public string FullName => EntityType.FullName;
 
         /// <summary>
+        /// Gets the compact JSON representation used by <c>format=json</c> and <c>resources/read</c> type cards.
+        /// </summary>
+        public string Json { get; }
+
+        /// <summary>
         /// Gets the names of exposed properties that a POST must include.
         /// </summary>
         /// <remarks>
@@ -61,6 +88,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <see cref="EdmProperty.Computed"/>. Store generation is never inferred from the property type.
         /// </remarks>
         public IReadOnlyList<string> RequiredOnCreate { get; }
+
+        /// <summary>
+        /// Gets the declaration-grammar text used by <c>format=text</c>, the default describe representation.
+        /// </summary>
+        public string Text { get; }
 
         #endregion
 
@@ -78,6 +110,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(entityType);
 
+            _model = model;
             EntityType = entityType;
             EntitySet = entitySet;
             ExposedProperties = [.. entityType.Properties.Where(ODataMcpCatalog.IsExposedProperty)];
@@ -86,6 +119,9 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var bindingTypes = ResolveBindingTypeNames(model, entityType);
             BoundActions = [.. model.Actions.Where(action => action.IsBound && BindsTo(action.BindingParameterType, bindingTypes))];
             BoundFunctions = [.. model.Functions.Where(function => function.IsBound && BindsTo(function.BindingParameterType, bindingTypes))];
+
+            Text = RenderText();
+            Json = RenderJson();
         }
 
         #endregion
@@ -93,7 +129,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         #region Public Methods
 
         /// <summary>
-        /// Determines whether a binding parameter type is a collection of one of the given type names.
+        /// Determines whether a binding parameter type is a collection.
         /// </summary>
         /// <param name="bindingParameterType">The operation's binding parameter type, or <c>null</c>.</param>
         /// <returns>
@@ -122,9 +158,129 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 && !property.Computed;
         }
 
+        /// <summary>
+        /// Maps an EDM type name to the shape grammar's type token.
+        /// </summary>
+        /// <param name="model">The Core EDM, used to resolve enumeration members.</param>
+        /// <param name="edmType">The EDM type name, for example <c>Edm.String</c>, <c>NS.Color</c>, or <c>Collection(NS.Order)</c>.</param>
+        /// <param name="maxLength">The declared <c>MaxLength</c>, inlined as <c>string(n)</c> only when at most 16.</param>
+        /// <returns>
+        /// The token: <c>string</c>, <c>string(n)</c>, <c>bool</c>, <c>int</c>, <c>int64</c>, <c>number</c>, <c>date</c>,
+        /// <c>datetime</c>, <c>time</c>, <c>duration</c>, <c>guid</c>, <c>enum(A|B)</c>, a short type name, or any of those with <c>[]</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
+        public static string MapShapeType(EdmModel model, string? edmType, int? maxLength = null)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            if (string.IsNullOrWhiteSpace(edmType))
+            {
+                return "string";
+            }
+
+            if (edmType.StartsWith("Collection(", StringComparison.Ordinal) && edmType.EndsWith(')'))
+            {
+                return $"{MapShapeType(model, edmType["Collection(".Length..^1], maxLength)}[]";
+            }
+
+            var enumType = model.GetEnumType(edmType);
+            if (enumType is not null)
+            {
+                return $"enum({string.Join("|", enumType.Members.Select(member => member.Name))})";
+            }
+
+            return edmType switch
+            {
+                "Edm.String" when maxLength is > 0 and <= InlineMaxLength => $"string({maxLength})",
+                "Edm.String" => "string",
+                "Edm.Boolean" => "bool",
+                "Edm.Byte" or "Edm.SByte" or "Edm.Int16" or "Edm.Int32" => "int",
+                "Edm.Int64" => "int64",
+                "Edm.Decimal" or "Edm.Double" or "Edm.Single" => "number",
+                "Edm.Date" => "date",
+                "Edm.DateTimeOffset" => "datetime",
+                "Edm.TimeOfDay" => "time",
+                "Edm.Duration" => "duration",
+                "Edm.Guid" => "guid",
+                _ when edmType.StartsWith("Edm.", StringComparison.Ordinal) => edmType["Edm.".Length..],
+                _ => ShortName(edmType)
+            };
+        }
+
+        /// <summary>
+        /// Renders an operation signature in the shape grammar, omitting the binding parameter.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="name">The operation name, or <c>null</c> to render only the parenthesized part (compact JSON).</param>
+        /// <param name="parameters">The declared parameters, including the binding parameter when bound.</param>
+        /// <param name="returnType">The declared return type, or <c>null</c> for none.</param>
+        /// <param name="isBound">Whether the first parameter is the binding parameter.</param>
+        /// <param name="bindingParameterType">The binding parameter type, used for the <c>// collection</c> marker.</param>
+        /// <param name="writes">Whether the operation mutates (an EDM action).</param>
+        /// <param name="description">CSDL documentation, or <c>null</c>.</param>
+        /// <returns>
+        /// For example <c>ShareTrip(userName: string, tripId: int) // writes</c> or <c>(count: int) -> Person[] // collection</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="parameters"/> is null.</exception>
+        public static string RenderOperation(EdmModel model, string? name, IReadOnlyList<EdmParameter> parameters, string? returnType, bool isBound, string? bindingParameterType, bool writes, string? description)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(parameters);
+
+            var arguments = parameters
+                .Skip(isBound ? 1 : 0)
+                .Select(parameter => $"{parameter.Name}{(parameter.Nullable ? "?" : string.Empty)}: {MapShapeType(model, parameter.Type, parameter.MaxLength)}");
+            var builder = new StringBuilder();
+            builder.Append(name).Append('(').Append(string.Join(", ", arguments)).Append(')');
+            if (!string.IsNullOrWhiteSpace(returnType))
+            {
+                builder.Append(" -> ").Append(MapShapeType(model, returnType));
+            }
+
+            var markers = new List<string>();
+            if (isBound && IsCollectionBound(bindingParameterType))
+            {
+                markers.Add("collection");
+            }
+
+            if (writes)
+            {
+                markers.Add("writes");
+            }
+
+            AppendComment(builder, markers, DocumentationFor(description, null, name));
+
+            return builder.ToString();
+        }
+
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Appends a <c>// marker, marker; docs</c> comment when there is anything to say.
+        /// </summary>
+        /// <param name="builder">The line under construction.</param>
+        /// <param name="markers">Structural markers such as <c>key</c> or <c>writes</c>.</param>
+        /// <param name="documentation">Documentation text, or <c>null</c>.</param>
+        internal static void AppendComment(StringBuilder builder, IReadOnlyList<string> markers, string? documentation)
+        {
+            var parts = new List<string>();
+            if (markers.Count > 0)
+            {
+                parts.Add(string.Join(", ", markers));
+            }
+
+            if (!string.IsNullOrWhiteSpace(documentation))
+            {
+                parts.Add(documentation);
+            }
+
+            if (parts.Count > 0)
+            {
+                builder.Append(" // ").Append(string.Join("; ", parts));
+            }
+        }
 
         /// <summary>
         /// Determines whether a binding parameter type names one of the given types, directly or as a collection.
@@ -146,6 +302,299 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 : bindingParameterType;
 
             return typeNames.Contains(target, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Returns the documentation worth printing: the description when it carries information, plus the long
+        /// description when it adds something the description did not say.
+        /// </summary>
+        /// <param name="description">The CSDL description.</param>
+        /// <param name="longDescription">The CSDL long description.</param>
+        /// <param name="memberName">The member name, which is never documentation.</param>
+        /// <returns>
+        /// The combined text, or <c>null</c> when nothing informative is declared.
+        /// </returns>
+        internal static string? DocumentationFor(string? description, string? longDescription, string? memberName)
+        {
+            var summary = Informative(description, memberName) ? description!.Trim() : null;
+            var detail = Informative(longDescription, memberName) && !string.Equals(longDescription!.Trim(), summary, StringComparison.Ordinal)
+                ? longDescription.Trim()
+                : null;
+
+            return (summary, detail) switch
+            {
+                (null, null) => null,
+                (_, null) => summary,
+                (null, _) => detail,
+                _ => $"{summary} {detail}"
+            };
+        }
+
+        /// <summary>
+        /// Determines whether a documentation string says something beyond the member name.
+        /// </summary>
+        /// <param name="text">The documentation string.</param>
+        /// <param name="memberName">The member name.</param>
+        /// <returns>
+        /// <c>true</c> when the text is non-whitespace and not the member name.
+        /// </returns>
+        internal static bool Informative(string? text, string? memberName)
+        {
+            return !string.IsNullOrWhiteSpace(text)
+                && !string.Equals(text.Trim(), memberName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Counts the namespaces that declare entity, complex, or enumeration types.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <returns>
+        /// The distinct type namespace count. Container-only namespaces do not count.
+        /// </returns>
+        internal static int CountTypeNamespaces(EdmModel model)
+        {
+            return model.EntityTypes.Select(type => type.Namespace)
+                .Concat(model.ComplexTypes.Select(type => type.Namespace))
+                .Concat(model.EnumTypes.Select(type => type.Namespace))
+                .Distinct(StringComparer.Ordinal)
+                .Count();
+        }
+
+        /// <summary>
+        /// Finds the first enumeration type used by an exposed property, for the literal hint.
+        /// </summary>
+        /// <returns>
+        /// The enumeration type, or <c>null</c> when the type has no enum properties.
+        /// </returns>
+        internal EdmEnumType? FirstEnumType()
+        {
+            foreach (var property in ExposedProperties)
+            {
+                var enumType = _model.GetEnumType(property.IsCollection ? property.ElementType : property.Type);
+                if (enumType is not null)
+                {
+                    return enumType;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the header name: the short name, or the full name when the model declares types in more than one namespace.
+        /// </summary>
+        /// <returns>
+        /// The display name.
+        /// </returns>
+        internal string HeaderName()
+        {
+            return CountTypeNamespaces(_model) > 1 ? EntityType.FullName : EntityType.Name;
+        }
+
+        /// <summary>
+        /// Resolves the enumeration type behind a property, if any.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>
+        /// The enumeration type, or <c>null</c>.
+        /// </returns>
+        internal EdmEnumType? EnumTypeOf(EdmProperty property)
+        {
+            return _model.GetEnumType(property.IsCollection ? property.ElementType : property.Type);
+        }
+
+        /// <summary>
+        /// Renders the compact JSON representation.
+        /// </summary>
+        /// <returns>
+        /// One JSON object keyed by the header name.
+        /// </returns>
+        internal string RenderJson()
+        {
+            var body = new Dictionary<string, object?>(StringComparer.Ordinal);
+            if (EntitySet is not null)
+            {
+                body[Set] = EntitySet.Name;
+            }
+
+            body[Key] = EntityType.Key;
+
+            var description = Informative(EntityType.Description, EntityType.Name) ? EntityType.Description!.Trim() : null;
+            var longDescription = Informative(EntityType.LongDescription, EntityType.Name) ? EntityType.LongDescription!.Trim() : null;
+            var setDescription = EntitySet is not null && Informative(EntitySet.Description, EntitySet.Name) ? EntitySet.Description!.Trim() : null;
+            EdmDocumentation.Add(body, Description, description);
+            EdmDocumentation.Add(body, LongDescription, longDescription, description);
+            EdmDocumentation.Add(body, SetDescription, setDescription, description);
+
+            var firstEnum = FirstEnumType();
+            if (firstEnum is not null)
+            {
+                body[EnumLiteral] = RenderEnumLiteral(firstEnum);
+            }
+
+            var props = new Dictionary<string, string>(StringComparer.Ordinal);
+            var docs = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var property in ExposedProperties)
+            {
+                var token = MapShapeType(_model, property.Type, property.MaxLength);
+                var enumType = EnumTypeOf(property);
+                if (enumType?.IsFlags == true)
+                {
+                    token = token.Replace("enum(", "flags(", StringComparison.Ordinal);
+                }
+
+                props[property.Name] = IsRequiredOnCreate(property) ? $"{token}!" : token;
+                EdmDocumentation.Add(docs, property.Name, DocumentationFor(property.Description, property.LongDescription, property.Name));
+            }
+
+            body[Props] = props;
+
+            var navs = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var navigation in EntityType.NavigationProperties)
+            {
+                navs[navigation.Name] = MapShapeType(_model, navigation.Type);
+                EdmDocumentation.Add(docs, navigation.Name, DocumentationFor(navigation.Description, navigation.LongDescription, navigation.Name));
+            }
+
+            if (docs.Count > 0)
+            {
+                body[Docs] = docs;
+            }
+
+            if (navs.Count > 0)
+            {
+                body[Navs] = navs;
+            }
+
+            var ops = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var function in BoundFunctions)
+            {
+                ops[function.Name] = RenderOperation(_model, null, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description);
+            }
+
+            foreach (var action in BoundActions)
+            {
+                ops[action.Name] = RenderOperation(_model, null, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description);
+            }
+
+            if (ops.Count > 0)
+            {
+                body[Ops] = ops;
+            }
+
+            var root = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [HeaderName()] = body
+            };
+
+            return JsonSerializer.Serialize(root, ODataMcpCatalog.SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Renders the OData filter literal example for an enumeration, for example <c>NS.Color'Red'</c>.
+        /// </summary>
+        /// <param name="enumType">The enumeration type.</param>
+        /// <returns>
+        /// The literal.
+        /// </returns>
+        internal static string RenderEnumLiteral(EdmEnumType enumType)
+        {
+            return $"{enumType.FullName}'{enumType.Members[0].Name}'";
+        }
+
+        /// <summary>
+        /// Renders the declaration-grammar text.
+        /// </summary>
+        /// <returns>
+        /// The text, LF-separated, without a trailing newline.
+        /// </returns>
+        internal string RenderText()
+        {
+            var lines = new List<string>();
+            var headerParts = new List<string>();
+            if (EntitySet is not null)
+            {
+                headerParts.Add($"set: {EntitySet.Name}");
+            }
+
+            if (EntityType.Key.Count > 0)
+            {
+                headerParts.Add($"key: {string.Join(", ", EntityType.Key)}");
+            }
+
+            lines.Add(headerParts.Count > 0 ? $"{HeaderName()}  ({string.Join(", ", headerParts)})" : HeaderName());
+
+            var headerDocs = new List<string>();
+            AddDistinct(headerDocs, EntityType.Description, EntityType.Name);
+            AddDistinct(headerDocs, EntityType.LongDescription, EntityType.Name);
+            if (EntitySet is not null)
+            {
+                AddDistinct(headerDocs, EntitySet.Description, EntitySet.Name);
+                AddDistinct(headerDocs, EntitySet.LongDescription, EntitySet.Name);
+            }
+
+            lines.AddRange(headerDocs.Select(doc => $"  // {doc}"));
+
+            var firstEnum = FirstEnumType();
+            if (firstEnum is not null)
+            {
+                lines.Add($"  // enum literal: {RenderEnumLiteral(firstEnum)}");
+            }
+
+            foreach (var property in ExposedProperties)
+            {
+                var builder = new StringBuilder("  ");
+                builder.Append(property.Name);
+                if (!IsRequiredOnCreate(property))
+                {
+                    builder.Append('?');
+                }
+
+                builder.Append(": ").Append(MapShapeType(_model, property.Type, property.MaxLength));
+
+                var markers = new List<string>();
+                if (EntityType.Key.Contains(property.Name, StringComparer.Ordinal))
+                {
+                    markers.Add(property.Computed ? "key, store-generated" : "key");
+                }
+
+                if (EnumTypeOf(property)?.IsFlags == true)
+                {
+                    markers.Add("flags, comma-separated");
+                }
+
+                var summary = Informative(property.Description, property.Name) ? property.Description!.Trim() : null;
+                AppendComment(builder, markers, summary);
+                lines.Add(builder.ToString());
+
+                if (Informative(property.LongDescription, property.Name) && !string.Equals(property.LongDescription!.Trim(), summary, StringComparison.Ordinal))
+                {
+                    lines.Add($"    // {property.LongDescription.Trim()}");
+                }
+            }
+
+            foreach (var navigation in EntityType.NavigationProperties)
+            {
+                var builder = new StringBuilder("  ");
+                builder.Append(navigation.Name);
+                if (!navigation.IsCollection && navigation.Nullable)
+                {
+                    builder.Append('?');
+                }
+
+                builder.Append(" -> ").Append(MapShapeType(_model, navigation.Type));
+                AppendComment(builder, [], DocumentationFor(navigation.Description, navigation.LongDescription, navigation.Name));
+                lines.Add(builder.ToString());
+            }
+
+            if (BoundFunctions.Count > 0 || BoundActions.Count > 0)
+            {
+                lines.Add("  operations");
+                lines.AddRange(BoundFunctions.Select(function => $"    {RenderOperation(_model, function.Name, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description)}"));
+                lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description)}"));
+            }
+
+            return string.Join("\n", lines);
         }
 
         /// <summary>
@@ -173,6 +622,40 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             }
 
             return names;
+        }
+
+        /// <summary>
+        /// Returns the part of a qualified name after the last dot.
+        /// </summary>
+        /// <param name="qualifiedName">The qualified name.</param>
+        /// <returns>
+        /// The short name.
+        /// </returns>
+        internal static string ShortName(string qualifiedName)
+        {
+            var dot = qualifiedName.LastIndexOf('.');
+
+            return dot >= 0 ? qualifiedName[(dot + 1)..] : qualifiedName;
+        }
+
+        /// <summary>
+        /// Adds an informative documentation string to a list unless an equal string is already present.
+        /// </summary>
+        /// <param name="target">The list.</param>
+        /// <param name="text">The candidate text.</param>
+        /// <param name="memberName">The member the text documents.</param>
+        internal static void AddDistinct(List<string> target, string? text, string memberName)
+        {
+            if (!Informative(text, memberName))
+            {
+                return;
+            }
+
+            var trimmed = text!.Trim();
+            if (!target.Contains(trimmed, StringComparer.Ordinal))
+            {
+                target.Add(trimmed);
+            }
         }
 
         #endregion

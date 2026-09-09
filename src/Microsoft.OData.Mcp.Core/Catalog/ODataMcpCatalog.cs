@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
@@ -24,6 +25,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
         internal static readonly JsonSerializerOptions SchemaSerializerOptions = new()
         {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
@@ -365,37 +367,48 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Builds a JSON type card for an entity set using declared properties only.
+        /// Builds the compact JSON type card for an entity set, the same shape <c>odata_describe_type</c> returns for <c>format=json</c>.
         /// </summary>
         /// <param name="set">The entity set.</param>
         /// <param name="entityType">The entity type, if resolved.</param>
         /// <returns>
-        /// JSON text.
+        /// JSON text. When the set's type is not declared, a card that names only the set and its declared type.
         /// </returns>
         internal string BuildTypeCard(EdmEntitySet set, EdmEntityType? entityType)
         {
-            var card = new Dictionary<string, object?>
+            if (entityType is null)
             {
-                [Description] = EdmDocumentation.First(set.Description, set.LongDescription, entityType?.Description, entityType?.LongDescription),
-                [EntitySet] = set.Name,
-                [EntityType] = set.EntityType,
-                [Keys] = entityType?.Key ?? [],
-                [LongDescription] = EdmDocumentation.First(set.LongDescription, entityType?.LongDescription),
-                [Navigations] = entityType?.NavigationProperties.Select(navigation => new Dictionary<string, object?>
+                var card = new Dictionary<string, object?>
                 {
-                    [Description] = EdmDocumentation.First(navigation.Description, navigation.LongDescription),
-                    [Name] = navigation.Name,
-                    [ODataMcpCatalogConstants.Type] = navigation.Type
-                }).ToList() ?? [],
-                [Properties] = entityType?.Properties.Where(IsExposedProperty).Select(property => new Dictionary<string, object?>
-                {
-                    [Description] = EdmDocumentation.First(property.Description, property.LongDescription),
-                    [Name] = property.Name,
-                    [ODataMcpCatalogConstants.Type] = property.Type
-                }).ToList() ?? []
-            };
+                    [ShortTypeName(set.EntityType)] = new Dictionary<string, object?>
+                    {
+                        [Set] = set.Name,
+                        [EntityType] = set.EntityType
+                    }
+                };
 
-            return JsonSerializer.Serialize(card, SchemaSerializerOptions);
+                return JsonSerializer.Serialize(card, SchemaSerializerOptions);
+            }
+
+            var shape = GetShape(entityType);
+            if (!ReferenceEquals(shape.EntitySet, set))
+            {
+                shape = new EdmTypeShape(_model, entityType, set);
+            }
+
+            return shape.Json;
+        }
+
+        /// <summary>
+        /// Returns the part of a qualified type name after the last dot.
+        /// </summary>
+        /// <param name="qualifiedName">The qualified name.</param>
+        /// <returns>
+        /// The short name.
+        /// </returns>
+        internal static string ShortTypeName(string qualifiedName)
+        {
+            return EdmTypeShape.ShortName(qualifiedName);
         }
 
         /// <summary>
@@ -423,8 +436,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Describes declared properties, keys, navigations, and CSDL documentation for a type or entity set.",
-                    InputSchema = """{"type":"object","properties":{"name":{"type":"string","description":"Entity set or type name declared in the model."}},"required":["name"]}""",
+                    Description = "Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. Bound operations are here; unbound are on odata_list_operations. No ? = required on create; Name?: = optional. PATCH may omit any field; JSON null is invalid for required fields.",
+                    InputSchema = """{"type":"object","properties":{"name":{"type":"string","description":"Entity set or type name declared in the model."},"format":{"type":"string","enum":["text","json"]}},"required":["name"]}""",
                     Name = OdataDescribeType,
                     ReadOnlyHint = true,
                     IdempotentHint = true,

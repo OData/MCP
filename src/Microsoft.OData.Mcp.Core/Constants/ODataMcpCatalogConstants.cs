@@ -57,6 +57,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Description = "description";
 
         /// <summary>
+        /// Compact-shape key for member documentation.
+        /// </summary>
+        public const string Docs = "docs";
+
+        /// <summary>
         /// <c>Edm.Binary</c>.
         /// </summary>
         public const string EdmBinary = "Edm.Binary";
@@ -132,9 +137,9 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string EntityType = "entityType";
 
         /// <summary>
-        /// Entity type documentation on <c>odata_describe_type</c>.
+        /// Compact-shape key that carries the OData enum filter literal example.
         /// </summary>
-        public const string EntityTypeDescription = "entityTypeDescription";
+        public const string EnumLiteral = "enumLiteral";
 
         /// <summary>
         /// OData <c>$expand</c> argument.
@@ -145,6 +150,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// OData <c>$filter</c> argument.
         /// </summary>
         public const string Filter = "filter";
+
+        /// <summary>
+        /// Representation argument on describe tools.
+        /// </summary>
+        public const string Format = "format";
 
         /// <summary>
         /// Operation kind <c>function</c>.
@@ -165,6 +175,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// JSON Schema boolean.
         /// </summary>
         public const string JsonBoolean = "boolean";
+
+        /// <summary>
+        /// <c>format</c> value that selects compact JSON.
+        /// </summary>
+        public const string JsonFormat = "json";
 
         /// <summary>
         /// JSON Schema number.
@@ -232,9 +247,9 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Navigations = "navigations";
 
         /// <summary>
-        /// Whether a property is nullable.
+        /// Compact-shape key for navigation properties.
         /// </summary>
-        public const string Nullable = "nullable";
+        public const string Navs = "navs";
 
         /// <summary>
         /// <c>odata_call</c>.
@@ -292,6 +307,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Operations = "operations";
 
         /// <summary>
+        /// Compact-shape key for bound operations.
+        /// </summary>
+        public const string Ops = "ops";
+
+        /// <summary>
         /// OData <c>$orderby</c> argument.
         /// </summary>
         public const string OrderBy = "orderby";
@@ -307,6 +327,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Properties = "properties";
 
         /// <summary>
+        /// Compact-shape key for structural properties.
+        /// </summary>
+        public const string Props = "props";
+
+        /// <summary>
         /// Operation return type.
         /// </summary>
         public const string ReturnType = "returnType";
@@ -317,9 +342,24 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Select = "select";
 
         /// <summary>
+        /// Compact-shape key for the entity set a type is reached through.
+        /// </summary>
+        public const string Set = "set";
+
+        /// <summary>
+        /// Compact-shape key for entity set documentation when it differs from the type's.
+        /// </summary>
+        public const string SetDescription = "setDescription";
+
+        /// <summary>
         /// OData <c>$skip</c> argument.
         /// </summary>
         public const string Skip = "skip";
+
+        /// <summary>
+        /// <c>format</c> value that selects the declaration-grammar text. The default.
+        /// </summary>
+        public const string TextFormat = "text";
 
         /// <summary>
         /// OData <c>$top</c> argument.

@@ -261,7 +261,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var customers = Session().Catalog.Resources.Single(item => item.Name == "Customers");
             customers.Description.Should().NotContain("Contoso");
-            customers.ReadContents.Should().Contain("keys");
+            customers.ReadContents.Should().Contain("\"key\":[");
             customers.ReadContents.Should().NotContain("@odata.context");
         }
 
@@ -322,9 +322,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task ResourcesRead_EntitySet_ReturnsTypeCardNotFeed()
         {
             var card = Session().Catalog.Resources.Single(item => item.Name == "Customers").ReadContents;
-            card.Should().Contain("keys");
-            card.Should().Contain("properties");
-            card.Should().Contain("navigations");
+            card.Should().Contain("\"key\":[");
+            card.Should().Contain("\"props\":{");
+            card.Should().Contain("\"navs\":{");
             card.Should().NotContain("Contoso");
             card.Should().NotContain("@odata.context");
 
@@ -333,7 +333,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 client,
                 """{"jsonrpc":"2.0","id":"1","method":"resources/read","params":{"uri":"odata://odata/Customers"}}""");
             var body = await McpJsonRpc.ReadBodyAsync(response);
-            body.Should().Contain("properties");
+            body.Should().Contain("props");
             body.Should().NotContain("Contoso");
         }
 

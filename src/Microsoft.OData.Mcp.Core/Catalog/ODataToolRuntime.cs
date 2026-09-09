@@ -248,15 +248,40 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Describes a declared type or entity set, including CSDL documentation.
+        /// Builds a text-only result, applying the response size guard.
         /// </summary>
-        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="text">The text payload.</param>
         /// <returns>
-        /// The invocation result.
+        /// The invocation result with no structured content.
+        /// </returns>
+        internal ODataToolInvocationResult CompleteText(string text)
+        {
+            if (text.Length > _maxResponseBytes)
+            {
+                return new ODataToolInvocationResult
+                {
+                    IsError = true,
+                    Text = "The OData response exceeded the size limit. Add select and top to reduce the payload."
+                };
+            }
+
+            return new ODataToolInvocationResult
+            {
+                Text = text
+            };
+        }
+
+        /// <summary>
+        /// Describes a declared type or entity set in the compact shape grammar.
+        /// </summary>
+        /// <param name="arguments">Tool arguments: <c>name</c> (required) and <c>format</c> (<c>text</c> or <c>json</c>).</param>
+        /// <returns>
+        /// The declaration text, or the compact JSON when <c>format=json</c>. One representation per call.
         /// </returns>
         internal ODataToolInvocationResult DescribeType(IReadOnlyDictionary<string, JsonElement> arguments)
         {
             var name = ReadRequired(arguments, Name);
+            var format = ReadChoice(arguments, Format, [TextFormat, JsonFormat], TextFormat);
             var set = _catalog.ResolveIncludedSets().FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             var type = set is not null
                 ? _catalog.ResolveEntityType(set)
@@ -267,33 +292,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return Error($"Type or entity set '{name}' is not declared in the model.");
             }
 
-            var payload = new Dictionary<string, object?>
+            var shape = _catalog.GetShape(type);
+            if (set is not null && !ReferenceEquals(shape.EntitySet, set))
             {
-                [Description] = EdmDocumentation.First(set?.Description, set?.LongDescription, type.Description, type.LongDescription),
-                [EntitySet] = set?.Name,
-                [EntityTypeDescription] = EdmDocumentation.First(type.Description, type.LongDescription),
-                [Keys] = type.Key,
-                [LongDescription] = EdmDocumentation.First(set?.LongDescription, type.LongDescription),
-                [Name] = type.Name,
-                [Namespace] = type.Namespace,
-                [Navigations] = type.NavigationProperties.Select(navigation => new Dictionary<string, object?>
-                {
-                    [Description] = EdmDocumentation.First(navigation.Description, navigation.LongDescription),
-                    [Name] = navigation.Name,
-                    [ODataMcpCatalogConstants.Type] = navigation.Type
-                }).ToList(),
-                [Properties] = type.Properties.Where(ODataMcpCatalog.IsExposedProperty).Select(property => new Dictionary<string, object?>
-                {
-                    [Description] = EdmDocumentation.First(property.Description, property.LongDescription),
-                    [Name] = property.Name,
-                    [ODataMcpCatalogConstants.Nullable] = property.Nullable,
-                    [ODataMcpCatalogConstants.Type] = property.Type
-                }).ToList()
-            };
+                shape = new EdmTypeShape(_catalog._model, type, set);
+            }
 
-            var json = JsonSerializer.Serialize(payload, ODataMcpCatalog.SchemaSerializerOptions);
-
-            return Complete(json, type.Description ?? type.Name);
+            return format == JsonFormat
+                ? Complete(shape.Json, type.Name)
+                : CompleteText(shape.Text);
         }
 
         /// <summary>
@@ -700,6 +707,38 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             ArgumentException.ThrowIfNullOrWhiteSpace(text, name);
 
             return text;
+        }
+
+        /// <summary>
+        /// Reads an optional argument that must be one of a fixed set of lowercase values.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="name">The argument name.</param>
+        /// <param name="allowed">The accepted values, lowercase.</param>
+        /// <param name="defaultValue">The value used when the argument is absent or JSON null.</param>
+        /// <returns>
+        /// The matched allowed value.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not one of <paramref name="allowed"/>.</exception>
+        /// <remarks>
+        /// Matching ignores case and surrounding whitespace. Anything else, including a non-string JSON value, is rejected
+        /// with the accepted values in the message so the caller can correct the first retry.
+        /// </remarks>
+        internal static string ReadChoice(IReadOnlyDictionary<string, JsonElement> arguments, string name, IReadOnlyList<string> allowed, string defaultValue)
+        {
+            if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return defaultValue;
+            }
+
+            var text = value.ValueKind == JsonValueKind.String ? value.GetString() ?? string.Empty : value.GetRawText();
+            var match = allowed.FirstOrDefault(candidate => candidate.Equals(text.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (match is null)
+            {
+                throw new ArgumentException($"Unknown {name} '{text}'. Use {string.Join(" or ", allowed)}.", nameof(arguments));
+            }
+
+            return match;
         }
 
         /// <summary>

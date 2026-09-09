@@ -330,8 +330,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public void ResourcesRead_DoesNotExecuteQuery()
         {
             var card = Catalog().Resources.First(item => item.Name == "Customers").ReadContents;
-            card.Should().Contain("keys");
-            card.Should().Contain("properties");
+            card.Should().Contain("\"key\":[");
+            card.Should().Contain("\"props\":{");
             card.Should().NotContain("@odata.context");
             card.Should().NotContain("Contoso");
         }
@@ -356,9 +356,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task ResourcesRead_EntitySet_ReturnsTypeCardNotFeed()
         {
             var card = Catalog().Resources.First(item => item.Name == "Customers").ReadContents;
-            card.Should().Contain("keys");
-            card.Should().Contain("properties");
-            card.Should().Contain("navigations");
+            card.Should().Contain("\"key\":[");
+            card.Should().Contain("\"props\":{");
+            card.Should().Contain("\"navs\":{");
             card.Should().NotContain("@odata.context");
             card.Should().NotContain("Contoso");
 

@@ -46,9 +46,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var described = await Runtime().InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"), CancellationToken.None);
 
             described.IsError.Should().BeFalse(described.Text);
-            described.StructuredContent.Should().Contain("Id");
-            described.StructuredContent.Should().Contain("CompanyName");
-            described.StructuredContent.Should().Contain("Orders");
+            described.Text.Should().Contain("Id");
+            described.Text.Should().Contain("CompanyName");
+            described.Text.Should().Contain("Orders");
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var result = await Runtime().InvokeAsync("odata_describe_type", ToolArguments.Of("name", "customers"), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("CompanyName");
+            result.Text.Should().Contain("CompanyName");
         }
 
         /// <summary>

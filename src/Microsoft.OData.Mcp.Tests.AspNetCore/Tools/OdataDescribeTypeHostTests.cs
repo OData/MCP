@@ -34,12 +34,13 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_AgreesWithResourceReadTypeCard()
         {
-            var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
+            var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json"));
             described.IsError.Should().BeFalse(described.Text);
             var resource = Session().Catalog.Resources.Single(item => item.Name == "Customers");
             resource.ReadContents.Should().NotBeNullOrWhiteSpace();
 
-            ReadStringArray(described.StructuredContent, "keys").Should().Equal(ReadStringArray(resource.ReadContents, "keys"));
+            described.StructuredContent.Should().Be(resource.ReadContents, "the type card is the same compact shape");
+            ReadKeys(described.StructuredContent).Should().Equal(ReadKeys(resource.ReadContents));
             ReadPropertyNames(described.StructuredContent).Should().Equal(ReadPropertyNames(resource.ReadContents));
             ReadNavigationNames(described.StructuredContent).Should().Equal(ReadNavigationNames(resource.ReadContents));
         }
@@ -50,7 +51,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_BinaryStreamProperties_OmittedFromPropertiesArray()
         {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Documents"));
+            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Documents", "format", "json"));
 
             result.IsError.Should().BeFalse(result.Text);
             var properties = ReadPropertyNames(result.StructuredContent);
@@ -86,7 +87,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("CustomerId");
+            result.Text.Should().Contain("CustomerId");
             capture.Requests.Should().BeEmpty();
         }
 
@@ -96,7 +97,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_IgnoredPropertyNeverAppears_InternalSecret()
         {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
+            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json"));
 
             result.IsError.Should().BeFalse(result.Text);
             ReadPropertyNames(result.StructuredContent).Should().NotContain("InternalSecret");
@@ -209,9 +210,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 metadataBody.Should().Contain("Customer");
             }
 
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
+            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json"));
             result.IsError.Should().BeFalse(result.Text);
-            ReadStringArray(result.StructuredContent, "keys").Should().Contain("CustomerId");
+            ReadKeys(result.StructuredContent).Should().Contain("CustomerId");
             ReadPropertyNames(result.StructuredContent).Should().Contain("CompanyName");
             ReadNavigationNames(result.StructuredContent).Should().Contain("Orders");
             ReadPropertyNames(result.StructuredContent).Should().NotContain("InternalSecret");
@@ -223,17 +224,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_OData8_ByFullName_IfNamespacePresent()
         {
-            var bySet = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
-            bySet.IsError.Should().BeFalse(bySet.Text);
-            using var document = JsonDocument.Parse(bySet.StructuredContent!);
-            var ns = document.RootElement.TryGetProperty("namespace", out var namespaceElement)
-                ? namespaceElement.GetString()
-                : null;
-            ns.Should().NotBeNullOrWhiteSpace();
+            var fullName = Session().Catalog.Shapes.Keys.Single(key => key.EndsWith(".Customer", StringComparison.Ordinal));
+            fullName.Should().Contain(".");
 
-            var byFull = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", $"{ns}.Customer"));
+            var byFull = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", fullName, "format", "json"));
             byFull.IsError.Should().BeFalse(byFull.Text);
-            ReadStringArray(byFull.StructuredContent, "keys").Should().Contain("CustomerId");
+            ReadKeys(byFull.StructuredContent).Should().Contain("CustomerId");
         }
 
         /// <summary>
@@ -242,12 +238,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_OData8_ByTypeNameCustomer_SameAsSet()
         {
-            var bySet = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
-            var byType = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customer"));
+            var bySet = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json"));
+            var byType = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customer", "format", "json"));
 
             bySet.IsError.Should().BeFalse(bySet.Text);
             byType.IsError.Should().BeFalse(byType.Text);
-            ReadStringArray(bySet.StructuredContent, "keys").Should().Equal(ReadStringArray(byType.StructuredContent, "keys"));
+            ReadKeys(bySet.StructuredContent).Should().Equal(ReadKeys(byType.StructuredContent));
             ReadPropertyNames(bySet.StructuredContent).Should().Equal(ReadPropertyNames(byType.StructuredContent));
             ReadNavigationNames(bySet.StructuredContent).Should().Equal(ReadNavigationNames(byType.StructuredContent));
         }
@@ -260,7 +256,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
             described.IsError.Should().BeFalse(described.Text);
-            ReadNavigationNames(described.StructuredContent).Should().Contain("Orders");
+            described.Text.Should().Contain("Orders -> Order[]");
 
             using var client = CreateClient();
             using var twin = await client.GetAsync("/odata/Customers(1)/Orders");
@@ -287,7 +283,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
             described.IsError.Should().BeFalse(described.Text);
-            ReadPropertyNames(described.StructuredContent).Should().Contain("CompanyName");
+            described.Text.Should().Contain("CompanyName: string");
 
             var query = await InvokeAsync(
                 "odata_query",
@@ -370,10 +366,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_WrongCase_PeopleVsPeople()
         {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "customers"));
+            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "customers", "format", "json"));
 
             result.IsError.Should().BeFalse(result.Text);
-            ReadStringArray(result.StructuredContent, "keys").Should().Contain("CustomerId");
+            ReadKeys(result.StructuredContent).Should().Contain("CustomerId");
         }
 
         #endregion
@@ -381,77 +377,83 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
-        /// Reads navigation names from a type card.
+        /// Reads the <c>key</c> array from a compact type shape.
         /// </summary>
-        /// <param name="json">The type-card JSON.</param>
+        /// <param name="json">The compact shape JSON (<c>format=json</c> or a type card).</param>
+        /// <returns>
+        /// Key property names.
+        /// </returns>
+        internal static IReadOnlyList<string> ReadKeys(string? json)
+        {
+            using var document = JsonDocument.Parse(json ?? throw new ArgumentNullException(nameof(json)));
+            var shape = ReadShape(document.RootElement);
+            if (!shape.TryGetProperty("key", out var array) || array.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            return [.. array.EnumerateArray().Select(item => item.GetString()!)];
+        }
+
+        /// <summary>
+        /// Reads navigation names from a compact type shape.
+        /// </summary>
+        /// <param name="json">The compact shape JSON.</param>
         /// <returns>
         /// Navigation names.
         /// </returns>
         internal static IReadOnlyList<string> ReadNavigationNames(string? json)
         {
-            return ReadNamedArray(json, "navigations");
+            return ReadSectionKeys(json, "navs");
         }
 
         /// <summary>
-        /// Reads <c>name</c> values from a JSON array property of objects.
+        /// Reads property names from a compact type shape.
         /// </summary>
-        /// <param name="json">The JSON.</param>
-        /// <param name="property">The array property.</param>
-        /// <returns>
-        /// Names.
-        /// </returns>
-        internal static IReadOnlyList<string> ReadNamedArray(string? json, string property)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(json);
-            ArgumentException.ThrowIfNullOrWhiteSpace(property);
-
-            using var document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty(property, out var array) || array.ValueKind != JsonValueKind.Array)
-            {
-                return [];
-            }
-
-            return [.. array.EnumerateArray()
-                .Select(item => item.TryGetProperty("name", out var name) ? name.GetString() : null)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Select(name => name!)];
-        }
-
-        /// <summary>
-        /// Reads property names from a type card.
-        /// </summary>
-        /// <param name="json">The type-card JSON.</param>
+        /// <param name="json">The compact shape JSON.</param>
         /// <returns>
         /// Property names.
         /// </returns>
         internal static IReadOnlyList<string> ReadPropertyNames(string? json)
         {
-            return ReadNamedArray(json, "properties");
+            return ReadSectionKeys(json, "props");
         }
 
         /// <summary>
-        /// Reads a JSON string array property.
+        /// Reads the keys of a named object section (<c>props</c>, <c>navs</c>, <c>ops</c>) from a compact type shape.
         /// </summary>
-        /// <param name="json">The JSON.</param>
-        /// <param name="property">The property name.</param>
+        /// <param name="json">The compact shape JSON.</param>
+        /// <param name="section">The section name.</param>
         /// <returns>
-        /// String values.
+        /// The member names in declaration order.
         /// </returns>
-        internal static IReadOnlyList<string> ReadStringArray(string? json, string property)
+        internal static IReadOnlyList<string> ReadSectionKeys(string? json, string section)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(json);
-            ArgumentException.ThrowIfNullOrWhiteSpace(property);
+            ArgumentException.ThrowIfNullOrWhiteSpace(section);
 
             using var document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty(property, out var array) || array.ValueKind != JsonValueKind.Array)
+            var shape = ReadShape(document.RootElement);
+            if (!shape.TryGetProperty(section, out var members) || members.ValueKind != JsonValueKind.Object)
             {
                 return [];
             }
 
-            return [.. array.EnumerateArray()
-                .Select(item => item.ValueKind == JsonValueKind.String ? item.GetString() : null)
-                .Where(item => !string.IsNullOrWhiteSpace(item))
-                .Select(item => item!)];
+            return [.. members.EnumerateObject().Select(member => member.Name)];
+        }
+
+        /// <summary>
+        /// Unwraps the single type object under the compact shape's root.
+        /// </summary>
+        /// <param name="root">The root element.</param>
+        /// <returns>
+        /// The type object.
+        /// </returns>
+        internal static JsonElement ReadShape(JsonElement root)
+        {
+            root.ValueKind.Should().Be(JsonValueKind.Object);
+
+            return root.EnumerateObject().Should().ContainSingle().Subject.Value;
         }
 
         #endregion
@@ -519,10 +521,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task DescribeType_WideModel_DescribeRows000_Succeeds()
         {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Rows000"));
+            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Rows000", "format", "json"));
 
             result.IsError.Should().BeFalse(result.Text);
-            OdataDescribeTypeHostTests.ReadStringArray(result.StructuredContent, "keys").Should().Contain("Id");
+            OdataDescribeTypeHostTests.ReadKeys(result.StructuredContent).Should().Contain("Id");
         }
 
         #endregion
