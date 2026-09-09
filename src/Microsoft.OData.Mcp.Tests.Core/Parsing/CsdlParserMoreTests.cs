@@ -592,9 +592,187 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
             act.Should().Throw<InvalidOperationException>();
         }
 
+        /// <summary>
+        /// EnumType elements populate <see cref="EdmModel.EnumTypes"/> with members, flags, and underlying type.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_EnumType_ParsesMembersFlagsAndUnderlyingType()
+        {
+            var model = new CsdlParser().ParseFromString(EnumCsdl);
+            var color = model.EnumTypes.Single(type => type.Name == "Color");
+            var permissions = model.EnumTypes.Single(type => type.Name == "Permissions");
+
+            model.EnumTypes.Should().HaveCount(2);
+            color.FullName.Should().Be("NS.Color");
+            color.IsFlags.Should().BeFalse();
+            color.UnderlyingType.Should().Be("Edm.Int32");
+            color.Members.Select(member => member.Name).Should().ContainInOrder("Red", "Green");
+            color.Members.Single(member => member.Name == "Green").Value.Should().Be(1);
+            color.Description.Should().Be("A color.");
+            permissions.IsFlags.Should().BeTrue();
+            permissions.UnderlyingType.Should().Be("Edm.Int64");
+            permissions.Members.Single(member => member.Name == "Write").Value.Should().Be(2);
+            model.GetEnumType("NS.Color").Should().BeSameAs(color);
+        }
+
+        /// <summary>
+        /// A property typed as an enum keeps the qualified enum type name.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_EnumProperty_KeepsQualifiedType()
+        {
+            var model = new CsdlParser().ParseFromString(EnumCsdl);
+            var widget = model.EntityTypes.Single(type => type.Name == "Widget");
+
+            widget.GetProperty("Color")!.Type.Should().Be("NS.Color");
+        }
+
+        /// <summary>
+        /// <c>Core.Computed</c> and <c>Core.ComputedDefaultValue</c> set <see cref="EdmProperty.Computed"/>; nothing else does.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_ComputedAnnotations_SetComputed()
+        {
+            var model = new CsdlParser().ParseFromString(EnumCsdl);
+            var widget = model.EntityTypes.Single(type => type.Name == "Widget");
+
+            widget.GetProperty("Id")!.Computed.Should().BeTrue("Core.Computed with no value defaults to true");
+            widget.GetProperty("CreatedOn")!.Computed.Should().BeTrue("Core.ComputedDefaultValue Bool=true");
+            widget.GetProperty("Version")!.Computed.Should().BeTrue("aliased Core.Computed Bool=true");
+            widget.GetProperty("Name")!.Computed.Should().BeFalse("no annotation");
+            widget.GetProperty("Notes")!.Computed.Should().BeFalse("Core.Computed Bool=false");
+            widget.GetProperty("Sequence")!.Computed.Should().BeFalse("an Int32 key is not Computed unless annotated");
+        }
+
+        /// <summary>
+        /// Schema-level Annotations targeting a property set <see cref="EdmProperty.Computed"/>.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_TargetedComputed_SetsComputed()
+        {
+            var model = new CsdlParser().ParseFromString(EnumCsdl);
+            var widget = model.EntityTypes.Single(type => type.Name == "Widget");
+
+            widget.GetProperty("RowVersion")!.Computed.Should().BeTrue();
+        }
+
+        /// <summary>
+        /// An EnumType with no members is rejected at parse.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_EnumTypeWithoutMembers_Throws()
+        {
+            const string xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="T" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <EnumType Name="Empty" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var act = () => new CsdlParser().ParseFromString(xml);
+            act.Should().Throw<InvalidOperationException>().WithInnerException<InvalidOperationException>().WithMessage("*Empty*member*");
+        }
+
+        /// <summary>
+        /// An EnumType without a Name is rejected at parse.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_EnumTypeMissingName_Throws()
+        {
+            const string xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="T" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <EnumType>
+                        <Member Name="A" Value="0" />
+                      </EnumType>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var act = () => new CsdlParser().ParseFromString(xml);
+            act.Should().Throw<InvalidOperationException>().WithInnerException<InvalidOperationException>().WithMessage("*Name*");
+        }
+
+        /// <summary>
+        /// Enum members without explicit values number from zero in declaration order.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_EnumMembersWithoutValues_NumberFromZero()
+        {
+            const string xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="T" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <EnumType Name="Size">
+                        <Member Name="Small" />
+                        <Member Name="Large" />
+                      </EnumType>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var size = new CsdlParser().ParseFromString(xml).EnumTypes.Single();
+
+            size.Members.Select(member => member.Value).Should().ContainInOrder(0L, 1L);
+        }
+
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// CSDL covering enum types and <c>Core.Computed</c> annotations in inline, aliased, and targeted forms.
+        /// </summary>
+        internal const string EnumCsdl = """
+            <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+              <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+                <edmx:Include Namespace="Org.OData.Core.V1" Alias="Core" />
+              </edmx:Reference>
+              <edmx:DataServices>
+                <Schema Namespace="NS" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                  <EnumType Name="Color">
+                    <Member Name="Red" Value="0" />
+                    <Member Name="Green" Value="1" />
+                    <Annotation Term="Org.OData.Core.V1.Description" String="A color." />
+                  </EnumType>
+                  <EnumType Name="Permissions" IsFlags="true" UnderlyingType="Edm.Int64">
+                    <Member Name="Read" Value="1" />
+                    <Member Name="Write" Value="2" />
+                  </EnumType>
+                  <EntityType Name="Widget">
+                    <Key>
+                      <PropertyRef Name="Id" />
+                    </Key>
+                    <Property Name="Id" Type="Edm.Int32" Nullable="false">
+                      <Annotation Term="Org.OData.Core.V1.Computed" />
+                    </Property>
+                    <Property Name="Sequence" Type="Edm.Int32" Nullable="false" />
+                    <Property Name="Name" Type="Edm.String" Nullable="false" />
+                    <Property Name="Color" Type="NS.Color" Nullable="false" />
+                    <Property Name="CreatedOn" Type="Edm.DateTimeOffset" Nullable="false">
+                      <Annotation Term="Org.OData.Core.V1.ComputedDefaultValue" Bool="true" />
+                    </Property>
+                    <Property Name="Version" Type="Edm.Int64" Nullable="false">
+                      <Annotation Term="Core.Computed" Bool="true" />
+                    </Property>
+                    <Property Name="Notes" Type="Edm.String">
+                      <Annotation Term="Org.OData.Core.V1.Computed" Bool="false" />
+                    </Property>
+                    <Property Name="RowVersion" Type="Edm.Binary" />
+                  </EntityType>
+                  <Annotations Target="NS.Widget/RowVersion">
+                    <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+                  </Annotations>
+                  <EntityContainer Name="Container">
+                    <EntitySet Name="Widgets" EntityType="NS.Widget" />
+                  </EntityContainer>
+                </Schema>
+              </edmx:DataServices>
+            </edmx:Edmx>
+            """;
 
         /// <summary>
         /// CSDL covering complex types, operations, singletons, facets, and targeted annotations.

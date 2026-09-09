@@ -516,6 +516,70 @@ namespace Microsoft.OData.Mcp.Tests.Core.Models
         }
 
         /// <summary>
+        /// Enum types expose full name, member lookup, and equality; the model rejects duplicates.
+        /// </summary>
+        [TestMethod]
+        public void EdmEnumType_LookupsAndEquality()
+        {
+            var color = new EdmEnumType("Color", "NS")
+            {
+                Members =
+                [
+                    new EdmEnumMember("Red", 0),
+                    new EdmEnumMember("Green", 1)
+                ]
+            };
+            var same = new EdmEnumType("Color", "NS")
+            {
+                Members =
+                [
+                    new EdmEnumMember("Red", 0),
+                    new EdmEnumMember("Green", 1)
+                ]
+            };
+            var flags = new EdmEnumType("Color", "NS")
+            {
+                IsFlags = true,
+                Members = [new EdmEnumMember("Red", 0)]
+            };
+            var model = new EdmModel();
+
+            color.FullName.Should().Be("NS.Color");
+            color.UnderlyingType.Should().Be("Edm.Int32");
+            color.IsFlags.Should().BeFalse();
+            color.GetMember("Green")!.Value.Should().Be(1);
+            color.GetMember("Blue").Should().BeNull();
+            color.HasMember("Red").Should().BeTrue();
+            color.ToString().Should().Be("NS.Color");
+            color.Equals(same).Should().BeTrue();
+            color.GetHashCode().Should().Be(same.GetHashCode());
+            color.Equals(flags).Should().BeFalse();
+            color.Equals("no").Should().BeFalse();
+            new EdmEnumMember("Red", 0).Equals(new EdmEnumMember("Red", 0)).Should().BeTrue();
+            new EdmEnumMember("Red", 0).ToString().Should().Be("Red = 0");
+
+            model.AddEnumType(color);
+            model.EnumTypes.Should().ContainSingle();
+            model.Namespaces.Should().Contain("NS");
+            model.GetEnumType("NS.Color").Should().BeSameAs(color);
+            model.GetEnumType("Color", "NS").Should().BeSameAs(color);
+            model.GetEnumType("NS.Missing").Should().BeNull();
+            model.HasEnumTypes.Should().BeTrue();
+
+            var duplicate = () => model.AddEnumType(same);
+            duplicate.Should().Throw<InvalidOperationException>().WithMessage("*NS.Color*");
+
+            var nullAdd = () => model.AddEnumType(null!);
+            nullAdd.Should().Throw<ArgumentNullException>();
+
+            var blankName = () => new EdmEnumType(" ", "NS");
+            blankName.Should().Throw<ArgumentException>();
+
+            var blankMember = () => new EdmEnumMember(" ", 0);
+            blankMember.Should().Throw<ArgumentException>();
+        }
+
+        /// <summary>
         /// Properties expose collection, primitive, and equality helpers.
         /// </summary>
         [TestMethod]
@@ -555,7 +619,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Models
             collection.IsCollection.Should().BeTrue();
             collection.ElementType.Should().Be("Edm.String");
             primitive.ToString().Should().Be("Name: Edm.String");
+            primitive.Computed.Should().BeFalse();
             primitive.Equals(empty).Should().BeFalse();
+            primitive.Equals(new EdmProperty("Name", "Edm.String") { Computed = true, DefaultValue = "Ann", IsKey = true, MaxLength = 40, Name = "Name", Precision = 2, Scale = 1, SRID = "4326", Type = "Edm.String", Unicode = true }).Should().BeFalse("Computed participates in equality");
             primitive.Equals("no").Should().BeFalse();
             primitive.GetHashCode().Should().NotBe(0);
         }

@@ -14,6 +14,8 @@ using CoreComplexType = Microsoft.OData.Mcp.Core.Models.EdmComplexType;
 using CoreContainer = Microsoft.OData.Mcp.Core.Models.EdmEntityContainer;
 using CoreEntitySet = Microsoft.OData.Mcp.Core.Models.EdmEntitySet;
 using CoreEntityType = Microsoft.OData.Mcp.Core.Models.EdmEntityType;
+using CoreEnumMember = Microsoft.OData.Mcp.Core.Models.EdmEnumMember;
+using CoreEnumType = Microsoft.OData.Mcp.Core.Models.EdmEnumType;
 using CoreFunction = Microsoft.OData.Mcp.Core.Models.EdmFunction;
 using CoreNavigation = Microsoft.OData.Mcp.Core.Models.EdmNavigationProperty;
 using CoreParameter = Microsoft.OData.Mcp.Core.Models.EdmParameter;
@@ -54,6 +56,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
                         break;
                     case IEdmComplexType complexType:
                         core.AddComplexType(MapComplexType(model, complexType));
+                        break;
+                    case IEdmEnumType enumType:
+                        core.AddEnumType(MapEnumType(model, enumType));
                         break;
                     case IEdmFunction function:
                         core.Functions.Add(MapFunction(model, function));
@@ -166,6 +171,40 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
             {
                 setLongDescription(longDescription);
             }
+        }
+
+        /// <summary>
+        /// Reads whether a property carries a true <c>Org.OData.Core.V1.Computed</c> or
+        /// <c>Org.OData.Core.V1.ComputedDefaultValue</c> annotation.
+        /// </summary>
+        /// <param name="model">The source model.</param>
+        /// <param name="target">The annotatable property.</param>
+        /// <returns>
+        /// <c>true</c> when either term evaluates to true; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// Both terms default to <c>true</c> in the Core vocabulary, so an annotation whose value is not a boolean
+        /// constant is treated as true. Store generation is never inferred from the property type or key membership.
+        /// </remarks>
+        internal static bool IsComputed(IEdmModel model, IEdmVocabularyAnnotatable target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+
+            foreach (var annotation in model.FindVocabularyAnnotations(target))
+            {
+                if (annotation.Term.Name is not ("Computed" or "ComputedDefaultValue"))
+                {
+                    continue;
+                }
+
+                if (annotation.Value is not IEdmBooleanConstantExpression boolean || boolean.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -329,6 +368,41 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
         }
 
         /// <summary>
+        /// Maps an enumeration type and its members.
+        /// </summary>
+        /// <param name="model">The source model.</param>
+        /// <param name="enumType">The enumeration type.</param>
+        /// <returns>
+        /// The Core enumeration type.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">Thrown when the enumeration declares no members.</exception>
+        internal static CoreEnumType MapEnumType(IEdmModel model, IEdmEnumType enumType)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(enumType);
+
+            var mapped = new CoreEnumType(enumType.Name, enumType.Namespace)
+            {
+                IsFlags = enumType.IsFlags,
+                UnderlyingType = enumType.UnderlyingType.FullName()
+            };
+
+            foreach (var member in enumType.Members)
+            {
+                mapped.Members.Add(new CoreEnumMember(member.Name, member.Value.Value));
+            }
+
+            if (mapped.Members.Count == 0)
+            {
+                throw new InvalidOperationException($"EnumType '{mapped.FullName}' declares no members.");
+            }
+
+            ApplyVocabulary(model, enumType, value => mapped.Description = value, value => mapped.LongDescription = value);
+
+            return mapped;
+        }
+
+        /// <summary>
         /// Maps a schema function.
         /// </summary>
         /// <param name="model">The source model.</param>
@@ -428,6 +502,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
 
             var mapped = new CoreProperty(property.Name, property.Type.FullName())
             {
+                Computed = IsComputed(model, property),
                 Name = property.Name,
                 Nullable = property.Type.IsNullable,
                 Type = property.Type.FullName()

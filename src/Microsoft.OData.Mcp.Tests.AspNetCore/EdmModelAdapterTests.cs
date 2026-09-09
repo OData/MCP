@@ -168,6 +168,91 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
+        /// Enum types and <c>Core.Computed</c> / <c>Core.ComputedDefaultValue</c> on an EdmLib model are copied.
+        /// </summary>
+        [TestMethod]
+        public void Adapter_EnumTypesAndComputed_AreCopied()
+        {
+            const string csdl = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="NS" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <EnumType Name="Color">
+                        <Member Name="Red" Value="0" />
+                        <Member Name="Green" Value="1" />
+                        <Annotation Term="Org.OData.Core.V1.Description" String="A color." />
+                      </EnumType>
+                      <EnumType Name="Permissions" IsFlags="true" UnderlyingType="Edm.Int64">
+                        <Member Name="Read" Value="1" />
+                        <Member Name="Write" Value="2" />
+                      </EnumType>
+                      <EntityType Name="Widget">
+                        <Key>
+                          <PropertyRef Name="Id" />
+                        </Key>
+                        <Property Name="Id" Type="Edm.Int32" Nullable="false">
+                          <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+                        </Property>
+                        <Property Name="Sequence" Type="Edm.Int32" Nullable="false" />
+                        <Property Name="Color" Type="NS.Color" Nullable="false" />
+                        <Property Name="CreatedOn" Type="Edm.DateTimeOffset" Nullable="false">
+                          <Annotation Term="Org.OData.Core.V1.ComputedDefaultValue" Bool="true" />
+                        </Property>
+                        <Property Name="Notes" Type="Edm.String">
+                          <Annotation Term="Org.OData.Core.V1.Computed" Bool="false" />
+                        </Property>
+                        <Property Name="RowVersion" Type="Edm.Binary" />
+                      </EntityType>
+                      <Annotations Target="NS.Widget/RowVersion">
+                        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+                      </Annotations>
+                      <EntityContainer Name="Container">
+                        <EntitySet Name="Widgets" EntityType="NS.Widget" />
+                      </EntityContainer>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            using var reader = XmlReader.Create(new StringReader(csdl));
+            var edm = CsdlReader.Parse(reader);
+            var core = EdmModelAdapter.ToCoreModel(edm);
+            var widget = core.EntityTypes.Single(type => type.Name == "Widget");
+            var color = core.EnumTypes.Single(type => type.Name == "Color");
+            var permissions = core.EnumTypes.Single(type => type.Name == "Permissions");
+
+            core.EnumTypes.Should().HaveCount(2);
+            color.FullName.Should().Be("NS.Color");
+            color.IsFlags.Should().BeFalse();
+            color.UnderlyingType.Should().Be("Edm.Int32");
+            color.Description.Should().Be("A color.");
+            color.Members.Select(member => member.Name).Should().ContainInOrder("Red", "Green");
+            color.Members.Single(member => member.Name == "Green").Value.Should().Be(1);
+            permissions.IsFlags.Should().BeTrue();
+            permissions.UnderlyingType.Should().Be("Edm.Int64");
+            widget.GetProperty("Color")!.Type.Should().Be("NS.Color");
+            widget.GetProperty("Id")!.Computed.Should().BeTrue();
+            widget.GetProperty("CreatedOn")!.Computed.Should().BeTrue();
+            widget.GetProperty("RowVersion")!.Computed.Should().BeTrue("out-of-line Annotations apply too");
+            widget.GetProperty("Notes")!.Computed.Should().BeFalse();
+            widget.GetProperty("Sequence")!.Computed.Should().BeFalse("Int32 keys are never inferred as Computed");
+        }
+
+        /// <summary>
+        /// An EdmLib enum type with no members is rejected.
+        /// </summary>
+        [TestMethod]
+        public void Adapter_EnumTypeWithoutMembers_Throws()
+        {
+            var model = new Microsoft.OData.Edm.EdmModel();
+            model.AddElement(new Microsoft.OData.Edm.EdmEnumType("NS", "Empty"));
+
+            var act = () => EdmModelAdapter.ToCoreModel(model);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("*NS.Empty*member*");
+        }
+
+        /// <summary>
         /// Null models are rejected.
         /// </summary>
         [TestMethod]

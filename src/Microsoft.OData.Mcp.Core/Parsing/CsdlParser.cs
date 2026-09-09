@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -212,6 +213,13 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 model.Namespaces.Add(schemaNamespace);
             }
 
+            // Parse enum types first so property types can be resolved against them later.
+            var enumTypes = schemaElement.Elements(EdmNamespace + "EnumType");
+            foreach (var enumType in enumTypes)
+            {
+                model.AddEnumType(ParseEnumType(enumType, schemaNamespace));
+            }
+
             // Parse entity types
             var entityTypes = schemaElement.Elements(EdmNamespace + "EntityType");
             foreach (var entityType in entityTypes)
@@ -358,6 +366,71 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         }
 
         /// <summary>
+        /// Parses an enumeration type element.
+        /// </summary>
+        /// <param name="enumTypeElement">The EnumType XML element.</param>
+        /// <param name="schemaNamespace">The namespace of the schema.</param>
+        /// <returns>The parsed enumeration type.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the element has no Name or declares no members.</exception>
+        /// <remarks>
+        /// Members without an explicit <c>Value</c> are numbered from zero in declaration order, per CSDL.
+        /// </remarks>
+        internal EdmEnumType ParseEnumType(XElement enumTypeElement, string schemaNamespace)
+        {
+            var nameAttr = enumTypeElement.Attribute("Name") ??
+                throw new InvalidOperationException("EnumType element missing Name attribute");
+
+            var enumType = new EdmEnumType(nameAttr.Value, schemaNamespace)
+            {
+                IsFlags = bool.Parse(enumTypeElement.Attribute("IsFlags")?.Value ?? "false")
+            };
+
+            var underlyingType = enumTypeElement.Attribute("UnderlyingType")?.Value;
+            if (!string.IsNullOrWhiteSpace(underlyingType))
+            {
+                enumType.UnderlyingType = underlyingType;
+            }
+
+            ApplyDocumentation(enumTypeElement, description => enumType.Description = description, longDescription => enumType.LongDescription = longDescription);
+
+            var index = 0;
+            foreach (var memberElement in enumTypeElement.Elements(EdmNamespace + "Member"))
+            {
+                enumType.Members.Add(ParseEnumMember(memberElement, index));
+                index++;
+            }
+
+            if (enumType.Members.Count == 0)
+            {
+                throw new InvalidOperationException($"EnumType '{enumType.FullName}' declares no members.");
+            }
+
+            return enumType;
+        }
+
+        /// <summary>
+        /// Parses an enumeration member element.
+        /// </summary>
+        /// <param name="memberElement">The Member XML element.</param>
+        /// <param name="index">The zero-based declaration index, used when <c>Value</c> is omitted.</param>
+        /// <returns>The parsed member.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the element has no Name or a non-integral Value.</exception>
+        internal static EdmEnumMember ParseEnumMember(XElement memberElement, int index)
+        {
+            var nameAttr = memberElement.Attribute("Name") ??
+                throw new InvalidOperationException("EnumType Member element missing Name attribute");
+
+            var valueText = memberElement.Attribute("Value")?.Value;
+            long value = index;
+            if (!string.IsNullOrWhiteSpace(valueText) && !long.TryParse(valueText, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+            {
+                throw new InvalidOperationException($"EnumType Member '{nameAttr.Value}' has a non-integer Value '{valueText}'.");
+            }
+
+            return new EdmEnumMember(nameAttr.Value, value);
+        }
+
+        /// <summary>
         /// Parses a property element.
         /// </summary>
         /// <param name="propertyElement">The property XML element.</param>
@@ -378,6 +451,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
 
             var property = new EdmProperty(nameAttr.Value, typeAttr.Value)
             {
+                Computed = ReadComputed(propertyElement),
                 Name = nameAttr.Value,
                 Type = typeAttr.Value,
                 Nullable = bool.Parse(propertyElement.Attribute("Nullable")?.Value ?? "true"),
@@ -695,6 +769,47 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             }
 
             ApplyDocumentation(annotationsElement, description => AssignDescription(model, target, description, isLong: false), longDescription => AssignDescription(model, target, longDescription, isLong: true));
+
+            if (ReadComputed(annotationsElement))
+            {
+                AssignComputed(model, target);
+            }
+        }
+
+        /// <summary>
+        /// Marks the structural property identified by an annotation target as computed.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="target">The CSDL target path in <c>Namespace.Type/Property</c> form.</param>
+        /// <remarks>
+        /// Targets that do not resolve to a structural property on an entity or complex type are ignored.
+        /// </remarks>
+        internal static void AssignComputed(EdmModel model, string target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentException.ThrowIfNullOrWhiteSpace(target);
+
+            var slash = target.LastIndexOf('/');
+            if (slash < 0)
+            {
+                return;
+            }
+
+            var owner = target[..slash];
+            var member = target[(slash + 1)..];
+
+            var entityType = model.GetEntityType(owner) ?? model.EntityTypes.FirstOrDefault(type => type.Name.Equals(owner, StringComparison.Ordinal));
+            var property = entityType?.GetProperty(member);
+            if (property is null)
+            {
+                var complexType = model.GetComplexType(owner) ?? model.ComplexTypes.FirstOrDefault(type => type.Name.Equals(owner, StringComparison.Ordinal));
+                property = complexType?.GetProperty(member);
+            }
+
+            if (property is not null)
+            {
+                property.Computed = true;
+            }
         }
 
         /// <summary>
@@ -899,6 +1014,46 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             {
                 assign(value);
             }
+        }
+
+        /// <summary>
+        /// Reads whether an element carries a true <c>Core.Computed</c> or <c>Core.ComputedDefaultValue</c> annotation.
+        /// </summary>
+        /// <param name="element">The element whose child <c>Annotation</c> elements are inspected.</param>
+        /// <returns>
+        /// <c>true</c> when either term is present with no value, <c>Bool="true"</c>, or a <c>&lt;Bool&gt;true&lt;/Bool&gt;</c> child; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// Both terms default to <c>true</c> in the Core vocabulary, so an annotation with no value is true.
+        /// Term names are matched by their last segment so namespace aliases such as <c>Core.Computed</c> also match.
+        /// </remarks>
+        internal static bool ReadComputed(XElement element)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                var term = annotation.Attribute("Term")?.Value;
+                if (string.IsNullOrWhiteSpace(term))
+                {
+                    continue;
+                }
+
+                var dot = term.LastIndexOf('.');
+                var termName = dot >= 0 ? term[(dot + 1)..] : term;
+                if (termName is not ("Computed" or "ComputedDefaultValue"))
+                {
+                    continue;
+                }
+
+                var value = annotation.Attribute("Bool")?.Value ?? annotation.Element(EdmNamespace + "Bool")?.Value;
+                if (string.IsNullOrWhiteSpace(value) || (bool.TryParse(value.Trim(), out var parsed) && parsed))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
