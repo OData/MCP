@@ -47,6 +47,26 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Catalog option copies carry the shape options: enum wire format, preface, and dynamic model.
+        /// </summary>
+        [TestMethod]
+        public void CopyCatalogOptions_CopiesShapeOptions()
+        {
+            var copy = ODataMcpSessionFactory.CopyCatalogOptions(
+                new ODataMcpCatalogOptions
+                {
+                    EnumJsonFormat = ODataEnumJsonFormat.Integer,
+                    InstructionsPreface = "Contoso.",
+                    IsDynamicModel = true
+                },
+                "odata");
+
+            copy.EnumJsonFormat.Should().Be(ODataEnumJsonFormat.Integer);
+            copy.InstructionsPreface.Should().Be("Contoso.");
+            copy.IsDynamicModel.Should().BeTrue();
+        }
+
+        /// <summary>
         /// In-process URIs prefix $ on query keys once.
         /// </summary>
         [TestMethod]

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -28,6 +29,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
         internal readonly EdmModel _model;
         internal readonly ODataMcpCatalogOptions _options;
+        internal readonly ConcurrentDictionary<string, EdmTypeShape> _shapes = new(StringComparer.Ordinal);
 
         #endregion
 
@@ -42,6 +44,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets the resource templates.
         /// </summary>
         public IReadOnlyList<ODataResourceTemplateDescriptor> ResourceTemplates { get; }
+
+        /// <summary>
+        /// Gets the cached type shapes keyed by EDM full name. Empty when <see cref="ODataMcpCatalogOptions.IsDynamicModel"/> is <c>true</c>.
+        /// </summary>
+        public IReadOnlyDictionary<string, EdmTypeShape> Shapes => _shapes;
 
         /// <summary>
         /// Gets the tool descriptors (generic first, then named).
@@ -67,6 +74,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             _options = options;
 
             var includedSets = ResolveIncludedSets();
+            if (!options.IsDynamicModel)
+            {
+                FillShapeCache(includedSets);
+            }
+
             Resources = BuildResources(includedSets);
             ResourceTemplates = BuildTemplates();
             Tools = BuildTools(includedSets);
@@ -97,9 +109,56 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             return [.. matches.Take(cap)];
         }
 
+        /// <summary>
+        /// Gets the shape for an entity type, from the cache when the model is static.
+        /// </summary>
+        /// <param name="entityType">The entity type.</param>
+        /// <returns>
+        /// The cached shape, or a freshly built one when <see cref="ODataMcpCatalogOptions.IsDynamicModel"/> is <c>true</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="entityType"/> is null.</exception>
+        public EdmTypeShape GetShape(EdmEntityType entityType)
+        {
+            ArgumentNullException.ThrowIfNull(entityType);
+
+            if (_options.IsDynamicModel)
+            {
+                return BuildShape(entityType, ResolveIncludedSets());
+            }
+
+            return _shapes.GetOrAdd(entityType.FullName, _ => BuildShape(entityType, ResolveIncludedSets()));
+        }
+
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Builds the shape for a type, pairing it with the first included set declared on that type.
+        /// </summary>
+        /// <param name="entityType">The entity type.</param>
+        /// <param name="includedSets">The included entity sets.</param>
+        /// <returns>
+        /// The shape.
+        /// </returns>
+        internal EdmTypeShape BuildShape(EdmEntityType entityType, IReadOnlyList<EdmEntitySet> includedSets)
+        {
+            var set = includedSets.FirstOrDefault(candidate => ReferenceEquals(ResolveEntityType(candidate), entityType));
+
+            return new EdmTypeShape(_model, entityType, set);
+        }
+
+        /// <summary>
+        /// Computes a shape for every declared entity type and stores it in the cache.
+        /// </summary>
+        /// <param name="includedSets">The included entity sets.</param>
+        internal void FillShapeCache(IReadOnlyList<EdmEntitySet> includedSets)
+        {
+            foreach (var entityType in _model.EntityTypes)
+            {
+                _shapes[entityType.FullName] = BuildShape(entityType, includedSets);
+            }
+        }
 
         /// <summary>
         /// Builds a JSON Schema object for declared structural properties.

@@ -158,11 +158,14 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
 
             return new ODataMcpCatalogOptions
             {
+                EnumJsonFormat = source.EnumJsonFormat,
                 ExcludeEntitySets = [.. source.ExcludeEntitySets],
                 IncludeCreate = source.IncludeCreate,
                 IncludeDelete = source.IncludeDelete,
                 IncludeEntitySets = [.. source.IncludeEntitySets],
                 IncludeUpdate = source.IncludeUpdate,
+                InstructionsPreface = source.InstructionsPreface,
+                IsDynamicModel = source.IsDynamicModel,
                 MaxCompletionValues = source.MaxCompletionValues,
                 MaxExpandLength = source.MaxExpandLength,
                 MaxFilterLength = source.MaxFilterLength,

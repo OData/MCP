@@ -15,6 +15,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         #region Properties
 
         /// <summary>
+        /// Gets or sets how enumeration values are advertised in JSON Schema and accepted on input.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="ODataEnumJsonFormat.Auto"/>: member names are advertised and JSON numbers are
+        /// also accepted. The advertised schema never changes during a catalog's lifetime.
+        /// </remarks>
+        public ODataEnumJsonFormat EnumJsonFormat { get; set; } = ODataEnumJsonFormat.Auto;
+
+        /// <summary>
         /// Gets or sets entity set names to exclude from named tools and resources.
         /// </summary>
         public List<string> ExcludeEntitySets { get; set; } = [];
@@ -38,6 +47,24 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets a value indicating whether update tools are generated.
         /// </summary>
         public bool IncludeUpdate { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets service-specific guidance placed before the default MCP server instructions.
+        /// </summary>
+        /// <remarks>
+        /// The default text in <see cref="ODataMcpInstructions.Default"/> is always included; this only prepends.
+        /// See <see cref="ODataMcpInstructions.Compose(string?)"/>.
+        /// </remarks>
+        public string? InstructionsPreface { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the EDM can change while the catalog is alive.
+        /// </summary>
+        /// <remarks>
+        /// When <c>false</c> (the default) type shapes are computed once at catalog construction and cached.
+        /// Set to <c>true</c> for models whose declared members change at runtime so shapes are rebuilt per request.
+        /// </remarks>
+        public bool IsDynamicModel { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of entity-set completion values returned for an empty prefix.

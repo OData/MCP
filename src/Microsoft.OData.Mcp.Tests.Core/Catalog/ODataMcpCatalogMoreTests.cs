@@ -320,6 +320,55 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             configured.Should().BeTrue();
         }
 
+        /// <summary>
+        /// A static model fills the type-shape cache at construction and serves the same instance afterwards.
+        /// </summary>
+        [TestMethod]
+        public void Catalog_StaticModel_FillsTypeShapeCache()
+        {
+            var catalog = Catalog();
+            var person = catalog._model.GetEntityType("Trippin.Person")!;
+
+            catalog.Shapes.Should().ContainKey("Trippin.Person");
+            catalog.Shapes["Trippin.Person"].EntitySet!.Name.Should().Be("People");
+            catalog.GetShape(person).Should().BeSameAs(catalog.Shapes["Trippin.Person"]);
+        }
+
+        /// <summary>
+        /// A dynamic model skips the cache and builds a fresh shape per request.
+        /// </summary>
+        [TestMethod]
+        public void Catalog_DynamicModel_SkipsTypeShapeCache()
+        {
+            var catalog = new ODataMcpCatalog(
+                new CsdlParser().ParseFromString(CsdlParserDocumentationTests.DocumentedCsdl),
+                new ODataMcpCatalogOptions
+                {
+                    IsDynamicModel = true
+                });
+            var person = catalog._model.GetEntityType("Trippin.Person")!;
+
+            catalog.Shapes.Should().BeEmpty();
+            var first = catalog.GetShape(person);
+            var second = catalog.GetShape(person);
+            first.FullName.Should().Be("Trippin.Person");
+            first.Should().NotBeSameAs(second);
+            catalog.Shapes.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// Shape options default to a static model, automatic enum wire format, and no preface.
+        /// </summary>
+        [TestMethod]
+        public void Options_ShapeDefaults()
+        {
+            var options = new ODataMcpCatalogOptions();
+
+            options.EnumJsonFormat.Should().Be(ODataEnumJsonFormat.Auto);
+            options.InstructionsPreface.Should().BeNull();
+            options.IsDynamicModel.Should().BeFalse();
+        }
+
         #endregion
 
         #region Internal Methods
