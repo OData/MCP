@@ -421,3 +421,7 @@ FodyWeavers.xsd
 
 # Local planning notes; never checked in.
 docs/superpowers/
+.superpowers/
+
+# Superseded planning documents kept for local reference only.
+specs/Historical Plans/
