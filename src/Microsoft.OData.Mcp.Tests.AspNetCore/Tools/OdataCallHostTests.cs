@@ -37,26 +37,27 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var function = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"), CancellationToken.None);
             function.IsError.Should().BeFalse(function.Text);
             capture.Last!.Method.Should().Be(HttpMethod.Get);
-            var action = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{}"), CancellationToken.None);
+            var action = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset"), CancellationToken.None);
             action.IsError.Should().BeFalse(action.Text);
             capture.Last!.Method.Should().Be(HttpMethod.Post);
         }
 
         /// <summary>
-        /// An object body and a string body both POST JSON to Reset.
+        /// A stringified parameters value is rejected before HTTP; an object (even empty) POSTs JSON to Reset.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ActionWithObjectBodyVsStringBody()
+        public async Task OdataCall_ActionParametersObjectNotString()
         {
             var (runtime, capture) = CreateCapturingRuntime();
-            var asString = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{}"), CancellationToken.None);
-            asString.IsError.Should().BeFalse(asString.Text);
-            capture.Last!.Method.Should().Be(HttpMethod.Post);
-            capture.Last.JsonBody.Should().Be("{}");
-            var asObject = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", new { }), CancellationToken.None);
+            var asString = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "parameters", "{}"), CancellationToken.None);
+            asString.IsError.Should().BeTrue();
+            asString.Text.Should().Be("parameters must be a JSON object, not a string.");
+            capture.Requests.Should().BeEmpty();
+
+            var asObject = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "parameters", new { }), CancellationToken.None);
             asObject.IsError.Should().BeFalse(asObject.Text);
             capture.Last!.Method.Should().Be(HttpMethod.Post);
-            capture.Last.JsonBody.Should().NotBeNullOrWhiteSpace();
+            capture.Last.JsonBody.Should().Be("{}");
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
                 var name = operation.Name;
                 var arguments = name == "GetStatus"
-                    ? ToolArguments.Of("name", name, "code", "open")
+                    ? ToolArguments.Of("name", name, "parameters", new { code = "open" })
                     : ToolArguments.Of("name", name);
                 var result = await InvokeAsync("odata_call", arguments);
                 result.IsError.Should().BeFalse(result.Text);
@@ -110,25 +111,29 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// An empty action body string is posted as empty.
+        /// A <c>body</c> argument is not part of the contract and is rejected before HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_BodyEmptyStringOnAction()
+        public async Task OdataCall_BodyArgument_IsErrorNoHttp()
         {
             var (runtime, capture) = CreateCapturingRuntime();
-            await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", ""), CancellationToken.None);
-            capture.Last.Should().NotBeNull();
-            capture.Last!.Method.Should().Be(HttpMethod.Post);
+            var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", ""), CancellationToken.None);
+
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Unexpected argument 'body'. Put operation arguments in parameters as a JSON object.");
+            capture.Last.Should().BeNull();
         }
 
         /// <summary>
-        /// Malformed JSON on an action is forwarded to OData.
+        /// A malformed stringified parameters value never reaches OData.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_BodyMalformedJsonOnAction()
+        public async Task OdataCall_ParametersMalformedString_IsError()
         {
-            var result = await InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{"));
-            result.Should().NotBeNull();
+            var result = await InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "parameters", "{"));
+
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("parameters must be a JSON object, not a string.");
         }
 
         /// <summary>
@@ -193,15 +198,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Unknown function parameters are omitted from the path.
+        /// Unknown function parameters are an error before HTTP, never scraped into the path.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ExtraUnknownParamOnFunction_OmittedFromPath()
+        public async Task OdataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp()
         {
-            var (result, capture) = await CallCapturedAsync("name", "MostValuable", "foo", "bar");
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("MostValuable");
-            capture.Last.RelativePath.Should().NotContain("foo");
+            var (result, capture) = await CallCapturedAsync("name", "MostValuable", "parameters", new { foo = "bar" });
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Unknown parameter 'foo'. Declared: none.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -268,14 +273,14 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// An oversized action body is rejected with no HTTP.
+        /// An oversized undeclared argument is rejected with no HTTP; Reset declares no parameters.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_MaxRequestBodyBytesOnAction_NoHttp()
+        public async Task OdataCall_HugeUnknownParameterOnAction_NoHttp()
         {
-            var (result, capture) = await CallCapturedAsync("name", "Reset", "body", new string('a', 262_145));
+            var (result, capture) = await CallCapturedAsync("name", "Reset", "parameters", new { payload = new string('a', 262_145) });
             result.IsError.Should().BeTrue(result.Text);
-            result.Text.Should().Contain("request body exceeds the maximum size");
+            result.Text.Should().Be("Unknown parameter 'payload'. Declared: none.");
             capture.Requests.Should().BeEmpty();
         }
 
@@ -335,7 +340,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var twinBody = await twin.Content.ReadAsStringAsync();
             twin.IsSuccessStatusCode.Should().BeTrue(twinBody);
             var (runtime, capture) = CreateCapturingRuntime();
-            var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{}"), CancellationToken.None);
+            var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset"), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
             capture.Last!.Method.Should().Be(HttpMethod.Post);
             capture.Last.RelativePath.Should().Be("Reset");
@@ -348,7 +353,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_OData8_UnboundFunctionGetStatusWithCode_PathContainsCode()
         {
-            var (result, capture) = await CallCapturedAsync("name", "GetStatus", "code", "open");
+            var (result, capture) = await CallCapturedAsync("name", "GetStatus", "parameters", new { code = "open" });
             capture.Last!.Method.Should().Be(HttpMethod.Get);
             capture.Last.RelativePath.Should().Be("GetStatus(code='open')");
             using var client = CreateClient();
@@ -402,7 +407,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public async Task OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings()
         {
-            var (_, capture) = await CallCapturedAsync("name", "GetStatus", "code", "open");
+            var (_, capture) = await CallCapturedAsync("name", "GetStatus", "parameters", new { code = "open" });
             capture.Last!.RelativePath.Should().Contain("code='open'");
             capture.Last.RelativePath.Should().NotContain("code=open)");
         }
@@ -423,12 +428,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unbound MostValuable ignores entitySet and key for the path.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UnboundWithEntitySetAndKey_IgnoredForPath()
+        public async Task OdataCall_UnboundWithEntitySetAndKey_IsError()
         {
             var (result, capture) = await CallCapturedAsync("name", "MostValuable", "entitySet", "Customers", "key", "1");
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("MostValuable");
-            capture.Last.RelativePath.Should().NotContain("Customers");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("MostValuable is unbound. Omit entitySet and key.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -444,26 +449,27 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Get-style arguments on an unbound call still invoke the operation.
+        /// Get-style arguments on an unbound call are rejected: unbound means no entitySet and no key.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UsingGetArgs_OnUnbound()
+        public async Task OdataCall_UsingGetArgs_OnUnbound_IsError()
         {
             var (result, capture) = await CallCapturedAsync("name", "MostValuable", "entitySet", "Customers", "key", "1");
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("MostValuable");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Contain("is unbound");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
-        /// Query <c>filter</c> is not treated as a function parameter.
+        /// Query <c>filter</c> is not a call argument; a stray top-level field is an error before HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UsingQueryArgs_FilterAsFunctionParam_OmittedUnlessNamedParam()
+        public async Task OdataCall_UsingQueryArgs_FilterTopLevel_IsError()
         {
             var (result, capture) = await CallCapturedAsync("name", "MostValuable", "filter", "true");
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("MostValuable");
-            capture.Last.RelativePath.Should().NotContain("filter");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Unexpected argument 'filter'. Put operation arguments in parameters as a JSON object.");
+            capture.Requests.Should().BeEmpty();
         }
 
         #endregion
@@ -507,9 +513,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var most = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
             most.IsError.Should().BeFalse(most.Text);
             most.StructuredContent.Should().Contain("42");
-            var status = await InvokeAsync("odata_call", ToolArguments.Of("name", "GetStatus", "code", "open"));
+            var status = await InvokeAsync("odata_call", ToolArguments.Of("name", "GetStatus", "parameters", new { code = "open" }));
             status.IsError.Should().BeFalse(status.Text);
-            var reset = await InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{}"));
+            var reset = await InvokeAsync("odata_call", ToolArguments.Of("name", "Reset"));
             reset.IsError.Should().BeFalse(reset.Text);
         }
 

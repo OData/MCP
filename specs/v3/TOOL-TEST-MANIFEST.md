@@ -5,7 +5,7 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, `odata_list_operations` (unbound only), named `create_*`/`update_*` schemas (typed, `required`), and `outputSchema` on the two list tools are on the **new** contract. `odata_call` (`body`) is still described **as shipped before optimization** and flips when its task lands. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): every tool contract below is the **optimized** one — `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, `odata_list_operations` (unbound only), named `create_*`/`update_*` schemas (typed, `required`), `outputSchema` on the two list tools, `odata_call` with a `parameters` object, and pre-HTTP EdmType validation on create, update, and call. Server instructions and the remaining tool description copy land with Task 9. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -74,12 +74,12 @@ From `ODataMcpCatalog.BuildGenericTools` (always, first in `tools/list`):
 | `odata_describe_model` | Describe model | readOnly, idempotent | `{ detail?: "summary" \| "complete", format?: "text" \| "json" \| "mermaid", sets?: string[] }` — eleventh generic, registered right after `odata_describe_type` | none |
 | `odata_query` | Query entity set | readOnly, idempotent | `entitySet`, `filter`, `select`, `orderby`, `expand`, `top` (number), `skip` (number), `count` (boolean) | `entitySet` |
 | `odata_get` | Get entity | readOnly, idempotent | `entitySet`, `key` | `entitySet`, `key` |
-| `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (string in schema; runtime also accepts a JSON object or remaining properties) | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
-| `odata_update` | Update entity | idempotent | `entitySet`, `key`, `body` | `entitySet`, `key`, `body` |
+| `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (string in schema; runtime also accepts a JSON object or remaining properties). When the set's type is declared and the body parses as a JSON object it is **validated before HTTP** (§10): required-on-create, unknown properties on closed types, JSON kind per EDM type, enum membership, `MaxLength`, `null` on non-nullable | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
+| `odata_update` | Update entity | idempotent | `entitySet`, `key`, `body`. Same pre-HTTP validation as create minus the required-on-create check | `entitySet`, `key`, `body` |
 | `odata_delete` | Delete entity | destructive, idempotent | `entitySet`, `key` | `entitySet`, `key` |
 | `odata_navigate` | Navigate | readOnly, idempotent | `entitySet`, `key`, `navigation` | `entitySet`, `key`, `navigation` |
 | `odata_list_operations` | List operations | readOnly, idempotent | `{}` `additionalProperties:false` — returns **unbound** operations only as `{ operations: { Name: signature } }`, or `{}` when none | none |
-| `odata_call` | Call operation | (openWorld) | `name`, `entitySet`, `key`, `body` | `name`; bound ops also require `entitySet`+`key` |
+| `odata_call` | Call operation | (openWorld) | `name`, `parameters` (JSON **object** keyed by declared parameter names), `entitySet`, `key`; `additionalProperties: false`. No `body`; any other top-level key is `Unexpected argument '{k}'. Put operation arguments in parameters as a JSON object.` | `name`; instance-bound also `entitySet`+`key`; collection-bound `entitySet` only; unbound neither |
 
 From `ODataMcpCatalog.BuildNamedFamily` (only when `MaxNamedTools - genericCount` has room for the **entire** family; never a partial family):
 
@@ -139,9 +139,10 @@ These are current `ODataToolRuntime` behaviors. Tests lock them so a rewrite can
 |-------|----------|
 | `$filter` as an argument name | **Ignored.** `ReadQueryOptions` only copies `filter`/`select`/`orderby`/`expand`/`top`/`skip`/`count`. A `$filter` key never becomes a query option. The call proceeds without that filter. |
 | Extra unknown properties on query/get | **Ignored** (not an error). They are not forwarded. |
-| `body` JSON object vs JSON string | String → `GetString()`. Object/array/number → `GetRawText()`. Empty string body is posted as empty (not `{}`). Null `body` is treated as missing. |
-| Missing `body` on `odata_create` | Runtime serializes leftover properties (everything except `entitySet`/`key`) and POSTs that JSON. Schema still lists `body` as required; runtime is more lenient. |
-| Named `create_*` | If `body` is absent, leftover properties (not query option names, not `key`/`entitySet`) are serialized into `body`. |
+| `body` JSON object vs JSON string | String → `GetString()`. Object/array/number → `GetRawText()`. Empty string body is posted as empty (not `{}`). Null `body` is treated as missing. Bodies that do not parse as a JSON object (malformed, array, number, `null`) skip validation and are forwarded for the service to answer. |
+| Missing `body` on `odata_create` | Runtime serializes leftover properties (everything except `entitySet`/`key`) and POSTs that JSON. Schema still lists `body` as required; runtime is more lenient. Leftover **query option names** (`filter`, `top`, …) therefore become properties and, on a closed type, fail before HTTP as `Unknown property` (or as missing required-on-create when nothing else is sent). |
+| Named `create_*` | If `body` is absent, leftover properties (not query option names, not `key`/`entitySet`) are serialized into `body`, then validated like any create. |
+| Pre-HTTP entity validation (create/update) | When the target set's type is declared and the body is a JSON object: create checks required-on-create first (`Missing required properties on {Type}: A, B. Required on create: …` — skipped when `EnforceRequiredOnCreate=false`); then every member: keys containing `@` and navigation names pass through; unknown members on **closed** types → `Unknown property '{p}' on {Type}. Declared: …`; JSON kind per EDM type (`must be a JSON integer/number/boolean/string/object/array`, `a JSON number or a numeric string` for Int64/Decimal, `a GUID string`); `null` on non-nullable → `cannot be null`; enum members (`must be one of A, B; 'x' is not a member`); `MaxLength` (`exceeds MaxLength n`). Open types accept extra members. Undeclared sets are forwarded untouched. |
 | `top`/`skip` as strings `"1"` | Forwarded as the string `1` (or `"1"` if JSON string). Executor URI-escapes the value. OData servers generally accept `$top=1`. |
 | `top` as bool or array | `GetRawText()` produces `true` or `[1,2]`. OData should 400. Tool `IsError` with status 400. |
 | `count` as string `"true"` | Forwarded as `true` without quotes if it was a JSON string `"true"` → the string `true`. |
@@ -149,8 +150,8 @@ These are current `ODataToolRuntime` behaviors. Tests lock them so a rewrite can
 | String keys | Quoted; apostrophes doubled (`O'Brien` → `'O''Brien'`). |
 | Already-quoted keys | Left as-is (`'ALFKI'` stays `'ALFKI'`). |
 | Composite keys | Passed as a **single string** (`OrderID=10248,ProductID=11`). If the whole string is not numeric/guid/bool, `FormatKey` **quotes the entire composite**, which is wrong for OData. Cases below document both the desired wire form `EntitySet(OrderID=10248,ProductID=11)` and the current quoting trap — the test must fail the product if the wire path is `Order_Details('OrderID=10248,ProductID=11')` unless/until composite formatting is implemented. **Do not silently accept the quoted form.** |
-| Bound `odata_call` | Actions are matched **before** functions (`Actions.FirstOrDefault` then functions). Name match is case-insensitive. |
-| Function parameters | First parameter of a bound function is skipped (binding parameter). Missing function args are omitted from the path, not rejected by MCP. String-typed function args are `FormatKey`'d. |
+| Bound `odata_call` | Actions are matched **before** functions (`Actions.FirstOrDefault` then functions). Name match is case-insensitive. Binding is enforced from the EDM: instance-bound → `{Name} is bound to {Type}. Pass entitySet and key. Signature: …`; collection-bound (binding parameter `Collection(...)`) → `{Name} is collection-bound. Pass entitySet; omit key. Signature: …` and the path is `{entitySet}/{Name}`; unbound with `entitySet` or `key` → `{Name} is unbound. Omit entitySet and key.` |
+| Function / action parameters | Arguments live only in `parameters` (object). Parameter names match by **exact spelling**; the binding parameter is never an argument. `Unknown parameter '{p}'. Declared: a, b.`, `Missing parameter '{p}'. Signature: …` for non-nullable parameters, and JSON-kind / enum / `MaxLength` checks (`Parameter '{p}' must be …. Signature: …`) all fail before HTTP. Functions: primitives become URL literals (`'text'`, `33`, `NS.Enum'Member'`, `duration'P1D'`, raw GUIDs/dates); complex, collection, and entity arguments travel as parameter aliases (`p=@p` plus `?@p={json}` in the path). Actions: `parameters` becomes the POST body (`{}` when empty); enum numbers and literals are normalized to member names. `parameters` as a string → `parameters must be a JSON object, not a string.` |
 | Unknown tool | `IsError`, text `Unknown tool '{name}'.` |
 | Empty tool name at handler | `CallToolAsync` returns `Tool name is required.` before runtime. Empty name at `InvokeAsync` throws `ArgumentException` (not a tool result). |
 
@@ -773,7 +774,7 @@ Gets an entity by key. Required `entitySet` + `key`. Path `{entitySet}({FormatKe
 
 ### Purpose
 
-Creates an entity from a JSON body. POST `{entitySet}` with `application/json`. Schema requires `entitySet`+`body`. Runtime: string or object `body`, or leftover properties.
+Creates an entity from a JSON body. POST `{entitySet}` with `application/json`. Schema requires `entitySet`+`body`. Runtime: string or object `body`, or leftover properties. **Before HTTP**, when the set's type is declared and the body is a JSON object, the body is validated per §3.1 "Pre-HTTP entity validation": required-on-create (unless `ODataMcpCatalogOptions.EnforceRequiredOnCreate` is `false`), unknown properties on closed types, JSON kind, `null` on non-nullable, enum membership, `MaxLength`. The convention test model declares `CustomerId` as `Core.Computed` and the optional strings nullable, so `{"CompanyName":"X"}` is a complete Customer; Northwind requires `CustomerID`; Northwind `Products` requires `ProductID` and `Discontinued`.
 
 ### Matrix
 
@@ -876,7 +877,7 @@ Northwind cells are **failure** happy-paths (read-only service): `IsError` with 
 
 ### Purpose
 
-Updates an entity with PATCH `{entitySet}({key})`. Required `entitySet`, `key`, `body`. Idempotent hint true.
+Updates an entity with PATCH `{entitySet}({key})`. Required `entitySet`, `key`, `body`. Idempotent hint true. **Before HTTP** the body gets the same validation as create except required-on-create: leftover query option names (`top`, `$filter`) on a closed type are `Unknown property` errors, `null` on a non-nullable property is `cannot be null`, and omitted fields are simply not sent.
 
 ### Matrix
 
@@ -1209,7 +1210,7 @@ Lists the **unbound** operations of the service as compact signatures. No argume
 
 ### Purpose
 
-Calls a declared unbound function (GET) or action (POST). Bound operations also require `entitySet` and `key`. Path unbound: `{name}` or `{name}(p=v,…)`. Path bound: `{entitySet}({key})/{name}`. Unknown name: `Operation '{name}' is not declared in the model.` (no HTTP). Actions matched before functions, case-insensitive.
+Calls a declared function (GET) or action (POST) by `name`, with every argument in `parameters` (a JSON object keyed by the declared parameter names as listed on `odata_describe_type` for bound operations or `odata_list_operations` for unbound). Instance-bound: also `entitySet` and `key`; path `{entitySet}({key})/{name}`. Collection-bound: `entitySet` only; path `{entitySet}/{name}`. Unbound: neither; path `{name}` or `{name}(p=v,…)`. There is no `body` and no other top-level argument. Everything is validated against the EDM **before HTTP** (§3.1 "Function / action parameters"): unknown name → `Operation '{name}' is not declared in the model.`; wrong binding, unknown/missing/mistyped parameters, and stringified `parameters` each return `isError` with the declared signature and send nothing. Actions matched before functions, case-insensitive.
 
 ### Matrix
 
@@ -1238,15 +1239,15 @@ Calls a declared unbound function (GET) or action (POST). Bound operations also 
 449. **OdataCall_OData8_OperationsOnly_SameThreeCalls**
 
 450. **OdataCall_TripPin_GetNearestAirport_LatLon_MatchHttp**  
-    - **Call:** name `GetNearestAirport` plus parameters as declared (typically `lat`/`lon` numbers).  
+    - **Call:** `{ name: GetNearestAirport, parameters: { lat: 33, lon: -118 } }`.  
     - **Twin:** GET `GetNearestAirport(lat=...,lon=...)`.  
     - **Expect:** airport payload.
 
 451. **OdataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError** — mutating live service; prefer a dedicated session URL. If the service forbids, `IsError` with status — still a real call.
 
-452. **OdataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey** — `{ name: ShareTrip, entitySet: People, key: russellwhyte, body: { ... } }` as CSDL requires. Twin POST `People('russellwhyte')/ShareTrip`.
+452. **OdataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey** — `{ name: ShareTrip, entitySet: People, key: russellwhyte, parameters: { userName: "scottketchum", tripId: N } }`. Twin POST `People('russellwhyte')/ShareTrip` with body `{"userName":"scottketchum","tripId":N}`.
 
-453. **OdataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline** — if present in `odata_list_operations`; skip only when not declared (assert list first, then call).
+453. **OdataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline** — listed on `odata_describe_type` `People` (bound); call with `entitySet`+`key` and no `parameters`. GET `People('russellwhyte')/GetFavoriteAirline`.
 
 454. **OdataCall_JsonRpcToolsCall_MostValuable**
 
@@ -1258,22 +1259,25 @@ Calls a declared unbound function (GET) or action (POST). Bound operations also 
 457. **OdataCall_OperationInsteadOfName_IsErrorMissingName**  
 458. **OdataCall_FunctionInsteadOfName**  
 459. **OdataCall_IdInsteadOfName**  
-460. **OdataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet** — ShareTrip without entitySet.  
-461. **OdataCall_BoundWithoutKey_IsErrorMissingKey**  
-462. **OdataCall_UnboundWithEntitySetAndKey_IgnoredForPath** — MostValuable still GET `MostValuable` not `Customers(1)/MostValuable`.  
-463. **OdataCall_UsingQueryArgs_FilterAsFunctionParam_OmittedUnlessNamedParam**  
-464. **OdataCall_UsingGetArgs_OnUnbound**  
+460. **OdataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet** — ShareTrip without entitySet → `ShareTrip is bound to Person. Pass entitySet and key. Signature: ShareTrip(userName: string, tripId: int) // writes`; no HTTP.  
+461. **OdataCall_BoundWithoutKey_IsErrorMissingKey** — same message; no HTTP.  
+462. **OdataCall_UnboundWithEntitySetAndKey_IsError** — `MostValuable is unbound. Omit entitySet and key.`; no HTTP.  
+463. **OdataCall_UsingQueryArgs_FilterTopLevel_IsError** — top-level `filter` → `Unexpected argument 'filter'. Put operation arguments in parameters as a JSON object.`; no HTTP.  
+464. **OdataCall_UsingGetArgs_OnUnbound_IsError** — `entitySet`/`key` on an unbound call is the unbound error above.  
 465. **OdataCall_DollarName_MissingName**  
 466. **OdataCall_NameAsNumber**  
-467. **OdataCall_ExtraUnknownParamOnFunction_OmittedFromPath** — not sent unless it matches a declared parameter name.  
-468. **OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings**  
-469. **OdataCall_ActionWithObjectBodyVsStringBody**
+467. **OdataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp** — `parameters: { foo: 1 }` → `Unknown parameter 'foo'. Declared: lat, lon.` (or `Declared: none.`); no HTTP.  
+468. **OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings** — `parameters: { code: "open" }` → path `GetStatus(code='open')`.  
+469. **OdataCall_ActionParametersObjectNotString** — `parameters: "{}"` (string) → `parameters must be a JSON object, not a string.`; `parameters: {}` → POST `{}`.  
+469.1. **Call_InstanceBound_RequiresEntitySetAndKey** / **Call_CollectionBound_EntitySetOnly** — fixture: passing the binding parameter is `Unknown parameter 'person'. Declared: lastName.`; collection-bound `Top` with a `key` or without `entitySet` is `Top is collection-bound. Pass entitySet; omit key. Signature: …`; the valid call is GET `People/Top(count=2)`.  
+469.2. **Call_ParameterValidation_FailsBeforeHttp** — missing non-nullable → `Missing parameter 'lat'. Signature: GetNearestAirport(lat: number) -> string`; wrong kind → `Parameter 'lat' must be a JSON number. Signature: …`; top-level argument → `Unexpected argument 'lat'. …`; `body` → `Unexpected argument 'body'. …`.  
+469.3. **Call_LiteralForms_EnumDurationAndAlias** — enum number `1` → `NS.Color'Green'` on the URL and `"Green"` in an action body; `Edm.Duration` → `duration'PT5S'`; GUID raw; complex argument → `at=@at` with `?@at=<escaped json>` in the path; unknown member → `Parameter 'color' must be one of Red, Green; 'Blue' is not a member.`
 
 ### Malformed payloads
 
 470. **OdataCall_EmptyName**  
-471. **OdataCall_BodyMalformedJsonOnAction**  
-472. **OdataCall_BodyEmptyStringOnAction**  
+471. **OdataCall_ParametersMalformedString_IsError** — `parameters: "{"` → `parameters must be a JSON object, not a string.`  
+472. **OdataCall_BodyArgument_IsErrorNoHttp** — any `body` argument → `Unexpected argument 'body'. …`; nothing sent.  
 473. **OdataCall_JsonRpc_Malformed**  
 474. **OdataCall_UnicodeOperationName_NotDeclaredError**  
 475. **OdataCall_EmojiName_NotDeclared**
@@ -1283,7 +1287,7 @@ Calls a declared unbound function (GET) or action (POST). Bound operations also 
 476. **OdataCall_UnknownOperationGhost_IsErrorNotDeclared_NoHttp** — text `Operation 'Ghost' is not declared in the model.`  
 477. **OdataCall_Northwind_AnyNameNotInModel_NotDeclared**  
 478. **OdataCall_DeclaredButOData404** — typo path if binding wrong.  
-479. **OdataCall_MissingFunctionParam_OData400** — GetStatus without `code` (omitted from path). Twin GET `GetStatus`.  
+479. **OdataCall_MissingFunctionParam_OData400** — GetStatus without `code`: `code` is **nullable** in the convention model, so it is omitted from the path and the service answers (twin GET `GetStatus`). **OdataCall_MissingFunctionParam_FailsBeforeHttp** — TripPin `GetNearestAirport` without `lon` (non-nullable) → `Missing parameter 'lon'. Signature: GetNearestAirport(lat: number, lon: number) -> Airport`; no HTTP.  
 480. **OdataCall_401**  
 481. **OdataCall_403**  
 482. **OdataCall_405PostOnFunctionOrGetOnAction** — if someone used wrong verb internally, runtime picks GET vs POST from kind; assert function never POST.  
@@ -1299,7 +1303,7 @@ Calls a declared unbound function (GET) or action (POST). Bound operations also 
 
 ### Overwhelm / rate limit / size
 
-492. **OdataCall_MaxRequestBodyBytesOnAction_NoHttp**  
+492. **OdataCall_HugeUnknownParameterOnAction_NoHttp** — a 262,145-byte value under an undeclared name is `Unknown parameter 'payload'. Declared: none.` with no HTTP; `MaxRequestBodyBytes` still guards the serialized `parameters` of declared actions.  
 493. **OdataCall_MaxResponseBytesTiny**  
 494. **OdataCall_McpHttp429VsFunction429_AreDifferentLayers** — MCP permit 1 vs function permit 1. First layer HTTP 429 on `/mcp`; function layer is tool `IsError` 429.  
 495. **OdataCall_ConcurrentMostValuable_Until429**  

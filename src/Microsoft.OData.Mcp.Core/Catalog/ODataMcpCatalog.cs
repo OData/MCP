@@ -662,8 +662,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Calls a declared unbound function (GET) or action (POST). Bound operations also require entitySet and key.",
-                    InputSchema = """{"type":"object","properties":{"name":{"type":"string"},"entitySet":{"type":"string"},"key":{"type":"string"},"body":{"type":"string"}},"required":["name"]}""",
+                    Description = "Call a declared operation by name as listed on odata_describe_type (bound) or odata_list_operations (unbound). Put every argument in parameters using those names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound: also entitySet and key. Collection-bound (// collection on the listing): entitySet only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. // writes means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.",
+                    InputSchema = """{"type":"object","properties":{"name":{"type":"string"},"parameters":{"type":"object","description":"Operation arguments keyed by the declared parameter names."},"entitySet":{"type":"string"},"key":{"type":"string"}},"required":["name"],"additionalProperties":false}""",
                     Name = OdataCall,
                     Title = "Call operation"
                 }

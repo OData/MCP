@@ -176,11 +176,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "body", """{"userName":"scottketchum","tripId":0}"""),
+                ToolArguments.Of("name", "ShareTrip", "parameters", new { userName = "scottketchum", tripId = 0 }),
                 CancellationToken.None);
 
             result.IsError.Should().BeTrue(result.Text);
-            result.Text.Should().Contain("entitySet");
+            result.Text.Should().Be("ShareTrip is bound to Person. Pass entitySet and key. Signature: ShareTrip(userName: string, tripId: int) // writes");
             capture.Requests.Should().BeEmpty();
         }
 
@@ -193,11 +193,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "body", """{"userName":"scottketchum","tripId":0}"""),
+                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "parameters", new { userName = "scottketchum", tripId = 0 }),
                 CancellationToken.None);
 
             result.IsError.Should().BeTrue(result.Text);
-            result.Text.Should().Contain("key");
+            result.Text.Should().Contain("Pass entitySet and key");
             capture.Requests.Should().BeEmpty();
         }
 
@@ -237,7 +237,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "lat", 33, "lon", -118),
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33, lon = -118 }),
                 CancellationToken.None);
             var odata = await TwinGetAsync("GetNearestAirport(lat=33,lon=-118)");
 
@@ -257,7 +257,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "getnearestairport", "lat", 33, "lon", -118),
+                ToolArguments.Of("name", "getnearestairport", "parameters", new { lat = 33, lon = -118 }),
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
@@ -265,24 +265,24 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Extra unknown function params are omitted from the path.
+        /// An unknown parameter is an error before HTTP; nothing is scraped into the path.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ExtraUnknownParamOnFunction_OmittedFromPath()
+        public async Task OdataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "lat", 33, "lon", -118, "foo", 1),
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33, lon = -118, foo = 1 }),
                 CancellationToken.None);
 
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("GetNearestAirport(lat=33,lon=-118)");
-            capture.Last.RelativePath.Should().NotContain("foo");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Unknown parameter 'foo'. Declared: lat, lon.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
-        /// String function parameters are FormatKey-quoted.
+        /// String function parameters are quoted as OData literals.
         /// </summary>
         [TestMethod]
         public async Task OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings()
@@ -290,7 +290,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetFriendsTrips", "entitySet", "People", "key", "russellwhyte", "userName", "scottketchum"),
+                ToolArguments.Of("name", "GetFriendsTrips", "entitySet", "People", "key", "russellwhyte", "parameters", new { userName = "scottketchum" }),
                 CancellationToken.None);
 
             capture.Last!.Method.Should().Be(HttpMethod.Get);
@@ -302,20 +302,20 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Unbound functions ignore entitySet and key for the path.
+        /// Unbound functions reject entitySet and key instead of silently dropping them.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UnboundWithEntitySetAndKey_IgnoredForPath()
+        public async Task OdataCall_UnboundWithEntitySetAndKey_IsError()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "entitySet", "People", "key", "russellwhyte", "lat", 33, "lon", -118),
+                ToolArguments.Of("name", "GetNearestAirport", "entitySet", "People", "key", "russellwhyte", "parameters", new { lat = 33, lon = -118 }),
                 CancellationToken.None);
 
-            result.IsError.Should().BeFalse(result.Text);
-            capture.Last!.RelativePath.Should().Be("GetNearestAirport(lat=33,lon=-118)");
-            capture.Last.RelativePath.Should().NotContain("People");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("GetNearestAirport is unbound. Omit entitySet and key.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -327,7 +327,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "lat", 33, "lon", -118),
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33, lon = -118 }),
                 CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
@@ -336,19 +336,20 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Missing function parameters are omitted from the path.
+        /// A missing non-nullable function parameter fails before HTTP with the signature.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_MissingFunctionParam_OData400()
+        public async Task OdataCall_MissingFunctionParam_FailsBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "lat", 33),
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33 }),
                 CancellationToken.None);
 
-            capture.Last!.RelativePath.Should().Be("GetNearestAirport(lat=33)");
-            AssertStatusError(result);
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Missing parameter 'lon'. Signature: GetNearestAirport(lat: number, lon: number) -> Airport");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>

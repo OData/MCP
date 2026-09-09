@@ -232,20 +232,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// Unknown property may be ignored or 400.
+        /// An unknown property on the closed McpCustomer type fails before HTTP with the declared list.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_UnknownPropertyInArgs_PostedAndODataMayIgnoreOr400()
+        public async Task CreateCustomer_UnknownPropertyInArgs_IsErrorBeforeHttp()
         {
             var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 122, "CompanyName", "Extra", "NoSuch", "x"));
-            if (result.IsError)
-            {
-                result.Text.Should().Contain("status ");
-            }
-            else
-            {
-                result.Text.Should().NotBeNullOrWhiteSpace();
-            }
+
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Unknown property 'NoSuch' on McpCustomer. Declared: Id, CompanyName.");
         }
 
         /// <summary>

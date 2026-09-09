@@ -15,17 +15,32 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         #region Properties
 
-        public string City { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the city. Optional: the test API only requires <see cref="CompanyName"/>, and the EDM says so.
+        /// </summary>
+        public string? City { get; set; } = string.Empty;
 
         public string CompanyName { get; set; } = string.Empty;
 
-        public string ContactName { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the contact name. Optional on create.
+        /// </summary>
+        public string? ContactName { get; set; } = string.Empty;
 
-        public string Country { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the country. Optional on create.
+        /// </summary>
+        public string? Country { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the store-generated key. The test models annotate it <c>Core.Computed</c>.
+        /// </summary>
         public int CustomerId { get; set; }
 
-        public string Email { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the email. Optional on create.
+        /// </summary>
+        public string? Email { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a CLR-only secret that OData <c>Ignore()</c> must omit from the EDM.
@@ -34,7 +49,10 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Entities
 
         public List<Order> Orders { get; set; } = [];
 
-        public string Phone { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the phone. Optional on create.
+        /// </summary>
+        public string? Phone { get; set; } = string.Empty;
 
         #endregion
 

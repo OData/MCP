@@ -720,36 +720,37 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// <c>$filter</c> leftover lands in the PATCH JSON; query options are not sent.
+        /// A <c>$filter</c> leftover is an unknown property on the closed Customer type; it never becomes a query option or a PATCH field.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_DollarFilterAsBody_IgnoredAsQueryNotSentOnPatch()
+        public async Task OdataUpdate_DollarFilterAsBody_IsUnknownPropertyBeforeHttp()
         {
             var (runtime, capture) = AuthorizedCapture();
-            await runtime.InvokeAsync(
+            var result = await runtime.InvokeAsync(
                 "odata_update",
                 ToolArguments.Of("entitySet", "Customers", "key", "1", "$filter", "true", "CompanyName", "FilterLeftover"),
                 CancellationToken.None);
 
-            capture.Last!.QueryOptions.Should().BeEmpty();
-            capture.Last.JsonBody.Should().Contain("$filter");
-            capture.Last.JsonBody.Should().Contain("FilterLeftover");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().StartWith("Unknown property '$filter' on Customer.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
-        /// <c>top</c> leftover goes into the body when <c>body</c> is omitted.
+        /// A <c>top</c> leftover on update is an unknown property before HTTP, not a silent PATCH field.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_UsingQueryArgs_TopOnUpdate_GoesIntoBodyIfNoBody()
+        public async Task OdataUpdate_UsingQueryArgs_TopOnUpdate_IsUnknownPropertyBeforeHttp()
         {
             var (runtime, capture) = AuthorizedCapture();
-            await runtime.InvokeAsync(
+            var result = await runtime.InvokeAsync(
                 "odata_update",
                 ToolArguments.Of("entitySet", "Customers", "key", "1", "top", 1),
                 CancellationToken.None);
 
-            capture.Last!.JsonBody.Should().Contain("top");
-            capture.Last.QueryOptions.Should().BeEmpty();
+            result.IsError.Should().BeTrue();
+            result.Text.Should().StartWith("Unknown property 'top' on Customer.");
+            capture.Requests.Should().BeEmpty();
         }
 
         #endregion

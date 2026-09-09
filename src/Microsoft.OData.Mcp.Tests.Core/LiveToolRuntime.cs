@@ -45,7 +45,14 @@ namespace Microsoft.OData.Mcp.Tests.Core
             using var response = await probe.GetAsync(LiveOData.TripPin.TrimEnd('/') + "/");
             var root = response.RequestMessage?.RequestUri?.ToString() ?? LiveOData.TripPin;
 
-            return await CreateAsync(root, configure);
+            return await CreateAsync(root, options =>
+            {
+                // Live TripPin declares Person.Gender and FavoriteFeature non-nullable with no default, yet its POST
+                // handler returns 500 when either is sent and defaults them when omitted. The metadata is wrong, so
+                // required-on-create enforcement is disabled for this service only. Every other check stays on.
+                options.EnforceRequiredOnCreate = false;
+                configure?.Invoke(options);
+            });
         }
 
         #endregion

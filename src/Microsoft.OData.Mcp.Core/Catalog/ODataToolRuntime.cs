@@ -164,6 +164,12 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal async Task<ODataToolInvocationResult> CallOperationAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
         {
             var name = ReadRequired(arguments, Name);
+            var unexpected = arguments.Keys.FirstOrDefault(key => key is not (Name or Parameters or EntitySet or Key));
+            if (unexpected is not null)
+            {
+                return Error($"Unexpected argument '{unexpected}'. Put operation arguments in parameters as a JSON object.");
+            }
+
             var action = _catalog._model.Actions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             var function = action is null
                 ? _catalog._model.Functions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
@@ -173,46 +179,110 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return Error($"Operation '{name}' is not declared in the model.");
             }
 
-            var declaredName = action?.Name ?? function!.Name;
-            var isBound = action?.IsBound == true || function?.IsBound == true;
-            var path = declaredName;
-            if (isBound)
+            JsonElement? parameters = null;
+            if (arguments.TryGetValue(Parameters, out var supplied) && supplied.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
             {
-                var entitySet = ReadRequired(arguments, EntitySet);
-                var key = ReadRequired(arguments, Key);
-                path = $"{entitySet}({FormatKey(key)})/{declaredName}";
+                if (supplied.ValueKind == JsonValueKind.String)
+                {
+                    return Error("parameters must be a JSON object, not a string.");
+                }
+
+                if (supplied.ValueKind != JsonValueKind.Object)
+                {
+                    return Error("parameters must be a JSON object.");
+                }
+
+                parameters = supplied;
+            }
+
+            var declaredName = action is not null ? action.Name : function!.Name;
+            var declaredParameters = action is not null ? action.Parameters : function!.Parameters;
+            var isBound = action is not null ? action.IsBound : function!.IsBound;
+            var bindingParameterType = action is not null ? action.BindingParameterType : function!.BindingParameterType;
+            var returnType = action is not null ? action.ReturnType : function!.ReturnType;
+            var signature = EdmTypeShape.RenderOperation(_catalog._model, declaredName, declaredParameters, returnType, isBound, bindingParameterType, action is not null, null);
+            var hasEntitySet = arguments.TryGetValue(EntitySet, out var entitySetValue) && entitySetValue.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(entitySetValue.GetString());
+            var hasKey = arguments.TryGetValue(Key, out var keyValue) && keyValue.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+            string path;
+            if (!isBound)
+            {
+                if (hasEntitySet || hasKey)
+                {
+                    return Error($"{declaredName} is unbound. Omit entitySet and key.");
+                }
+
+                path = declaredName;
+            }
+            else if (EdmTypeShape.IsCollectionBound(bindingParameterType))
+            {
+                if (!hasEntitySet || hasKey)
+                {
+                    return Error($"{declaredName} is collection-bound. Pass entitySet; omit key. Signature: {signature}");
+                }
+
+                path = $"{entitySetValue.GetString()}/{declaredName}";
+            }
+            else
+            {
+                if (!hasEntitySet || !hasKey)
+                {
+                    var boundTo = EdmTypeShape.ShortName(bindingParameterType ?? string.Empty);
+
+                    return Error($"{declaredName} is bound to {boundTo}. Pass entitySet and key. Signature: {signature}");
+                }
+
+                path = $"{entitySetValue.GetString()}({FormatKey(ReadRequired(arguments, Key))})/{declaredName}";
+            }
+
+            var failure = EdmPayloadValidator.ValidateOperationArguments(_catalog._model, _catalog._options, declaredParameters, isBound, parameters, signature, out var values);
+            if (failure is not null)
+            {
+                return Error(failure);
             }
 
             if (function is not null)
             {
-                var pairs = function.Parameters
-                    .Where(parameter => !isBound || !parameter.Name.Equals(function.Parameters.FirstOrDefault()?.Name, StringComparison.Ordinal))
-                    .Select(parameter =>
+                var pairs = new List<string>();
+                var aliases = new List<string>();
+                foreach (var pair in values)
+                {
+                    var literal = EdmPayloadValidator.FormatUrlLiteral(_catalog._model, pair.Key.Type, pair.Value);
+                    if (literal is null)
                     {
-                        if (!arguments.TryGetValue(parameter.Name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
-                        {
-                            return null;
-                        }
+                        // Complex, collection, and entity arguments travel as OData parameter aliases. Aliases are part
+                        // of the operation call, not query options, so they stay in the path and never get a $ prefix.
+                        pairs.Add($"{pair.Key.Name}=@{pair.Key.Name}");
+                        aliases.Add($"@{pair.Key.Name}={Uri.EscapeDataString(pair.Value.GetRawText())}");
+                        continue;
+                    }
 
-                        var text = value.ValueKind == JsonValueKind.String ? value.GetString() ?? string.Empty : value.GetRawText();
-                        var formatted = parameter.Type.Contains("String", StringComparison.OrdinalIgnoreCase) ? FormatKey(text) : text;
+                    pairs.Add($"{pair.Key.Name}={literal}");
+                }
 
-                        return $"{parameter.Name}={formatted}";
-                    })
-                    .Where(pair => pair is not null)
-                    .ToList();
                 if (pairs.Count > 0)
                 {
                     path = $"{path}({string.Join(",", pairs)})";
                 }
 
+                if (aliases.Count > 0)
+                {
+                    path = $"{path}?{string.Join("&", aliases)}";
+                }
+
                 return await ExecuteAsync(HttpMethod.Get, path, null, null, cancellationToken).ConfigureAwait(false);
             }
 
-            var body = ReadBody(arguments);
-            GuardRequestBody(body);
+            var body = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var pair in values)
+            {
+                body[pair.Key.Name] = EdmPayloadValidator.NormalizeBodyValue(_catalog._model, pair.Key.Type, pair.Value);
+            }
 
-            return await ExecuteAsync(HttpMethod.Post, path, body, null, cancellationToken).ConfigureAwait(false);
+            var json = JsonSerializer.Serialize(body, ODataMcpCatalog.SchemaSerializerOptions);
+            GuardRequestBody(json);
+
+            return await ExecuteAsync(HttpMethod.Post, path, json, null, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -228,6 +298,12 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var entitySet = ReadRequired(arguments, EntitySet);
             var body = ReadBody(arguments);
             GuardRequestBody(body);
+
+            var invalid = ValidateEntityBody(entitySet, body, isCreate: true);
+            if (invalid is not null)
+            {
+                return invalid;
+            }
 
             return await ExecuteAsync(HttpMethod.Post, entitySet, body, null, cancellationToken).ConfigureAwait(false);
         }
@@ -909,7 +985,56 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var body = ReadBody(arguments);
             GuardRequestBody(body);
 
+            var invalid = ValidateEntityBody(entitySet, body, isCreate: false);
+            if (invalid is not null)
+            {
+                return invalid;
+            }
+
             return await ExecuteAsync(HttpMethod.Patch, $"{entitySet}({FormatKey(key)})", body, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Validates a create or update body against the declared type of an entity set before any OData HTTP.
+        /// </summary>
+        /// <param name="entitySet">The target entity set name.</param>
+        /// <param name="body">The JSON body text.</param>
+        /// <param name="isCreate"><c>true</c> for POST (also checks required-on-create); <c>false</c> for PATCH.</param>
+        /// <returns>
+        /// An error result when the body violates the declared shape; <c>null</c> when it is valid, when the set or its
+        /// type is not declared, or when the body is not a JSON object (those are forwarded so the service answers).
+        /// </returns>
+        internal ODataToolInvocationResult? ValidateEntityBody(string entitySet, string body, bool isCreate)
+        {
+            var set = _catalog.ResolveIncludedSets().FirstOrDefault(item => item.Name.Equals(entitySet, StringComparison.OrdinalIgnoreCase));
+            var type = set is null ? null : _catalog.ResolveEntityType(set);
+            if (type is null || string.IsNullOrWhiteSpace(body))
+            {
+                return null;
+            }
+
+            JsonDocument document;
+            try
+            {
+                document = JsonDocument.Parse(body);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+
+            using (document)
+            {
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return null;
+                }
+
+                var shape = _catalog.GetShape(type);
+                var failure = EdmPayloadValidator.ValidateEntityBody(_catalog._model, _catalog._options, shape, document.RootElement, isCreate);
+
+                return failure is null ? null : Error(failure);
+            }
         }
 
         /// <summary>

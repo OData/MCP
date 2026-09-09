@@ -61,7 +61,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 new Dictionary<string, JsonElement>
                 {
                     ["name"] = JsonSerializer.SerializeToElement("GetStatus"),
-                    ["code"] = JsonSerializer.SerializeToElement("open")
+                    ["parameters"] = JsonSerializer.SerializeToElement(new { code = "open" })
                 },
                 CancellationToken.None);
             status.IsError.Should().BeFalse();
@@ -73,8 +73,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 "odata_call",
                 new Dictionary<string, JsonElement>
                 {
-                    ["name"] = JsonSerializer.SerializeToElement("Reset"),
-                    ["body"] = JsonSerializer.SerializeToElement("{}")
+                    ["name"] = JsonSerializer.SerializeToElement("Reset")
                 },
                 CancellationToken.None);
             reset.IsError.Should().BeFalse();

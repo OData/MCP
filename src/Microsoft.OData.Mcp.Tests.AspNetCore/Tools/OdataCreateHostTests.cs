@@ -377,10 +377,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// <c>$body</c> is ignored; leftover properties become the posted JSON.
+        /// <c>$body</c> is not <c>body</c>; it becomes a leftover property that the closed Customer type rejects before HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_DollarBody_IgnoredMissingBodySynthesizedFromRest()
+        public async Task OdataCreate_DollarBody_IsUnknownPropertyBeforeHttp()
         {
             var (runtime, capture) = AuthorizedCapture();
             var result = await runtime.InvokeAsync(
@@ -388,8 +388,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 ToolArguments.Of("entitySet", "Customers", "$body", """{"CompanyName":"Dollar"}""", "CompanyName", "Synthesized"),
                 CancellationToken.None);
 
-            capture.Last.Should().NotBeNull();
-            capture.Last!.JsonBody.Should().Contain("Synthesized");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().StartWith("Unknown property '$body' on Customer.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -754,10 +755,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Query option names are posted on generic create without <c>body</c>.
+        /// Query option names as the only leftovers on generic create fail before HTTP: CompanyName is missing.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_PostsEmptyOrFilterAsProperty()
+        public async Task OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_FailsBeforeHttp()
         {
             var (runtime, capture) = AuthorizedCapture();
             var result = await runtime.InvokeAsync(
@@ -765,10 +766,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 ToolArguments.Of("entitySet", "Customers", "filter", "x", "top", 1),
                 CancellationToken.None);
 
-            capture.Last!.Method.Should().Be(HttpMethod.Post);
-            capture.Last.JsonBody.Should().Contain("filter");
-            capture.Last.JsonBody.Should().Contain("top");
             result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Missing required properties on Customer: CompanyName. Required on create: CompanyName.");
+            capture.Requests.Should().BeEmpty();
         }
 
         #endregion

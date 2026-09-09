@@ -15,6 +15,16 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether create calls fail before HTTP when a required-on-create property is missing.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>true</c>: the declared metadata is the contract. Turn it off only for a service whose metadata
+        /// declares properties non-nullable that its POST handler actually rejects or defaults (live TripPin does this
+        /// with <c>Gender</c>). JSON kind, unknown property, enum, and <c>MaxLength</c> checks stay on regardless.
+        /// </remarks>
+        public bool EnforceRequiredOnCreate { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets how enumeration values are advertised in JSON Schema and accepted on input.
         /// </summary>
         /// <remarks>

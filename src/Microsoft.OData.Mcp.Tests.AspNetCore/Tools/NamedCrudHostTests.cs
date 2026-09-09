@@ -165,17 +165,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Empty named create posts <c>{}</c> and OData 400s.
+        /// Empty named create fails before HTTP: CompanyName is required on create.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_EmptyArgs_PostsEmptyObject_400()
+        public async Task CreateCustomer_EmptyArgs_FailsBeforeHttp_MissingCompanyName()
         {
             var (runtime, capture) = AuthorizedCapture();
             var result = await runtime.InvokeAsync("create_customer", new Dictionary<string, JsonElement>(), CancellationToken.None);
 
-            capture.Last!.JsonBody.Should().Be("{}");
             result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 400");
+            result.Text.Should().Be("Missing required properties on Customer: CompanyName. Required on create: CompanyName.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -197,16 +197,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Missing company name is 400.
+        /// Missing company name fails before HTTP with the required-on-create list.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_MissingCompanyName_400()
+        public async Task CreateCustomer_MissingCompanyName_FailsBeforeHttp()
         {
-            var (runtime, _) = AuthorizedCapture();
+            var (runtime, capture) = AuthorizedCapture();
             var result = await runtime.InvokeAsync("create_customer", ToolArguments.Of("City", "Seattle"), CancellationToken.None);
 
             result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 400");
+            result.Text.Should().Be("Missing required properties on Customer: CompanyName. Required on create: CompanyName.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>

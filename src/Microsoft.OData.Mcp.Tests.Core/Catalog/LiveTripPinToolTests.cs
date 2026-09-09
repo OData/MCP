@@ -115,7 +115,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "GetNearestAirport", "lat", 33, "lon", -118),
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33, lon = -118 }),
                 CancellationToken.None);
 
             result.Should().NotBeNull();

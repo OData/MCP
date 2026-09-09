@@ -2,7 +2,11 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.OData.Edm;
+using Microsoft.OData.Edm.Csdl;
+using Microsoft.OData.Edm.Vocabularies;
+using Microsoft.OData.Edm.Vocabularies.V1;
 using Microsoft.OData.ModelBuilder;
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
 
@@ -37,7 +41,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.EntityType<Employee>().DerivesFrom<Person>();
             builder.EntityType<VipCustomer>().DerivesFrom<Customer>();
             
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -54,7 +58,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.EntitySet<ThisIsAnExtremelyLongEntityNameThatIsDesignedToTestHowTheSystemHandlesVeryLongIdentifiersInVariousContexts>(
                 "ExtremelyLongEntities");
             
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -71,7 +75,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.Function("GetStatus").Returns<string>().Parameter<string>("code");
             builder.Action("Reset");
 
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -106,7 +110,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
         {
             var builder = new ODataConventionModelBuilder();
             IgnoreSecret(builder.EntitySet<Customer>("Customers").EntityType);
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -128,7 +132,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             var customer = builder.EntityType<Customer>();
             customer.Property(c => c.CustomerId).IsRequired();
             
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -144,7 +148,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             // Only public entities
             builder.EntitySet<Product>("Products");
             
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -159,7 +163,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             IgnoreSecret(builder.EntitySet<Customer>("ClientCustomers").EntityType);
             IgnoreSecret(builder.EntitySet<Customer>("ServerCustomers").EntityType);
 
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -175,7 +179,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.EntitySet<Product>("Products");
             builder.Function("MostValuable").Returns<int>();
 
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -208,7 +212,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.Function("GetStatus").Returns<string>().Parameter<string>("code");
             builder.Action("Reset");
 
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         /// <summary>
@@ -223,7 +227,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             builder.EntitySet<Product>("Products");
             builder.EntitySet<OrderItem>("OrderItems");
 
-            return builder.GetEdmModel();
+            return MarkCustomerIdComputed(builder.GetEdmModel());
         }
 
         #endregion
@@ -239,6 +243,39 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Models
             ArgumentNullException.ThrowIfNull(customer);
 
             customer.Ignore(item => item.InternalSecret);
+        }
+
+        /// <summary>
+        /// Marks every <c>CustomerId</c> key in a built model as <c>Org.OData.Core.V1.Computed</c>, the way a service whose
+        /// store generates the key should.
+        /// </summary>
+        /// <param name="model">The built model.</param>
+        /// <returns>
+        /// The same model, annotated.
+        /// </returns>
+        internal static IEdmModel MarkCustomerIdComputed(IEdmModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            if (model is not EdmModel edm)
+            {
+                return model;
+            }
+
+            foreach (var entityType in edm.SchemaElements.OfType<IEdmEntityType>().Where(type => type.Name == nameof(Customer)))
+            {
+                var key = entityType.FindProperty(nameof(Customer.CustomerId));
+                if (key is null)
+                {
+                    continue;
+                }
+
+                var annotation = new EdmVocabularyAnnotation(key, CoreVocabularyModel.ComputedTerm, new EdmBooleanConstant(true));
+                annotation.SetSerializationLocation(edm, EdmVocabularyAnnotationSerializationLocation.Inline);
+                edm.AddVocabularyAnnotation(annotation);
+            }
+
+            return model;
         }
 
         #endregion

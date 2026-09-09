@@ -493,7 +493,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var listed = await InvokeAsync("odata_list_operations");
             listed.IsError.Should().BeFalse(listed.Text);
             var (runtime, capture) = CreateCapturingRuntime();
-            var reset = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset", "body", "{}"), default);
+            var reset = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Reset"), default);
             reset.IsError.Should().BeFalse(reset.Text);
             capture.Last.Should().NotBeNull();
             capture.Last!.Method.Should().Be(HttpMethod.Post);
@@ -512,7 +512,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             most.IsError.Should().BeFalse(most.Text);
             most.StructuredContent.Should().Contain("42");
 
-            var status = await InvokeAsync("odata_call", ToolArguments.Of("name", "GetStatus", "code", "open"));
+            var status = await InvokeAsync("odata_call", ToolArguments.Of("name", "GetStatus", "parameters", new { code = "open" }));
             status.IsError.Should().BeFalse(status.Text);
         }
 

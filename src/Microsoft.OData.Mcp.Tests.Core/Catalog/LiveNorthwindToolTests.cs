@@ -36,17 +36,17 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         #region Public Methods
 
         /// <summary>
-        /// Named create with empty args posts <c>{}</c> and Northwind rejects it.
+        /// Named create with empty args fails before HTTP: CustomerID is required on create.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_EmptyArgs_PostsEmptyObject_400()
+        public async Task CreateCustomer_EmptyArgs_FailsBeforeHttp_MissingCustomerID()
         {
             var (runtime, capture) = await NamedNorthwindAsync();
             var result = await runtime.InvokeAsync("create_customer", ToolArguments.Of(), CancellationToken.None);
 
-            AssertStatusError(result);
-            capture.Last!.Method.Should().Be(HttpMethod.Post);
-            capture.Last.JsonBody.Should().Be("{}");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Missing required properties on Customer: CustomerID. Required on create: CustomerID.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await NamedNorthwindAsync();
             var result = await runtime.InvokeAsync(
                 "create_customer",
-                ToolArguments.Of("entitySet", "Products", "CompanyName", "Nope"),
+                ToolArguments.Of("entitySet", "Products", "CustomerID", "MCPXX", "CompanyName", "Nope"),
                 CancellationToken.None);
 
             AssertStatusError(result);
@@ -74,7 +74,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await NamedNorthwindAsync();
             var result = await runtime.InvokeAsync(
                 "create_customer",
-                ToolArguments.Of("filter", "x", "top", 1, "CompanyName", "Nope"),
+                ToolArguments.Of("filter", "x", "top", 1, "CustomerID", "MCPXX", "CompanyName", "Nope"),
                 CancellationToken.None);
 
             AssertStatusError(result);
@@ -83,7 +83,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Named create on read-only Northwind fails.
+        /// Named create on read-only Northwind fails at the service once the payload is complete.
         /// </summary>
         [TestMethod]
         public async Task CreateProduct_Northwind_IsError()
@@ -91,7 +91,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await NamedNorthwindAsync();
             var result = await runtime.InvokeAsync(
                 "create_product",
-                ToolArguments.Of("ProductName", "Nope", "Discontinued", false),
+                ToolArguments.Of("ProductID", 999999, "ProductName", "Nope", "Discontinued", false),
                 CancellationToken.None);
 
             AssertStatusError(result);
@@ -663,10 +663,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Generic create leftovers include query option names.
+        /// Generic create leftovers that are only query option names fail before HTTP: the required keys are missing.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_PostsEmptyOrFilterAsProperty()
+        public async Task OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_FailsBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -674,13 +674,13 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 ToolArguments.Of("entitySet", "Products", "filter", "x", "top", 1),
                 CancellationToken.None);
 
-            AssertStatusError(result);
-            capture.Last!.JsonBody.Should().Contain("filter");
-            capture.Last.Method.Should().Be(HttpMethod.Post);
+            result.IsError.Should().BeTrue();
+            result.Text.Should().Be("Missing required properties on Product: ProductID, Discontinued. Required on create: ProductID, Discontinued.");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>
-        /// Creating Products on read-only Northwind is a 4xx/405 error.
+        /// Creating Products on read-only Northwind is a 4xx/405 error once the payload is complete.
         /// </summary>
         [TestMethod]
         public async Task OdataCreate_Northwind_Products_IsError4xxOr405()
@@ -688,7 +688,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
                 "odata_create",
-                ToolArguments.Of("entitySet", "Products", "body", """{"ProductName":"Nope","Discontinued":false}"""),
+                ToolArguments.Of("entitySet", "Products", "body", """{"ProductID":999999,"ProductName":"Nope","Discontinued":false}"""),
                 CancellationToken.None);
 
             AssertStatusError(result);
@@ -1488,10 +1488,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Query option leftovers land in the update body when body is omitted.
+        /// Query option leftovers on update are unknown properties on the closed Product type and fail before HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_UsingQueryArgs_TopOnUpdate_GoesIntoBodyIfNoBody()
+        public async Task OdataUpdate_UsingQueryArgs_TopOnUpdate_IsUnknownPropertyBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1499,9 +1499,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 ToolArguments.Of("entitySet", "Products", "key", "1", "top", 1),
                 CancellationToken.None);
 
-            AssertStatusError(result);
-            capture.Last!.QueryOptions.Should().BeEmpty();
-            capture.Last.JsonBody.Should().Contain("top");
+            result.IsError.Should().BeTrue();
+            result.Text.Should().StartWith("Unknown property 'top' on Product. Declared: ProductID, ProductName,");
+            capture.Requests.Should().BeEmpty();
         }
 
         /// <summary>

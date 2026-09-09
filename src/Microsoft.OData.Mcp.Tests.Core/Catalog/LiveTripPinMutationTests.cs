@@ -59,26 +59,34 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Object versus string bodies both POST ShareTrip.
+        /// A stringified parameters value is rejected before HTTP; the object form POSTs ShareTrip.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ActionWithObjectBodyVsStringBody()
+        public async Task OdataCall_ActionParametersObjectNotString()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var tripId = await FirstTripIdAsync(runtime);
+            var before = capture.Requests.Count;
             var asString = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "body", ShareTripBody("scottketchum", tripId)),
+                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "parameters", JsonSerializer.Serialize(ShareTripParameters("scottketchum", tripId))),
                 CancellationToken.None);
-            capture.Last!.Method.Should().Be(HttpMethod.Post);
+            asString.IsError.Should().BeTrue();
+            asString.Text.Should().Be("parameters must be a JSON object, not a string.");
+            capture.Requests.Should().HaveCount(before, "a stringified parameters object never reaches OData");
+
             var asObject = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "body", new { userName = "scottketchum", tripId }),
+                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "parameters", ShareTripParameters("scottketchum", tripId)),
                 CancellationToken.None);
 
-            capture.Last.Method.Should().Be(HttpMethod.Post);
+            capture.Last!.Method.Should().Be(HttpMethod.Post);
             capture.Last.RelativePath.Should().Be("People('russellwhyte')/ShareTrip");
-            asString.IsError.Should().Be(asObject.IsError);
+            capture.Last.JsonBody.Should().Be($$"""{"userName":"scottketchum","tripId":{{tripId}}}""");
+            if (asObject.IsError)
+            {
+                asObject.Text.Should().Contain("OData request failed with status");
+            }
         }
 
         /// <summary>
@@ -91,7 +99,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var tripId = await FirstTripIdAsync(runtime);
             var result = await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "body", ShareTripBody("scottketchum", tripId)),
+                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "parameters", ShareTripParameters("scottketchum", tripId)),
                 CancellationToken.None);
 
             capture.Last!.Method.Should().Be(HttpMethod.Post);
@@ -109,10 +117,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         public async Task OdataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
-            var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource", "body", "{}"), CancellationToken.None);
+            var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource"), CancellationToken.None);
 
             capture.Last!.Method.Should().Be(HttpMethod.Post);
             capture.Last.RelativePath.Should().Be("ResetDataSource");
+            capture.Last.JsonBody.Should().Be("{}");
             if (result.IsError)
             {
                 result.Text.Should().Contain("OData request failed with status");
@@ -126,7 +135,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         public async Task OdataCall_Reset_ThenQueryPeopleStillWorks_TripPin()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
-            await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource", "body", "{}"), CancellationToken.None);
+            await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource"), CancellationToken.None);
             var queried = await runtime.InvokeAsync(
                 "odata_query",
                 ToolArguments.Of("entitySet", "People", "top", 1),
@@ -146,7 +155,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var tripId = await FirstTripIdAsync(runtime);
             await runtime.InvokeAsync(
                 "odata_call",
-                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "body", ShareTripBody("scottketchum", tripId)),
+                ToolArguments.Of("name", "ShareTrip", "entitySet", "People", "key", "russellwhyte", "parameters", ShareTripParameters("scottketchum", tripId)),
                 CancellationToken.None);
             var got = await runtime.InvokeAsync(
                 "odata_get",
@@ -601,16 +610,16 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Builds a ShareTrip JSON body.
+        /// Builds the ShareTrip <c>parameters</c> object keyed by the declared parameter names.
         /// </summary>
         /// <param name="userName">Share target.</param>
         /// <param name="tripId">Trip id.</param>
         /// <returns>
-        /// JSON text.
+        /// The parameters object.
         /// </returns>
-        internal static string ShareTripBody(string userName, int tripId)
+        internal static object ShareTripParameters(string userName, int tripId)
         {
-            return JsonSerializer.Serialize(new { userName, tripId });
+            return new { userName, tripId };
         }
 
         /// <summary>

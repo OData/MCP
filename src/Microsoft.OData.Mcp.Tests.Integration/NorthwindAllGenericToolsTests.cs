@@ -124,7 +124,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
                 "odata_create",
-                ToolArguments.Of("entitySet", "Products", "body", """{"ProductName":"Nope","Discontinued":false}"""),
+                ToolArguments.Of("entitySet", "Products", "body", """{"ProductID":999999,"ProductName":"Nope","Discontinued":false}"""),
                 CancellationToken.None);
 
             result.IsError.Should().BeTrue(result.Text);

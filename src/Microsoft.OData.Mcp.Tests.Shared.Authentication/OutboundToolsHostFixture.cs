@@ -359,6 +359,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
 
             return new ODataMcpCatalogOptions
             {
+                EnforceRequiredOnCreate = source.EnforceRequiredOnCreate,
                 EnumJsonFormat = source.EnumJsonFormat,
                 ExcludeEntitySets = [.. source.ExcludeEntitySets],
                 IncludeCreate = source.IncludeCreate,

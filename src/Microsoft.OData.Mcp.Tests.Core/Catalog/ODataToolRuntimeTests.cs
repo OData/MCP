@@ -105,11 +105,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 new Dictionary<string, JsonElement>
                 {
                     ["entitySet"] = JsonSerializer.SerializeToElement("People"),
-                    ["body"] = JsonSerializer.SerializeToElement("""{"UserName":"new"}""")
+                    ["body"] = JsonSerializer.SerializeToElement("""{"UserName":"new","FirstName":"N"}""")
                 },
                 CancellationToken.None);
 
-            result.IsError.Should().BeFalse();
+            result.IsError.Should().BeFalse(result.Text);
             executor.Last!.Method.Should().Be(HttpMethod.Post);
             executor.Last.RelativePath.Should().Be("People");
             executor.Last.JsonBody.Should().Contain("UserName");
@@ -351,7 +351,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             await runtime.InvokeAsync(
                 "create_person",
-                new Dictionary<string, JsonElement> { ["UserName"] = JsonSerializer.SerializeToElement("new") },
+                new Dictionary<string, JsonElement> { ["UserName"] = JsonSerializer.SerializeToElement("new"), ["FirstName"] = JsonSerializer.SerializeToElement("N") },
                 CancellationToken.None);
             executor.Last.Method.Should().Be(HttpMethod.Post);
 
@@ -408,7 +408,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 new Dictionary<string, JsonElement>
                 {
                     ["entitySet"] = JsonSerializer.SerializeToElement("People"),
-                    ["UserName"] = JsonSerializer.SerializeToElement("new")
+                    ["UserName"] = JsonSerializer.SerializeToElement("new"),
+                    ["FirstName"] = JsonSerializer.SerializeToElement("N")
                 },
                 CancellationToken.None);
 
@@ -428,7 +429,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 new Dictionary<string, JsonElement>
                 {
                     ["entitySet"] = JsonSerializer.SerializeToElement("People"),
-                    ["body"] = JsonSerializer.SerializeToElement(new Dictionary<string, string> { ["UserName"] = "x" })
+                    ["body"] = JsonSerializer.SerializeToElement(new Dictionary<string, string> { ["UserName"] = "x", ["FirstName"] = "N" })
                 },
                 CancellationToken.None);
 
