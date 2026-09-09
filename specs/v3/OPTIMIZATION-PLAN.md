@@ -73,7 +73,7 @@ Live helpers already exist: `LiveMetadata.LoadNorthwindModelAsync()`, `LiveMetad
 - Consumes: existing `ODataMcpCatalog`, `ODataToolRuntime`, `LiveMetadata`
 - Produces: write-once `Before/` files and asserted `Current/` files
 
-- [ ] **Step 1: Write tests that fail because baseline files are missing**
+- [x] **Step 1: Write tests that fail because baseline files are missing**
 
 One class, no nested types. Deterministic JSON (catalog `SchemaSerializerOptions`). Capture at least:
 
@@ -101,14 +101,14 @@ public async Task DescribeType_Northwind_Customer_MatchesCurrentBaseline()
 
 Use `CapturingODataExecutor` / existing test doubles only if they are **not** mocks of HttpClient/OData — catalog-only tools do not need HTTP. `projectPath = "..//..//..//"` like Breakdance.
 
-- [ ] **Step 2: Run** `dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter TypeShapeBaselineTests`  
+- [x] **Step 2: Run** `dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter TypeShapeBaselineTests`  
   Expected: FAIL (files missing)
 
-- [ ] **Step 3: Add `[BreakdanceManifestGenerator]` `WriteTypeShapeBaselines(string projectPath)`** that writes each payload to `Current/` always, and to `Before/` only if the file does not exist.
+- [x] **Step 3: Add `[BreakdanceManifestGenerator]` `WriteTypeShapeBaselines(string projectPath)`** that writes each payload to `Current/` always, and to `Before/` only if the file does not exist.
 
-- [ ] **Step 4: Run the generator the way this repo already runs Breakdance manifest generators. Re-run the tests.** Expected: PASS.
+- [x] **Step 4: Run the generator the way this repo already runs Breakdance manifest generators. Re-run the tests.** Expected: PASS.
 
-- [ ] **Step 5: Commit** `test: freeze type-shape payloads before optimization`
+- [x] **Step 5: Commit** `test: freeze type-shape payloads before optimization`
 
 Do not change product code in this task.
 
@@ -129,15 +129,15 @@ Do not change product code in this task.
 **Interfaces:**
 - Produces: `EdmEnumType { Name, Namespace, UnderlyingType, IsFlags, Members, Description, LongDescription, FullName }`; `EdmEnumMember { Name, Value }`; `EdmProperty.Computed`
 
-- [ ] **Step 1: Tests** — fixture CSDL with `EnumType Color` members `Red=0,Green=1`, `IsFlags="false"`. Property typed `NS.Color`. Property with `Core.Computed` true. Assert `model.EnumTypes` has Color with two members; Computed property is true; property without annotation is false. Adapter test: `IEdmModel` with enum + Computed term. Zero-member EnumType → parse throws.
+- [x] **Step 1: Tests** — fixture CSDL with `EnumType Color` members `Red=0,Green=1`, `IsFlags="false"`. Property typed `NS.Color`. Property with `Core.Computed` true. Assert `model.EnumTypes` has Color with two members; Computed property is true; property without annotation is false. Adapter test: `IEdmModel` with enum + Computed term. Zero-member EnumType → parse throws.
 
-- [ ] **Step 2: Run — FAIL**
+- [x] **Step 2: Run — FAIL**
 
-- [ ] **Step 3: Implement parser + adapter + types. One class per file. Do not guess Computed from Int32/Guid.**
+- [x] **Step 3: Implement parser + adapter + types. One class per file. Do not guess Computed from Int32/Guid.**
 
-- [ ] **Step 4: PASS** `dotnet test …Tests.Core -c Debug --filter Enum` and adapter tests.
+- [x] **Step 4: PASS** `dotnet test …Tests.Core -c Debug --filter Enum` and adapter tests.
 
-- [ ] **Step 5: Commit** `feat: parse EDM enum types and Core.Computed`
+- [x] **Step 5: Commit** `feat: parse EDM enum types and Core.Computed`
 
 ---
 
@@ -152,11 +152,11 @@ Do not change product code in this task.
 - PackageReference `Ben.TypeDictionary` on Core if you add a CLR `Type` map; otherwise skip until needed. EDM cache stays `ConcurrentDictionary<string, EdmTypeShape>`.
 - Test: options copy; cache has an entry for `NorthwindModel.Customer` (or whatever `FullName` is) after catalog construct; `IsDynamicModel=true` → cache empty/skipped
 
-- [ ] **Step 1: Tests**
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement**
-- [ ] **Step 4: PASS** `dotnet test … -c Debug`
-- [ ] **Step 5: Commit** `feat: catalog type-shape cache and options`
+- [x] **Step 1: Tests**
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement**
+- [x] **Step 4: PASS** `dotnet test … -c Debug`
+- [x] **Step 5: Commit** `feat: catalog type-shape cache and options`
 
 ---
 
@@ -174,11 +174,11 @@ Do not change product code in this task.
 
 **Grammar:** implement [TYPE-SHAPES.md](./TYPE-SHAPES.md) §§1–5. `MaxLength` inline only when ≤ 16. Required-on-create uses `!Computed`. Bound ops on the type; `// writes` for actions; `// collection` when `BindingParameterType` starts with `Collection(`. Unbound ops **not** on this tool.
 
-- [ ] **Step 1: Tests** — Northwind Customer text contains `CompanyName: string` and `Orders ->`; does not contain `"description":null` or `entityTypeDescription`. `format=json` has `"props"`. `format=garbage` is error. TripPin Person lists bound operations, not `isBound`. Enum fixture property renders `enum(Red|Green)`.
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement. One representation per call. Do not dual-emit text + JSON.**
-- [ ] **Step 4: PASS** `dotnet test src/Microsoft.OData.Mcp.Tests.Core -c Debug` and host describe tests in AspNetCore/Restier/Authentication **sequentially**.
-- [ ] **Step 5: Run baseline generator. Update `Current/` (never `Before/`). Commit** `feat: compact odata_describe_type`
+- [x] **Step 1: Tests** — Northwind Customer text contains `CompanyName: string` and `Orders ->`; does not contain `"description":null` or `entityTypeDescription`. `format=json` has `"props"`. `format=garbage` is error. TripPin Person lists bound operations, not `isBound`. Enum fixture property renders `enum(Red|Green)`.
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement. One representation per call. Do not dual-emit text + JSON.**
+- [x] **Step 4: PASS** `dotnet test src/Microsoft.OData.Mcp.Tests.Core -c Debug` and host describe tests in AspNetCore/Restier/Authentication **sequentially**.
+- [x] **Step 5: Run baseline generator. Update `Current/` (never `Before/`). Commit** `feat: compact odata_describe_type`
 
 ---
 
@@ -208,11 +208,11 @@ odata_list_operations
 odata_call
 ```
 
-- [ ] **Step 1: Tests** — no args → summary text, Northwind has `Customers:` and `-> Orders`. `detail=complete` includes `CompanyName:`. `format=mermaid` contains `erDiagram` and no `{ string`. Oversize: set `MaxResponseBytes` tiny, expect error mentioning `sets` or `summary`, not CSDL. Unknown `detail`/`format` → error. `sets: ["Customers"]` complete does not dump Orders properties.
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement**
-- [ ] **Step 4: PASS**
-- [ ] **Step 5: Generator + `Current/`. Commit** `feat: odata_describe_model`
+- [x] **Step 1: Tests** — no args → summary text, Northwind has `Customers:` and `-> Orders`. `detail=complete` includes `CompanyName:`. `format=mermaid` contains `erDiagram` and no `{ string`. Oversize: set `MaxResponseBytes` tiny, expect error mentioning `sets` or `summary`, not CSDL. Unknown `detail`/`format` → error. `sets: ["Customers"]` complete does not dump Orders properties.
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement**
+- [x] **Step 4: PASS**
+- [x] **Step 5: Generator + `Current/`. Commit** `feat: odata_describe_model`
 
 ---
 
@@ -223,11 +223,11 @@ odata_call
 - Modify: live TripPin list-operations tests (today they expect GetNearestAirport **and** bound names in one list). Bound names must **not** appear. They appear on `odata_describe_type` for that type (Task 4).
 - TOOL-TEST-MANIFEST list-operations section
 
-- [ ] **Step 1: Tests** — TripPin list_operations contains unbound `ResetDataSource` / `GetNearestAirport` as applicable; does not contain `ShareTrip` if ShareTrip is bound (verify on EDM). Describe Person still lists ShareTrip.
-- [ ] **Step 2: FAIL** (if current tests still expect mixed list, **change those tests in this step** — they are wrong under the new spec)
-- [ ] **Step 3: Implement**
-- [ ] **Step 4: PASS**
-- [ ] **Step 5: Generator + commit** `feat: list unbound operations only`
+- [x] **Step 1: Tests** — TripPin list_operations contains unbound `ResetDataSource` / `GetNearestAirport` as applicable; does not contain `ShareTrip` if ShareTrip is bound (verify on EDM). Describe Person still lists ShareTrip.
+- [x] **Step 2: FAIL** (if current tests still expect mixed list, **change those tests in this step** — they are wrong under the new spec)
+- [x] **Step 3: Implement**
+- [x] **Step 4: PASS**
+- [x] **Step 5: Generator + commit** `feat: list unbound operations only`
 
 ---
 
@@ -243,11 +243,11 @@ odata_call
 - `OutputSchema` on list_entity_sets / list_operations only (OPTIMIZATION.md §3 table)
 - Tests: Northwind `create_customer` InputSchema contains `"required"` including `CustomerID` and `CompanyName`; does not contain `"description":"CompanyName"`. Update tool schema contains `"key"` in required and not CompanyName.
 
-- [ ] **Step 1: Tests**
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement**
-- [ ] **Step 4: PASS**
-- [ ] **Step 5: Generator + commit** `feat: typed create and update schemas with required`
+- [x] **Step 1: Tests**
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement**
+- [x] **Step 4: PASS**
+- [x] **Step 5: Generator + commit** `feat: typed create and update schemas with required`
 
 ---
 
@@ -262,11 +262,11 @@ odata_call
 
 Validation table is [OPTIMIZATION.md](./OPTIMIZATION.md) §4. Int64/Decimal accept number or string. Int32 number only.
 
-- [ ] **Step 1: Tests** — `odata_call` `{ name: ResetDataSource, parameters: {} }` succeeds or hits real OData (TripPin). `{ name: GetNearestAirport, lat: 1 }` extra top-level → missing parameters / error, not URL scrape. `parameters: "{}"` string → `parameters must be a JSON object`. Bound without key → error contains `Pass entitySet and key`. Unknown param → `Unknown parameter`. Create Customer omitting CompanyName → error before HTTP (`CapturingODataExecutor` records **zero** sends).
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement**
-- [ ] **Step 4: PASS** sequential Core + host call tests
-- [ ] **Step 5: Generator + commit** `feat: odata_call parameters object and EdmType validation`
+- [x] **Step 1: Tests** — `odata_call` `{ name: ResetDataSource, parameters: {} }` succeeds or hits real OData (TripPin). `{ name: GetNearestAirport, lat: 1 }` extra top-level → missing parameters / error, not URL scrape. `parameters: "{}"` string → `parameters must be a JSON object`. Bound without key → error contains `Pass entitySet and key`. Unknown param → `Unknown parameter`. Create Customer omitting CompanyName → error before HTTP (`CapturingODataExecutor` records **zero** sends).
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement**
+- [x] **Step 4: PASS** sequential Core + host call tests
+- [x] **Step 5: Generator + commit** `feat: odata_call parameters object and EdmType validation`
 
 ---
 
@@ -279,11 +279,11 @@ Validation table is [OPTIMIZATION.md](./OPTIMIZATION.md) §4. Int64/Decimal acce
 - Modify: every `Description =` in `BuildGenericTools` / `BuildNamedFamily` to OPTIMIZATION.md §2
 - Tests: Tools and AspNetCore initialize / `IOptions<McpServerOptions>.Value.ServerInstructions` contains `Do not read $metadata` and `parameters`. Preface `Contoso.` appears before Default. Empty preface does not insert extra blank noise.
 
-- [ ] **Step 1: Tests**
-- [ ] **Step 2: FAIL**
-- [ ] **Step 3: Implement. Do not assign ServerInstructions after `Build()`.**
-- [ ] **Step 4: PASS**
-- [ ] **Step 5: Generator + commit** `feat: MCP server instructions and first-call tool descriptions`
+- [x] **Step 1: Tests**
+- [x] **Step 2: FAIL**
+- [x] **Step 3: Implement. Do not assign ServerInstructions after `Build()`.**
+- [x] **Step 4: PASS**
+- [x] **Step 5: Generator + commit** `feat: MCP server instructions and first-call tool descriptions`
 
 ---
 
@@ -294,9 +294,9 @@ Validation table is [OPTIMIZATION.md](./OPTIMIZATION.md) §4. Int64/Decimal acce
 - Run: sequential `dotnet test` on Tests.Core, Tests.Tools, Tests.AspNetCore, Tests.AspNetCore.Restier, Tests.Authentication, Tests.Authentication.Restier, Tests.Integration — all `-c Debug`
 - Baseline generator one last time; `Before/` unchanged; `Current/` matches HEAD
 
-- [ ] **Step 1: Update TOOL-TEST-MANIFEST tables**
-- [ ] **Step 2: Full sequential test pass**
-- [ ] **Step 3: Commit** `docs: tool test manifest matches optimized catalog`
+- [x] **Step 1: Update TOOL-TEST-MANIFEST tables**
+- [x] **Step 2: Full sequential test pass**
+- [x] **Step 3: Commit** `docs: tool test manifest matches optimized catalog`
 
 Tokenizer report (`OPTIMIZATION-REPORT.md`) is **after** this, optional, not a gate.
 

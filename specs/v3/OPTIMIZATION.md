@@ -147,6 +147,10 @@ Before any OData HTTP on create, update, and `odata_call`:
 
 Do not validate `$filter` AST. Do enforce existing `filter` / `select` / `expand` length caps.
 
+`ODataMcpCatalogOptions.EnforceRequiredOnCreate` (default `true`) switches off step 2's required-on-create check **only**, for a service whose metadata declares non-nullable properties that its POST handler defaults or rejects. Live TripPin is the known case: `Person.Gender` and `FavoriteFeature` are non-nullable with no default, yet POST `People` returns 500 when either is sent and 201 with server defaults when both are omitted. The live TripPin test fixture sets the option to `false`; every other check stays on. Undeclared entity sets and bodies that are not JSON objects are forwarded untouched so the service answers.
+
+Function arguments that are complex, collection, or entity typed travel as OData parameter aliases in the request path (`Find(at=@at)?@at=<escaped json>`); aliases are part of the operation call and are never `$`-prefixed query options.
+
 | `odata_call` mistake | Error |
 |---|---|
 | Unknown `name` | `Operation 'X' is not declared.` |
@@ -184,7 +188,7 @@ Do **not** rewrite `inputSchema` or fire `listChanged` because a GET returned a 
 Fill-once, catalog lifetime, drop on rebuild. Eager at catalog build.
 
 - EDM shapes (declaration, compact JSON, create schema, bound ops, required-on-create names): `ConcurrentDictionary<string, EdmTypeShape>` keyed by EDM full name.
-- CLR `Type` maps (primitives, serializer): `Ben.Collections.TypeDictionary<T>`. PackageReference `Ben.TypeDictionary`. If AOT/trim warns, vendor the sources (Apache-2.0) into this repo and mark AOT. Do not invent a dummy `Type` for EDM names.
+- CLR `Type` maps (primitives, serializer): `Ben.Collections.TypeDictionary<T>`. PackageReference `Ben.TypeDictionary`. If AOT/trim warns, vendor the sources (Apache-2.0) into this repo and mark AOT. Do not invent a dummy `Type` for EDM names. **Not needed yet:** the first implementation keeps no CLR `Type` map, so the package is not referenced.
 
 `ODataMcpCatalogOptions.IsDynamicModel` default `false`. When `true`, skip the EDM shape cache. Open extra properties are not cached; declared members still are when the model is static.
 
@@ -214,6 +218,7 @@ When a round is done, tokenize Before vs Current with SharpToken `cl100k_base` i
 ```csharp
 public sealed class ODataMcpCatalogOptions
 {
+    public bool EnforceRequiredOnCreate { get; set; } = true;
     public string? InstructionsPreface { get; set; }
     public bool IsDynamicModel { get; set; }
     public ODataEnumJsonFormat EnumJsonFormat { get; set; } = ODataEnumJsonFormat.Auto;

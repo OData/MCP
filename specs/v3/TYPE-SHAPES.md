@@ -18,15 +18,17 @@ Declaration style is the default the model reads. It is TypeScript/C#-like on pu
 ```
 Customer  (set: Customers, key: CustomerID)
   // A customer of the store.                         ← type Description, only if CSDL has it
-  CustomerID: string(5)      // key, required on create
-  CompanyName: string        // required on create
+  CustomerID: string(5) // key
+  CompanyName: string
   ContactName?: string
   Orders -> Order[]
   CustomerDemographics -> CustomerDemographic[]
   operations
-    MostExpensive() -> Product                  // collection
-    Discount(percentage: int)                   // writes
+    MostExpensive() -> Product // collection
+    Discount(percentage: int) // writes
 ```
+
+Required-on-create is carried by the absence of `?` alone; there is no `// required on create` comment. One space precedes every `//`; nothing is column-aligned.
 
 Rules:
 
@@ -36,11 +38,11 @@ Rules:
 | Property, required on create | `Name: type` | Must appear on POST. |
 | Property, optional on create | `Name?: type` | Nullable, or has `DefaultValue`, or store-generated. |
 | Key | trailing `// key` or `// key, store-generated` | Store-generated keys are optional on create. |
-| Navigation | `Name -> Type` or `Name -> Type[]` | `[]` is collection. Single-valued optional nav uses `Name?: Type`. No `1` / `0..1`. |
+| Navigation | `Name -> Type` or `Name -> Type[]` | `[]` is collection. Single-valued optional nav keeps the arrow: `Name? -> Type` (the arrow is what tells `odata_navigate` targets apart from complex-typed properties). No `1` / `0..1`. |
 | Short string | `string(n)` | Only when `MaxLength` is present **and** `n ≤ 16`. |
 | Enum | `Name: enum(Red\|Green\|Blue)` | Members always. `// flags, comma-separated` when `IsFlags`. |
 | Operation | `Name(arg: type, arg?: type) -> Return` | Bound ops only, on the type. Binding parameter omitted. `// collection` when bound to `Collection(...)`. `// writes` when it mutates (EDM action). |
-| Docs | `// summary` | Only when CSDL/vocabulary has it **and** it is not the member name. Second `//` line only when LongDescription differs from Description. |
+| Docs | `// summary` | Only when CSDL/vocabulary has it **and** it is not the member name. Second `//` line only when LongDescription differs from Description. When a line has both markers and docs they share one comment: markers joined with `, `, then `; `, then the summary (`UserName: string // key; Unique person name.`). Type-level docs are one `//` line each for type Description, type LongDescription, set Description, set LongDescription, deduplicated. |
 
 Do **not** emit empty `operations` / docs keys. Do **not** fall back to the property name as a description.
 
@@ -77,7 +79,7 @@ Same facts, for `resources/read` type cards and `format=json`:
 }
 ```
 
-`!` mirrors required-on-create. It is **not** a substitute for JSON Schema `required` on `create_*`. `docs` / `description` / `longDescription` / `ops` are omitted when empty. Do not turn `"CompanyName":"string!"` into an object because it is documented.
+`!` mirrors required-on-create. It is **not** a substitute for JSON Schema `required` on `create_*`. `docs` / `description` / `longDescription` / `setDescription` / `enumLiteral` / `navs` / `ops` are omitted when empty. `setDescription` carries the entity set's own description when it differs from the type's. Flags enumerations render as `flags(A|B)` so the marker survives without a `docs` entry. `enumLiteral` is the once-per-shape filter literal (`NS.Color'Red'`). Do not turn `"CompanyName":"string!"` into an object because it is documented.
 
 ### 1.3 Type mapping
 
