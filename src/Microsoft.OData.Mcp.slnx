@@ -24,7 +24,6 @@
     <File Path="Directory.Build.props" />
     <File Path="global.json" />
     <File Path="../README.md" />
-    <File Path="../specs/TESTING_PLUS_REFACTOR_PLAN.md" />
   </Folder>
   <Folder Name="/Solution Items/Specs/">
     <File Path="../specs/v3/ARCHITECTURE.md" />

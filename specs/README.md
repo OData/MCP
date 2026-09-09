@@ -1,6 +1,6 @@
 # Specs
 
-## Authoritative specification (current)
+## Authoritative specification
 
 **→ [v3/](./v3/)** — OData MCP Platform v3 (MCP `2026-07-28` / SDK 2.x)
 
@@ -12,20 +12,15 @@
 | [v3/PROTOCOL.md](./v3/PROTOCOL.md) | MCP 2 resources, tools, discovery |
 | [v3/METADATA-STRATEGY.md](./v3/METADATA-STRATEGY.md) | Custom EDM, `IEdmModel` adapter, docs |
 | [v3/TOOL-SURFACE.md](./v3/TOOL-SURFACE.md) | Generic + named tools, `shutdown_server` |
-| [v3/INVENTORY.md](./v3/INVENTORY.md) | Concept vs delete for every current type |
-| [v3/EXECUTION-PLAN.md](./v3/EXECUTION-PLAN.md) | Agent task list |
+| [v3/TYPE-SHAPES.md](./v3/TYPE-SHAPES.md) | Declaration grammar and compact JSON for types and models |
+| [v3/OPTIMIZATION.md](./v3/OPTIMIZATION.md) | Instructions, descriptions, schemas, pre-HTTP validation, baselines |
+| [v3/OPTIMIZATION-PLAN.md](./v3/OPTIMIZATION-PLAN.md) | Task list that implemented the optimization spec |
+| [v3/OPTIMIZATION-REPORT.md](./v3/OPTIMIZATION-REPORT.md) | Token measurements per round |
+| [v3/ODATA-HOSTING.md](./v3/ODATA-HOSTING.md) | Web MCP inside ASP.NET Core OData apps |
+| [v3/AUTHENTICATION.md](./v3/AUTHENTICATION.md) | Outbound OAuth and protected-resource metadata |
+| [v3/TESTING.md](./v3/TESTING.md) | Test strategy: real HTTP, no mocks |
+| [v3/TOOL-TEST-MANIFEST.md](./v3/TOOL-TEST-MANIFEST.md) | Per-tool contract and test inventory |
+| [v3/INVENTORY.md](./v3/INVENTORY.md) | Concept vs delete for every prior type |
+| [v3/EXECUTION-PLAN.md](./v3/EXECUTION-PLAN.md) | Agent task list for the v3 build |
 
-Do **not** implement from documents outside `v3/`.
-
----
-
-## Historical material (non-authoritative)
-
-Everything else in this folder is archaeology:
-
-- **E0 product fantasy** — root `getting-started.md`, `configuration.md`, `api-reference.md`, etc.
-- **E1 magic REST** — `MAGICAL_ZERO_CONFIG.md` (intent survived; REST wire did not)
-- **E2–E3 fix-it journals** — `COMPLETION_PLAN.md`, `DYNAMIC_TOOL_CLEANUP.md`
-- **E4** — `NEW/Purpose.md` (quality bar still holds)
-
-See [v3/CRITICAL-ANALYSIS.md](./v3/CRITICAL-ANALYSIS.md).
+Do **not** implement from documents outside `v3/`. Earlier planning material was removed from the repository; it remains in history before this folder was trimmed, and [v3/CRITICAL-ANALYSIS.md](./v3/CRITICAL-ANALYSIS.md) records what was learned from it.
