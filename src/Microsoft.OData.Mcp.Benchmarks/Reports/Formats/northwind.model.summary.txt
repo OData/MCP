@@ -1,0 +1,48 @@
+Category  (set: Categories, key: CategoryID)
+  Products -> Product[]
+CustomerDemographic  (set: CustomerDemographics, key: CustomerTypeID)
+  Customers -> Customer[]
+Customer  (set: Customers, key: CustomerID)
+  Orders -> Order[]
+  CustomerDemographics -> CustomerDemographic[]
+Employee  (set: Employees, key: EmployeeID)
+  Employees1 -> Employee[]
+  Employee1? -> Employee
+  Orders -> Order[]
+  Territories -> Territory[]
+Order_Detail  (set: Order_Details, key: OrderID, ProductID)
+  Order? -> Order
+  Product? -> Product
+Order  (set: Orders, key: OrderID)
+  Customer? -> Customer
+  Employee? -> Employee
+  Order_Details -> Order_Detail[]
+  Shipper? -> Shipper
+Product  (set: Products, key: ProductID)
+  Category? -> Category
+  Order_Details -> Order_Detail[]
+  Supplier? -> Supplier
+Region  (set: Regions, key: RegionID)
+  Territories -> Territory[]
+Shipper  (set: Shippers, key: ShipperID)
+  Orders -> Order[]
+Supplier  (set: Suppliers, key: SupplierID)
+  Products -> Product[]
+Territory  (set: Territories, key: TerritoryID)
+  Region? -> Region
+  Employees -> Employee[]
+Alphabetical_list_of_product  (set: Alphabetical_list_of_products, key: CategoryName, Discontinued, ProductID, ProductName)
+Category_Sales_for_1997  (set: Category_Sales_for_1997, key: CategoryName)
+Current_Product_List  (set: Current_Product_Lists, key: ProductID, ProductName)
+Customer_and_Suppliers_by_City  (set: Customer_and_Suppliers_by_Cities, key: CompanyName, Relationship)
+Invoice  (set: Invoices, key: CustomerName, Discount, OrderID, ProductID, ProductName, Quantity, Salesperson, ShipperName, UnitPrice)
+Order_Details_Extended  (set: Order_Details_Extendeds, key: Discount, OrderID, ProductID, ProductName, Quantity, UnitPrice)
+Order_Subtotal  (set: Order_Subtotals, key: OrderID)
+Orders_Qry  (set: Orders_Qries, key: CompanyName, OrderID)
+Product_Sales_for_1997  (set: Product_Sales_for_1997, key: CategoryName, ProductName)
+Products_Above_Average_Price  (set: Products_Above_Average_Prices, key: ProductName)
+Products_by_Category  (set: Products_by_Categories, key: CategoryName, Discontinued, ProductName)
+Sales_by_Category  (set: Sales_by_Categories, key: CategoryID, CategoryName, ProductName)
+Sales_Totals_by_Amount  (set: Sales_Totals_by_Amounts, key: CompanyName, OrderID)
+Summary_of_Sales_by_Quarter  (set: Summary_of_Sales_by_Quarters, key: OrderID)
+Summary_of_Sales_by_Year  (set: Summary_of_Sales_by_Years, key: OrderID)

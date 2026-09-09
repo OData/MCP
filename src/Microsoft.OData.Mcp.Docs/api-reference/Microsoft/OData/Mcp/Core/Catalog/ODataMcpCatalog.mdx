@@ -84,6 +84,20 @@ public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog
 
 Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataResourceTemplateDescriptor>`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Shapes
+
+Gets the cached type shapes keyed by EDM full name. Empty when [ODataMcpCatalogOptions.IsDynamicModel](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#isdynamicmodel) is `true`.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape> Shapes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape>`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Tools
 
 Gets the tool descriptors (generic first, then named).
@@ -175,6 +189,33 @@ public virtual int GetHashCode()
 #### Returns
 
 Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetShape
+
+Gets the shape for an entity type, from the cache when the model is static.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape GetShape(Microsoft.OData.Mcp.Core.Models.EdmEntityType entityType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entityType` | `Microsoft.OData.Mcp.Core.Models.EdmEntityType` | The entity type. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape`
+The cached shape, or a freshly built one when [ODataMcpCatalogOptions.IsDynamicModel](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#isdynamicmodel) is `true`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *entityType* is null. |
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 

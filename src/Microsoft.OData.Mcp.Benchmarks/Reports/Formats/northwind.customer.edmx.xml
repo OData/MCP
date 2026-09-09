@@ -1,0 +1,22 @@
+<EntityType Name="Customer">
+  <Key>
+    <PropertyRef Name="CustomerID" />
+  </Key>
+  <Property Name="CustomerID" Type="Edm.String" Nullable="false" />
+  <Property Name="CompanyName" Type="Edm.String" />
+  <Property Name="ContactName" Type="Edm.String" />
+  <Property Name="ContactTitle" Type="Edm.String" />
+  <Property Name="Address" Type="Edm.String" />
+  <Property Name="City" Type="Edm.String" />
+  <Property Name="Region" Type="Edm.String" />
+  <Property Name="PostalCode" Type="Edm.String" />
+  <Property Name="Country" Type="Edm.String" />
+  <Property Name="Phone" Type="Edm.String" />
+  <Property Name="Fax" Type="Edm.String" />
+  <NavigationProperty Name="Orders" Type="Collection(NorthwindModel.Order)" Partner="Customer" />
+  <NavigationProperty Name="CustomerDemographics" Type="Collection(NorthwindModel.CustomerDemographic)" Partner="Customers" />
+</EntityType>
+<EntitySet Name="Customers" EntityType="NorthwindModel.Customer">
+  <NavigationPropertyBinding Path="CustomerDemographics" Target="CustomerDemographics" />
+  <NavigationPropertyBinding Path="Orders" Target="Orders" />
+</EntitySet>

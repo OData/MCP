@@ -77,6 +77,26 @@ public Object()
 
 ## Properties
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Computed
+
+Gets or sets a value indicating whether the service computes this property's value.
+
+#### Syntax
+
+```csharp
+public bool Computed { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+`true` when the metadata declares `Org.OData.Core.V1.Computed` or `Org.OData.Core.V1.ComputedDefaultValue`; otherwise, `false`.
+
+#### Remarks
+
+A computed property is store-generated and therefore optional on create even when it is non-nullable.
+This flag is set only from those vocabulary terms. It is never inferred from the property type or key membership.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DefaultValue
 
 Gets or sets the default value of the property.

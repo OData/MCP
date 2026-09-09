@@ -46,6 +46,45 @@ public Object()
 
 ## Properties
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnforceRequiredOnCreate
+
+Gets or sets a value indicating whether create calls fail before HTTP when a required-on-create property is missing.
+
+#### Syntax
+
+```csharp
+public bool EnforceRequiredOnCreate { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+Defaults to `true`: the declared metadata is the contract. Turn it off only for a service whose metadata
+declares properties non-nullable that its POST handler actually rejects or defaults (live TripPin does this
+with `Gender`). JSON kind, unknown property, enum, and `MaxLength` checks stay on regardless.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnumJsonFormat
+
+Gets or sets how enumeration values are advertised in JSON Schema and accepted on input.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat EnumJsonFormat { get; set; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat`
+
+#### Remarks
+
+Defaults to [ODataEnumJsonFormat.Auto](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat#auto): member names are advertised and JSON numbers are
+also accepted. The advertised schema never changes during a catalog's lifetime.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExcludeEntitySets
 
 Gets or sets entity set names to exclude from named tools and resources.
@@ -115,6 +154,44 @@ public bool IncludeUpdate { get; set; }
 #### Property Value
 
 Type: `bool`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InstructionsPreface
+
+Gets or sets service-specific guidance placed before the default MCP server instructions.
+
+#### Syntax
+
+```csharp
+public string InstructionsPreface { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+The default text in [ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default) is always included; this only prepends.
+See [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.core.catalog.odatamcpinstructions.compose(system.string)).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsDynamicModel
+
+Gets or sets a value indicating whether the EDM can change while the catalog is alive.
+
+#### Syntax
+
+```csharp
+public bool IsDynamicModel { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+When `false` (the default) type shapes are computed once at catalog construction and cached.
+Set to `true` for models whose declared members change at runtime so shapes are rebuilt per request.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxCompletionValues
 

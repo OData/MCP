@@ -144,6 +144,25 @@ public bool OpenWorldHint { get; set; }
 
 Type: `bool`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OutputSchema
+
+Gets or sets the JSON Schema for `structuredContent`, or `null` when the tool's result is not a fixed JSON shape.
+
+#### Syntax
+
+```csharp
+public string OutputSchema { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+Only tools whose result is always the same JSON object declare one (the list tools). Describe tools return text or
+JSON depending on `format`, and data tools forward OData bodies, so they leave this `null`.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReadOnlyHint
 
 Gets or sets a value indicating whether the tool is read-only.

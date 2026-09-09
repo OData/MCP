@@ -1,0 +1,1 @@
+{"entitySets":[{"description":null,"entityType":"Trippin.Person","keys":["UserName"],"name":"People"},{"description":null,"entityType":"Trippin.Airline","keys":["AirlineCode"],"name":"Airlines"},{"description":null,"entityType":"Trippin.Airport","keys":["IcaoCode"],"name":"Airports"}]}

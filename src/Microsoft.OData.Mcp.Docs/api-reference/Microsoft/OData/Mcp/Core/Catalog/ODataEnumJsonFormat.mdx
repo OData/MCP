@@ -1,0 +1,40 @@
+---
+title: ODataEnumJsonFormat
+description: "Controls how enumeration values are advertised in JSON Schema and accepted on input."
+icon: list-ol
+tag: "ENUM"
+keywords: ['ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Enum']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Enum
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat
+```
+
+## Summary
+
+Controls how enumeration values are advertised in JSON Schema and accepted on input.
+
+## Remarks
+
+The EDM underlying type of an enumeration is always integral. That describes storage, not the JSON wire.
+The advertised schema is fixed for the lifetime of a catalog; observing a numeric value on a GET never
+rewrites what `tools/list` already returned.
+
+## Values
+
+| Name | Value | Description |
+|------|-------|-------------|
+| `Auto` | 0 | Advertise member names, the same as <see cref="F:Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat.String" />, but also accept a JSON number on input. |
+| `String` | 1 | Advertise and accept member names such as <c>"Red"</c> or the OData literal <c>NS.Color'Red'</c>. |
+| `Integer` | 2 | Advertise integral member values and accept a JSON number or numeric string. |
+

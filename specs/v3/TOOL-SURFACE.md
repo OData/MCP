@@ -22,11 +22,11 @@ Agents succeed or fail on the catalog. One builder. Two tool families. The graph
 | `odata_describe_type` | Describe type | readOnly | Properties, navs, keys, bound operations, enums ([TYPE-SHAPES.md](./TYPE-SHAPES.md)) |
 | `odata_describe_model` | Describe model | readOnly | Whole-service map (`summary`) or complete dump; never EDMX |
 | `odata_query` | Query entity set | readOnly | `filter`, `select`, `orderby`, `expand`, `top`, `skip`, `count` |
-| `odata_get` | Get entity | readOnly | By key |
+| `odata_get` | Get entity | readOnly | By key; optional `select`, `expand` |
 | `odata_create` | Create entity | | POST JSON |
 | `odata_update` | Update entity | idempotent | PATCH JSON |
 | `odata_delete` | Delete entity | destructive, idempotent | DELETE by key |
-| `odata_navigate` | Navigate | readOnly | Follow a nav from a key |
+| `odata_navigate` | Navigate | readOnly | Follow a nav from a key; same query options as `odata_query` |
 | `odata_list_operations` | List operations | readOnly | **Unbound** operations only |
 | `odata_call` | Call operation | | `name` + `parameters` object ([OPTIMIZATION.md](./OPTIMIZATION.md) §3) |
 
@@ -89,7 +89,28 @@ This is a development control-plane tool. It is part of the local server spec.
 
 No `$` in tool args. Executor adds `$filter`, `$select`, `$orderby`, `$expand`, `$top`, `$skip`, `$count`.
 
-`key` is a string (OData parenthetical form for composites). Named create/update: JSON object of **declared** properties ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §7). Generic create/update: `body` string. `odata_call`: `parameters` object ([OPTIMIZATION.md](./OPTIMIZATION.md) §3). Never emit a property that is not on the EDM. Exclude binary/stream from generated schemas.
+### 6.1 Why the executor always sends `$`
+
+ASP.NET Core OData's `ODataOptions.EnableNoDollarQueryOptions` (and the matching `ODataUriParser` setting in Microsoft.OData.Core) makes the `$` prefix **optional**; it never turns `$` off. Verified 2026-09-09 against a Kestrel host on Microsoft.AspNetCore.OData 8.3.1 with three rows:
+
+| Request | `EnableNoDollarQueryOptions = true` | `EnableNoDollarQueryOptions = false` |
+|---|---|---|
+| `?$top=1` | 200, one row | 200, one row |
+| `?top=1` | 200, one row | **200, all three rows** |
+| `?$filter=Id eq 2` | 200, row 2 | 200, row 2 |
+| `?filter=Id eq 2` | 200, row 2 | **200, all three rows** |
+| `?$top=1&filter=Id eq 3` | 200, row 3 | 200, row 1 |
+
+The default is `true` (`new ODataOptions().EnableNoDollarQueryOptions`). The failure mode when it is `false` is silent: a bare option is **ignored with a 200**, not rejected with a 400, so the caller gets an unpaged or unfiltered result and no signal.
+
+Consequences for this repo:
+
+- `$` is the one form every OData server accepts, so both executors (`RemoteODataExecutor`, `InProcessODataExecutor`) always emit `$`-prefixed system query options. Neither reads `ODataOptions` and neither should: there is nothing to gain from emitting bare names and a silent-ignore failure to lose.
+- The `$` prefixing lives only in the executors' `BuildRelativeUri`. Nothing else in Core or the hosts constructs system query options.
+- OData **parameter aliases** (`@p`) are not system query options. `odata_call` puts them in the operation path (`Find(at=@at)?@at=<escaped json>`) and never routes them through query options, so they never receive a `$` prefix under either setting.
+- Tool arguments stay `$`-free (`filter`, not `$filter`). A `$filter` key passed to a tool is not a query option; on create and update it is an unknown property and fails before HTTP ([TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md) §3.1).
+
+`key` is a string (OData parenthetical form for composites) and every `key` argument carries a description of the literal form ([OPTIMIZATION.md](./OPTIMIZATION.md) §3). Named create/update: JSON object of **declared** properties ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §7). Generic create/update: `body` object (the runtime also accepts a string, the schema does not advertise it). `odata_call`: `parameters` object ([OPTIMIZATION.md](./OPTIMIZATION.md) §3). Never emit a property that is not on the EDM. Exclude binary/stream from generated schemas.
 
 ---
 

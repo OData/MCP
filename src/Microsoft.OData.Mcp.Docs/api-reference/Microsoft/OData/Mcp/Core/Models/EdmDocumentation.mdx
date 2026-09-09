@@ -26,6 +26,62 @@ Helpers for composing CSDL and vocabulary documentation into MCP text.
 
 ## Methods
 
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Add
+
+Adds a documentation string to a payload only when it carries information.
+
+#### Syntax
+
+```csharp
+public static void Add(System.Collections.Generic.IDictionary<string, object> target, string key, string value, string skipIfEqualTo = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `target` | `System.Collections.Generic.IDictionary<string, object?>` | The payload dictionary. |
+| `key` | `string` | The key to add. |
+| `value` | `string?` | The documentation string, or `null`. |
+| `skipIfEqualTo` | `string?` | A value already emitted elsewhere; an equal string is not repeated. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *target* is null. |
+| `ArgumentException` | Thrown when *key* is null or whitespace. |
+
+#### Remarks
+
+Whitespace values never produce a key. This is how shapes avoid `"description": null` noise.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Add
+
+Adds a documentation string to a string-valued payload only when it carries information.
+
+#### Syntax
+
+```csharp
+public static void Add(System.Collections.Generic.IDictionary<string, string> target, string key, string value, string skipIfEqualTo = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `target` | `System.Collections.Generic.IDictionary<string, string>` | The payload dictionary. |
+| `key` | `string` | The key to add. |
+| `value` | `string?` | The documentation string, or `null`. |
+| `skipIfEqualTo` | `string?` | A value already emitted elsewhere; an equal string is not repeated. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *target* is null. |
+| `ArgumentException` | Thrown when *key* is null or whitespace. |
+
 ### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> First
 
 Returns the first non-whitespace documentation string.

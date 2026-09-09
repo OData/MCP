@@ -73,20 +73,20 @@ From `ODataMcpCatalog.BuildGenericTools` (always, first in `tools/list`):
 | `odata_describe_type` | Describe type | readOnly, idempotent | `{ name: string, format?: "text" \| "json" }` — `text` (default) returns the [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1 declaration as `content[0].text` with **no** `structuredContent`; `json` returns the §1.2 compact object as `structuredContent` | `name` |
 | `odata_describe_model` | Describe model | readOnly, idempotent | `{ detail?: "summary" \| "complete", format?: "text" \| "json" \| "mermaid", sets?: string[] }` — eleventh generic, registered right after `odata_describe_type` | none |
 | `odata_query` | Query entity set | readOnly, idempotent | `entitySet`, `filter`, `select`, `orderby`, `expand`, `top` (number), `skip` (number), `count` (boolean) | `entitySet` |
-| `odata_get` | Get entity | readOnly, idempotent | `entitySet`, `key` | `entitySet`, `key` |
-| `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (string in schema; runtime also accepts a JSON object or remaining properties). When the set's type is declared and the body parses as a JSON object it is **validated before HTTP** (§10): required-on-create, unknown properties on closed types, JSON kind per EDM type, enum membership, `MaxLength`, `null` on non-nullable | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
-| `odata_update` | Update entity | idempotent | `entitySet`, `key`, `body`. Same pre-HTTP validation as create minus the required-on-create check | `entitySet`, `key`, `body` |
-| `odata_delete` | Delete entity | destructive, idempotent | `entitySet`, `key` | `entitySet`, `key` |
-| `odata_navigate` | Navigate | readOnly, idempotent | `entitySet`, `key`, `navigation` | `entitySet`, `key`, `navigation` |
+| `odata_get` | Get entity | readOnly, idempotent | `entitySet`, `key` (described: `Key as text: ALFKI or 10248; strings are quoted for you. Composite: OrderID=10248,ProductID=11.`), `select`, `expand` | `entitySet`, `key` |
+| `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (`type: object` in schema, described `The entity as a JSON object, not a string.`; runtime also accepts a JSON string or remaining properties). When the set's type is declared and the body parses as a JSON object it is **validated before HTTP** (§10): required-on-create, unknown properties on closed types, JSON kind per EDM type, enum membership, `MaxLength`, `null` on non-nullable | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
+| `odata_update` | Update entity | idempotent | `entitySet`, `key` (same key description as `odata_get`), `body` (`type: object`, described `Changed properties as a JSON object, not a string.`). Same pre-HTTP validation as create minus the required-on-create check | `entitySet`, `key`, `body` |
+| `odata_delete` | Delete entity | destructive, idempotent | `entitySet`, `key` (same key description as `odata_get`) | `entitySet`, `key` |
+| `odata_navigate` | Navigate | readOnly, idempotent | `entitySet`, `key` (same key description as `odata_get`), `navigation`, plus `filter`, `select`, `orderby`, `expand`, `top` (number), `skip` (number), `count` (boolean) | `entitySet`, `key`, `navigation` |
 | `odata_list_operations` | List operations | readOnly, idempotent | `{}` `additionalProperties:false` — returns **unbound** operations only as `{ operations: { Name: signature } }`, or `{}` when none | none |
-| `odata_call` | Call operation | (openWorld) | `name`, `parameters` (JSON **object** keyed by declared parameter names), `entitySet`, `key`; `additionalProperties: false`. No `body`; any other top-level key is `Unexpected argument '{k}'. Put operation arguments in parameters as a JSON object.` | `name`; instance-bound also `entitySet`+`key`; collection-bound `entitySet` only; unbound neither |
+| `odata_call` | Call operation | (openWorld) | `name`, `parameters` (JSON **object** keyed by declared parameter names; description ends `Omit when the operation takes none.`), `entitySet`, `key` (same key description as `odata_get`); `additionalProperties: false`. No `body`; any other top-level key is `Unexpected argument '{k}'. Put operation arguments in parameters as a JSON object.` | `name`; instance-bound also `entitySet`+`key`; collection-bound `entitySet` only; unbound neither |
 
 From `ODataMcpCatalog.BuildNamedFamily` (only when `MaxNamedTools - genericCount` has room for the **entire** family; never a partial family):
 
 | Name | Binds | Input schema | Required |
 |------|-------|--------------|----------|
-| `list_{set_snake}` | `EntitySetName` | same query options as `odata_query` minus `entitySet` | none |
-| `get_{type_snake}` | `EntitySetName` | `{ key }` | `key` |
+| `list_{set_snake}` | `EntitySetName` | same query options as `odata_query` minus `entitySet`. Description ends `Query parameter names do not include $.` plus `Filter enums as NS.Enum'{value}', ...` when the type exposes enum properties | none |
+| `get_{type_snake}` | `EntitySetName` | `{ key, select?, expand? }` — `key.description` names the type's key: `CustomerID as text; strings are quoted for you.` or, for composites, `Name=value pairs: OrderID=...,ProductID=...; strings are quoted for you.` | `key` |
 | `create_{type_snake}` | `EntitySetName` | JSON object of **declared non-binary/non-stream** properties (not a `body` string). Each property: JSON type (`["type","null"]` when nullable), `enum` member names for enum types (values when `EnumJsonFormat=Integer`), `items` for collections, `object` for complex, `maxLength` only when EDM `MaxLength ≤ 16`, `description` only from CSDL | `required` = required-on-create (non-nullable, no `DefaultValue`, not `Core.Computed`); omitted when empty. Runtime POSTs serialized leftover properties |
 | `update_{type_snake}` | `EntitySetName` | `{ key }` + the same property map as create; no `body` | `key` only |
 | `delete_{type_snake}` | `EntitySetName` | `{ key }` | `key` |
@@ -374,8 +374,8 @@ This tool does not call OData. Server failures are catalog/session failures:
 
 Describes declared properties, keys, navigations, **bound operations, and enums** for a type or entity set in the compact grammar of [TYPE-SHAPES.md](./TYPE-SHAPES.md). Argument `name` is an entity set or type name (short or full). `format` is `text` (default) or `json`; one representation per call, never both.
 
-- **text:** `Type  (set: Set, key: K)` header, `// docs` only when CSDL has them, `Name: type` (required on create) vs `Name?: type` (optional), `// key` / `// key, store-generated`, `Name -> Type[]` navigations, `enum(A|B)` members inline with one `// enum literal: NS.Enum'A'` hint, `string(n)` only when `MaxLength ≤ 16`, and an `operations` block listing **bound** operations only (`// writes` for actions, `// collection` for collection-bound). Returned as `content[0].text`; `structuredContent` is absent.
-- **json:** `{ "Type": { "set", "key": [...], "description"?, "longDescription"?, "setDescription"?, "enumLiteral"?, "props": { "Name": "type!" }, "docs"?, "navs"?, "ops"? } }`. `!` marks required on create. Empty sections are omitted; there is never a `null` value, no `nullable`, no `namespace`, no `entityTypeDescription`.
+- **text:** `Type  (set: Set, key: K)` header, `// docs` only when CSDL has them, `Name: type` (required on create) vs `Name?: type` (optional), `// key` / `// key, store-generated`, `Name -> Type[]` navigations, `enum(A|B)` members inline with one `// filter enums as NS.Enum'{value}'` hint (one pattern per distinct enum the type uses, comma-separated), `string(n)` only when `MaxLength ≤ 16`, and an `operations` block listing **bound** operations only (`// writes` for actions, `// collection` for collection-bound). Returned as `content[0].text`; `structuredContent` is absent.
+- **json:** `{ "Type": { "set", "key": [...], "description"?, "longDescription"?, "setDescription"?, "enumFilterLiterals"?: ["NS.Enum'{value}'"], "props": { "Name": "type!" }, "docs"?, "navs"?, "ops"? } }`. `!` marks required on create. Empty sections are omitted; there is never a `null` value, no `nullable`, no `namespace`, no `entityTypeDescription`.
 
 The `resources/read` type card is the same JSON byte for byte. Unknown name → `Type or entity set '{name}' is not declared in the model.` Unknown format → `Unknown format '{value}'. Use text or json.`
 
@@ -438,7 +438,7 @@ The `resources/read` type card is the same JSON byte for byte. Unknown name → 
 50. **DescribeType_WrongCase_PeopleVsPeople** — case-insensitive match (`customers` vs `Customers`) succeeds.  
 50.1. **DescribeType_UnknownFormat_IsError** — `{ "name": "People", "format": "garbage" }` → `isError`, text names `format`, the bad value, `text`, and `json`.  
 50.2. **DescribeType_FormatCaseInsensitive_NullIsText** — `"format": "JSON"` returns `structuredContent`; `"format": null` behaves as `text`.  
-50.3. **DescribeType_Enum_RendersMembersLiteralFlagsAndComputed** — enum fixture: `Color: enum(Red|Green)`, one `// enum literal: NS.Color'Red'` header line, `Access?: enum(Read|Write) // flags, comma-separated`, `Id?: int // key, store-generated` for a `Core.Computed` key, `Code?: string(8)` for `MaxLength=8`, binary properties absent.  
+50.3. **DescribeType_Enum_RendersMembersLiteralFlagsAndComputed** — enum fixture: `Color: enum(Red|Green)`, one `// filter enums as NS.Color'{value}', NS.Permissions'{value}'` header line, `Access?: enum(Read|Write) // flags, comma-separated`, `Id?: int // key, store-generated` for a `Core.Computed` key, `Code?: string(8)` for `MaxLength=8`, binary properties absent.  
 50.4. **DescribeType_Operations_ListsBoundOnlyWithMarkers** — `operations` block lists bound functions and actions only, binding parameter omitted, `// writes` on actions, `// collection` on collection-bound, operations bound to a base type appear on derived types; unbound operations are absent. TripPin `People` lists `GetFavoriteAirline() -> Airline`, `GetFriendsTrips(userName: string) -> Trip[]`, `UpdateLastName(lastName: string) -> bool // writes`, `ShareTrip(userName: string, tripId: int) // writes` and not `GetNearestAirport` / `ResetDataSource`.
 
 ### Malformed payloads
@@ -498,7 +498,7 @@ Errors: unknown `detail` → `Unknown detail '{v}'. Use summary or complete.`; u
 69.3. **DescribeModel_CompleteWithSets_ScopesTypesAndComplexTypes** — `sets: ["orders"]` (case-insensitive) dumps Order only, no complex types Order does not use, operations still listed.  
 69.4. **DescribeModel_Mermaid_RelationshipsOnly** — exact `erDiagram` lines; contains no type tokens.  
 69.5. **DescribeModel_SummaryJson_SetsAndOperations** — `sets` object in container order, each with `type`, `key`, `navs?`, `description?`; `operations` map; no `props`; no `null`.  
-69.6. **DescribeModel_CompleteJson_TypesComplexTypesAndOperations** — `types.Customer.props.Name == "string!"`, `types.Customer.ops.Top`, `types.Order.enumLiteral`, `complexTypes.Geo.props.Lat == "number!"`.  
+69.6. **DescribeModel_CompleteJson_TypesComplexTypesAndOperations** — `types.Customer.props.Name == "string!"`, `types.Customer.ops.Top`, `types.Order.enumFilterLiterals == ["Shop.Status'{value}'"]`, `complexTypes.Geo.props.Lat == "number!"`.  
 69.7. **DescribeModel_Northwind_SummaryHasSetsAndNavigations** — live: `Customer  (set: Customers, key: CustomerID)` followed by `  Orders -> Order[]`; composite key header for `Order_Details`; no `operations` block.  
 69.8. **DescribeModel_Northwind_CompleteHasProperties** — live: `  CompanyName?: string`, `  ProductID: int // key`.  
 69.9. **DescribeModel_TripPin_SummaryEndsWithUnboundOperations** — live: starts with the People header and its three navigations; ends with `operations` / `GetPersonWithMostFriends() -> Person` / `GetNearestAirport(lat: number, lon: number) -> Airport` / `ResetDataSource() // writes`; `ShareTrip` and `GetFavoriteAirline` absent.  
@@ -691,7 +691,7 @@ Queries an entity set. Parameter names do not include `$`; the executor adds `$f
 
 ### Purpose
 
-Gets an entity by key. Required `entitySet` + `key`. Path `{entitySet}({FormatKey(key)})`. Optional query options (`select`, `expand`, …) are applied via `ReadQueryOptions` (same names as query).
+Gets an entity by key. Required `entitySet` + `key`. Path `{entitySet}({FormatKey(key)})`. Optional `select` and `expand` are advertised in the schema and applied via `ReadQueryOptions` (same names as query); the runtime also honors any other query option it is handed.
 
 ### Matrix
 
@@ -1043,7 +1043,7 @@ Note: convention `CustomersController.Delete` does **not** currently require Aut
 
 ### Purpose
 
-Follows a navigation property from a key. GET `{entitySet}({key})/{navigation}`. Required `entitySet`, `key`, `navigation`. Query options (`filter`, `top`, `skip`, `count`, `select`, `orderby`, `expand`) **are** applied (`NavigateAsync` → `ReadQueryOptions`).
+Follows a navigation property from a key. GET `{entitySet}({key})/{navigation}`. Required `entitySet`, `key`, `navigation`. Query options (`filter`, `top`, `skip`, `count`, `select`, `orderby`, `expand`) are advertised in the schema and **are** applied (`NavigateAsync` → `ReadQueryOptions`).
 
 There is **no** named `list_{set}_{nav}` tool. Navigation is this generic only.
 

@@ -50,8 +50,14 @@ Token cuts that make the model less able to use the service are a regression.
 `ODataMcpInstructions.Default` — one string, both hosts. `McpServerOptions.ServerInstructions`.
 
 ```
-Query options have no $ prefix. Prefer named tools when listed; otherwise odata_describe_type then generic odata_*. odata_describe_model summary is the map; complete dumps every type in one call. Bound operations are listed on the type; unbound on odata_list_operations. odata_call: pass arguments in parameters (a JSON object) using those names — do not stringify, do not wrap, do not guess a body. Do not read $metadata to explore. PATCH: omit a field to keep it; never send JSON null for a required property.
+Tool parameter names omit $ (filter, not $filter); inside expand options write $top, $select as usual. Prefer named tools when listed; otherwise odata_describe_type then generic odata_*. odata_describe_model summary is the map; complete dumps every type in one call. Bound operations are listed on the type; unbound on odata_list_operations. odata_call: pass arguments in parameters (a JSON object) using the declared parameter names — do not stringify, do not wrap, do not guess a body. Do not read the $metadata resource to explore; it is there when the user asks for raw CSDL.
 ```
+
+Why this wording (from two independent no-context model reviews of the surface):
+
+- "Query options have no $ prefix" over-generalized: a model reading it literally would strip `$` inside `expand=Orders($top=5)`. The rule is about tool parameter names only.
+- "Do not read $metadata" read as a ban. The CSDL resource exists for the user who asks for raw EDMX; the model must not use it to *explore*.
+- The PATCH rule is not here because it lives on `odata_update` (and `update_*`), which are always in context too. Each rule appears once.
 
 `ODataMcpCatalogOptions.InstructionsPreface` (`string?`, default empty):
 
@@ -72,20 +78,23 @@ Normative copy. CSDL summary is appended on named tools via `ComposeToolDescript
 | Tool | Description |
 |---|---|
 | `odata_list_entity_sets` | `Names, types, and keys of declared entity sets.` |
-| `odata_describe_type` | `Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. Bound operations are here; unbound are on odata_list_operations. No ? = required on create; Name?: = optional. PATCH may omit any field; JSON null is invalid for required fields.` |
+| `odata_describe_type` | `Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.` |
 | `odata_describe_model` | `summary (default): sets, keys, navigations, then unbound operations. complete: every type with properties, enums, and bound operations, then unbound operations. Prefer complete instead of calling odata_describe_type once per type. Pass sets to scope a large model. format=text (default), json, or mermaid. Do not read $metadata to explore.` |
 | `odata_query` | Keep: parameter names have no `$`; executor adds them. |
-| `odata_get` | `Gets an entity by key.` Named: `Gets a {Type} by key.` + CSDL summary if any. |
+| `odata_get` | `Gets an entity by key. Optional select and expand shape the result.` Named: `Gets a {Type} by key.` + CSDL summary if any. |
 | `odata_delete` | `Deletes an entity by key.` Named: `Deletes a {Type}.` + CSDL summary if any. |
-| `odata_navigate` | `Follows a navigation property from a key.` |
-| `odata_create` | `JSON body in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.` |
-| `odata_update` | `PATCH in body. Send only fields to change. Omitted fields keep their values. Do not send JSON null for required properties.` |
+| `odata_navigate` | `Follows a navigation property from a key. Accepts the same query options as odata_query.` |
+| `odata_create` | `JSON object in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.` |
+| `odata_update` | `PATCH object in body. Send only fields to change. Omitted fields keep their values. JSON null clears an optional property; never send it for a required one.` |
+| `list_{x}` | Set sentence + CSDL summary if any + `Query parameter names do not include $.` When the type exposes enum properties, append `Filter enums as NS.Enum'{value}', ...` (one pattern per distinct enum, first-use order; same list as the type shape header, [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1). A model told to prefer named tools never calls `odata_describe_type`, so the hint has to travel with the list tool. |
 | `create_{x}` | `Creates a {Type}.` + CSDL summary if any. Schema `required` is the create signal. |
 | `update_{x}` | `PATCH a {Type}. Send only fields to change; omit to keep. Do not send JSON null for required properties.` + CSDL summary if any. |
-| `odata_list_operations` | `Unbound operations on the service. Bound operations are on odata_describe_type.` |
+| `odata_list_operations` | `Unbound operations on the service.` |
 | `odata_call` | See §3. |
 
 Do not invent `"description": "CompanyName"`. Omit CSDL docs when absent ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §4).
+
+Each rule lives in exactly one place. The bound/unbound routing sentence is in the instructions and on `odata_call`; the PATCH null rule is on `odata_update` / `update_*`; neither is repeated on `odata_describe_type` or `odata_list_operations`.
 
 ---
 
@@ -97,9 +106,22 @@ Do not invent `"description": "CompanyName"`. Omit CSDL docs when absent ([TYPE-
 |---|---|---|
 | Named `create_*` | Declared properties. `"required"` = required-on-create. Enum `enum` array. `description` only when CSDL has it. `maxLength` only when ≤ 16. | Omit (OData body). |
 | Named `update_*` | `key` + same property map. `"required": ["key"]` only. Non-nullable types do not include `null`. | Omit. |
-| `odata_create` / `odata_update` | `entitySet` + `body` string (and `key` on update). | Omit. |
-| `odata_call` | `{ name, parameters (object), entitySet, key }`, required `name`. **No `body`.** **No undeclared top-level args.** | Omit. |
+| `odata_create` / `odata_update` | `entitySet` + `body` **object** (and `key` on update). `body` is `{"type":"object","description":"... as a JSON object, not a string."}`; the runtime still accepts a string, but the schema must not contradict "do not stringify" on `odata_call`. | Omit. |
+| `odata_get` / named `get_*` | `entitySet` (generic) + `key` + optional `select`, `expand`. | Omit. |
+| `odata_navigate` | `entitySet`, `key`, `navigation` + the full `odata_query` option set (`filter`, `select`, `orderby`, `expand`, `top`, `skip`, `count`). The runtime always honored them; the schema now says so. | Omit. |
+| `odata_call` | `{ name, parameters (object), entitySet, key }`, required `name`. `parameters.description` ends `Omit when the operation takes none.` **No `body`.** **No undeclared top-level args.** | Omit. |
 | `odata_query` / named `list_*` | Today’s query object (no `$`). | Omit. |
+
+Every `key` argument carries a description that states the literal form, because no model can infer it from `"type":"string"`:
+
+| Where | `key.description` |
+|---|---|
+| Generic `odata_get`, `odata_update`, `odata_delete`, `odata_navigate`, `odata_call` (`ODataMcpCatalog.KeySchema`) | `Key as text: ALFKI or 10248; strings are quoted for you. Composite: OrderID=10248,ProductID=11.` |
+| Named `get_*`, single key (`BuildNamedKeySchema`) | `{KeyName} as text; strings are quoted for you.` |
+| Named `get_*`, composite key | `Name=value pairs: OrderID=...,ProductID=...; strings are quoted for you.` |
+| Named `get_*`, type without key | Falls back to `KeySchema`. |
+
+The named form is shorter than the generic one because it repeats once per entity set, and it names the key properties the model must use. The runtime contract behind both is `FormatKey`: integers, GUIDs, and booleans pass through bare; other scalars are single-quoted (with `'` doubled) unless already quoted; `Name=value` pairs are formatted per value.
 | `odata_describe_type` | `name` required; `format`: `text` \| `json`. | Omit (text vs json). |
 | `odata_describe_model` | `detail`, `format`, `sets`. | Omit (text vs json vs mermaid). |
 | `odata_list_entity_sets` | `{}` `additionalProperties: false`. | Yes — `{ entitySets: [...] }`. |
@@ -124,7 +146,9 @@ Unbound: `name` + `parameters`. Collection-bound: `name` + `parameters` + `entit
 
 Description:
 
-> Call a declared operation by `name` as listed on `odata_describe_type` (bound) or `odata_list_operations` (unbound). Put every argument in `parameters` using those names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound: also `entitySet` and `key`. Collection-bound (`// collection` on the listing): `entitySet` only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. `// writes` means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.
+> Call a declared operation by `name` as listed on `odata_describe_type` (bound) or `odata_list_operations` (unbound). Put every argument in `parameters` using the declared parameter names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound (the default for bound): also `entitySet` and `key`. Collection-bound (`// collection` on the listing): `entitySet` only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. `// writes` means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.
+
+"the declared parameter names" replaced "those names", whose antecedent was ambiguous. "(the default for bound)" is there because instance binding was otherwise only inferable from the *absence* of `// collection`.
 
 ---
 
@@ -149,7 +173,7 @@ Do not validate `$filter` AST. Do enforce existing `filter` / `select` / `expand
 
 `ODataMcpCatalogOptions.EnforceRequiredOnCreate` (default `true`) switches off step 2's required-on-create check **only**, for a service whose metadata declares non-nullable properties that its POST handler defaults or rejects. Live TripPin is the known case: `Person.Gender` and `FavoriteFeature` are non-nullable with no default, yet POST `People` returns 500 when either is sent and 201 with server defaults when both are omitted. The live TripPin test fixture sets the option to `false`; every other check stays on. Undeclared entity sets and bodies that are not JSON objects are forwarded untouched so the service answers.
 
-Function arguments that are complex, collection, or entity typed travel as OData parameter aliases in the request path (`Find(at=@at)?@at=<escaped json>`); aliases are part of the operation call and are never `$`-prefixed query options.
+Function arguments that are complex, collection, or entity typed travel as OData parameter aliases in the request path (`Find(at=@at)?@at=<escaped json>`); aliases are part of the operation call and are never `$`-prefixed query options. The executors always emit `$` on system query options regardless of the server's `EnableNoDollarQueryOptions`; see [TOOL-SURFACE.md](./TOOL-SURFACE.md) §6.1 for the measured behavior behind that rule.
 
 | `odata_call` mistake | Error |
 |---|---|
@@ -210,6 +234,13 @@ Do not cache forwarded OData HTTP.
 `[BreakdanceManifestGenerator]` writes files. Tests `result.Should().Be(File.ReadAllText(baseline))`. `projectPath = "..//..//..//"`. Live Northwind, live TripPin, convention-rich host. No mocks.
 
 When a round is done, tokenize Before vs Current with SharpToken `cl100k_base` into `OPTIMIZATION-REPORT.md` (append dated sections later). That file is a report, not a merge gate for the first baseline PR.
+
+The tokenizer lives in two places with two jobs:
+
+- **Guard** — `TokenBaselineTests` (Tests.Core) asserts that no paired **tool result** costs more `cl100k_base` tokens in `Current/` than in `Before/`. Input schemas (typed on purpose), the `tools.list` aggregate (the Before snapshot never captured descriptions or instructions), and the `describe_type` text stubs (the old text was the bare type name) are excluded. `Baselines/TypeShapes/README.md` records where every `Before/` file came from.
+- **Reports** — `src/Microsoft.OData.Mcp.Benchmarks` (`dotnet run -c Release -- --tokens`) links the same `Before/` and `Current/` folders into its output and writes `Reports/TOKENS.md` (every baseline, paired, plus the `tools.list` section breakdown) and `Reports/FORMATS.md` (the same model as CSDL XML, CSDL JSON, and our shapes, per type and whole service, with every counted artifact under `Reports/Formats/`). The same project carries the BenchmarkDotNet compute suites: CSDL parse, catalog build, describe/list tools, and the pre-HTTP write validation.
+
+`Before/` counterparts for payloads that did not exist before the optimization (`describe_model`, the text shapes, `update_*` schemas, TripPin `list_entity_sets`) were produced by running the `288ccd6` build against the live services. The `describe_model` Before payload is what a model had to fetch to get the same map: `odata_list_entity_sets` plus `odata_describe_type` for every set.
 
 ---
 

@@ -396,7 +396,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Builds the compact JSON body: set, key, docs, enum literal, props, docs, navs, ops.
+        /// Builds the compact JSON body: set, key, docs, enum filter literals, props, docs, navs, ops.
         /// </summary>
         /// <returns>
         /// The body dictionary, in emission order.
@@ -418,10 +418,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             EdmDocumentation.Add(body, LongDescription, longDescription, description);
             EdmDocumentation.Add(body, SetDescription, setDescription, description);
 
-            var firstEnum = FirstEnumType();
-            if (firstEnum is not null)
+            var literals = RenderEnumFilterLiterals(_model, ExposedProperties);
+            if (literals.Count > 0)
             {
-                body[EnumLiteral] = RenderEnumLiteral(firstEnum);
+                body[EnumFilterLiterals] = literals;
             }
 
             var docs = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -546,36 +546,26 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Finds the first enumeration type used by an exposed property, for the literal hint.
-        /// </summary>
-        /// <returns>
-        /// The enumeration type, or <c>null</c> when the type has no enum properties.
-        /// </returns>
-        internal EdmEnumType? FirstEnumType()
-        {
-            return FirstEnumType(_model, ExposedProperties);
-        }
-
-        /// <summary>
-        /// Finds the first enumeration type used by any of the given properties.
+        /// Collects the distinct enumeration types used by the given properties, in first-use order.
         /// </summary>
         /// <param name="model">The Core EDM.</param>
         /// <param name="properties">The properties to scan.</param>
         /// <returns>
-        /// The enumeration type, or <c>null</c>.
+        /// The enumeration types, possibly empty.
         /// </returns>
-        internal static EdmEnumType? FirstEnumType(EdmModel model, IEnumerable<EdmProperty> properties)
+        internal static IReadOnlyList<EdmEnumType> EnumTypesUsed(EdmModel model, IEnumerable<EdmProperty> properties)
         {
+            var found = new List<EdmEnumType>();
             foreach (var property in properties)
             {
                 var enumType = EnumTypeOf(model, property);
-                if (enumType is not null)
+                if (enumType is not null && !found.Contains(enumType))
                 {
-                    return enumType;
+                    found.Add(enumType);
                 }
             }
 
-            return null;
+            return found;
         }
 
         /// <summary>
@@ -618,15 +608,32 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Renders the OData filter literal example for an enumeration, for example <c>NS.Color'Red'</c>.
+        /// Renders the OData <c>$filter</c> literal pattern for an enumeration, for example <c>NS.Color'{value}'</c>.
         /// </summary>
         /// <param name="enumType">The enumeration type.</param>
         /// <returns>
-        /// The literal.
+        /// The namespace-qualified pattern with a <c>{value}</c> placeholder, never a concrete member.
         /// </returns>
-        internal static string RenderEnumLiteral(EdmEnumType enumType)
+        /// <remarks>
+        /// The shape strips namespaces from property types, so this is where the calling AI learns the qualified
+        /// name and the quoting a filter needs. A placeholder rather than an example member keeps it unambiguous.
+        /// </remarks>
+        internal static string RenderEnumFilterLiteral(EdmEnumType enumType)
         {
-            return $"{enumType.FullName}'{enumType.Members[0].Name}'";
+            return $"{enumType.FullName}'{{value}}'";
+        }
+
+        /// <summary>
+        /// Renders the filter literal patterns for every distinct enumeration the given properties use.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="properties">The properties to scan.</param>
+        /// <returns>
+        /// One pattern per enumeration type in first-use order, possibly empty.
+        /// </returns>
+        internal static List<string> RenderEnumFilterLiterals(EdmModel model, IEnumerable<EdmProperty> properties)
+        {
+            return [.. EnumTypesUsed(model, properties).Select(RenderEnumFilterLiteral)];
         }
 
         /// <summary>
@@ -703,7 +710,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Renders the indented property lines, including the enum literal hint and long-description lines.
+        /// Renders the indented property lines, including the enum filter-literal hint and long-description lines.
         /// </summary>
         /// <returns>
         /// The lines.
@@ -720,15 +727,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="properties">The exposed properties.</param>
         /// <param name="key">The key property names, or empty.</param>
         /// <returns>
-        /// The enum literal hint (when any property is an enum), then one line per property with an optional long-description line.
+        /// The enum filter-literal hint (when any property is an enum), then one line per property with an optional long-description line.
         /// </returns>
         internal static IReadOnlyList<string> RenderPropertyLines(EdmModel model, IReadOnlyList<EdmProperty> properties, IReadOnlyList<string> key)
         {
             var lines = new List<string>();
-            var firstEnum = FirstEnumType(model, properties);
-            if (firstEnum is not null)
+            var literals = RenderEnumFilterLiterals(model, properties);
+            if (literals.Count > 0)
             {
-                lines.Add($"  // enum literal: {RenderEnumLiteral(firstEnum)}");
+                lines.Add($"  // filter enums as {string.Join(", ", literals)}");
             }
 
             foreach (var property in properties)

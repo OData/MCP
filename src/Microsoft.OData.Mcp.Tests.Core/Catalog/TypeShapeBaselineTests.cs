@@ -62,7 +62,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
         internal const string TripPinDescribeTypePersonText = "trippin.describe_type.person.txt";
 
+        internal const string TripPinListEntitySets = "trippin.list_entity_sets.json";
+
         internal const string TripPinListOperations = "trippin.list_operations.json";
+
+        internal const string TripPinUpdatePersonInputSchema = "trippin.update_person.inputschema.json";
 
         private const string projectPath = "..//..//..//";
 
@@ -192,6 +196,28 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
+        /// <c>odata_list_entity_sets</c> for TripPin matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task ListEntitySets_TripPin_MatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinListEntitySets].Should().Be(ReadCurrent(TripPinListEntitySets));
+        }
+
+        /// <summary>
+        /// The TripPin <c>update_person</c> input schema matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task UpdatePersonInputSchema_TripPin_MatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinUpdatePersonInputSchema].Should().Be(ReadCurrent(TripPinUpdatePersonInputSchema));
+        }
+
+        /// <summary>
         /// The Northwind <c>update_customer</c> input schema matches the current baseline.
         /// </summary>
         [TestMethod]
@@ -308,7 +334,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 [TripPinDescribeModelSummary] = await InvokeTextAsync(runtime, "odata_describe_model", null),
                 [TripPinDescribeTypePerson] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People", "format", "json")),
                 [TripPinDescribeTypePersonText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People")),
-                [TripPinListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null)
+                [TripPinListEntitySets] = await InvokeStructuredAsync(runtime, "odata_list_entity_sets", null),
+                [TripPinListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null),
+                [TripPinUpdatePersonInputSchema] = catalog.Tools.Single(tool => tool.Name == "update_person").InputSchema
             };
         }
 

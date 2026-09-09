@@ -24,6 +24,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
         #region Fields
 
+        /// <summary>
+        /// JSON Schema for every <c>key</c> argument: how to write a single or composite key literal.
+        /// </summary>
+        internal const string KeySchema = """{"type":"string","description":"Key as text: ALFKI or 10248; strings are quoted for you. Composite: OrderID=10248,ProductID=11."}""";
+
         internal static readonly JsonSerializerOptions SchemaSerializerOptions = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -218,6 +223,40 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 [ODataMcpCatalogConstants.Type] = JsonString,
                 [EnumKeyword] =enumType.Members.Select(member => (object?)member.Name).ToList()
             };
+        }
+
+        /// <summary>
+        /// Builds the <c>key</c> schema for a named <c>get_*</c> tool, naming the type's actual key properties.
+        /// </summary>
+        /// <param name="entityType">The entity type the tool binds to.</param>
+        /// <returns>
+        /// A string schema whose description is <c>{Key} as text; strings are quoted for you.</c> for a single key,
+        /// or <c>Name=value pairs: K1=...,K2=...; strings are quoted for you.</c> for a composite key. Falls back to
+        /// <see cref="KeySchema"/> when the type declares no key.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="entityType"/> is null.</exception>
+        /// <remarks>
+        /// Named tools repeat once per entity set, so this stays shorter than the generic <see cref="KeySchema"/>
+        /// while saying more: the calling model sees the key names it must use.
+        /// </remarks>
+        internal static string BuildNamedKeySchema(EdmEntityType entityType)
+        {
+            ArgumentNullException.ThrowIfNull(entityType);
+
+            if (entityType.Key.Count == 0)
+            {
+                return KeySchema;
+            }
+
+            var description = entityType.Key.Count == 1
+                ? $"{entityType.Key[0]} as text; strings are quoted for you."
+                : $"Name=value pairs: {string.Join(",", entityType.Key.Select(name => $"{name}=..."))}; strings are quoted for you.";
+
+            return JsonSerializer.Serialize(new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [ODataMcpCatalogConstants.Type] = JsonString,
+                [Description] = description
+            }, SchemaSerializerOptions);
         }
 
         /// <summary>
@@ -583,7 +622,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. Bound operations are here; unbound are on odata_list_operations. No ? = required on create; Name?: = optional. PATCH may omit any field; JSON null is invalid for required fields.",
+                    Description = "Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.",
                     InputSchema = """{"type":"object","properties":{"name":{"type":"string","description":"Entity set or type name declared in the model."},"format":{"type":"string","enum":["text","json"]}},"required":["name"]}""",
                     Name = OdataDescribeType,
                     ReadOnlyHint = true,
@@ -610,8 +649,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Gets an entity by key.",
-                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"key":{"type":"string"}},"required":["entitySet","key"]}""",
+                    Description = "Gets an entity by key. Optional select and expand shape the result.",
+                    InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"select":{"type":"string"},"expand":{"type":"string"}},"required":["entitySet","key"]}""",
                     Name = OdataGet,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
@@ -619,16 +658,16 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "JSON body in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.",
-                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"body":{"type":"string"}},"required":["entitySet","body"]}""",
+                    Description = "JSON object in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.",
+                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"body":{"type":"object","description":"The entity as a JSON object, not a string."}},"required":["entitySet","body"]}""",
                     Name = OdataCreate,
                     Title = "Create entity"
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "PATCH in body. Send only fields to change. Omitted fields keep their values. Do not send JSON null for required properties.",
+                    Description = "PATCH object in body. Send only fields to change. Omitted fields keep their values. JSON null clears an optional property; never send it for a required one.",
                     IdempotentHint = true,
-                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"key":{"type":"string"},"body":{"type":"string"}},"required":["entitySet","key","body"]}""",
+                    InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"body":{"type":"object","description":"Changed properties as a JSON object, not a string."}},"required":["entitySet","key","body"]}""",
                     Name = OdataUpdate,
                     Title = "Update entity"
                 },
@@ -637,14 +676,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     Description = "Deletes an entity by key.",
                     DestructiveHint = true,
                     IdempotentHint = true,
-                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"key":{"type":"string"}},"required":["entitySet","key"]}""",
+                    InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}}},"required":["entitySet","key"]}""",
                     Name = OdataDelete,
                     Title = "Delete entity"
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Follows a navigation property from a key.",
-                    InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"key":{"type":"string"},"navigation":{"type":"string"}},"required":["entitySet","key","navigation"]}""",
+                    Description = "Follows a navigation property from a key. Accepts the same query options as odata_query.",
+                    InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"navigation":{"type":"string"},"filter":{"type":"string"},"select":{"type":"string"},"orderby":{"type":"string"},"expand":{"type":"string"},"top":{"type":"number"},"skip":{"type":"number"},"count":{"type":"boolean"}},"required":["entitySet","key","navigation"]}""",
                     Name = OdataNavigate,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
@@ -652,7 +691,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Unbound operations on the service. Bound operations are on odata_describe_type.",
+                    Description = "Unbound operations on the service.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
                     Name = OdataListOperations,
                     OutputSchema = """{"type":"object","properties":{"operations":{"type":"object","additionalProperties":{"type":"string"}}}}""",
@@ -662,12 +701,39 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Call a declared operation by name as listed on odata_describe_type (bound) or odata_list_operations (unbound). Put every argument in parameters using those names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound: also entitySet and key. Collection-bound (// collection on the listing): entitySet only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. // writes means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.",
-                    InputSchema = """{"type":"object","properties":{"name":{"type":"string"},"parameters":{"type":"object","description":"Operation arguments keyed by the declared parameter names."},"entitySet":{"type":"string"},"key":{"type":"string"}},"required":["name"],"additionalProperties":false}""",
+                    Description = "Call a declared operation by name as listed on odata_describe_type (bound) or odata_list_operations (unbound). Put every argument in parameters using the declared parameter names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound (the default for bound): also entitySet and key. Collection-bound (// collection on the listing): entitySet only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. // writes means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.",
+                    InputSchema = $$$"""{"type":"object","properties":{"name":{"type":"string"},"parameters":{"type":"object","description":"Operation arguments keyed by the declared parameter names. Omit when the operation takes none."},"entitySet":{"type":"string"},"key":{{{KeySchema}}}},"required":["name"],"additionalProperties":false}""",
                     Name = OdataCall,
                     Title = "Call operation"
                 }
             ];
+        }
+
+        /// <summary>
+        /// Builds the trailing reminder on a named <c>list_*</c> tool: no <c>$</c> on parameter names, plus the
+        /// <c>$filter</c> literal pattern for every enumeration the type exposes.
+        /// </summary>
+        /// <param name="shape">The shape of the listed type.</param>
+        /// <returns>
+        /// <c>Query parameter names do not include $.</c> alone when the type has no enum properties; otherwise that
+        /// sentence followed by <c>Filter enums as NS.Enum'{value}', ...</c>.
+        /// </returns>
+        /// <remarks>
+        /// A model steered toward named tools never calls <c>odata_describe_type</c>, so the enum filter hint that
+        /// heads the type shape has to travel with the list tool as well.
+        /// </remarks>
+        internal string BuildListSuffix(EdmTypeShape shape)
+        {
+            ArgumentNullException.ThrowIfNull(shape);
+
+            const string noDollar = "Query parameter names do not include $.";
+            var literals = EdmTypeShape.RenderEnumFilterLiterals(_model, shape.ExposedProperties);
+            if (literals.Count == 0)
+            {
+                return noDollar;
+            }
+
+            return $"{noDollar} Filter enums as {string.Join(", ", literals)}.";
         }
 
         /// <summary>
@@ -698,7 +764,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             {
                 new()
                 {
-                    Description = ComposeToolDescription(DescribeSet(set, type), documented, "Query parameter names do not include $."),
+                    Description = ComposeToolDescription(DescribeSet(set, type), documented, BuildListSuffix(shape)),
                     EntitySetName = set.Name,
                     InputSchema = """{"type":"object","properties":{"filter":{"type":"string"},"select":{"type":"string"},"orderby":{"type":"string"},"expand":{"type":"string"},"top":{"type":"number"},"skip":{"type":"number"},"count":{"type":"boolean"}}}""",
                     Name = $"{ListPrefix}{setSnake}",
@@ -710,7 +776,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = ComposeToolDescription($"Gets a {type.Name} by key.", documented),
                     EntitySetName = set.Name,
-                    InputSchema = """{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}""",
+                    InputSchema = $$$"""{"type":"object","properties":{"key":{{{BuildNamedKeySchema(type)}}},"select":{"type":"string"},"expand":{"type":"string"}},"required":["key"]}""",
                     Name = $"{GetPrefix}{singular}",
                     ReadOnlyHint = true,
                     IdempotentHint = true,

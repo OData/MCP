@@ -221,6 +221,25 @@ A collection of entity types that define the structure of entities in the servic
 Entity types are the primary structural elements in the EDM, defining the properties
 and relationships that make up the data model.
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnumTypes
+
+Gets or sets the enumeration types defined in this model.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmEnumType> EnumTypes { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmEnumType>`
+A collection of enumeration types whose members appear in type shapes and schemas.
+
+#### Remarks
+
+Structural properties reference these by [EdmEnumType.FullName](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEnumType#fullname) in [EdmProperty.Type](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmProperty#type).
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Functions
 
 Gets or sets the functions defined in this model.
@@ -285,6 +304,21 @@ public bool HasEntityTypes { get; }
 
 Type: `bool`
 `true` if the model has entity types; otherwise, `false`.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasEnumTypes
+
+Gets a value indicating whether this model has any enumeration types.
+
+#### Syntax
+
+```csharp
+public bool HasEnumTypes { get; }
+```
+
+#### Property Value
+
+Type: `bool`
+`true` if the model has enumeration types; otherwise, `false`.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Namespaces
 
@@ -439,6 +473,29 @@ public void AddEntityType(Microsoft.OData.Mcp.Core.Models.EdmEntityType entityTy
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *entityType* is null. |
 | `InvalidOperationException` | Thrown when an entity type with the same full name already exists. |
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddEnumType
+
+Adds an enumeration type to the model.
+
+#### Syntax
+
+```csharp
+public void AddEnumType(Microsoft.OData.Mcp.Core.Models.EdmEnumType enumType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `enumType` | `Microsoft.OData.Mcp.Core.Models.EdmEnumType` | The enumeration type to add. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *enumType* is null. |
+| `InvalidOperationException` | Thrown when an enumeration type with the same full name already exists. |
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
@@ -655,6 +712,49 @@ public Microsoft.OData.Mcp.Core.Models.EdmEntityType GetEntityType(string name, 
 
 Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityType?`
 The entity type with the specified name and namespace, or `null` if not found.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEnumType
+
+Gets an enumeration type by its fully qualified name.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmEnumType GetEnumType(string fullName)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `fullName` | `string` | The fully qualified name of the enumeration type (namespace.name). |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmEnumType?`
+The enumeration type with the specified name, or `null` if not found.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetEnumType
+
+Gets an enumeration type by name and namespace.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmEnumType GetEnumType(string name, string namespace)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the enumeration type. |
+| `namespace` | `string` | The namespace of the enumeration type. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmEnumType?`
+The enumeration type with the specified name and namespace, or `null` if not found.
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 

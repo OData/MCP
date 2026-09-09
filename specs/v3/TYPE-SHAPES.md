@@ -48,11 +48,13 @@ Do **not** emit empty `operations` / docs keys. Do **not** fall back to the prop
 
 One-line legend is **not** in the result. The tool description carries required-on-create vs PATCH ([OPTIMIZATION.md](./OPTIMIZATION.md) §2). Some harnesses strip descriptions; JSON Schema `required` on `create_*` is still the primary create signal.
 
-Enum filter literal, once per shape that contains an enum, as a header comment:
+Enum `$filter` literal pattern, once per shape that contains an enum, as a header comment listing every distinct enumeration the shape uses in first-use order:
 
 ```
-  // enum literal: NorthwindModel.Color'Red'
+  // filter enums as NorthwindModel.Color'{value}', NorthwindModel.Size'{value}'
 ```
+
+The shape strips namespaces from property types and renders members as `enum(Red|Green)`, so this line is where the calling AI learns the namespace-qualified name and the quoting a filter needs. `{value}` is a deliberate placeholder: a concrete member such as `Color'Red'` reads as a value rather than as syntax.
 
 ### 1.2 Compact JSON
 
@@ -79,7 +81,7 @@ Same facts, for `resources/read` type cards and `format=json`:
 }
 ```
 
-`!` mirrors required-on-create. It is **not** a substitute for JSON Schema `required` on `create_*`. `docs` / `description` / `longDescription` / `setDescription` / `enumLiteral` / `navs` / `ops` are omitted when empty. `setDescription` carries the entity set's own description when it differs from the type's. Flags enumerations render as `flags(A|B)` so the marker survives without a `docs` entry. `enumLiteral` is the once-per-shape filter literal (`NS.Color'Red'`). Do not turn `"CompanyName":"string!"` into an object because it is documented.
+`!` mirrors required-on-create. It is **not** a substitute for JSON Schema `required` on `create_*`. `docs` / `description` / `longDescription` / `setDescription` / `enumFilterLiterals` / `navs` / `ops` are omitted when empty. `setDescription` carries the entity set's own description when it differs from the type's. Flags enumerations render as `flags(A|B)` so the marker survives without a `docs` entry. `enumFilterLiterals` is an array with one `$filter` pattern per distinct enumeration the shape uses, in first-use order (`["NS.Color'{value}'"]`); the `{value}` placeholder is deliberate so it cannot be mistaken for a member. Do not turn `"CompanyName":"string!"` into an object because it is documented.
 
 ### 1.3 Type mapping
 

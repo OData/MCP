@@ -337,10 +337,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             EdmDocumentation.Add(body, Description, EdmTypeShape.Informative(complexType.Description, complexType.Name) ? complexType.Description : null);
 
             var exposed = complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty).ToList();
-            var firstEnum = EdmTypeShape.FirstEnumType(model, exposed);
-            if (firstEnum is not null)
+            var literals = EdmTypeShape.RenderEnumFilterLiterals(model, exposed);
+            if (literals.Count > 0)
             {
-                body[EnumLiteral] = EdmTypeShape.RenderEnumLiteral(firstEnum);
+                body[EnumFilterLiterals] = literals;
             }
 
             var docs = new Dictionary<string, string>(StringComparer.Ordinal);

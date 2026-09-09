@@ -47,12 +47,12 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         public void Default_ContainsNonObviousRules()
         {
             ODataMcpInstructions.Default.Should().NotBeNullOrWhiteSpace();
-            ODataMcpInstructions.Default.Should().Contain("Do not read $metadata");
-            ODataMcpInstructions.Default.Should().Contain("no $ prefix");
-            ODataMcpInstructions.Default.Should().Contain("parameters");
+            ODataMcpInstructions.Default.Should().StartWith("Tool parameter names omit $ (filter, not $filter); inside expand options write $top, $select as usual.");
+            ODataMcpInstructions.Default.Should().Contain("using the declared parameter names");
             ODataMcpInstructions.Default.Should().Contain("odata_describe_model summary is the map; complete dumps every type in one call.");
             ODataMcpInstructions.Default.Should().Contain("Bound operations are listed on the type; unbound on odata_list_operations.");
-            ODataMcpInstructions.Default.Should().EndWith("never send JSON null for a required property.");
+            ODataMcpInstructions.Default.Should().EndWith("Do not read the $metadata resource to explore; it is there when the user asks for raw CSDL.");
+            ODataMcpInstructions.Default.Should().NotContain("PATCH", "the PATCH rule lives on odata_update only");
             ODataMcpInstructions.Default.Should().NotContain("\r");
             ODataMcpInstructions.Default.Should().NotStartWith("\n");
             ODataMcpInstructions.Default.Should().NotEndWith("\n");

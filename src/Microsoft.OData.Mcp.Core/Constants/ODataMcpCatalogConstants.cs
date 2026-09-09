@@ -152,14 +152,14 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string EntityType = "entityType";
 
         /// <summary>
+        /// Compact-shape key: one <c>$filter</c> literal pattern (<c>NS.Enum'{value}'</c>) per enumeration the shape uses.
+        /// </summary>
+        public const string EnumFilterLiterals = "enumFilterLiterals";
+
+        /// <summary>
         /// JSON Schema <c>enum</c> keyword.
         /// </summary>
         public const string EnumKeyword = "enum";
-
-        /// <summary>
-        /// Compact-shape key that carries the OData enum filter literal example.
-        /// </summary>
-        public const string EnumLiteral = "enumLiteral";
 
         /// <summary>
         /// OData <c>$expand</c> argument.

@@ -1,0 +1,62 @@
+---
+title: ODataMcpInstructions
+description: "The MCP `initialize.instructions` text every OData MCP host advertises."
+icon: bolt
+tag: "STATIC"
+keywords: ['ODataMcpInstructions', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpInstructions', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ODataMcpInstructions
+```
+
+## Summary
+
+The MCP `initialize.instructions` text every OData MCP host advertises.
+
+## Remarks
+
+The default carries only the rules a calling model cannot infer from tool schemas. Developers may prepend
+service-specific guidance through [ODataMcpCatalogOptions.InstructionsPreface](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#instructionspreface); the default
+is never replaced.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Compose
+
+Composes the server instructions from an optional developer preface and [ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default).
+
+#### Syntax
+
+```csharp
+public static string Compose(string preface)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `preface` | `string?` | Service-specific guidance to place before the default text, or `null`. |
+
+#### Returns
+
+Type: `string`
+[ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default) alone when *preface* is null or whitespace; otherwise the trimmed
+preface, one blank line, then [ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default).
+
+#### Examples
+
+```csharp
+options.ServerInstructions = ODataMcpInstructions.Compose("Contoso sales data. Amounts are USD.");
+```
+

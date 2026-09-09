@@ -93,8 +93,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             response.IsSuccessStatusCode.Should().BeTrue(body);
             body.Should().Contain("\"instructions\"");
             body.Should().Contain("Contoso sales data. Amounts are USD.");
-            body.Should().Contain("Do not read $metadata to explore.");
-            body.IndexOf("Contoso sales data", System.StringComparison.Ordinal).Should().BeLessThan(body.IndexOf("Query options have no $ prefix", System.StringComparison.Ordinal));
+            body.Should().Contain("Do not read the $metadata resource to explore");
+            body.IndexOf("Contoso sales data", System.StringComparison.Ordinal).Should().BeLessThan(body.IndexOf("Tool parameter names omit $", System.StringComparison.Ordinal));
         }
 
         #endregion

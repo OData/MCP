@@ -140,7 +140,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                     Top(count: int) -> Customer[] // collection
 
                 Order  (set: Orders, key: Id)
-                  // enum literal: Shop.Status'Open'
+                  // filter enums as Shop.Status'{value}'
                   Id: int // key
                   Status: enum(Open|Closed)
                   Customer? -> Customer
@@ -240,7 +240,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             types.GetProperty("Customer").GetProperty("props").GetProperty("Name").GetString().Should().Be("string!");
             types.GetProperty("Customer").GetProperty("ops").GetProperty("Top").GetString().Should().Be("(count: int) -> Customer[] // collection");
-            types.GetProperty("Order").GetProperty("enumLiteral").GetString().Should().Be("Shop.Status'Open'");
+            types.GetProperty("Order").GetProperty("enumFilterLiterals").EnumerateArray().Select(item => item.GetString()).Should().Equal("Shop.Status'{value}'");
             document.RootElement.GetProperty("complexTypes").GetProperty("Address").GetProperty("props").GetProperty("Geo").GetString().Should().Be("Geo");
             document.RootElement.GetProperty("complexTypes").GetProperty("Geo").GetProperty("props").GetProperty("Lat").GetString().Should().Be("number!");
             document.RootElement.GetProperty("operations").GetProperty("Reset").GetString().Should().Be("(hard?: bool) // writes");

@@ -91,7 +91,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().Be(Lf("""
                 Widget  (set: Widgets, key: Id)
-                  // enum literal: NS.Color'Red'
+                  // filter enums as NS.Color'{value}', NS.Permissions'{value}'
                   Id?: int // key, store-generated
                   Sequence: int
                   Name: string
@@ -214,7 +214,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().StartWith("Person  (set: People, key: UserName)");
-            result.Text.Should().Contain("// enum literal: Trippin.PersonGender'Male'");
+            result.Text.Should().Contain("\n  // filter enums as Trippin.PersonGender'{value}', Trippin.Feature'{value}'\n", "one pattern per distinct enum the type uses, never a concrete member");
             result.Text.Should().Contain("\n  Gender: enum(Male|Female|Unknown)\n");
             result.Text.Should().Contain("\n  Features: enum(Feature1|Feature2|Feature3|Feature4)[]\n");
             result.Text.Should().Contain("\n  LastName?: string\n", "MaxLength 26 is above the inline threshold");
