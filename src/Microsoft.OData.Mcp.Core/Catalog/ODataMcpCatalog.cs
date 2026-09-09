@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
 using static Microsoft.OData.Mcp.Core.Constants.ODataMcpCatalogConstants;
@@ -25,6 +26,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
         internal static readonly JsonSerializerOptions SchemaSerializerOptions = new()
         {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
@@ -163,28 +165,172 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Builds a JSON Schema object for declared structural properties.
+        /// Builds the named <c>create_*</c> input schema: declared properties with <c>required</c> = required-on-create.
         /// </summary>
-        /// <param name="entityType">The entity type.</param>
+        /// <param name="shape">The type shape.</param>
         /// <returns>
-        /// A JSON Schema fragment.
+        /// JSON Schema text. <c>required</c> is omitted when nothing is required on create.
         /// </returns>
-        internal static Dictionary<string, object> BuildPropertySchema(EdmEntityType entityType)
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="shape"/> is null.</exception>
+        internal string BuildCreateSchema(EdmTypeShape shape)
         {
-            ArgumentNullException.ThrowIfNull(entityType);
+            ArgumentNullException.ThrowIfNull(shape);
 
-            var properties = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (var property in entityType.Properties.Where(IsExposedProperty))
+            var schema = new Dictionary<string, object?>(StringComparer.Ordinal)
             {
-                var propertyDescription = EdmDocumentation.First(property.Description, property.LongDescription) ?? property.Name;
-                properties[property.Name] = new Dictionary<string, object>
+                [ODataMcpCatalogConstants.Type] = JsonObject,
+                [Properties] = BuildPropertySchema(shape)
+            };
+
+            if (shape.RequiredOnCreate.Count > 0)
+            {
+                schema[Required] = shape.RequiredOnCreate;
+            }
+
+            return JsonSerializer.Serialize(schema, SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Builds the JSON Schema for an enumeration-typed value according to <see cref="ODataMcpCatalogOptions.EnumJsonFormat"/>.
+        /// </summary>
+        /// <param name="enumType">The enumeration type.</param>
+        /// <returns>
+        /// <c>{ "type": "string", "enum": [names] }</c> for <see cref="ODataEnumJsonFormat.String"/> and <see cref="ODataEnumJsonFormat.Auto"/>;
+        /// <c>{ "type": "number", "enum": [values], "description": "Name=value, ..." }</c> for <see cref="ODataEnumJsonFormat.Integer"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="enumType"/> is null.</exception>
+        internal Dictionary<string, object?> BuildEnumSchema(EdmEnumType enumType)
+        {
+            ArgumentNullException.ThrowIfNull(enumType);
+
+            if (_options.EnumJsonFormat == ODataEnumJsonFormat.Integer)
+            {
+                return new Dictionary<string, object?>(StringComparer.Ordinal)
                 {
-                    [ODataMcpCatalogConstants.Type] = MapJsonType(property.Type),
-                    [Description] = propertyDescription
+                    [ODataMcpCatalogConstants.Type] = JsonNumber,
+                    [EnumKeyword] =enumType.Members.Select(member => (object)member.Value).ToList(),
+                    [Description] = string.Join(", ", enumType.Members.Select(member => $"{member.Name}={member.Value}"))
                 };
             }
 
+            return new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ODataMcpCatalogConstants.Type] = JsonString,
+                [EnumKeyword] =enumType.Members.Select(member => (object?)member.Name).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Builds the JSON Schema for one declared property: type (with <c>null</c> when nullable), enum members,
+        /// <c>maxLength</c> when at most 16, and the CSDL description when there is one.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>
+        /// The property schema.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is null.</exception>
+        /// <remarks>
+        /// Collections become <c>array</c> with <c>items</c>; complex types become <c>object</c>. The member name is never
+        /// used as a description.
+        /// </remarks>
+        internal Dictionary<string, object?> BuildPropertyJsonSchema(EdmProperty property)
+        {
+            ArgumentNullException.ThrowIfNull(property);
+
+            var elementType = property.IsCollection ? property.ElementType : property.Type;
+            var enumType = _model.GetEnumType(elementType);
+            var element = enumType is not null
+                ? BuildEnumSchema(enumType)
+                : new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = _model.GetComplexType(elementType) is not null ? JsonObject : MapJsonType(elementType)
+                };
+
+            var schema = property.IsCollection
+                ? new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = JsonArray,
+                    [Items] = element
+                }
+                : element;
+
+            if (property.Nullable)
+            {
+                schema[ODataMcpCatalogConstants.Type] = new[] { (string)schema[ODataMcpCatalogConstants.Type]!, JsonNull };
+                if (!property.IsCollection && schema.TryGetValue(EnumKeyword, out var members) && members is List<object?> names)
+                {
+                    names.Add(null);
+                }
+            }
+
+            if (!property.IsCollection && property.MaxLength is > 0 and <= EdmTypeShape.InlineMaxLength && property.Type == EdmString)
+            {
+                schema[MaxLength] = property.MaxLength;
+            }
+
+            var documentation = EdmTypeShape.DocumentationFor(property.Description, property.LongDescription, property.Name);
+            if (documentation is not null && !schema.ContainsKey(Description))
+            {
+                schema[Description] = documentation;
+            }
+
+            return schema;
+        }
+
+        /// <summary>
+        /// Builds the JSON Schema property map for a type's exposed properties.
+        /// </summary>
+        /// <param name="shape">The type shape.</param>
+        /// <returns>
+        /// Property name to property schema, in declaration order.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="shape"/> is null.</exception>
+        internal Dictionary<string, object?> BuildPropertySchema(EdmTypeShape shape)
+        {
+            ArgumentNullException.ThrowIfNull(shape);
+
+            var properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var property in shape.ExposedProperties)
+            {
+                properties[property.Name] = BuildPropertyJsonSchema(property);
+            }
+
             return properties;
+        }
+
+        /// <summary>
+        /// Builds the named <c>update_*</c> input schema: <c>key</c> plus the same property map, with only <c>key</c> required.
+        /// </summary>
+        /// <param name="shape">The type shape.</param>
+        /// <returns>
+        /// JSON Schema text.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="shape"/> is null.</exception>
+        internal string BuildUpdateSchema(EdmTypeShape shape)
+        {
+            ArgumentNullException.ThrowIfNull(shape);
+
+            var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [Key] = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = JsonString
+                }
+            };
+
+            foreach (var pair in BuildPropertySchema(shape))
+            {
+                properties[pair.Key] = pair.Value;
+            }
+
+            var schema = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ODataMcpCatalogConstants.Type] = JsonObject,
+                [Properties] = properties,
+                [Required] = new[] { Key }
+            };
+
+            return JsonSerializer.Serialize(schema, SchemaSerializerOptions);
         }
 
         /// <summary>
@@ -430,6 +576,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     Description = "Lists entity sets declared in the OData model, including CSDL documentation when the metadata provides Documentation or Core.Description annotations.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
                     Name = OdataListEntitySets,
+                    OutputSchema = """{"type":"object","properties":{"entitySets":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"entityType":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}},"description":{"type":"string"}},"required":["name","entityType","keys"]}}},"required":["entitySets"]}""",
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "List entity sets"
@@ -505,9 +652,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Lists functions and actions declared in the OData model, including bound operations.",
+                    Description = "Unbound operations on the service. Bound operations are on odata_describe_type.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
                     Name = OdataListOperations,
+                    OutputSchema = """{"type":"object","properties":{"operations":{"type":"object","additionalProperties":{"type":"string"}}}}""",
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "List operations"
@@ -539,12 +687,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var setSnake = ToSnakeCase(set.Name);
             var singular = ToSnakeCase(type.Name);
-            var propertySchema = BuildPropertySchema(type);
-            var bodySchema = JsonSerializer.Serialize(new Dictionary<string, object>
+            var shape = GetShape(type);
+            if (!ReferenceEquals(shape.EntitySet, set))
             {
-                [ODataMcpCatalogConstants.Type] = JsonObject,
-                [Properties] = propertySchema
-            }, SchemaSerializerOptions);
+                shape = new EdmTypeShape(_model, type, set);
+            }
 
             var documented = EdmDocumentation.First(set.Description, set.LongDescription, type.Description, type.LongDescription);
             var family = new List<ODataToolDescriptor>
@@ -577,7 +724,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = ComposeToolDescription($"Creates a {type.Name}.", documented),
                     EntitySetName = set.Name,
-                    InputSchema = bodySchema,
+                    InputSchema = BuildCreateSchema(shape),
                     Name = $"{CreatePrefix}{singular}",
                     Title = ResolveTitle($"Create {type.Name}", type.Description, set.Description)
                 });
@@ -587,10 +734,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             {
                 family.Add(new ODataToolDescriptor
                 {
-                    Description = ComposeToolDescription($"Updates a {type.Name}.", documented),
+                    Description = ComposeToolDescription($"PATCH a {type.Name}. Send only fields to change; omit to keep. Do not send JSON null for required properties.", documented),
                     EntitySetName = set.Name,
                     IdempotentHint = true,
-                    InputSchema = """{"type":"object","properties":{"key":{"type":"string"},"body":{"type":"string"}},"required":["key","body"]}""",
+                    InputSchema = BuildUpdateSchema(shape),
                     Name = $"{UpdatePrefix}{singular}",
                     Title = ResolveTitle($"Update {type.Name}", type.Description, set.Description)
                 });

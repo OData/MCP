@@ -613,14 +613,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var sets = _catalog.ResolveIncludedSets().Select(set =>
             {
                 var type = _catalog.ResolveEntityType(set);
-
-                return new Dictionary<string, object?>
+                var entry = new Dictionary<string, object?>(StringComparer.Ordinal)
                 {
-                    [Description] = EdmDocumentation.First(set.Description, set.LongDescription, type?.Description, type?.LongDescription),
+                    [Name] = set.Name,
                     [EntityType] = set.EntityType,
-                    [Keys] = type?.Key ?? [],
-                    [Name] = set.Name
+                    [Keys] = type?.Key ?? []
                 };
+                EdmDocumentation.Add(entry, Description, EdmDocumentation.First(set.Description, set.LongDescription, type?.Description, type?.LongDescription));
+
+                return entry;
             }).ToList();
 
             var json = JsonSerializer.Serialize(new Dictionary<string, object?>

@@ -5,7 +5,7 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, and `odata_list_operations` (unbound only) are on the **new** contract. `odata_call` (`body`) and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, `odata_list_operations` (unbound only), named `create_*`/`update_*` schemas (typed, `required`), and `outputSchema` on the two list tools are on the **new** contract. `odata_call` (`body`) is still described **as shipped before optimization** and flips when its task lands. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -87,8 +87,8 @@ From `ODataMcpCatalog.BuildNamedFamily` (only when `MaxNamedTools - genericCount
 |------|-------|--------------|----------|
 | `list_{set_snake}` | `EntitySetName` | same query options as `odata_query` minus `entitySet` | none |
 | `get_{type_snake}` | `EntitySetName` | `{ key }` | `key` |
-| `create_{type_snake}` | `EntitySetName` | JSON object of **declared non-binary/non-stream** properties (not a `body` string) | none in schema; runtime POSTs serialized leftover properties |
-| `update_{type_snake}` | `EntitySetName` | `{ key, body }` | `key`, `body` |
+| `create_{type_snake}` | `EntitySetName` | JSON object of **declared non-binary/non-stream** properties (not a `body` string). Each property: JSON type (`["type","null"]` when nullable), `enum` member names for enum types (values when `EnumJsonFormat=Integer`), `items` for collections, `object` for complex, `maxLength` only when EDM `MaxLength ≤ 16`, `description` only from CSDL | `required` = required-on-create (non-nullable, no `DefaultValue`, not `Core.Computed`); omitted when empty. Runtime POSTs serialized leftover properties |
+| `update_{type_snake}` | `EntitySetName` | `{ key }` + the same property map as create; no `body` | `key` only |
 | `delete_{type_snake}` | `EntitySetName` | `{ key }` | `key` |
 
 `create_*` / `update_*` / `delete_*` are omitted from the family when `IncludeCreate` / `IncludeUpdate` / `IncludeDelete` is `false`. The remaining members still ship as one family; the cap is checked against that reduced family size.
@@ -248,7 +248,7 @@ Initialize/session headers follow the MCP 2026-07-28 Streamable HTTP rules the S
 
 ### Purpose
 
-Lists entity sets declared in the OData model, including CSDL documentation when the metadata provides Documentation or `Core.Description` annotations. No arguments. Catalog-only (does not call OData HTTP). Returns JSON `{ entitySets: [ { name, entityType, keys, description } ] }` and text `Declared entity sets: {count}.`
+Lists entity sets declared in the OData model, including CSDL documentation when the metadata provides Documentation or `Core.Description` annotations. No arguments. Catalog-only (does not call OData HTTP). Returns JSON `{ entitySets: [ { name, entityType, keys, description? } ] }` (`description` is **absent**, never `null`, when the set has no docs) and text `Declared entity sets: {count}.` This tool and `odata_list_operations` are the only two that declare an MCP `outputSchema`; `structuredContent` conforms to it.
 
 ### Matrix
 
@@ -1471,7 +1471,7 @@ Same cells as §16. Restier type `McpCustomer` → `get_mcp_customer` (**not** `
 
 ### Purpose
 
-Creates a `{Type}`. Schema is a JSON object of declared non-binary properties (**not** a `body` string). Runtime: if `body` absent, serializes leftover properties excluding query option names, `key`, and `entitySet`. POST bound set.
+Creates a `{Type}`. Schema is a JSON object of declared non-binary properties (**not** a `body` string) with `required` = required-on-create ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §3): Northwind `create_customer` requires `CustomerID` only (live V4 Northwind declares `CompanyName` nullable); TripPin `create_person` requires `UserName`, `FirstName`, `Gender`, `FavoriteFeature`, `Features`. Enum properties carry `enum` member names; nullable properties carry `["type","null"]` (and `null` in `enum`); collections are `array` + `items`; complex types are `object`; `maxLength` only when `≤ 16`; no `description` unless CSDL has one (never the property name). Description: `Creates a {Type}.` + CSDL summary. Runtime: if `body` absent, serializes leftover properties excluding query option names, `key`, and `entitySet`. POST bound set.
 
 `IncludeCreate=false` omits this tool; generic `odata_create` remains.
 
@@ -1544,7 +1544,7 @@ Restier name: `create_mcp_customer`. Convention: `create_customer`. TripPin: `cr
 
 ### Purpose
 
-Updates a `{Type}`. Schema `{ key, body }` both required. PATCH bound set. `IncludeUpdate=false` omits tool.
+PATCH a `{Type}`. Schema is `key` (string, first) plus the same declared property map as `create_*`; `required: ["key"]` only; no `body`. Non-nullable types do not include `null`. Description: `PATCH a {Type}. Send only fields to change; omit to keep. Do not send JSON null for required properties.` + CSDL summary. Runtime still accepts an explicit `body` string and otherwise serializes the leftover properties (everything but `entitySet` and `key`). PATCH bound set. `IncludeUpdate=false` omits tool.
 
 Names: `update_customer`, `update_mcp_customer`, `update_person`, `update_product`.
 

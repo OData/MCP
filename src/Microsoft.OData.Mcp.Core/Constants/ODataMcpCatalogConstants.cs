@@ -127,6 +127,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string EdmStream = "Edm.Stream";
 
         /// <summary>
+        /// EDM primitive <c>Edm.String</c>.
+        /// </summary>
+        public const string EdmString = "Edm.String";
+
+        /// <summary>
         /// Entity-by-key resource template name.
         /// </summary>
         public const string EntityByKey = "entityByKey";
@@ -145,6 +150,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Entity type name.
         /// </summary>
         public const string EntityType = "entityType";
+
+        /// <summary>
+        /// JSON Schema <c>enum</c> keyword.
+        /// </summary>
+        public const string EnumKeyword = "enum";
 
         /// <summary>
         /// Compact-shape key that carries the OData enum filter literal example.
@@ -172,7 +182,17 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string GetPrefix = "get_";
 
         /// <summary>
-        /// JSON Schema boolean.
+        /// JSON Schema <c>items</c> keyword for array element schemas.
+        /// </summary>
+        public const string Items = "items";
+
+        /// <summary>
+        /// JSON Schema type <c>array</c>.
+        /// </summary>
+        public const string JsonArray = "array";
+
+        /// <summary>
+        /// JSON Schema type <c>boolean</c>.
         /// </summary>
         public const string JsonBoolean = "boolean";
 
@@ -180,6 +200,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// <c>format</c> value that selects compact JSON.
         /// </summary>
         public const string JsonFormat = "json";
+
+        /// <summary>
+        /// JSON Schema type <c>null</c>, added to nullable property types.
+        /// </summary>
+        public const string JsonNull = "null";
 
         /// <summary>
         /// JSON Schema number.
@@ -215,6 +240,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Long documentation property.
         /// </summary>
         public const string LongDescription = "longDescription";
+
+        /// <summary>
+        /// JSON Schema <c>maxLength</c> keyword, emitted only when the EDM <c>MaxLength</c> is at most 16.
+        /// </summary>
+        public const string MaxLength = "maxLength";
 
         /// <summary>
         /// <c>format</c> value that selects a relationship-only mermaid <c>erDiagram</c> on <c>odata_describe_model</c>.
@@ -335,6 +365,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Compact-shape key for structural properties.
         /// </summary>
         public const string Props = "props";
+
+        /// <summary>
+        /// JSON Schema <c>required</c> keyword.
+        /// </summary>
+        public const string Required = "required";
 
         /// <summary>
         /// OData <c>$select</c> argument.

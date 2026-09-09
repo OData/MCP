@@ -48,6 +48,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public bool OpenWorldHint { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the JSON Schema for <c>structuredContent</c>, or <c>null</c> when the tool's result is not a fixed JSON shape.
+        /// </summary>
+        /// <remarks>
+        /// Only tools whose result is always the same JSON object declare one (the list tools). Describe tools return text or
+        /// JSON depending on <c>format</c>, and data tools forward OData bodies, so they leave this <c>null</c>.
+        /// </remarks>
+        public string? OutputSchema { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the tool is read-only.
         /// </summary>
         public bool ReadOnlyHint { get; set; }

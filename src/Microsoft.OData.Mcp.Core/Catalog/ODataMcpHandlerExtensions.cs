@@ -410,6 +410,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 Description = descriptor.Description,
                 InputSchema = ParseElement(descriptor.InputSchema),
                 Name = descriptor.Name,
+                OutputSchema = string.IsNullOrWhiteSpace(descriptor.OutputSchema) ? null : ParseElement(descriptor.OutputSchema),
                 Title = descriptor.Title
             };
         }

@@ -50,6 +50,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
         internal const string NorthwindToolsList = "northwind.tools.list.json";
 
+        internal const string NorthwindUpdateCustomerInputSchema = "northwind.update_customer.inputschema.json";
+
+        internal const string TripPinCreatePersonInputSchema = "trippin.create_person.inputschema.json";
+
         internal const string TripPinDescribeModelComplete = "trippin.describe_model.complete.txt";
 
         internal const string TripPinDescribeModelSummary = "trippin.describe_model.summary.txt";
@@ -188,6 +192,28 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
+        /// The Northwind <c>update_customer</c> input schema matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task UpdateCustomerInputSchema_Northwind_MatchesCurrentBaseline()
+        {
+            var payloads = await BuildNorthwindPayloadsAsync();
+
+            payloads[NorthwindUpdateCustomerInputSchema].Should().Be(ReadCurrent(NorthwindUpdateCustomerInputSchema));
+        }
+
+        /// <summary>
+        /// The TripPin <c>create_person</c> input schema (enums, collections, complex) matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task CreatePersonInputSchema_TripPin_MatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinCreatePersonInputSchema].Should().Be(ReadCurrent(TripPinCreatePersonInputSchema));
+        }
+
+        /// <summary>
         /// The ordered Northwind tool list and generic input schemas match the current baseline.
         /// </summary>
         [TestMethod]
@@ -259,7 +285,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 [NorthwindDescribeTypeCustomerText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers")),
                 [NorthwindListEntitySets] = await InvokeStructuredAsync(runtime, "odata_list_entity_sets", null),
                 [NorthwindListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null),
-                [NorthwindToolsList] = BuildToolsList(catalog)
+                [NorthwindToolsList] = BuildToolsList(catalog),
+                [NorthwindUpdateCustomerInputSchema] = catalog.Tools.Single(tool => tool.Name == "update_customer").InputSchema
             };
         }
 
@@ -276,6 +303,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             return new Dictionary<string, string>(StringComparer.Ordinal)
             {
+                [TripPinCreatePersonInputSchema] = catalog.Tools.Single(tool => tool.Name == "create_person").InputSchema,
                 [TripPinDescribeModelComplete] = await InvokeTextAsync(runtime, "odata_describe_model", ToolArguments.Of("detail", "complete")),
                 [TripPinDescribeModelSummary] = await InvokeTextAsync(runtime, "odata_describe_model", null),
                 [TripPinDescribeTypePerson] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People", "format", "json")),
@@ -294,15 +322,21 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         internal static string BuildToolsList(ODataMcpCatalog catalog)
         {
             var generics = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            var outputs = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             foreach (var tool in catalog.Tools.Where(tool => tool.Name.StartsWith("odata_", StringComparison.Ordinal)))
             {
                 generics[tool.Name] = JsonSerializer.Deserialize<JsonElement>(tool.InputSchema);
+                if (tool.OutputSchema is not null)
+                {
+                    outputs[tool.Name] = JsonSerializer.Deserialize<JsonElement>(tool.OutputSchema);
+                }
             }
 
             var payload = new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 ["tools"] = catalog.Tools.Select(tool => tool.Name).ToList(),
-                ["generics"] = generics
+                ["generics"] = generics,
+                ["outputSchemas"] = outputs
             };
 
             return JsonSerializer.Serialize(payload, ODataMcpCatalog.SchemaSerializerOptions);
