@@ -56,7 +56,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             var mcp = host.Host.Services.GetRequiredService<IOptions<McpServerOptions>>().Value;
 
             mcp.ServerInstructions.Should().Be(ODataMcpInstructions.Default);
-            mcp.ServerInstructions.Should().Contain("Do not read $metadata");
+            mcp.ServerInstructions.Should().Contain("Do not read the $metadata resource to explore");
             mcp.ServerInstructions.Should().Contain("parameters");
         }
 

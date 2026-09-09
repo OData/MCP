@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0;</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0;</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
         <Title>Microsoft OData MCP Authentication</Title>
@@ -13,6 +13,10 @@
         <PackageReference Include="Latchkey" Version="0.1.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
         <PackageReference Include="ModelContextProtocol" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+        <PackageReference Include="Microsoft.Extensions.Http" Version="11.*-*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">

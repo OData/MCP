@@ -9,7 +9,7 @@
         <IsSampleProject Condition="$(MSBuildProjectName.ToLower().Contains('.samples.'))">true</IsSampleProject>
         <IsTemplateProject Condition="$(MSBuildProjectName.ToLower().Contains('.templates.'))">true</IsTemplateProject>
         <IsToolsProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.tools'))">true</IsToolsProject>
-        <IsNetCore Condition=" '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0' OR '$(TargetFramework)' == 'net10.0' ">true</IsNetCore>
+        <IsNetCore Condition=" '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0' OR '$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == 'net11.0' ">true</IsNetCore>
         <IsPrimaryProject Condition=" '$(IsBenchmarkProject)' != 'true' And '$(IsTestProject)' != 'true' And '$(IsTestAssetProject)' != 'true' And '$(IsSampleProject)' != 'true' And '$(IsTemplateProject)' != 'true' And '$(IsDocumentationProject)' != 'true' ">true</IsPrimaryProject>
         <IncludeReadmeFile Condition="Exists('$(MSBuildProjectDirectory)\readme.md')">true</IncludeReadmeFile>
 
@@ -117,7 +117,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <StandardTestTfms>net10.0;net9.0;net8.0;</StandardTestTfms>
+        <StandardTestTfms>net11.0;net10.0;net9.0;net8.0;</StandardTestTfms>
     </PropertyGroup>
 
     <ItemGroup Condition=" $(IsTestProject) != 'true' and $(IsSampleProject) != 'true' and $(IsTemplateProject) != 'true' ">

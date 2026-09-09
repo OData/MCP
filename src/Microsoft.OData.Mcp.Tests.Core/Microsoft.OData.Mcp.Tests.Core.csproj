@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);NU1608</NoWarn>
     </PropertyGroup>
@@ -13,6 +13,11 @@
     <ItemGroup>
         <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared\Microsoft.OData.Mcp.Tests.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="11.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="11.*-*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
