@@ -81,6 +81,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public string Json { get; }
 
         /// <summary>
+        /// Gets the compact JSON body (everything under the type-name key), for embedding in model-level shapes.
+        /// </summary>
+        public IReadOnlyDictionary<string, object?> JsonBody { get; }
+
+        /// <summary>
         /// Gets the names of exposed properties that a POST must include.
         /// </summary>
         /// <remarks>
@@ -121,7 +126,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BoundFunctions = [.. model.Functions.Where(function => function.IsBound && BindsTo(function.BindingParameterType, bindingTypes))];
 
             Text = RenderText();
-            Json = RenderJson();
+            JsonBody = BuildJsonBody();
+            Json = JsonSerializer.Serialize(new Dictionary<string, object?>(StringComparer.Ordinal) { [HeaderName()] = JsonBody }, ODataMcpCatalog.SchemaSerializerOptions);
         }
 
         #endregion
@@ -253,9 +259,94 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Renders one structural property line in the shape grammar, without indentation.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="property">The property.</param>
+        /// <param name="isKey">Whether the property is part of the entity key.</param>
+        /// <returns>
+        /// For example <c>CustomerID: string // key</c> or <c>Access?: enum(Read|Write) // flags, comma-separated</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="property"/> is null.</exception>
+        public static string RenderProperty(EdmModel model, EdmProperty property, bool isKey)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(property);
+
+            var builder = new StringBuilder(property.Name);
+            if (!IsRequiredOnCreate(property))
+            {
+                builder.Append('?');
+            }
+
+            builder.Append(": ").Append(MapShapeType(model, property.Type, property.MaxLength));
+
+            var markers = new List<string>();
+            if (isKey)
+            {
+                markers.Add(property.Computed ? "key, store-generated" : "key");
+            }
+
+            if (EnumTypeOf(model, property)?.IsFlags == true)
+            {
+                markers.Add("flags, comma-separated");
+            }
+
+            AppendComment(builder, markers, Informative(property.Description, property.Name) ? property.Description!.Trim() : null);
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Renders one navigation line in the shape grammar, without indentation.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="navigation">The navigation property.</param>
+        /// <returns>
+        /// <c>Orders -> Order[]</c> for collections, <c>BestFriend? -> Person</c> for optional single targets.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="navigation"/> is null.</exception>
+        public static string RenderNavigation(EdmModel model, EdmNavigationProperty navigation)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(navigation);
+
+            var builder = new StringBuilder(navigation.Name);
+            if (!navigation.IsCollection && navigation.Nullable)
+            {
+                builder.Append('?');
+            }
+
+            builder.Append(" -> ").Append(MapShapeType(model, navigation.Type));
+            AppendComment(builder, [], DocumentationFor(navigation.Description, navigation.LongDescription, navigation.Name));
+
+            return builder.ToString();
+        }
+
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Adds an informative documentation string to a list unless an equal string is already present.
+        /// </summary>
+        /// <param name="target">The list.</param>
+        /// <param name="text">The candidate text.</param>
+        /// <param name="memberName">The member the text documents.</param>
+        internal static void AddDistinct(List<string> target, string? text, string memberName)
+        {
+            if (!Informative(text, memberName))
+            {
+                return;
+            }
+
+            var trimmed = text!.Trim();
+            if (!target.Contains(trimmed, StringComparer.Ordinal))
+            {
+                target.Add(trimmed);
+            }
+        }
 
         /// <summary>
         /// Appends a <c>// marker, marker; docs</c> comment when there is anything to say.
@@ -305,111 +396,12 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Returns the documentation worth printing: the description when it carries information, plus the long
-        /// description when it adds something the description did not say.
-        /// </summary>
-        /// <param name="description">The CSDL description.</param>
-        /// <param name="longDescription">The CSDL long description.</param>
-        /// <param name="memberName">The member name, which is never documentation.</param>
-        /// <returns>
-        /// The combined text, or <c>null</c> when nothing informative is declared.
-        /// </returns>
-        internal static string? DocumentationFor(string? description, string? longDescription, string? memberName)
-        {
-            var summary = Informative(description, memberName) ? description!.Trim() : null;
-            var detail = Informative(longDescription, memberName) && !string.Equals(longDescription!.Trim(), summary, StringComparison.Ordinal)
-                ? longDescription.Trim()
-                : null;
-
-            return (summary, detail) switch
-            {
-                (null, null) => null,
-                (_, null) => summary,
-                (null, _) => detail,
-                _ => $"{summary} {detail}"
-            };
-        }
-
-        /// <summary>
-        /// Determines whether a documentation string says something beyond the member name.
-        /// </summary>
-        /// <param name="text">The documentation string.</param>
-        /// <param name="memberName">The member name.</param>
-        /// <returns>
-        /// <c>true</c> when the text is non-whitespace and not the member name.
-        /// </returns>
-        internal static bool Informative(string? text, string? memberName)
-        {
-            return !string.IsNullOrWhiteSpace(text)
-                && !string.Equals(text.Trim(), memberName, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Counts the namespaces that declare entity, complex, or enumeration types.
-        /// </summary>
-        /// <param name="model">The Core EDM.</param>
-        /// <returns>
-        /// The distinct type namespace count. Container-only namespaces do not count.
-        /// </returns>
-        internal static int CountTypeNamespaces(EdmModel model)
-        {
-            return model.EntityTypes.Select(type => type.Namespace)
-                .Concat(model.ComplexTypes.Select(type => type.Namespace))
-                .Concat(model.EnumTypes.Select(type => type.Namespace))
-                .Distinct(StringComparer.Ordinal)
-                .Count();
-        }
-
-        /// <summary>
-        /// Finds the first enumeration type used by an exposed property, for the literal hint.
+        /// Builds the compact JSON body: set, key, docs, enum literal, props, docs, navs, ops.
         /// </summary>
         /// <returns>
-        /// The enumeration type, or <c>null</c> when the type has no enum properties.
+        /// The body dictionary, in emission order.
         /// </returns>
-        internal EdmEnumType? FirstEnumType()
-        {
-            foreach (var property in ExposedProperties)
-            {
-                var enumType = _model.GetEnumType(property.IsCollection ? property.ElementType : property.Type);
-                if (enumType is not null)
-                {
-                    return enumType;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the header name: the short name, or the full name when the model declares types in more than one namespace.
-        /// </summary>
-        /// <returns>
-        /// The display name.
-        /// </returns>
-        internal string HeaderName()
-        {
-            return CountTypeNamespaces(_model) > 1 ? EntityType.FullName : EntityType.Name;
-        }
-
-        /// <summary>
-        /// Resolves the enumeration type behind a property, if any.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>
-        /// The enumeration type, or <c>null</c>.
-        /// </returns>
-        internal EdmEnumType? EnumTypeOf(EdmProperty property)
-        {
-            return _model.GetEnumType(property.IsCollection ? property.ElementType : property.Type);
-        }
-
-        /// <summary>
-        /// Renders the compact JSON representation.
-        /// </summary>
-        /// <returns>
-        /// One JSON object keyed by the header name.
-        /// </returns>
-        internal string RenderJson()
+        internal Dictionary<string, object?> BuildJsonBody()
         {
             var body = new Dictionary<string, object?>(StringComparer.Ordinal);
             if (EntitySet is not null)
@@ -432,22 +424,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 body[EnumLiteral] = RenderEnumLiteral(firstEnum);
             }
 
-            var props = new Dictionary<string, string>(StringComparer.Ordinal);
             var docs = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var property in ExposedProperties)
-            {
-                var token = MapShapeType(_model, property.Type, property.MaxLength);
-                var enumType = EnumTypeOf(property);
-                if (enumType?.IsFlags == true)
-                {
-                    token = token.Replace("enum(", "flags(", StringComparison.Ordinal);
-                }
-
-                props[property.Name] = IsRequiredOnCreate(property) ? $"{token}!" : token;
-                EdmDocumentation.Add(docs, property.Name, DocumentationFor(property.Description, property.LongDescription, property.Name));
-            }
-
-            body[Props] = props;
+            body[Props] = BuildPropsJson(_model, ExposedProperties, docs);
 
             var navs = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var navigation in EntityType.NavigationProperties)
@@ -482,12 +460,161 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 body[Ops] = ops;
             }
 
-            var root = new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                [HeaderName()] = body
-            };
+            return body;
+        }
 
-            return JsonSerializer.Serialize(root, ODataMcpCatalog.SchemaSerializerOptions);
+        /// <summary>
+        /// Builds the <c>props</c> map (<c>"Name": "type!"</c>) and collects property docs.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="properties">The exposed properties.</param>
+        /// <param name="docs">Receives informative property documentation.</param>
+        /// <returns>
+        /// The props map in declaration order.
+        /// </returns>
+        internal static Dictionary<string, string> BuildPropsJson(EdmModel model, IEnumerable<EdmProperty> properties, Dictionary<string, string> docs)
+        {
+            var props = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var property in properties)
+            {
+                var token = MapShapeType(model, property.Type, property.MaxLength);
+                if (EnumTypeOf(model, property)?.IsFlags == true)
+                {
+                    token = token.Replace("enum(", "flags(", StringComparison.Ordinal);
+                }
+
+                props[property.Name] = IsRequiredOnCreate(property) ? $"{token}!" : token;
+                EdmDocumentation.Add(docs, property.Name, DocumentationFor(property.Description, property.LongDescription, property.Name));
+            }
+
+            return props;
+        }
+
+        /// <summary>
+        /// Counts the namespaces that declare entity, complex, or enumeration types.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <returns>
+        /// The distinct type namespace count. Container-only namespaces do not count.
+        /// </returns>
+        internal static int CountTypeNamespaces(EdmModel model)
+        {
+            return model.EntityTypes.Select(type => type.Namespace)
+                .Concat(model.ComplexTypes.Select(type => type.Namespace))
+                .Concat(model.EnumTypes.Select(type => type.Namespace))
+                .Distinct(StringComparer.Ordinal)
+                .Count();
+        }
+
+        /// <summary>
+        /// Returns the documentation worth printing: the description when it carries information, plus the long
+        /// description when it adds something the description did not say.
+        /// </summary>
+        /// <param name="description">The CSDL description.</param>
+        /// <param name="longDescription">The CSDL long description.</param>
+        /// <param name="memberName">The member name, which is never documentation.</param>
+        /// <returns>
+        /// The combined text, or <c>null</c> when nothing informative is declared.
+        /// </returns>
+        internal static string? DocumentationFor(string? description, string? longDescription, string? memberName)
+        {
+            var summary = Informative(description, memberName) ? description!.Trim() : null;
+            var detail = Informative(longDescription, memberName) && !string.Equals(longDescription!.Trim(), summary, StringComparison.Ordinal)
+                ? longDescription.Trim()
+                : null;
+
+            return (summary, detail) switch
+            {
+                (null, null) => null,
+                (_, null) => summary,
+                (null, _) => detail,
+                _ => $"{summary} {detail}"
+            };
+        }
+
+        /// <summary>
+        /// Resolves the enumeration type behind a property, if any.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>
+        /// The enumeration type, or <c>null</c>.
+        /// </returns>
+        internal static EdmEnumType? EnumTypeOf(EdmModel model, EdmProperty property)
+        {
+            return model.GetEnumType(property.IsCollection ? property.ElementType : property.Type);
+        }
+
+        /// <summary>
+        /// Finds the first enumeration type used by an exposed property, for the literal hint.
+        /// </summary>
+        /// <returns>
+        /// The enumeration type, or <c>null</c> when the type has no enum properties.
+        /// </returns>
+        internal EdmEnumType? FirstEnumType()
+        {
+            return FirstEnumType(_model, ExposedProperties);
+        }
+
+        /// <summary>
+        /// Finds the first enumeration type used by any of the given properties.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="properties">The properties to scan.</param>
+        /// <returns>
+        /// The enumeration type, or <c>null</c>.
+        /// </returns>
+        internal static EdmEnumType? FirstEnumType(EdmModel model, IEnumerable<EdmProperty> properties)
+        {
+            foreach (var property in properties)
+            {
+                var enumType = EnumTypeOf(model, property);
+                if (enumType is not null)
+                {
+                    return enumType;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the header name: the short name, or the full name when the model declares types in more than one namespace.
+        /// </summary>
+        /// <returns>
+        /// The display name.
+        /// </returns>
+        internal string HeaderName()
+        {
+            return HeaderName(_model, EntityType.Namespace, EntityType.Name);
+        }
+
+        /// <summary>
+        /// Gets the display name for a type: short unless the model declares types in more than one namespace.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="namespace">The type namespace.</param>
+        /// <param name="name">The type name.</param>
+        /// <returns>
+        /// The display name.
+        /// </returns>
+        internal static string HeaderName(EdmModel model, string @namespace, string name)
+        {
+            return CountTypeNamespaces(model) > 1 ? $"{@namespace}.{name}" : name;
+        }
+
+        /// <summary>
+        /// Determines whether a documentation string says something beyond the member name.
+        /// </summary>
+        /// <param name="text">The documentation string.</param>
+        /// <param name="memberName">The member name.</param>
+        /// <returns>
+        /// <c>true</c> when the text is non-whitespace and not the member name.
+        /// </returns>
+        internal static bool Informative(string? text, string? memberName)
+        {
+            return !string.IsNullOrWhiteSpace(text)
+                && !string.Equals(text.Trim(), memberName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -503,14 +630,33 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Renders the declaration-grammar text.
+        /// Renders the header documentation lines: type description, type long description, set description, set long description, deduplicated.
         /// </summary>
         /// <returns>
-        /// The text, LF-separated, without a trailing newline.
+        /// Zero or more <c>  // text</c> lines.
         /// </returns>
-        internal string RenderText()
+        internal IReadOnlyList<string> RenderHeaderDocLines()
         {
-            var lines = new List<string>();
+            var headerDocs = new List<string>();
+            AddDistinct(headerDocs, EntityType.Description, EntityType.Name);
+            AddDistinct(headerDocs, EntityType.LongDescription, EntityType.Name);
+            if (EntitySet is not null)
+            {
+                AddDistinct(headerDocs, EntitySet.Description, EntitySet.Name);
+                AddDistinct(headerDocs, EntitySet.LongDescription, EntitySet.Name);
+            }
+
+            return [.. headerDocs.Select(doc => $"  // {doc}")];
+        }
+
+        /// <summary>
+        /// Renders the header line, for example <c>Customer  (set: Customers, key: CustomerID)</c>.
+        /// </summary>
+        /// <returns>
+        /// The header line.
+        /// </returns>
+        internal string RenderHeaderLine()
+        {
             var headerParts = new List<string>();
             if (EntitySet is not null)
             {
@@ -522,77 +668,96 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 headerParts.Add($"key: {string.Join(", ", EntityType.Key)}");
             }
 
-            lines.Add(headerParts.Count > 0 ? $"{HeaderName()}  ({string.Join(", ", headerParts)})" : HeaderName());
+            return headerParts.Count > 0 ? $"{HeaderName()}  ({string.Join(", ", headerParts)})" : HeaderName();
+        }
 
-            var headerDocs = new List<string>();
-            AddDistinct(headerDocs, EntityType.Description, EntityType.Name);
-            AddDistinct(headerDocs, EntityType.LongDescription, EntityType.Name);
-            if (EntitySet is not null)
+        /// <summary>
+        /// Renders the indented navigation lines.
+        /// </summary>
+        /// <returns>
+        /// One <c>  Name -> Type</c> line per navigation property.
+        /// </returns>
+        internal IReadOnlyList<string> RenderNavigationLines()
+        {
+            return [.. EntityType.NavigationProperties.Select(navigation => $"  {RenderNavigation(_model, navigation)}")];
+        }
+
+        /// <summary>
+        /// Renders the indented bound-operation block, or nothing when the type has no bound operations.
+        /// </summary>
+        /// <returns>
+        /// <c>  operations</c> followed by one <c>    Signature</c> line per operation, or an empty list.
+        /// </returns>
+        internal IReadOnlyList<string> RenderOperationLines()
+        {
+            if (BoundFunctions.Count == 0 && BoundActions.Count == 0)
             {
-                AddDistinct(headerDocs, EntitySet.Description, EntitySet.Name);
-                AddDistinct(headerDocs, EntitySet.LongDescription, EntitySet.Name);
+                return [];
             }
 
-            lines.AddRange(headerDocs.Select(doc => $"  // {doc}"));
+            var lines = new List<string> { "  operations" };
+            lines.AddRange(BoundFunctions.Select(function => $"    {RenderOperation(_model, function.Name, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description)}"));
+            lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description)}"));
 
-            var firstEnum = FirstEnumType();
+            return lines;
+        }
+
+        /// <summary>
+        /// Renders the indented property lines, including the enum literal hint and long-description lines.
+        /// </summary>
+        /// <returns>
+        /// The lines.
+        /// </returns>
+        internal IReadOnlyList<string> RenderPropertyLines()
+        {
+            return RenderPropertyLines(_model, ExposedProperties, EntityType.Key);
+        }
+
+        /// <summary>
+        /// Renders indented property lines for any structured type.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="properties">The exposed properties.</param>
+        /// <param name="key">The key property names, or empty.</param>
+        /// <returns>
+        /// The enum literal hint (when any property is an enum), then one line per property with an optional long-description line.
+        /// </returns>
+        internal static IReadOnlyList<string> RenderPropertyLines(EdmModel model, IReadOnlyList<EdmProperty> properties, IReadOnlyList<string> key)
+        {
+            var lines = new List<string>();
+            var firstEnum = FirstEnumType(model, properties);
             if (firstEnum is not null)
             {
                 lines.Add($"  // enum literal: {RenderEnumLiteral(firstEnum)}");
             }
 
-            foreach (var property in ExposedProperties)
+            foreach (var property in properties)
             {
-                var builder = new StringBuilder("  ");
-                builder.Append(property.Name);
-                if (!IsRequiredOnCreate(property))
-                {
-                    builder.Append('?');
-                }
-
-                builder.Append(": ").Append(MapShapeType(_model, property.Type, property.MaxLength));
-
-                var markers = new List<string>();
-                if (EntityType.Key.Contains(property.Name, StringComparer.Ordinal))
-                {
-                    markers.Add(property.Computed ? "key, store-generated" : "key");
-                }
-
-                if (EnumTypeOf(property)?.IsFlags == true)
-                {
-                    markers.Add("flags, comma-separated");
-                }
+                lines.Add($"  {RenderProperty(model, property, key.Contains(property.Name, StringComparer.Ordinal))}");
 
                 var summary = Informative(property.Description, property.Name) ? property.Description!.Trim() : null;
-                AppendComment(builder, markers, summary);
-                lines.Add(builder.ToString());
-
                 if (Informative(property.LongDescription, property.Name) && !string.Equals(property.LongDescription!.Trim(), summary, StringComparison.Ordinal))
                 {
                     lines.Add($"    // {property.LongDescription.Trim()}");
                 }
             }
 
-            foreach (var navigation in EntityType.NavigationProperties)
-            {
-                var builder = new StringBuilder("  ");
-                builder.Append(navigation.Name);
-                if (!navigation.IsCollection && navigation.Nullable)
-                {
-                    builder.Append('?');
-                }
+            return lines;
+        }
 
-                builder.Append(" -> ").Append(MapShapeType(_model, navigation.Type));
-                AppendComment(builder, [], DocumentationFor(navigation.Description, navigation.LongDescription, navigation.Name));
-                lines.Add(builder.ToString());
-            }
-
-            if (BoundFunctions.Count > 0 || BoundActions.Count > 0)
-            {
-                lines.Add("  operations");
-                lines.AddRange(BoundFunctions.Select(function => $"    {RenderOperation(_model, function.Name, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description)}"));
-                lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description)}"));
-            }
+        /// <summary>
+        /// Renders the declaration-grammar text.
+        /// </summary>
+        /// <returns>
+        /// The text, LF-separated, without a trailing newline.
+        /// </returns>
+        internal string RenderText()
+        {
+            var lines = new List<string> { RenderHeaderLine() };
+            lines.AddRange(RenderHeaderDocLines());
+            lines.AddRange(RenderPropertyLines());
+            lines.AddRange(RenderNavigationLines());
+            lines.AddRange(RenderOperationLines());
 
             return string.Join("\n", lines);
         }
@@ -636,26 +801,6 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var dot = qualifiedName.LastIndexOf('.');
 
             return dot >= 0 ? qualifiedName[(dot + 1)..] : qualifiedName;
-        }
-
-        /// <summary>
-        /// Adds an informative documentation string to a list unless an equal string is already present.
-        /// </summary>
-        /// <param name="target">The list.</param>
-        /// <param name="text">The candidate text.</param>
-        /// <param name="memberName">The member the text documents.</param>
-        internal static void AddDistinct(List<string> target, string? text, string memberName)
-        {
-            if (!Informative(text, memberName))
-            {
-                return;
-            }
-
-            var trimmed = text!.Trim();
-            if (!target.Contains(trimmed, StringComparer.Ordinal))
-            {
-                target.Add(trimmed);
-            }
         }
 
         #endregion

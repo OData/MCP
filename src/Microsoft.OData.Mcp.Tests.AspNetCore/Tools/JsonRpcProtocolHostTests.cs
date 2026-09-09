@@ -569,9 +569,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var tools = Session().Catalog.Tools.ToList();
             var names = tools.Select(tool => tool.Name).ToList();
-            names.Take(10).Should().Equal(
+            names.Take(11).Should().Equal(
                 "odata_list_entity_sets",
                 "odata_describe_type",
+                "odata_describe_model",
                 "odata_query",
                 "odata_get",
                 "odata_create",

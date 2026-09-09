@@ -32,12 +32,12 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 await LiveMetadata.LoadNorthwindModelAsync(),
                 new ODataMcpCatalogOptions
                 {
-                    MaxNamedTools = 15
+                    MaxNamedTools = 16
                 });
             var named = catalog.Tools.Where(tool => !tool.Name.StartsWith("odata_", StringComparison.Ordinal)).ToList();
 
             named.Should().NotBeEmpty();
-            catalog.Tools.Count.Should().BeLessThanOrEqualTo(15);
+            catalog.Tools.Count.Should().BeLessThanOrEqualTo(16);
 
             foreach (var group in named.GroupBy(tool => tool.EntitySetName))
             {

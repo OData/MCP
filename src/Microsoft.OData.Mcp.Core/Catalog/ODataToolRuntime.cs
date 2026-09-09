@@ -85,6 +85,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     OdataListEntitySets => Task.FromResult(ListEntitySets()),
                     OdataDescribeType => Task.FromResult(DescribeType(args)),
+                    OdataDescribeModel => Task.FromResult(DescribeModel(args)),
                     OdataQuery => QueryAsync(args, cancellationToken),
                     OdataGet => GetAsync(args, cancellationToken),
                     OdataCreate => CreateAsync(args, cancellationToken),
@@ -269,6 +270,59 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             {
                 Text = text
             };
+        }
+
+        /// <summary>
+        /// Describes the whole model: a summary of sets and navigations, or every in-scope type, as text, JSON, or mermaid.
+        /// </summary>
+        /// <param name="arguments">Tool arguments: <c>detail</c> (<c>summary</c> or <c>complete</c>), <c>format</c> (<c>text</c>, <c>json</c>, or <c>mermaid</c>), <c>sets</c> (string array).</param>
+        /// <returns>
+        /// One representation. Over <see cref="ODataMcpCatalogOptions.MaxResponseBytes"/> the result is an error that says how to scope down; it never falls back to CSDL.
+        /// </returns>
+        internal ODataToolInvocationResult DescribeModel(IReadOnlyDictionary<string, JsonElement> arguments)
+        {
+            var detail = ReadChoice(arguments, Detail, [SummaryDetail, CompleteDetail], SummaryDetail);
+            var format = ReadChoice(arguments, Format, [TextFormat, JsonFormat, MermaidFormat], TextFormat);
+            var requested = ReadStringList(arguments, Sets);
+            var included = _catalog.ResolveIncludedSets();
+            var sets = included;
+            if (requested is not null)
+            {
+                var scoped = new List<EdmEntitySet>();
+                foreach (var name in requested)
+                {
+                    var set = included.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (set is null)
+                    {
+                        return Error($"Entity set '{name}' is not declared in the model.");
+                    }
+
+                    if (!scoped.Contains(set))
+                    {
+                        scoped.Add(set);
+                    }
+                }
+
+                sets = scoped;
+            }
+
+            var payload = (format, detail) switch
+            {
+                (MermaidFormat, _) => EdmModelShape.RenderMermaid(_catalog, sets),
+                (JsonFormat, CompleteDetail) => EdmModelShape.RenderCompleteJson(_catalog, sets),
+                (JsonFormat, _) => EdmModelShape.RenderSummaryJson(_catalog, sets),
+                (_, CompleteDetail) => EdmModelShape.RenderCompleteText(_catalog, sets),
+                _ => EdmModelShape.RenderSummaryText(_catalog, sets)
+            };
+
+            if (payload.Length > _maxResponseBytes)
+            {
+                return Error($"The model description is {payload.Length} bytes across {sets.Count} sets, over the {_maxResponseBytes} byte limit. Pass sets to scope it or use detail=summary.");
+            }
+
+            return format == JsonFormat
+                ? Complete(payload, $"{sets.Count} entity sets described.")
+                : CompleteText(payload);
         }
 
         /// <summary>
@@ -739,6 +793,30 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             }
 
             return match;
+        }
+
+        /// <summary>
+        /// Reads an optional argument that must be a JSON array of non-blank strings.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="name">The argument name.</param>
+        /// <returns>
+        /// The strings, or <c>null</c> when the argument is absent or JSON null.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not an array of strings.</exception>
+        internal static IReadOnlyList<string>? ReadStringList(IReadOnlyDictionary<string, JsonElement> arguments, string name)
+        {
+            if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array || value.EnumerateArray().Any(item => item.ValueKind != JsonValueKind.String))
+            {
+                throw new ArgumentException($"{name} must be a JSON array of entity set names.", nameof(arguments));
+            }
+
+            return [.. value.EnumerateArray().Select(item => item.GetString()!).Where(item => !string.IsNullOrWhiteSpace(item))];
         }
 
         /// <summary>

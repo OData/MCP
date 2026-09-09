@@ -1,0 +1,48 @@
+Person  (set: People, key: UserName)
+  // enum literal: Trippin.PersonGender'Male'
+  UserName: string // key
+  FirstName: string
+  LastName?: string
+  MiddleName?: string
+  Gender: enum(Male|Female|Unknown)
+  Age?: int64
+  Emails?: string[]
+  AddressInfo?: Location[]
+  HomeAddress?: Location
+  FavoriteFeature: enum(Feature1|Feature2|Feature3|Feature4)
+  Features: enum(Feature1|Feature2|Feature3|Feature4)[]
+  Friends -> Person[]
+  BestFriend? -> Person
+  Trips -> Trip[]
+  operations
+    GetFavoriteAirline() -> Airline
+    GetFriendsTrips(userName: string) -> Trip[]
+    UpdateLastName(lastName: string) -> bool // writes
+    ShareTrip(userName: string, tripId: int) // writes
+
+Airline  (set: Airlines, key: AirlineCode)
+  AirlineCode: string // key
+  Name?: string
+
+Airport  (set: Airports, key: IcaoCode)
+  Name?: string
+  IcaoCode: string // key
+  IataCode?: string
+  Location?: AirportLocation
+
+Location  (complex)
+  Address?: string
+  City?: City
+
+AirportLocation  (complex)
+  Loc?: GeographyPoint
+
+City  (complex)
+  Name?: string
+  CountryRegion?: string
+  Region?: string
+
+operations
+  GetPersonWithMostFriends() -> Person
+  GetNearestAirport(lat: number, lon: number) -> Airport
+  ResetDataSource() // writes

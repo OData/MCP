@@ -5,7 +5,7 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type` and the `resources/read` type card are on the **new** contract (compact grammar, `format`). `odata_call` (`body`), `odata_describe_model` (absent), `odata_list_operations` (includes bound), and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, and `odata_describe_model` are on the **new** contract (compact grammar, `format`). `odata_call` (`body`), `odata_list_operations` (includes bound), and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -29,6 +29,7 @@ Grounded in:
 5. [Shared assertion helpers](#5-shared-assertion-helpers)
 6. [`odata_list_entity_sets`](#6-odata_list_entity_sets)
 7. [`odata_describe_type`](#7-odata_describe_type)
+7.1. [`odata_describe_model`](#71-odata_describe_model)
 8. [`odata_query`](#8-odata_query)
 9. [`odata_get`](#9-odata_get)
 10. [`odata_create`](#10-odata_create)
@@ -70,6 +71,7 @@ From `ODataMcpCatalog.BuildGenericTools` (always, first in `tools/list`):
 |------|-------|-------|-------------------------------------|----------|
 | `odata_list_entity_sets` | List entity sets | readOnly, idempotent | `{}` `additionalProperties:false` | none |
 | `odata_describe_type` | Describe type | readOnly, idempotent | `{ name: string, format?: "text" \| "json" }` — `text` (default) returns the [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1 declaration as `content[0].text` with **no** `structuredContent`; `json` returns the §1.2 compact object as `structuredContent` | `name` |
+| `odata_describe_model` | Describe model | readOnly, idempotent | `{ detail?: "summary" \| "complete", format?: "text" \| "json" \| "mermaid", sets?: string[] }` — eleventh generic, registered right after `odata_describe_type` | none |
 | `odata_query` | Query entity set | readOnly, idempotent | `entitySet`, `filter`, `select`, `orderby`, `expand`, `top` (number), `skip` (number), `count` (boolean) | `entitySet` |
 | `odata_get` | Get entity | readOnly, idempotent | `entitySet`, `key` | `entitySet`, `key` |
 | `odata_create` | Create entity | (openWorld) | `entitySet`, `body` (string in schema; runtime also accepts a JSON object or remaining properties) | `entitySet`, `body` (schema); runtime synthesizes `body` from leftover properties if omitted |
@@ -469,6 +471,48 @@ Catalog-only; unknown type is MCP-side, not HTTP 404:
 67. **DescribeType_ThenNavigate_UsesANavigationFromTheCard** — TripPin `Friends` or OData8 `Orders`.  
 68. **DescribeType_AgreesWithResourceReadTypeCard** — `resources/read` `odata://odata/Customers` JSON **equals** `odata_describe_type` `format=json` byte for byte (same `key`, `props`, `navs`, `ops`).  
 69. **DescribeType_IgnoredPropertyNeverAppears_InternalSecret**
+
+---
+
+## 7.1. `odata_describe_model`
+
+### Purpose
+
+The whole-service map, never EDMX. No required arguments. `detail=summary` (default) lists every included set as its describe header (`Type  (set: Set, key: K)`), at most one `// doc` line, and its navigation lines; no property lists; then an `operations` block of **unbound** operations. `detail=complete` renders every in-scope type in the full [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1 grammar (one block per distinct type, blank-line separated), then the complex types those types use (`Name  (complex)` header), then unbound operations. `format=mermaid` is a relationship-only `erDiagram` (`A ||--o{ B : Nav`, `||--o|` for single targets, bare entity line when a type has no navigations) with no attribute compartments whatever the detail. `format=json` is `{ sets: { Set: { type, key, description?, navs? } }, operations? }` for summary and `{ types: { Type: <describe body> }, complexTypes?, operations? }` for complete. `sets` scopes summary, complete, and mermaid to the named included sets (case-insensitive); complex types follow the scoped entities; unbound operations are always listed.
+
+Errors: unknown `detail` → `Unknown detail '{v}'. Use summary or complete.`; unknown `format` → `Unknown format '{v}'. Use text or json or mermaid.`; `sets` not an array of strings → `sets must be a JSON array of entity set names.`; unknown set → `Entity set '{name}' is not declared in the model.`; over `MaxResponseBytes` → `The model description is {n} bytes across {k} sets, over the {max} byte limit. Pass sets to scope it or use detail=summary.` (no silent trim, no CSDL fallback).
+
+### Matrix
+
+| Host \ Surface | OData8 | Restier | Northwind | TripPin |
+|----------------|--------|---------|-----------|---------|
+| AspNetCore | • | • | – | – |
+| Tools | – | – | • | • |
+
+### Happy path
+
+69.1. **DescribeModel_Default_SummaryText** — fixture: headers for every set in container order, `  // A buyer.` under the documented type, `  Orders -> Order[]`, `  Customer? -> Customer`, no property lines, `operations` block with `Ping() -> string` and `Reset(hard?: bool) // writes`; bound `Top` absent.  
+69.2. **DescribeModel_Complete_TextIncludesTypesComplexTypesAndOperations** — every type block equals `odata_describe_type` text for that set, then `Address  (complex)` / `Geo  (complex)` blocks (transitive), then unbound operations.  
+69.3. **DescribeModel_CompleteWithSets_ScopesTypesAndComplexTypes** — `sets: ["orders"]` (case-insensitive) dumps Order only, no complex types Order does not use, operations still listed.  
+69.4. **DescribeModel_Mermaid_RelationshipsOnly** — exact `erDiagram` lines; contains no type tokens.  
+69.5. **DescribeModel_SummaryJson_SetsAndOperations** — `sets` object in container order, each with `type`, `key`, `navs?`, `description?`; `operations` map; no `props`; no `null`.  
+69.6. **DescribeModel_CompleteJson_TypesComplexTypesAndOperations** — `types.Customer.props.Name == "string!"`, `types.Customer.ops.Top`, `types.Order.enumLiteral`, `complexTypes.Geo.props.Lat == "number!"`.  
+69.7. **DescribeModel_Northwind_SummaryHasSetsAndNavigations** — live: `Customer  (set: Customers, key: CustomerID)` followed by `  Orders -> Order[]`; composite key header for `Order_Details`; no `operations` block.  
+69.8. **DescribeModel_Northwind_CompleteHasProperties** — live: `  CompanyName?: string`, `  ProductID: int // key`.  
+69.9. **DescribeModel_TripPin_SummaryEndsWithUnboundOperations** — live: starts with the People header and its three navigations; ends with `operations` / `GetPersonWithMostFriends() -> Person` / `GetNearestAirport(lat: number, lon: number) -> Airport` / `ResetDataSource() // writes`; `ShareTrip` and `GetFavoriteAirline` absent.  
+69.10. **Catalog_GenericTools_IncludeDescribeModelAfterDescribeType** — eleven generics; `odata_describe_model` immediately after `odata_describe_type` and before `odata_query`; readOnly + idempotent; schema enumerates `detail`, `format`, `sets`; description says `Do not read $metadata`.
+
+### Misunderstood parameters / malformed
+
+69.11. **DescribeModel_BadArguments_AreErrors** — `detail=everything`, `format=xml`, `sets: ["Ghosts"]`, `sets: "Customers"` (string) each error with the messages above.
+
+### Overwhelm / size
+
+69.12. **DescribeModel_Oversize_IsErrorMentioningSetsAndSummary** — `MaxResponseBytes=40`, `detail=complete` → error text names the byte count, `3 sets`, `sets`, and `summary`; contains no `<edmx` and no `$metadata`.
+
+### Baselines
+
+`Baselines/TypeShapes/Current/northwind.describe_model.summary.txt`, `trippin.describe_model.summary.txt`, `trippin.describe_model.complete.txt` lock the live payloads.
 
 ---
 

@@ -1076,9 +1076,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Remaining 0 emits only generics.
         /// </summary>
         [TestMethod]
-        public void Cap_MaxNamedTools10_OnlyGenerics()
+        public void Cap_MaxNamedTools11_OnlyGenerics()
         {
-            Cap = 10;
+            Cap = 11;
             var names = Tools();
             names.Should().OnlyContain(name => name.StartsWith("odata_", StringComparison.Ordinal));
             names.Should().NotContain("list_customers");
@@ -1088,9 +1088,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Remaining 4 cannot fit a family of 5.
         /// </summary>
         [TestMethod]
-        public void Cap_MaxNamedTools14_NoFamilyOf5()
+        public void Cap_MaxNamedTools15_NoFamilyOf5()
         {
-            Cap = 14;
+            Cap = 15;
             Tools().Should().NotContain("list_customers");
         }
 
@@ -1098,9 +1098,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Remaining 5 fits exactly one family of 5.
         /// </summary>
         [TestMethod]
-        public void Cap_MaxNamedTools15_ExactlyOneFamilyOf5()
+        public void Cap_MaxNamedTools16_ExactlyOneFamilyOf5()
         {
-            Cap = 15;
+            Cap = 16;
             var names = Tools();
             names.Count(name => !name.StartsWith("odata_", StringComparison.Ordinal)).Should().Be(5);
             names.Should().Contain("list_customers");
@@ -1113,7 +1113,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void Cap_IncludeCreateFalse_Family4_FitsRemaining4()
         {
-            Cap = 14;
+            Cap = 15;
             IncludeCreate = false;
             var names = Tools();
             names.Should().Contain("list_customers");
@@ -1129,7 +1129,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void Cap_IncludeEntitySetsProducts_FirstFamilyIsProducts()
         {
-            Cap = 15;
+            Cap = 16;
             IncludeFirst = "Products";
             var names = Tools();
             names.Should().Contain("list_products");
@@ -1138,14 +1138,14 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Generics remain when the cap is below 10.
+        /// Generics remain when the cap is below the generic count.
         /// </summary>
         [TestMethod]
         public void Cap_GenericAlwaysPresentEvenWhenCap0ClampedToGenerics()
         {
             Cap = 3;
             var names = Tools();
-            names.Should().HaveCount(10);
+            names.Should().HaveCount(11);
             names.Should().OnlyContain(name => name.StartsWith("odata_", StringComparison.Ordinal));
         }
 
@@ -1212,7 +1212,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void Flags_AllWriteFlagsFalse_FamilyIsListAndGetOnly_CapUses2()
         {
-            Cap = 12;
+            Cap = 13;
             IncludeCreate = false;
             IncludeUpdate = false;
             IncludeDelete = false;
@@ -1230,7 +1230,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void ListCustomers_AbsentWhenRemaining4AndFamily5()
         {
-            Cap = 14;
+            Cap = 15;
             Tools().Should().NotContain("list_customers");
             Tools().Should().NotContain("get_customer");
         }
@@ -1241,7 +1241,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void ListCustomers_AbsentWhenCapTooSmallForFamily()
         {
-            Cap = 10;
+            Cap = 11;
             Tools().Should().NotContain("list_customers");
         }
 
@@ -1251,7 +1251,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         [TestMethod]
         public void ListCustomers_PresentWhenIncludeCreateFalseReducesFamilyToFit()
         {
-            Cap = 14;
+            Cap = 15;
             IncludeCreate = false;
             Tools().Should().Contain("list_customers");
             Tools().Should().Contain("get_customer");

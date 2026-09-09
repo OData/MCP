@@ -445,6 +445,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
+                    Description = "summary (default): sets, keys, navigations, then unbound operations. complete: every type with properties, enums, and bound operations, then unbound operations. Prefer complete instead of calling odata_describe_type once per type. Pass sets to scope a large model. format=text (default), json, or mermaid. Do not read $metadata to explore.",
+                    InputSchema = """{"type":"object","properties":{"detail":{"type":"string","enum":["summary","complete"]},"format":{"type":"string","enum":["text","json","mermaid"]},"sets":{"type":"array","items":{"type":"string"},"description":"Entity set names to include. Omit for every included set."}}}""",
+                    Name = OdataDescribeModel,
+                    ReadOnlyHint = true,
+                    IdempotentHint = true,
+                    Title = "Describe model"
+                },
+                new ODataToolDescriptor
+                {
                     Description = "Queries an entity set. Parameter names do not include $; the executor adds $filter, $select, $orderby, $expand, $top, $skip, and $count.",
                     InputSchema = querySchema,
                     Name = OdataQuery,

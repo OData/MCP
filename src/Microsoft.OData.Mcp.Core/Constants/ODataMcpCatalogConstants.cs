@@ -37,6 +37,16 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Body = "body";
 
         /// <summary>
+        /// <c>detail</c> value that dumps every in-scope type with properties, enums, and bound operations.
+        /// </summary>
+        public const string CompleteDetail = "complete";
+
+        /// <summary>
+        /// Model-shape key for complex types used by in-scope entity types.
+        /// </summary>
+        public const string ComplexTypes = "complexTypes";
+
+        /// <summary>
         /// OData <c>$count</c> argument.
         /// </summary>
         public const string Count = "count";
@@ -55,6 +65,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Short documentation property.
         /// </summary>
         public const string Description = "description";
+
+        /// <summary>
+        /// Level-of-detail argument on <c>odata_describe_model</c>.
+        /// </summary>
+        public const string Detail = "detail";
 
         /// <summary>
         /// Compact-shape key for member documentation.
@@ -222,7 +237,12 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string LongDescription = "longDescription";
 
         /// <summary>
-        /// CSDL metadata resource name.
+        /// <c>format</c> value that selects a relationship-only mermaid <c>erDiagram</c> on <c>odata_describe_model</c>.
+        /// </summary>
+        public const string MermaidFormat = "mermaid";
+
+        /// <summary>
+        /// The CSDL metadata document resource name.
         /// </summary>
         public const string Metadata = "$metadata";
 
@@ -265,6 +285,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// <c>odata_delete</c>.
         /// </summary>
         public const string OdataDelete = "odata_delete";
+
+        /// <summary>
+        /// <c>odata_describe_model</c>.
+        /// </summary>
+        public const string OdataDescribeModel = "odata_describe_model";
 
         /// <summary>
         /// <c>odata_describe_type</c>.
@@ -352,9 +377,19 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string SetDescription = "setDescription";
 
         /// <summary>
+        /// Entity-set scope argument and model-shape key on <c>odata_describe_model</c>.
+        /// </summary>
+        public const string Sets = "sets";
+
+        /// <summary>
         /// OData <c>$skip</c> argument.
         /// </summary>
         public const string Skip = "skip";
+
+        /// <summary>
+        /// <c>detail</c> value that lists sets, keys, and navigations only. The default.
+        /// </summary>
+        public const string SummaryDetail = "summary";
 
         /// <summary>
         /// <c>format</c> value that selects the declaration-grammar text. The default.
@@ -370,6 +405,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// EDM or JSON Schema type.
         /// </summary>
         public const string Type = "type";
+
+        /// <summary>
+        /// Model-shape key for entity type bodies in <c>detail=complete</c>.
+        /// </summary>
+        public const string Types = "types";
 
         /// <summary>
         /// Named update tool prefix.

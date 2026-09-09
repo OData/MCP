@@ -1561,7 +1561,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public void ListCustomers_AbsentWhenCapTooSmallForFamily()
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
-            names.Should().HaveCount(10);
+            names.Should().HaveCount(11);
             names.Should().NotContain("list_customers");
             names.Should().NotContain("get_mcp_customer");
             names.Should().Contain("odata_query");
@@ -1577,7 +1577,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// <param name="options">The host options to configure.</param>
         internal override void ConfigureODataMcp(ODataMcpHostOptions options)
         {
-            options.Catalog.MaxNamedTools = 10;
+            options.Catalog.MaxNamedTools = 11;
         }
 
         #endregion
@@ -1627,7 +1627,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// <param name="options">The host options to configure.</param>
         internal override void ConfigureODataMcp(ODataMcpHostOptions options)
         {
-            options.Catalog.MaxNamedTools = 14;
+            options.Catalog.MaxNamedTools = 15;
         }
 
         #endregion
@@ -1700,7 +1700,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         internal override void ConfigureODataMcp(ODataMcpHostOptions options)
         {
             options.Catalog.IncludeCreate = false;
-            options.Catalog.MaxNamedTools = 14;
+            options.Catalog.MaxNamedTools = 15;
         }
 
         #endregion

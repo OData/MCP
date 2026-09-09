@@ -26,6 +26,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Constants
             ODataMcpCatalogConstants.OdataCall.Should().Be("odata_call");
             ODataMcpCatalogConstants.OdataCreate.Should().Be("odata_create");
             ODataMcpCatalogConstants.OdataDelete.Should().Be("odata_delete");
+            ODataMcpCatalogConstants.OdataDescribeModel.Should().Be("odata_describe_model");
             ODataMcpCatalogConstants.OdataDescribeType.Should().Be("odata_describe_type");
             ODataMcpCatalogConstants.OdataGet.Should().Be("odata_get");
             ODataMcpCatalogConstants.OdataListEntitySets.Should().Be("odata_list_entity_sets");

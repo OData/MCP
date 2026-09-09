@@ -38,6 +38,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
         internal const string NorthwindCreateCustomerInputSchema = "northwind.create_customer.inputschema.json";
 
+        internal const string NorthwindDescribeModelSummary = "northwind.describe_model.summary.txt";
+
         internal const string NorthwindDescribeTypeCustomer = "northwind.describe_type.customer.json";
 
         internal const string NorthwindDescribeTypeCustomerText = "northwind.describe_type.customer.txt";
@@ -47,6 +49,10 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         internal const string NorthwindListOperations = "northwind.list_operations.json";
 
         internal const string NorthwindToolsList = "northwind.tools.list.json";
+
+        internal const string TripPinDescribeModelComplete = "trippin.describe_model.complete.txt";
+
+        internal const string TripPinDescribeModelSummary = "trippin.describe_model.summary.txt";
 
         internal const string TripPinDescribeTypePerson = "trippin.describe_type.person.json";
 
@@ -69,6 +75,39 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var payloads = await BuildNorthwindPayloadsAsync();
 
             payloads[NorthwindCreateCustomerInputSchema].Should().Be(ReadCurrent(NorthwindCreateCustomerInputSchema));
+        }
+
+        /// <summary>
+        /// <c>odata_describe_model</c> summary for Northwind matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeModel_Northwind_SummaryMatchesCurrentBaseline()
+        {
+            var payloads = await BuildNorthwindPayloadsAsync();
+
+            payloads[NorthwindDescribeModelSummary].Should().Be(ReadCurrent(NorthwindDescribeModelSummary));
+        }
+
+        /// <summary>
+        /// <c>odata_describe_model</c> complete for TripPin matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeModel_TripPin_CompleteMatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinDescribeModelComplete].Should().Be(ReadCurrent(TripPinDescribeModelComplete));
+        }
+
+        /// <summary>
+        /// <c>odata_describe_model</c> summary for TripPin matches the current baseline.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeModel_TripPin_SummaryMatchesCurrentBaseline()
+        {
+            var payloads = await BuildTripPinPayloadsAsync();
+
+            payloads[TripPinDescribeModelSummary].Should().Be(ReadCurrent(TripPinDescribeModelSummary));
         }
 
         /// <summary>
@@ -215,6 +254,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             return new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 [NorthwindCreateCustomerInputSchema] = catalog.Tools.Single(tool => tool.Name == "create_customer").InputSchema,
+                [NorthwindDescribeModelSummary] = await InvokeTextAsync(runtime, "odata_describe_model", null),
                 [NorthwindDescribeTypeCustomer] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json")),
                 [NorthwindDescribeTypeCustomerText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "Customers")),
                 [NorthwindListEntitySets] = await InvokeStructuredAsync(runtime, "odata_list_entity_sets", null),
@@ -236,6 +276,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             return new Dictionary<string, string>(StringComparer.Ordinal)
             {
+                [TripPinDescribeModelComplete] = await InvokeTextAsync(runtime, "odata_describe_model", ToolArguments.Of("detail", "complete")),
+                [TripPinDescribeModelSummary] = await InvokeTextAsync(runtime, "odata_describe_model", null),
                 [TripPinDescribeTypePerson] = await InvokeStructuredAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People", "format", "json")),
                 [TripPinDescribeTypePersonText] = await InvokeTextAsync(runtime, "odata_describe_type", ToolArguments.Of("name", "People")),
                 [TripPinListOperations] = await InvokeStructuredAsync(runtime, "odata_list_operations", null)

@@ -46,6 +46,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             generic.Should().ContainInOrder(
                 "odata_list_entity_sets",
                 "odata_describe_type",
+                "odata_describe_model",
                 "odata_query",
                 "odata_get",
                 "odata_create",

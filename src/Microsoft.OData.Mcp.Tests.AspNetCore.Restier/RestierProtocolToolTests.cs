@@ -731,9 +731,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             names.Should().Contain("list_customers");
             names.Should().Contain("get_mcp_customer");
             names.Should().NotContain("shutdown_server");
-            names.Take(10).Should().Equal(
+            names.Take(11).Should().Equal(
                 "odata_list_entity_sets",
                 "odata_describe_type",
+                "odata_describe_model",
                 "odata_query",
                 "odata_get",
                 "odata_create",
