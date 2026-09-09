@@ -34,11 +34,14 @@
     <File Path="../specs/v3/INVENTORY.md" />
     <File Path="../specs/v3/METADATA-STRATEGY.md" />
     <File Path="../specs/v3/ODATA-HOSTING.md" />
+    <File Path="../specs/v3/OPTIMIZATION-PLAN.md" />
+    <File Path="../specs/v3/OPTIMIZATION.md" />
     <File Path="../specs/v3/PROTOCOL.md" />
     <File Path="../specs/v3/README.md" />
     <File Path="../specs/v3/TESTING.md" />
     <File Path="../specs/v3/TOOL-SURFACE.md" />
     <File Path="../specs/v3/TOOL-TEST-MANIFEST.md" />
+    <File Path="../specs/v3/TYPE-SHAPES.md" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore.Restier/Microsoft.OData.Mcp.Tests.AspNetCore.Restier.csproj" />

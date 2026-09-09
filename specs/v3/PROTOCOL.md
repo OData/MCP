@@ -105,9 +105,7 @@ No HTTP+SSE. No custom REST. Logging on stdio goes to **stderr only**.
 
 `serverInfo.name`: `odata-mcp` (Tools) or `Microsoft.OData.Mcp` (AspNetCore). Version from assembly.
 
-Instructions:
-
-> Prefer named tools when listed. If the entity set is not listed, read `odata://…/{entitySet}` then call generic `odata_*` tools. Query parameter names do not include `$`. Resource URIs use the `odata://` scheme.
+Instructions: **normative copy is [OPTIMIZATION.md](./OPTIMIZATION.md) §1** (`ODataMcpInstructions.Default` on both hosts, optional `InstructionsPreface`). Do not duplicate that block here.
 
 ---
 

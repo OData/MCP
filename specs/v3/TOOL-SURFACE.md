@@ -19,15 +19,18 @@ Agents succeed or fail on the catalog. One builder. Two tool families. The graph
 | Name | Title | Verb hints | Purpose |
 |------|-------|------------|---------|
 | `odata_list_entity_sets` | List entity sets | readOnly | Names, types, keys from the model |
-| `odata_describe_type` | Describe type | readOnly | Properties, navs, keys, docs |
+| `odata_describe_type` | Describe type | readOnly | Properties, navs, keys, bound operations, enums ([TYPE-SHAPES.md](./TYPE-SHAPES.md)) |
+| `odata_describe_model` | Describe model | readOnly | Whole-service map (`summary`) or complete dump; never EDMX |
 | `odata_query` | Query entity set | readOnly | `filter`, `select`, `orderby`, `expand`, `top`, `skip`, `count` |
 | `odata_get` | Get entity | readOnly | By key |
 | `odata_create` | Create entity | | POST JSON |
 | `odata_update` | Update entity | idempotent | PATCH JSON |
 | `odata_delete` | Delete entity | destructive, idempotent | DELETE by key |
 | `odata_navigate` | Navigate | readOnly | Follow a nav from a key |
+| `odata_list_operations` | List operations | readOnly | **Unbound** operations only |
+| `odata_call` | Call operation | | `name` + `parameters` object ([OPTIMIZATION.md](./OPTIMIZATION.md) §3) |
 
-Phase 2+: `odata_call_function`, `odata_call_action`.
+Do not register `odata_call_function` / `odata_call_action`. Descriptions and schemas: [OPTIMIZATION.md](./OPTIMIZATION.md) §2–3.
 
 Prefer a resource URI or `entitySet` name as the target. Executor resolves `odata://…` or a bare set name.
 
@@ -44,7 +47,8 @@ Per entity set, snake_case:
 | Create | `create_{singular}` | `create_product` |
 | Update | `update_{singular}` | `update_product` |
 | Delete | `delete_{singular}` | `delete_product` |
-| Navigate | `list_{set}_{nav}` | `list_products_category` |
+
+Navigation is generic `odata_navigate` plus navigations on the type shape. Do not register `list_{set}_{nav}`.
 
 Default `MaxNamedTools` = 150 including generics. Fill `IncludeEntitySets` first, then remaining sets alphabetically. Never emit a partial CRUD family for a set (if `list_products` is in, `get_product` is in for the enabled verbs).
 
@@ -85,20 +89,13 @@ This is a development control-plane tool. It is part of the local server spec.
 
 No `$` in tool args. Executor adds `$filter`, `$select`, `$orderby`, `$expand`, `$top`, `$skip`, `$count`.
 
-Keys: simple `key` string/number; composite as a structured object on named get/delete.
-
-Bodies: JSON object from **declared** model properties when named; JSON string acceptable on generic create/update. Never emit a property that is not on the EDM (OData `Ignore()`, absent from CSDL). Also exclude binary/stream properties from generated schemas by default.
+`key` is a string (OData parenthetical form for composites). Named create/update: JSON object of **declared** properties ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §7). Generic create/update: `body` string. `odata_call`: `parameters` object ([OPTIMIZATION.md](./OPTIMIZATION.md) §3). Never emit a property that is not on the EDM. Exclude binary/stream from generated schemas.
 
 ---
 
 ## 7. Descriptions
 
-1. CSDL / vocabulary documentation  
-2. Structural fallback  
-3. One short example  
-4. Reminder: no `$` prefixes  
-
-Keep them tight.
+Normative copy: [OPTIMIZATION.md](./OPTIMIZATION.md) §2. CSDL docs when present; omit when absent. Do not invent a description from the member name.
 
 ---
 
@@ -118,6 +115,6 @@ One MCP endpoint per OData prefix. Tool names need no route prefix. CLI uses a s
 
 ---
 
-## 10. Server instructions (required copy)
+## 10. Server instructions
 
-> Prefer entity-specific tools (`list_*`, `get_*`) when they appear in the tool list. If the set is not listed, read `odata://…/{entitySet}` and use generic `odata_*` tools. Query parameter names do not include `$`.
+Normative copy and preface rules: [OPTIMIZATION.md](./OPTIMIZATION.md) §1. This file does not own the string.

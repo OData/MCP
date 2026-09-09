@@ -1,6 +1,6 @@
 # OData MCP Platform v3 — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** Complete (2026-09-09). The catalog, both hosts, and tools this plan specified are shipped. Do not implement from this file. Remaining work is optimization: [TYPE-SHAPES.md](./TYPE-SHAPES.md) and [OPTIMIZATION.md](./OPTIMIZATION.md).
 
 **Goal:** Ship one Core catalog (MCP 2 resources + tools) and two hosts (AOT `odata-mcp`, AspNetCore `AddODataMcp` / `.WithMcp()`) that speak official MCP 2.x and execute real OData HTTP.
 
@@ -117,7 +117,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared
 - Consumes: none
 - Produces: packages restore ModelContextProtocol **2.x**
 
-- [ ] **Step 1: Write a test that the Core csproj does not contain `0.*-*`**
+- [x] **Step 1: Write a test that the Core csproj does not contain `0.*-*`**
 
 ```csharp
 using System;
@@ -152,17 +152,17 @@ namespace Microsoft.OData.Mcp.Tests.Core
 }
 ```
 
-- [ ] **Step 2: Run test — expect FAIL** (csproj still has `0.*-*`)
+- [x] **Step 2: Run test — expect FAIL** (csproj still has `0.*-*`)
 
 ```
 dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter FullyQualifiedName~PackageContractTests
 ```
 
-- [ ] **Step 3: Set `PackageReference Include="ModelContextProtocol" Version="2.*"` on Core and Tools; `ModelContextProtocol.AspNetCore` Version=`2.*` on AspNetCore. Restore. Fix compile breaks from SDK 2 API only as far as needed to build (obsolete warnings allowed until Task 5).**
+- [x] **Step 3: Set `PackageReference Include="ModelContextProtocol" Version="2.*"` on Core and Tools; `ModelContextProtocol.AspNetCore` Version=`2.*` on AspNetCore. Restore. Fix compile breaks from SDK 2 API only as far as needed to build (obsolete warnings allowed until Task 5).**
 
-- [ ] **Step 4: Re-run test — expect PASS**
+- [x] **Step 4: Re-run test — expect PASS**
 
-- [ ] **Step 5: Commit** `chore: pin ModelContextProtocol 2.x`
+- [x] **Step 5: Commit** `chore: pin ModelContextProtocol 2.x`
 
 ---
 
@@ -178,7 +178,7 @@ dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.cs
 - Consumes: existing `EdmModel` / `EdmEntityType` / `EdmProperty`
 - Produces: same types; `Properties` and `NavigationProperties` mean **declared** members only
 
-- [ ] **Step 1: Write tests against existing types (they should already construct)**
+- [x] **Step 1: Write tests against existing types (they should already construct)**
 
 ```csharp
 using FluentAssertions;
@@ -242,7 +242,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Models
 }
 ```
 
-- [ ] **Step 2: Run**
+- [x] **Step 2: Run**
 
 ```
 dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter FullyQualifiedName~EdmModelDeclaredSurfaceTests
@@ -250,11 +250,11 @@ dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.cs
 
 Expected: PASS. `EdmModel.EntityContainer` already aliases `PrimaryContainer`. **Do not** add `Microsoft.OData.Mcp.Core.Edm`. If the test fails, you omitted `EdmEntityContainer.Namespace` (`required`) — set it. Keys are `EdmEntityType.Key`, not `Keys`.
 
-- [ ] **Step 3: Document on `EdmEntityType.Properties` and `EdmProperty` XML remarks: these collections are the declared EDM surface; ignored CLR properties must never be added. Fill function/action lists only from parser/adapter (Task 3 / 9).**
+- [x] **Step 3: Document on `EdmEntityType.Properties` and `EdmProperty` XML remarks: these collections are the declared EDM surface; ignored CLR properties must never be added. Fill function/action lists only from parser/adapter (Task 3 / 9).**
 
-- [ ] **Step 4: Re-run tests — PASS**
+- [x] **Step 4: Re-run tests — PASS**
 
-- [ ] **Step 5: Commit** `docs: treat Core.Models as the IEdmModel declared surface`
+- [x] **Step 5: Commit** `docs: treat Core.Models as the IEdmModel declared surface`
 
 ---
 
@@ -322,7 +322,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
 
 Keep these three names. Do **not** add `Parse(string)`. Existing `CsdlParserTests` already call `ParseFromString`.
 
-- [ ] **Step 1: Write live tests (no mocks, no `HttpMessageHandler` fakes)**
+- [x] **Step 1: Write live tests (no mocks, no `HttpMessageHandler` fakes)**
 
 ```csharp
 using System.Linq;
@@ -381,17 +381,17 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
 }
 ```
 
-- [ ] **Step 2: Run — expect FAIL**
+- [x] **Step 2: Run — expect FAIL**
 
 ```
 dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter FullyQualifiedName~CsdlParserLiveTests
 ```
 
-- [ ] **Step 3: Evolve the existing `CsdlParser` (today `XDocument`). Prefer `XmlReader` if you touch the hot path. Fill schema-level `Functions` / `Actions` (currently left empty), imports, `<Documentation>`, and `Core.Description`. Do not rename `ParseFromString` / `ParseFromStream` / `ParseFromFile`. Keep `CsdlParserTests` green (remove any new `// Arrange` comments; do not add them).**
+- [x] **Step 3: Evolve the existing `CsdlParser` (today `XDocument`). Prefer `XmlReader` if you touch the hot path. Fill schema-level `Functions` / `Actions` (currently left empty), imports, `<Documentation>`, and `Core.Description`. Do not rename `ParseFromString` / `ParseFromStream` / `ParseFromFile`. Keep `CsdlParserTests` green (remove any new `// Arrange` comments; do not add them).**
 
-- [ ] **Step 4: Run live tests — PASS.** If TripPin URL redirects, follow redirects with `HttpClient` default handler; do not stub.
+- [x] **Step 4: Run live tests — PASS.** If TripPin URL redirects, follow redirects with `HttpClient` default handler; do not stub.
 
-- [ ] **Step 5: Commit** `feat: parse CSDL into Core EDM from live OData services`
+- [x] **Step 5: Commit** `feat: parse CSDL into Core EDM from live OData services`
 
 ---
 
@@ -505,7 +505,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
 
 `RemoteODataExecutor` prefixes query keys with `$` when sending (`filter` → `$filter`). Never send `$$filter`.
 
-- [ ] **Step 1: Write live GET Products `$top=1`**
+- [x] **Step 1: Write live GET Products `$top=1`**
 
 ```csharp
 using System;
@@ -562,17 +562,17 @@ namespace Microsoft.OData.Mcp.Tests.Core.Execution
 }
 ```
 
-- [ ] **Step 2: Run — FAIL**
+- [x] **Step 2: Run — FAIL**
 
 ```
 dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj -c Debug --filter FullyQualifiedName~RemoteODataExecutorLiveTests
 ```
 
-- [ ] **Step 3: Implement executor. Apply outbound auth headers from a small `ODataClientOptions` (Bearer/API key/Basic) when configured. Map 4xx/5xx to `IsSuccess = false` with body preserved.**
+- [x] **Step 3: Implement executor. Apply outbound auth headers from a small `ODataClientOptions` (Bearer/API key/Basic) when configured. Map 4xx/5xx to `IsSuccess = false` with body preserved.**
 
-- [ ] **Step 4: PASS**
+- [x] **Step 4: PASS**
 
-- [ ] **Step 5: Commit** `feat: remote OData executor with $less query options`
+- [x] **Step 5: Commit** `feat: remote OData executor with $less query options`
 
 ---
 
@@ -720,7 +720,7 @@ namespace Microsoft.OData.Mcp.Tests.Core
 
 Catalog tests call `LiveMetadata.LoadNorthwindModelAsync()`, not a free function.
 
-- [ ] **Step 1: Write Northwind catalog tests**
+- [x] **Step 1: Write Northwind catalog tests**
 
 ```csharp
 using System;
@@ -767,9 +767,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 }
 ```
 
-- [ ] **Step 2: FAIL then implement the resource half of `ODataMcpCatalog`. Type-card JSON for `resources/read` of a set (no collection dump) must list **only** `EdmEntityType.Properties` / `NavigationProperties`. `$metadata` read returns CSDL (host supplies bytes from cache). Never walk CLR types.**
+- [x] **Step 2: FAIL then implement the resource half of `ODataMcpCatalog`. Type-card JSON for `resources/read` of a set (no collection dump) must list **only** `EdmEntityType.Properties` / `NavigationProperties`. `$metadata` read returns CSDL (host supplies bytes from cache). Never walk CLR types.**
 
-- [ ] **Step 3: PASS + commit** `feat: MCP resource catalog from EDM`
+- [x] **Step 3: PASS + commit** `feat: MCP resource catalog from EDM`
 
 ---
 
@@ -786,7 +786,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
 Each descriptor includes `title`, `inputSchema`, `outputSchema`, `readOnlyHint` / `destructiveHint` / `idempotentHint`, `openWorldHint: true`.
 
-- [ ] **Step 1: Assert generic names and `$`-less `filter` property on `odata_query` input schema**
+- [x] **Step 1: Assert generic names and `$`-less `filter` property on `odata_query` input schema**
 
 ```csharp
 using System.Linq;
@@ -822,11 +822,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 }
 ```
 
-- [ ] **Step 2: Integration — MCP-unaware: call catalog handler for `odata_query` entitySet=Products top=1 against live Northwind via `RemoteODataExecutor`. Body contains a product.**
+- [x] **Step 2: Integration — MCP-unaware: call catalog handler for `odata_query` entitySet=Products top=1 against live Northwind via `RemoteODataExecutor`. Body contains a product.**
 
-- [ ] **Step 3: Implement handlers. Size-guard (default 1 MB) — if exceeded, `isError` text tells the agent to add `select`/`top`.**
+- [x] **Step 3: Implement handlers. Size-guard (default 1 MB) — if exceeded, `isError` text tells the agent to add `select`/`top`.**
 
-- [ ] **Step 4: PASS + commit** `feat: generic OData MCP tools`
+- [x] **Step 4: PASS + commit** `feat: generic OData MCP tools`
 
 ---
 
@@ -839,7 +839,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 **Interfaces:**
 - Produces: `list_products`, `get_product`, etc. snake_case. Never partial CRUD for a set.
 
-- [ ] **Step 1:**
+- [x] **Step 1:**
 
 ```csharp
 using System;
@@ -889,11 +889,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 }
 ```
 
-- [ ] **Step 2: Implement cap: IncludeEntitySets first, then alphabetical sets. ExcludeEntitySets applied. Named-tool `inputSchema` properties = declared EDM properties minus binary/stream. A property that is not on the entity type must not appear in the schema.**
+- [x] **Step 2: Implement cap: IncludeEntitySets first, then alphabetical sets. ExcludeEntitySets applied. Named-tool `inputSchema` properties = declared EDM properties minus binary/stream. A property that is not on the entity type must not appear in the schema.**
 
-- [ ] **Step 3: CSDL docs flow into `title`/`description` when present (TripPin People).**
+- [x] **Step 3: CSDL docs flow into `title`/`description` when present (TripPin People).**
 
-- [ ] **Step 4: PASS + commit** `feat: capped named OData tools`
+- [x] **Step 4: PASS + commit** `feat: capped named OData tools`
 
 ---
 
@@ -911,7 +911,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
 **Do not** call `WithODataTools()` or `WithToolsFromAssembly`.
 
-- [ ] **Step 1: Test catalog of a `ToolsMcpHost` built for Northwind includes `shutdown_server` and `odata_query`, excludes nothing required. Test `ShutdownServerTool` cancels a `CancellationTokenSource` after delay 0.**
+- [x] **Step 1: Test catalog of a `ToolsMcpHost` built for Northwind includes `shutdown_server` and `odata_query`, excludes nothing required. Test `ShutdownServerTool` cancels a `CancellationTokenSource` after delay 0.**
 
 ```csharp
 using System.Threading;
@@ -947,13 +947,13 @@ namespace Microsoft.OData.Mcp.Tests.Tools
 }
 ```
 
-- [ ] **Step 2: `odata-mcp test <northwind>` prints entity set count to stderr and exits 0. Cover with a test that constructs `TestCommand` and runs against live Northwind (not Process.Start if Breakdance can invoke `OnExecuteAsync` directly — prefer direct invoke).**
+- [x] **Step 2: `odata-mcp test <northwind>` prints entity set count to stderr and exits 0. Cover with a test that constructs `TestCommand` and runs against live Northwind (not Process.Start if Breakdance can invoke `OnExecuteAsync` directly — prefer direct invoke).**
 
-- [ ] **Step 3: `StartCommand` fetches `$metadata` with `HttpClient`, parses, builds catalog, registers SDK tools/resources/completions from catalog, registers `shutdown_server`, stdio transport, logs to stderr.**
+- [x] **Step 3: `StartCommand` fetches `$metadata` with `HttpClient`, parses, builds catalog, registers SDK tools/resources/completions from catalog, registers `shutdown_server`, stdio transport, logs to stderr.**
 
-- [ ] **Step 4: Set `IsAotCompatible>true` on Core and Tools. Add `McpJsonContext` source-gen for request DTOs. Fix AOT warnings introduced by this host (no reflection scan).**
+- [x] **Step 4: Set `IsAotCompatible>true` on Core and Tools. Add `McpJsonContext` source-gen for request DTOs. Fix AOT warnings introduced by this host (no reflection scan).**
 
-- [ ] **Step 5: PASS + commit** `feat: odata-mcp host with shutdown_server`
+- [x] **Step 5: PASS + commit** `feat: odata-mcp host with shutdown_server`
 
 ---
 
@@ -968,7 +968,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
 - Consumes: `Microsoft.OData.Edm.IEdmModel`
 - Produces: `Microsoft.OData.Mcp.Core.Edm.EdmModel`
 
-- [ ] **Step 1:**
+- [x] **Step 1:**
 
 ```csharp
 using System.Linq;
@@ -1023,9 +1023,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 
 Add `InternalSecret` to `src/Microsoft.OData.Mcp.Tests.Shared/Entities/Customer.cs` (alphabetical with the other properties, XML docs). `Ignore` is meaningless without it. Catalog tests that use this builder must assert tool/resource JSON does not contain `InternalSecret`.
 
-- [ ] **Step 2: Implement adapter in AspNetCore package only. Map documentation annotations when present on `IEdmModel`.**
+- [x] **Step 2: Implement adapter in AspNetCore package only. Map documentation annotations when present on `IEdmModel`.**
 
-- [ ] **Step 3: PASS + commit** `feat: adapt IEdmModel into Core EDM`
+- [x] **Step 3: PASS + commit** `feat: adapt IEdmModel into Core EDM`
 
 ---
 
@@ -1054,7 +1054,7 @@ XML docs **required** (copy into code):
 
 Internal: endpoint data source reads prefixes and `IEdmModel`. `AddODataMcp` registers services. `UseODataMcp` maps SDK MCP at `{prefix}/mcp` after OData routes exist. Do not call SDK `MapMcp` in app code.
 
-- [ ] **Step 1: Breakdance TestServer**
+- [x] **Step 1: Breakdance TestServer**
 
 Convention-model host tests subclass `CloudNimble.Breakdance.AspNetCore.AspNetCoreBreakdanceTestBase` the same way `ODataMcpRouteConventionTests` does (`TestHostBuilder`, `AddMinimalMvc()`, `TestSetup()`). Do **not** call `UseODataMcp()`. In-process Restier OData tests (Task 11) subclass `Microsoft.Restier.Breakdance.RestierBreakdanceTestBase<TApi>` — set `AddRestierAction` and `MapRestierAction` before `TestSetup()`. Package: `Microsoft.Restier.Breakdance`.
 
@@ -1159,9 +1159,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 
 `WithMcpTests`: same `AspNetCoreBreakdanceTestBase` host, `AddRouteComponents("odata", …).WithMcp()` only — POST `/odata/mcp` is 200, POST `/internal/mcp` is 404. Send MCP with `TestServer.CreateClient()` (existing tests use `TestServer.CreateRequest` for GET).
 
-- [ ] **Step 2: Implement marker + data source + XML docs + mutual exclusion.**
+- [x] **Step 2: Implement marker + data source + XML docs + mutual exclusion.**
 
-- [ ] **Step 3: PASS + commit** `feat: AddODataMcp and WithMcp host API`
+- [x] **Step 3: PASS + commit** `feat: AddODataMcp and WithMcp host API`
 
 ---
 
@@ -1176,13 +1176,13 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 - Consumes: same-host HTTP to the app’s OData route (not a remote URL)
 - Produces: `tools/call` `odata_query` on `{prefix}/mcp` returns JSON from that route
 
-- [ ] **Step 1 (OData 8):** Convention `AddOData` host in `Tests.AspNetCore`. `AddODataMcp()`. POST `odata_query` against the in-app entity set. No Restier references in this project.
+- [x] **Step 1 (OData 8):** Convention `AddOData` host in `Tests.AspNetCore`. `AddODataMcp()`. POST `odata_query` against the in-app entity set. No Restier references in this project.
 
-- [ ] **Step 2 (Restier / OData 7):** New project `Microsoft.OData.Mcp.Tests.AspNetCore.Restier`. Subclass `RestierBreakdanceTestBase<TApi>` with **endpoint routing**. Seed `Customers`. `AddODataMcp()` must not pull OData 8. POST `odata_query` entitySet=Customers; JSON contains the seeded name. No mocks. Do **not** `[Ignore]` this class.
+- [x] **Step 2 (Restier / OData 7):** New project `Microsoft.OData.Mcp.Tests.AspNetCore.Restier`. Subclass `RestierBreakdanceTestBase<TApi>` with **endpoint routing**. Seed `Customers`. `AddODataMcp()` must not pull OData 8. POST `odata_query` entitySet=Customers; JSON contains the seeded name. No mocks. Do **not** `[Ignore]` this class.
 
-- [ ] **Step 3:** Executor hits the same `TestServer`, not a remote URL. Preserve `Authorization` if present.
+- [x] **Step 3:** Executor hits the same `TestServer`, not a remote URL. Preserve `Authorization` if present.
 
-- [ ] **Step 4: PASS + commit** `feat: in-process OData executor for AspNetCore MCP`
+- [x] **Step 4: PASS + commit** `feat: in-process OData executor for AspNetCore MCP`
 
 ---
 
@@ -1203,9 +1203,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 - `Tests.Core/Server/TestHttpMessageHandler.cs` and any mock handlers
 - `TestHttpClientFactory` if it exists to fake HTTP — replace with live/TestServer
 
-- [ ] **Step 1: Solution builds with `-c Debug` after deletes. `dotnet test src/Microsoft.OData.Mcp.slnx -c Debug` PASS. Grep the src tree for `tools/execute`, `WithODataTools`, `0.*-*` — zero hits in csproj/source (docs/archive allowed).**
+- [x] **Step 1: Solution builds with `-c Debug` after deletes. `dotnet test src/Microsoft.OData.Mcp.slnx -c Debug` PASS. Grep the src tree for `tools/execute`, `WithODataTools`, `0.*-*` — zero hits in csproj/source (docs/archive allowed).**
 
-- [ ] **Step 2: Commit** `chore: remove dual-prototype MCP and REST façades`
+- [x] **Step 2: Commit** `chore: remove dual-prototype MCP and REST façades`
 
 ---
 
@@ -1216,9 +1216,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 - `src/Microsoft.OData.Mcp.Docs` regenerates from new surface
 - Breakdance.Assemblies baseline once the surface is stable
 
-- [ ] **Step 1: `dotnet build src/Microsoft.OData.Mcp.Docs/Microsoft.OData.Mcp.Docs.docsproj -c Debug`**
-- [ ] **Step 2: Confirm generated docs do not include `ODataMcpMiddleware` or `AddODataMcpServer`.**
-- [ ] **Step 3: Commit** `docs: regenerate API reference for v3 surface`
+- [x] **Step 1: `dotnet build src/Microsoft.OData.Mcp.Docs/Microsoft.OData.Mcp.Docs.docsproj -c Debug`**
+- [x] **Step 2: Confirm generated docs do not include `ODataMcpMiddleware` or `AddODataMcpServer`.**
+- [x] **Step 3: Commit** `docs: regenerate API reference for v3 surface`
 
 ---
 

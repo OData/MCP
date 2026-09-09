@@ -12,6 +12,7 @@
 - Live **Northwind** (read) and **TripPin** (read/write) from `https://services.odata.org`.
 - Always pass `-c Debug` or `-c Release` to `dotnet`.
 - Do not change `global.json` unless asked.
+- Type-shape and catalog payloads are locked with Breakdance baselines (`[BreakdanceManifestGenerator]`, `Baselines/TypeShapes/Before` + `Current`), same pattern as Breakdance `HostBuilder_NET6` / `_NET8` / `_NET10`. Tokenizer reports are a separate markdown file, not assertions. See [OPTIMIZATION.md](./OPTIMIZATION.md) §7.
 
 ---
 

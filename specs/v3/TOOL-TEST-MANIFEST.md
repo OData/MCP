@@ -5,6 +5,8 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
+The tables below describe the catalog **as shipped before optimization** (`odata_call` `body`, `odata_describe_type` `name` only, no `odata_describe_model`, `list_operations` includes bound). Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change ([OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md)).
+
 Grounded in:
 
 - `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpCatalog.cs` (`BuildGenericTools`, `BuildNamedFamily`, `BuildTools`)
