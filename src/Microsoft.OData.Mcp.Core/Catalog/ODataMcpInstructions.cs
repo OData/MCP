@@ -22,6 +22,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </summary>
         public const string Default =
             "Query options have no $ prefix. Prefer named tools when listed; otherwise odata_describe_type then generic odata_*. " +
+            "odata_describe_model summary is the map; complete dumps every type in one call. " +
             "Bound operations are listed on the type; unbound on odata_list_operations. " +
             "odata_call: pass arguments in parameters (a JSON object) using those names — do not stringify, do not wrap, do not guess a body. " +
             "Do not read $metadata to explore. PATCH: omit a field to keep it; never send JSON null for a required property.";

@@ -8,10 +8,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.Authentication.Outbound;
+using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tools.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Tests.Tools
 {
@@ -40,6 +44,20 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             names.Should().Contain("odata_get");
             names.Should().Contain("odata_navigate");
             names.Should().NotContain("shutdown_server");
+        }
+
+        /// <summary>
+        /// The Tools host advertises the shared default server instructions, configured before the host is built.
+        /// </summary>
+        [TestMethod]
+        public async Task ToolsMcpHost_ServerInstructions_AreTheSharedDefault()
+        {
+            using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
+            var mcp = host.Host.Services.GetRequiredService<IOptions<McpServerOptions>>().Value;
+
+            mcp.ServerInstructions.Should().Be(ODataMcpInstructions.Default);
+            mcp.ServerInstructions.Should().Contain("Do not read $metadata");
+            mcp.ServerInstructions.Should().Contain("parameters");
         }
 
         /// <summary>

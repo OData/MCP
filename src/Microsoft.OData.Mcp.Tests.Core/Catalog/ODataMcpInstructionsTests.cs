@@ -50,6 +50,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             ODataMcpInstructions.Default.Should().Contain("Do not read $metadata");
             ODataMcpInstructions.Default.Should().Contain("no $ prefix");
             ODataMcpInstructions.Default.Should().Contain("parameters");
+            ODataMcpInstructions.Default.Should().Contain("odata_describe_model summary is the map; complete dumps every type in one call.");
+            ODataMcpInstructions.Default.Should().Contain("Bound operations are listed on the type; unbound on odata_list_operations.");
+            ODataMcpInstructions.Default.Should().EndWith("never send JSON null for a required property.");
             ODataMcpInstructions.Default.Should().NotContain("\r");
             ODataMcpInstructions.Default.Should().NotStartWith("\n");
             ODataMcpInstructions.Default.Should().NotEndWith("\n");

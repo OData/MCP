@@ -206,6 +206,15 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
             builder.Services.AddSingleton<RemoteODataExecutor>();
             builder.Services.AddSingleton<ToolsMcpSessionHolder>();
 
+            // Catalog options exist before Build() so initialize.instructions can be configured up front, the same way
+            // the session holder is registered before the session exists. Never assign ServerInstructions after Build().
+            var catalogOptions = new ODataMcpCatalogOptions
+            {
+                RouteName = "remote"
+            };
+            builder.Services.AddSingleton(catalogOptions);
+            builder.Services.Configure<McpServerOptions>(mcp => mcp.ServerInstructions = ODataMcpInstructions.Compose(catalogOptions.InstructionsPreface));
+
             if (includeStdioMcp)
             {
                 var shutdown = new ShutdownServerTool(lifetime!);
@@ -245,10 +254,7 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
             {
                 var metadataXml = await FetchMetadataAsync(host, root, cancellationToken).ConfigureAwait(false);
                 var model = host.Services.GetRequiredService<CsdlParser>().ParseFromString(metadataXml);
-                var catalog = new ODataMcpCatalog(model, new ODataMcpCatalogOptions
-                {
-                    RouteName = "remote"
-                });
+                var catalog = new ODataMcpCatalog(model, catalogOptions);
                 var session = new ODataMcpSession(
                     catalog,
                     new ODataToolRuntime(catalog, host.Services.GetRequiredService<RemoteODataExecutor>()),

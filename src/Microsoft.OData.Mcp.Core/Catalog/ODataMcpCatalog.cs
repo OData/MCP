@@ -573,7 +573,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             [
                 new ODataToolDescriptor
                 {
-                    Description = "Lists entity sets declared in the OData model, including CSDL documentation when the metadata provides Documentation or Core.Description annotations.",
+                    Description = "Names, types, and keys of declared entity sets.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
                     Name = OdataListEntitySets,
                     OutputSchema = """{"type":"object","properties":{"entitySets":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"entityType":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}},"description":{"type":"string"}},"required":["name","entityType","keys"]}}},"required":["entitySets"]}""",
@@ -619,14 +619,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Creates an entity from a JSON body.",
+                    Description = "JSON body in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.",
                     InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"body":{"type":"string"}},"required":["entitySet","body"]}""",
                     Name = OdataCreate,
                     Title = "Create entity"
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Updates an entity with PATCH.",
+                    Description = "PATCH in body. Send only fields to change. Omitted fields keep their values. Do not send JSON null for required properties.",
                     IdempotentHint = true,
                     InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"key":{"type":"string"},"body":{"type":"string"}},"required":["entitySet","key","body"]}""",
                     Name = OdataUpdate,
@@ -802,7 +802,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 ? operation
                 : documented.Contains(operation, StringComparison.Ordinal)
                     ? documented
-                    : $"{documented} {operation}";
+                    : $"{operation} {documented}";
 
             if (string.IsNullOrWhiteSpace(suffix))
             {

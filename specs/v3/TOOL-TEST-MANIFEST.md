@@ -5,7 +5,7 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): every tool contract below is the **optimized** one — `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, `odata_list_operations` (unbound only), named `create_*`/`update_*` schemas (typed, `required`), `outputSchema` on the two list tools, `odata_call` with a `parameters` object, and pre-HTTP EdmType validation on create, update, and call. Server instructions and the remaining tool description copy land with Task 9. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): every contract below is the **optimized** one — `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, `odata_list_operations` (unbound only), named `create_*`/`update_*` schemas (typed, `required`), `outputSchema` on the two list tools, `odata_call` with a `parameters` object, pre-HTTP EdmType validation on create, update, and call, `initialize.instructions` from `ODataMcpInstructions`, and the tool description copy of [OPTIMIZATION.md](./OPTIMIZATION.md) §2. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -105,6 +105,7 @@ Handlers that are not tools (still must be tested; see §22):
 
 | MCP method | Catalog mapping |
 |------------|-----------------|
+| `initialize` | `instructions` = `ODataMcpInstructions.Compose(ODataMcpCatalogOptions.InstructionsPreface)`: the trimmed preface, one blank line, then `ODataMcpInstructions.Default` (identical on both hosts; the preface can only prepend). AspNetCore configures `McpServerOptions` from `ODataMcpHostOptions.Catalog` at `AddODataMcp`; Tools configures it before `Build()`. Tests: `ServerInstructionsHostTests`, `AddODataMcp_ServerInstructions_DefaultWithoutPreface`, `ToolsMcpHost_ServerInstructions_AreTheSharedDefault`, `ODataMcpInstructionsTests`. |
 | `tools/list` | catalog tools + optional extra (`shutdown_server` on Tools) |
 | `tools/call` | `ODataToolRuntime.InvokeAsync` (extra handler first on Tools) |
 | `resources/list` | `$metadata` then entity-set type cards, `odata://{route}/…`, capped by `MaxResources` |

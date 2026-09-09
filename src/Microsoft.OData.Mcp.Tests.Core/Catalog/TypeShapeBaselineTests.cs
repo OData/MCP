@@ -323,9 +323,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         {
             var generics = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             var outputs = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            var descriptions = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var tool in catalog.Tools.Where(tool => tool.Name.StartsWith("odata_", StringComparison.Ordinal)))
             {
                 generics[tool.Name] = JsonSerializer.Deserialize<JsonElement>(tool.InputSchema);
+                descriptions[tool.Name] = tool.Description;
                 if (tool.OutputSchema is not null)
                 {
                     outputs[tool.Name] = JsonSerializer.Deserialize<JsonElement>(tool.OutputSchema);
@@ -336,7 +338,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             {
                 ["tools"] = catalog.Tools.Select(tool => tool.Name).ToList(),
                 ["generics"] = generics,
-                ["outputSchemas"] = outputs
+                ["outputSchemas"] = outputs,
+                ["descriptions"] = descriptions,
+                ["instructions"] = ODataMcpInstructions.Default
             };
 
             return JsonSerializer.Serialize(payload, ODataMcpCatalog.SchemaSerializerOptions);

@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Authentication;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -126,6 +128,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
                         return factory.Resolve(http);
                     });
+
+            // initialize.instructions: the shared default, with the developer's preface first. The preface is a catalog
+            // option known before any metadata is read, so this is configured once and never assigned after build.
+            services.AddOptions<McpServerOptions>()
+                .Configure<IOptions<ODataMcpHostOptions>>((mcp, host) => mcp.ServerInstructions = ODataMcpInstructions.Compose(host.Value.Catalog.InstructionsPreface));
 
             return services;
         }

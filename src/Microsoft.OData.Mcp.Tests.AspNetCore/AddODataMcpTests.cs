@@ -60,6 +60,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         #region Public Methods
 
         /// <summary>
+        /// Without a preface the host advertises exactly the shared default instructions.
+        /// </summary>
+        [TestMethod]
+        public void AddODataMcp_ServerInstructions_DefaultWithoutPreface()
+        {
+            var mcp = TestServer.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<ModelContextProtocol.Server.McpServerOptions>>().Value;
+
+            mcp.ServerInstructions.Should().Be(Microsoft.OData.Mcp.Core.Catalog.ODataMcpInstructions.Default);
+        }
+
+        /// <summary>
         /// Every route component gets a catalog that includes odata_query and omits shutdown_server.
         /// </summary>
         [TestMethod]
