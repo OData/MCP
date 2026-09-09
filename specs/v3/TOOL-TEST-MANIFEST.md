@@ -5,7 +5,7 @@
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
-Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, and `odata_describe_model` are on the **new** contract (compact grammar, `format`). `odata_call` (`body`), `odata_list_operations` (includes bound), and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
+Optimization status per [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md): `odata_describe_type`, the `resources/read` type card, `odata_describe_model`, and `odata_list_operations` (unbound only) are on the **new** contract. `odata_call` (`body`) and named `create_*`/`update_*` schemas are still described **as shipped before optimization** and flip as their tasks land. Target contracts: [TYPE-SHAPES.md](./TYPE-SHAPES.md), [OPTIMIZATION.md](./OPTIMIZATION.md). Update this file in the same PR as the catalog change.
 
 Grounded in:
 
@@ -78,7 +78,7 @@ From `ODataMcpCatalog.BuildGenericTools` (always, first in `tools/list`):
 | `odata_update` | Update entity | idempotent | `entitySet`, `key`, `body` | `entitySet`, `key`, `body` |
 | `odata_delete` | Delete entity | destructive, idempotent | `entitySet`, `key` | `entitySet`, `key` |
 | `odata_navigate` | Navigate | readOnly, idempotent | `entitySet`, `key`, `navigation` | `entitySet`, `key`, `navigation` |
-| `odata_list_operations` | List operations | readOnly, idempotent | `{}` `additionalProperties:false` | none |
+| `odata_list_operations` | List operations | readOnly, idempotent | `{}` `additionalProperties:false` — returns **unbound** operations only as `{ operations: { Name: signature } }`, or `{}` when none | none |
 | `odata_call` | Call operation | (openWorld) | `name`, `entitySet`, `key`, `body` | `name`; bound ops also require `entitySet`+`key` |
 
 From `ODataMcpCatalog.BuildNamedFamily` (only when `MaxNamedTools - genericCount` has room for the **entire** family; never a partial family):
@@ -1146,7 +1146,7 @@ Restier `McpCustomer` has **no** navigations. Restier cases are missing-nav fail
 
 ### Purpose
 
-Lists functions and actions declared in the OData model, including bound operations. No arguments. JSON `{ operations: [ { name, kind, isBound, parameters, returnType, description } ] }`. Text `Declared operations: {count}.` Catalog-only (no OData HTTP).
+Lists the **unbound** operations of the service as compact signatures. No arguments. JSON `{ operations: { "Name": "(arg: type, arg?: type) -> Return // writes; docs" } }` — functions first then actions, in declaration order; `// writes` marks actions; parameter and return types use the [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.3 tokens; `docs` only when CSDL has them. No `kind`, no `isBound`, no `parameters` array. When nothing unbound is declared the payload is `{}` (the section is omitted, never an empty array). Text `Declared operations: {count}.` Bound operations are **not** here; they are listed on `odata_describe_type` for their binding type and in `odata_describe_model` complete. Catalog-only (no OData HTTP).
 
 ### Matrix
 
@@ -1157,9 +1157,11 @@ Lists functions and actions declared in the OData model, including bound operati
 
 ### Happy path
 
-418. **ListOperations_OData8_RateLimitModel_ContainsMostValuableFunction** — kind `function`, isBound false, return type int.  
-419. **ListOperations_OData8_OperationsOnly_ContainsMostValuableGetStatusReset** — `GetStatus` parameters include `code`; `Reset` kind `action`.  
-420. **ListOperations_TripPin_ContainsGetNearestAirportAndResetDataSourceAndShareTrip** — bound flags correct; parameters listed.  
+418. **ListOperations_OData8_RateLimitModel_ContainsMostValuableFunction** — `operations.MostValuable == "() -> int"`.  
+419. **ListOperations_OData8_OperationsOnly_ContainsMostValuableGetStatusReset** — `operations.GetStatus == "(code?: string) -> string"`; `operations.Reset == "() // writes"`.  
+420. **ListOperations_TripPin_UnboundOnly_ShareTripIsOnDescribeType** — payload is exactly `{"operations":{"GetPersonWithMostFriends":"() -> Person","GetNearestAirport":"(lat: number, lon: number) -> Airport","ResetDataSource":"() // writes"}}`; `ShareTrip` absent from the list and present in `odata_describe_type` `People`.  
+420.1. **ListOperations_UnboundOnly_CompactSignatures** — fixture with a collection-bound `Top`: list carries `Ping` and `Reset` only; no `kind`, `isBound`.  
+420.2. **ListOperations_None_EmptyObject** — model with no unbound operations → `{}` and `Declared operations: 0.`.  
 421. **ListOperations_Northwind_EmptyOrDeclaredOnly** — do not invent ops.  
 422. **ListOperations_RestierCustomerApi_EmptyArraySucceeds**  
 423. **ListOperations_DocumentedOperation_IncludesCsdlDescription**  
@@ -1197,7 +1199,7 @@ Lists functions and actions declared in the OData model, including bound operati
 
 441. **ListOperations_ThenCallEachUnboundFunction_Get** — operations-only `MostValuable`, `GetStatus` with `code`.  
 442. **ListOperations_ThenCallEachUnboundAction_Post** — `Reset`.  
-443. **ListOperations_ThenCallBound_ShareTrip_RequiresEntitySetKey**  
+443. **ListOperations_ThenCallBound_ShareTrip_RequiresEntitySetKey** — `ShareTrip` is read from `odata_describe_type` `People` (not the list); calling it without `entitySet`/`key` errors.  
 444. **ListOperations_AgreesWithMetadataFunctionsAndActions** — twin `$metadata`.  
 445. **ListOperations_AspNetCore_NoShutdownInToolsList**
 

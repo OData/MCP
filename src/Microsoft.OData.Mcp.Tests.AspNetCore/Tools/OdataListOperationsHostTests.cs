@@ -480,11 +480,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var result = await InvokeAsync("odata_list_operations");
             result.IsError.Should().BeFalse(result.Text);
             using var document = JsonDocument.Parse(result.StructuredContent!);
-            var most = document.RootElement.GetProperty("operations").EnumerateArray()
-                .First(item => item.GetProperty("name").GetString() == "MostValuable");
-            most.GetProperty("kind").GetString().Should().Be("function");
-            most.GetProperty("isBound").GetBoolean().Should().BeFalse();
-            most.GetProperty("returnType").GetString().Should().Contain("Int");
+            var most = document.RootElement.GetProperty("operations").GetProperty("MostValuable").GetString();
+            most.Should().Be("() -> int", "unbound function with no arguments returning Edm.Int32; no kind or isBound keys");
         }
 
         /// <summary>
@@ -579,15 +576,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             result.IsError.Should().BeFalse(result.Text);
             using var document = JsonDocument.Parse(result.StructuredContent!);
             var operations = document.RootElement.GetProperty("operations");
-            var names = operations.EnumerateArray().Select(item => item.GetProperty("name").GetString()).ToList();
+            var names = operations.EnumerateObject().Select(item => item.Name).ToList();
             names.Should().Contain("MostValuable").And.Contain("GetStatus").And.Contain("Reset");
 
-            var getStatus = operations.EnumerateArray().First(item => item.GetProperty("name").GetString() == "GetStatus");
-            getStatus.GetProperty("kind").GetString().Should().Be("function");
-            getStatus.GetProperty("parameters").EnumerateArray().Select(item => item.GetString()).Should().Contain("code");
-
-            var reset = operations.EnumerateArray().First(item => item.GetProperty("name").GetString() == "Reset");
-            reset.GetProperty("kind").GetString().Should().Be("action");
+            operations.GetProperty("GetStatus").GetString().Should().Be("(code?: string) -> string");
+            operations.GetProperty("Reset").GetString().Should().Be("() // writes", "actions carry the writes marker instead of a kind key");
         }
 
         #endregion
@@ -612,8 +605,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var result = await InvokeAsync("odata_list_operations");
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().Be("Declared operations: 0.");
-            using var document = JsonDocument.Parse(result.StructuredContent!);
-            document.RootElement.GetProperty("operations").GetArrayLength().Should().Be(0);
+            result.StructuredContent.Should().Be("{}", "an empty operations section is omitted, never an empty array");
         }
 
         #endregion

@@ -17,11 +17,6 @@ namespace Microsoft.OData.Mcp.Core.Constants
         #region Fields
 
         /// <summary>
-        /// Operation kind <c>action</c>.
-        /// </summary>
-        public const string Action = "action";
-
-        /// <summary>
         /// JSON payloads.
         /// </summary>
         public const string ApplicationJson = "application/json";
@@ -172,19 +167,9 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Format = "format";
 
         /// <summary>
-        /// Operation kind <c>function</c>.
-        /// </summary>
-        public const string Function = "function";
-
-        /// <summary>
         /// Named get tool prefix.
         /// </summary>
         public const string GetPrefix = "get_";
-
-        /// <summary>
-        /// Whether an operation is bound.
-        /// </summary>
-        public const string IsBound = "isBound";
 
         /// <summary>
         /// JSON Schema boolean.
@@ -220,11 +205,6 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Key property names.
         /// </summary>
         public const string Keys = "keys";
-
-        /// <summary>
-        /// Operation kind.
-        /// </summary>
-        public const string Kind = "kind";
 
         /// <summary>
         /// Named list tool prefix.
@@ -355,11 +335,6 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Compact-shape key for structural properties.
         /// </summary>
         public const string Props = "props";
-
-        /// <summary>
-        /// Operation return type.
-        /// </summary>
-        public const string ReturnType = "returnType";
 
         /// <summary>
         /// OData <c>$select</c> argument.

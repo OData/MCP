@@ -632,35 +632,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Lists declared functions and actions.
+        /// Lists the unbound operations of the service as compact signatures.
         /// </summary>
         /// <returns>
-        /// The invocation result.
+        /// <c>{ "operations": { "Name": "(args) -> Return // writes" } }</c>, or <c>{}</c> when none are declared.
+        /// Bound operations are on <c>odata_describe_type</c> for their type.
         /// </returns>
         internal ODataToolInvocationResult ListOperations()
         {
-            var operations = _catalog._model.Functions.Select(item => new Dictionary<string, object?>
+            var operations = EdmModelShape.RenderOperationsJson(_catalog._model);
+            var payload = new Dictionary<string, object?>(StringComparer.Ordinal);
+            if (operations.Count > 0)
             {
-                [Description] = EdmDocumentation.First(item.Description, item.LongDescription),
-                [IsBound] = item.IsBound,
-                [Kind] = Function,
-                [Name] = item.Name,
-                [Parameters] = item.Parameters.Select(parameter => parameter.Name).ToList(),
-                [ReturnType] = item.ReturnType
-            }).Concat(_catalog._model.Actions.Select(item => new Dictionary<string, object?>
-            {
-                [Description] = EdmDocumentation.First(item.Description, item.LongDescription),
-                [IsBound] = item.IsBound,
-                [Kind] = ODataMcpCatalogConstants.Action,
-                [Name] = item.Name,
-                [Parameters] = item.Parameters.Select(parameter => parameter.Name).ToList(),
-                [ReturnType] = item.ReturnType
-            })).ToList();
+                payload[Operations] = operations;
+            }
 
-            var json = JsonSerializer.Serialize(new Dictionary<string, object?>
-            {
-                [Operations] = operations
-            }, ODataMcpCatalog.SchemaSerializerOptions);
+            var json = JsonSerializer.Serialize(payload, ODataMcpCatalog.SchemaSerializerOptions);
 
             return Complete(json, $"Declared operations: {operations.Count}.");
         }

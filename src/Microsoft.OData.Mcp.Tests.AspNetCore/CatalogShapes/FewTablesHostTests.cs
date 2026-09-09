@@ -82,7 +82,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.CatalogShapes
             var session = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"];
             session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("list_customers");
             var operations = await session.Runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
-            operations.StructuredContent.Should().Contain("operations");
+            operations.IsError.Should().BeFalse(operations.Text);
+            operations.StructuredContent.Should().Be("{}", "the minimal model declares no unbound operations");
 
             var result = await session.Runtime.InvokeAsync(
                 "odata_query",

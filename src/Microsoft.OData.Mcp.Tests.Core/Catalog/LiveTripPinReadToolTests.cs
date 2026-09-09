@@ -126,22 +126,23 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// TripPin lists GetNearestAirport, ResetDataSource, and ShareTrip.
+        /// TripPin lists the unbound GetNearestAirport and ResetDataSource; the bound ShareTrip is on the Person type instead.
         /// </summary>
         [TestMethod]
-        public async Task ListOperations_TripPin_ContainsGetNearestAirportAndResetDataSourceAndShareTrip()
+        public async Task ListOperations_TripPin_UnboundOnly_ShareTripIsOnDescribeType()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
+            var person = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("GetNearestAirport");
-            result.StructuredContent.Should().Contain("ResetDataSource");
-            result.StructuredContent.Should().Contain("ShareTrip");
-            result.StructuredContent.Should().Contain("\"kind\":\"function\"");
-            result.StructuredContent.Should().Contain("\"kind\":\"action\"");
-            result.StructuredContent.Should().Contain("\"isBound\":true");
-            result.StructuredContent.Should().Contain("\"isBound\":false");
+            result.StructuredContent.Should().Contain("\"GetNearestAirport\":\"(lat: number, lon: number) -> Airport\"");
+            result.StructuredContent.Should().Contain("\"ResetDataSource\":\"() // writes\"");
+            result.StructuredContent.Should().NotContain("ShareTrip");
+            result.StructuredContent.Should().NotContain("kind");
+            result.StructuredContent.Should().NotContain("isBound");
+            person.IsError.Should().BeFalse(person.Text);
+            person.Text.Should().Contain("ShareTrip(userName: string, tripId: int) // writes");
         }
 
         /// <summary>
@@ -207,9 +208,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         public async Task OdataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
-            var listed = await runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
-            listed.IsError.Should().BeFalse(listed.Text);
-            listed.StructuredContent.Should().Contain("GetFavoriteAirline");
+            var described = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
+            described.IsError.Should().BeFalse(described.Text);
+            described.Text.Should().Contain("GetFavoriteAirline() -> Airline");
             var result = await runtime.InvokeAsync(
                 "odata_call",
                 ToolArguments.Of("name", "GetFavoriteAirline", "entitySet", "People", "key", "russellwhyte"),

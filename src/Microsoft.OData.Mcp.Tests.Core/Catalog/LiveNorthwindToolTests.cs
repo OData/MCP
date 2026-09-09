@@ -566,8 +566,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.Text.Should().MatchRegex(@"Declared operations: \d+\.");
-            result.StructuredContent.Should().Contain("operations").And.NotContain("GetNearestAirport");
+            result.Text.Should().Be("Declared operations: 0.");
+            result.StructuredContent.Should().Be("{}", "Northwind declares no unbound operations and nothing is invented");
         }
 
         /// <summary>

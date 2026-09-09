@@ -68,41 +68,42 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var listed = await InvokeAsync("odata_list_operations");
             listed.IsError.Should().BeFalse(listed.Text);
             using var document = JsonDocument.Parse(listed.StructuredContent!);
-            foreach (var operation in document.RootElement.GetProperty("operations").EnumerateArray())
+            var called = 0;
+            foreach (var operation in document.RootElement.GetProperty("operations").EnumerateObject())
             {
-                if (operation.GetProperty("kind").GetString() != "function" || operation.GetProperty("isBound").GetBoolean())
+                if (operation.Value.GetString()!.Contains("// writes", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                var name = operation.GetProperty("name").GetString();
-                name.Should().NotBeNullOrWhiteSpace();
+                var name = operation.Name;
                 var arguments = name == "GetStatus"
                     ? ToolArguments.Of("name", name, "code", "open")
                     : ToolArguments.Of("name", name);
                 var result = await InvokeAsync("odata_call", arguments);
                 result.IsError.Should().BeFalse(result.Text);
+                called++;
             }
+
+            called.Should().BeGreaterThan(0, "the rich model declares unbound functions");
         }
 
         /// <summary>
-        /// Bound operations, when present, require entitySet and key; the rich model has none.
+        /// Bound operations, when a type lists any, require entitySet and key; they are read from describe_type, not list_operations.
         /// </summary>
         [TestMethod]
         public async Task OdataCall_BoundOps_IfPresent()
         {
-            var listed = await InvokeAsync("odata_list_operations");
-            listed.IsError.Should().BeFalse(listed.Text);
-            using var document = JsonDocument.Parse(listed.StructuredContent!);
-            var bound = document.RootElement.GetProperty("operations").EnumerateArray()
-                .Where(item => item.GetProperty("isBound").GetBoolean())
-                .ToList();
-            if (bound.Count == 0)
+            var described = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers", "format", "json"));
+            described.IsError.Should().BeFalse(described.Text);
+            using var document = JsonDocument.Parse(described.StructuredContent!);
+            var shape = document.RootElement.EnumerateObject().Single().Value;
+            if (!shape.TryGetProperty("ops", out var ops))
             {
                 return;
             }
 
-            var name = bound[0].GetProperty("name").GetString();
+            var name = ops.EnumerateObject().First().Name;
             var missingSet = await InvokeAsync("odata_call", ToolArguments.Of("name", name));
             missingSet.IsError.Should().BeTrue(missingSet.Text);
             missingSet.Text.Should().Contain("entitySet");
