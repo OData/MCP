@@ -232,7 +232,7 @@ dotnet test /p:CollectCoverage=true /p:CoverageOutputFormat=opencover
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+We welcome contributions! Open an issue to discuss a change, then send a pull request.
 
 ## 📄 License
 

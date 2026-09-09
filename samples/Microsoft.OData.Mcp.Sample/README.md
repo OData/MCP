@@ -231,8 +231,6 @@ builder.Services.AddODataMcp(options =>
 
 ## 📚 Learn More
 
-- [OData MCP Documentation](../../docs/README.md)
-- [Magical Zero-Config Guide](../../docs/MAGICAL_ZERO_CONFIG.md)
 - [ASP.NET Core OData](https://docs.microsoft.com/odata)
 - [Model Context Protocol](https://modelcontextprotocol.com)
 
