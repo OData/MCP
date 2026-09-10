@@ -1,0 +1,431 @@
+---
+title: LatchkeyTokenCache
+description: "The durable, single-slot SDK `ITokenCache` for outbound OAuth, backed by the operating system credential store through [Latchkey](https://www.nuget.org/packa..."
+icon: lock
+tag: "SEALED"
+keywords: ['LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object', 'ModelContextProtocol.Authentication.ITokenCache']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache
+```
+
+## Summary
+
+The durable, single-slot SDK `ITokenCache` for outbound OAuth, backed by the
+operating system credential store through [Latchkey](https://www.nuget.org/packages/Latchkey)
+so a restart of the same service root and client id does not re-prompt the operator.
+
+## Remarks
+
+Per `AUTH-7` this implements the SDK interface directly; it is never wrapped in a new
+`ICredentialStore` or `IOutboundTokenCache` abstraction. Per `AUTH-12` no access token,
+refresh token, or client secret ever reaches a log sink: every log line that mentions a token routes
+through [TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)).
+
+The backend map is pinned rather than left at `Auto`'s native seed, because
+Windows Credential Manager caps a value at 2560 bytes — smaller than a typical
+`TokenContainer`. Windows therefore uses DPAPI-sealed files, macOS the Keychain,
+Linux the Secret Service, and every platform falls back to a plain file store.
+
+## Examples
+
+```csharp
+var cache = new LatchkeyTokenCache(new Uri("https://api.example.com/odata/"), "client-a", tokenCachePath: null, logger);
+
+await cache.StoreTokensAsync(tokens, cancellationToken);
+var restored = await cache.GetTokensAsync(cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [LatchkeyTokenCache](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/LatchkeyTokenCache) class over the operating system
+credential store selected for the current platform.
+
+#### Syntax
+
+```csharp
+public LatchkeyTokenCache(System.Uri serviceRoot, string clientId, string tokenCachePath, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The absolute OData service root the cached tokens authorize. |
+| `clientId` | `string` | The OAuth client id the cached tokens were issued to. |
+| `tokenCachePath` | `string?` | The directory the File and DPAPI backends store values in, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for the per-user default. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache>` | The logger this instance records cache outcomes to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *serviceRoot* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *clientId* is empty or white space, or *serviceRoot* is not an absolute URI. |
+
+#### Examples
+
+```csharp
+services.AddSingleton(sp =&gt; new LatchkeyTokenCache(
+    new Uri("https://api.example.com/odata/"),
+    "client-a",
+    options.TokenCachePath,
+    sp.GetRequiredService&lt;ILogger&lt;LatchkeyTokenCache&gt;&gt;()));
+services.AddSingleton&lt;ITokenCache&gt;(sp =&gt; sp.GetRequiredService&lt;LatchkeyTokenCache&gt;());
+```
+
+#### Remarks
+
+The backing store is created eagerly, so an unusable credential store surfaces at construction rather
+than on the first OData request. Call [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.latchkeytokencache.verifypersistence(system.string)) before constructing to
+fail first with an actionable message instead.
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClearAsync
+
+Removes this cache's slot from the credential store, so the next start runs a fresh grant.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task ClearAsync(System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the delete. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task`
+A task that completes once the slot is gone, whether or not it existed.
+
+#### Examples
+
+```csharp
+await cache.ClearAsync(cancellationToken);
+```
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ComputeKey
+
+Computes the Latchkey key a service root and client id pair caches its tokens under.
+
+#### Syntax
+
+```csharp
+public static string ComputeKey(System.Uri serviceRoot, string clientId)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The absolute OData service root the cached tokens authorize. |
+| `clientId` | `string` | The OAuth client id the cached tokens were issued to. |
+
+#### Returns
+
+Type: `string`
+The lowercase hex SHA-256 digest of `serviceRoot.AbsoluteUri + "\n" + clientId`, always 64
+characters long.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *serviceRoot* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *clientId* is empty or white space, or *serviceRoot* is not an absolute URI. |
+
+#### Examples
+
+```csharp
+var key = LatchkeyTokenCache.ComputeKey(new Uri("https://api.example.com/odata/"), "client-a");
+// 64 lowercase hex characters
+```
+
+#### Remarks
+
+The newline separator keeps the two inputs unambiguous, so a service root that ends with the text of
+a client id cannot collide with a different pair. The digest is deterministic across processes and
+platforms, which is what lets a restart find the slot the previous run wrote.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetTokensAsync
+
+Reads the cached token container for this cache's service root and client id.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.ValueTask<ModelContextProtocol.Authentication.TokenContainer> GetTokensAsync(System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the read. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.ValueTask<ModelContextProtocol.Authentication.TokenContainer?>`
+The cached container, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when nothing is cached or the cached bytes could not
+be read back as a usable container.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `LatchkeyBackendUnavailableException` | Thrown when the credential store itself became unusable after this cache was constructed. |
+
+#### Examples
+
+```csharp
+var tokens = await cache.GetTokensAsync(cancellationToken);
+if (tokens is null)
+{
+    // Run an interactive grant.
+}
+```
+
+#### Remarks
+
+An entry the store cannot unprotect, or that is not valid JSON, deserializes to [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null),
+or carries no access token, is unusable — the DPAPI master key may have changed, or a previous write
+may have been truncated. Such an entry is deleted and reported at warning level naming only
+[Key](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.latchkeytokencache.key), never the payload, so the caller falls through to a fresh grant instead of failing
+repeatedly.
+
+A `LatchkeyBackendUnavailableException` is deliberately excluded from that handling and
+propagates instead. It reports that the whole store became unusable after construction — a locked
+Secret Service keyring, a cache directory that lost its permissions — not that this entry is corrupt.
+Treating it as corruption would misdescribe the fault and, where reads fail while deletes succeed,
+would destroy a still-valid refresh token over a transient condition.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StoreTokensAsync
+
+Writes a token container into this cache's single slot, replacing whatever it held.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.ValueTask StoreTokensAsync(ModelContextProtocol.Authentication.TokenContainer tokens, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `tokens` | `ModelContextProtocol.Authentication.TokenContainer` | The container to persist. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the write. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.ValueTask`
+A task that completes once the container is durable in the credential store.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *tokens* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+await cache.StoreTokensAsync(tokens, cancellationToken);
+```
+
+#### Remarks
+
+The whole container is persisted, including `ClientId`,
+`ClientSecret`,
+`TokenEndpointAuthMethod`, and
+`AuthorizationServer`, so a cold start can refresh without
+re-running dynamic client registration.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> VerifyPersistence
+
+Reports whether the credential store this cache would use can actually round-trip a value on this
+host.
+
+#### Syntax
+
+```csharp
+public static bool VerifyPersistence(string tokenCachePath)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `tokenCachePath` | `string?` | The directory the File and DPAPI backends store values in, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for the per-user default. |
+
+#### Returns
+
+Type: `bool`
+[`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when a throwaway value survives a write, read, and delete; otherwise
+[`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+#### Examples
+
+```csharp
+if (!LatchkeyTokenCache.VerifyPersistence(options.TokenCachePath))
+{
+    throw new InvalidOperationException("Credential store is not usable on this host; unlock the OS keyring or pass --token-cache.");
+}
+```
+
+#### Remarks
+
+Call this at startup, before constructing the cache, so an unusable keyring fails first with an
+actionable message rather than midway through a grant. It never throws: a store that cannot be
+reached reports [`false`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+## Related APIs
+
+- ModelContextProtocol.Authentication.ITokenCache
+

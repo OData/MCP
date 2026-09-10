@@ -2,73 +2,100 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OData.Mcp.AspNetCore.Middleware;
-using Microsoft.OData.Mcp.AspNetCore.Routing;
-using Microsoft.OData.Mcp.Core;
+using Microsoft.OData.Mcp.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
 {
 
     /// <summary>
-    /// Extension methods for configuring OData MCP in the application pipeline.
+    /// Maps OData MCP endpoints onto the ASP.NET Core pipeline.
     /// </summary>
     public static class ODataMcp_AspNetCore_ApplicationBuilderExtensions
     {
 
+        #region Public Methods
+
         /// <summary>
-        /// Adds OData MCP middleware to automatically discover and register MCP endpoints.
+        /// Maps official MCP HTTP endpoints at <c>{prefix}/mcp</c> for each OData prefix
+        /// enabled by <c>AddODataMcp</c>. Call this after OData routes are mapped
+        /// (<c>MapControllers</c>, <c>MapODataRoute</c>, or Restier <c>MapApiRoute</c>).
         /// </summary>
         /// <param name="app">The application builder.</param>
-        /// <returns>The application builder for chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="app"/> is null.</exception>
-        /// <remarks>
-        /// This method must be called after UseRouting() but before UseEndpoints() or MapControllers().
-        /// It automatically discovers all registered OData routes and adds corresponding MCP endpoints.
-        /// </remarks>
+        /// <returns>
+        /// The application builder.
+        /// </returns>
         /// <example>
         /// <code>
+        /// builder.Services.AddControllers()
+        ///     .AddOData(options => options.AddRouteComponents("odata", GetEdmModel()));
+        /// builder.Services.AddODataMcp();
+        ///
         /// var app = builder.Build();
         /// app.UseRouting();
-        /// app.UseODataMcp(); // Automatic MCP endpoint registration
         /// app.MapControllers();
+        /// app.UseODataMcp();
         /// </code>
         /// </example>
+        /// <remarks>
+        /// <c>AddODataMcp</c> registers services only. This method turns MCP on. Do not call
+        /// the MCP SDK <c>MapMcp</c> yourself; this method invokes it per enabled prefix.
+        /// </remarks>
         public static IApplicationBuilder UseODataMcp(this IApplicationBuilder app)
         {
             ArgumentNullException.ThrowIfNull(app);
 
-            // Check if OData MCP was registered
-            var markerOptions = app.ApplicationServices.GetService<IOptions<ODataMcpMarkerOptions>>();
-            if (markerOptions?.Value?.IsEnabled != true)
+            var factory = app.ApplicationServices.GetRequiredService<ODataMcpSessionFactory>();
+            factory.Rebuild();
+            var options = app.ApplicationServices.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value;
+
+            app.UseEndpoints(endpoints =>
             {
-                throw new InvalidOperationException(
-                    "OData MCP services have not been registered. " +
-                    "Call services.AddODataMcp() in ConfigureServices before calling UseODataMcp().");
-            }
-
-            var options = app.ApplicationServices.GetRequiredService<IOptions<ODataMcpOptions>>();
-            if (!options.Value.AutoRegisterRoutes)
-            {
-                // Auto-registration is disabled
-                return app;
-            }
-
-            // OData route discovery would happen here
-            // For now, routes must be registered explicitly using the fluent API
-
-            var convention = app.ApplicationServices.GetService<IMcpRouteConvention>()
-                ?? app.ApplicationServices.GetRequiredService<ODataMcpRouteConvention>();
-
-            var endpointDataSource = app.ApplicationServices.GetRequiredService<EndpointDataSource>();
-
-            // Add the MCP middleware to handle requests
-            app.UseMiddleware<ODataMcpMiddleware>();
+                foreach (var prefix in factory.Sessions.Keys)
+                {
+                    var pattern = string.IsNullOrEmpty(prefix) ? "/mcp" : $"/{prefix.Trim('/')}/mcp";
+                    var group = endpoints.MapGroup(pattern);
+                    ApplyHostConventions(group, options);
+                    group.MapMcp(string.Empty);
+                }
+            });
 
             return app;
         }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Attaches optional authorization and named rate-limiting policies. A global
+        /// <c>UseRateLimiter</c> limiter still applies when no policy name is set.
+        /// </summary>
+        /// <param name="builder">The MCP endpoint builder.</param>
+        /// <param name="options">Host options.</param>
+        /// <returns>
+        /// The same builder.
+        /// </returns>
+        internal static IEndpointConventionBuilder ApplyHostConventions(IEndpointConventionBuilder builder, ODataMcpHostOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(options);
+
+            if (!string.IsNullOrWhiteSpace(options.RateLimitingPolicyName))
+            {
+                builder.RequireRateLimiting(options.RateLimitingPolicyName);
+            }
+
+            if (options.RequireAuthorization)
+            {
+                builder.RequireAuthorization();
+            }
+
+            return builder;
+        }
+
+        #endregion
 
     }
 

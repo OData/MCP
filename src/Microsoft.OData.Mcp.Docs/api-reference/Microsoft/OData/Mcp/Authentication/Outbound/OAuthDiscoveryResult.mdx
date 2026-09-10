@@ -1,0 +1,347 @@
+---
+title: OAuthDiscoveryResult
+description: "Everything the outbound OAuth discovery algorithm learned about a protected OData service: the `WWW-Authenticate` challenge it started from, the RFC 9728 pro..."
+icon: lock
+tag: "SEALED"
+keywords: ['OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult
+```
+
+## Summary
+
+Everything the outbound OAuth discovery algorithm learned about a protected OData service: the
+`WWW-Authenticate` challenge it started from, the RFC 9728 protected resource metadata it found (if
+any), the authorization server it selected, and the grants, scope, and RFC 8707 resource a grant needs.
+
+## Remarks
+
+Produced exclusively by [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.discoverasync(system.uri,system.collections.generic.ireadonlylist{system.string},system.int32,system.uri,system.uri,system.threading.cancellationtoken)),
+which never returns an instance without an authorization server: discovery fails first rather than
+handing a caller a half-populated result. Per `AUTH-13` the challenge `client_id` is reachable
+only as [OAuthChallenge.ResourceClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge#resourceclientid) through [OAuthDiscoveryResult.Challenge](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscoveryResult#challenge), so nothing on this
+type can be mistaken for the client id this process authenticates with.
+
+## Examples
+
+```csharp
+var result = await discovery.DiscoverAsync(serviceRoot, wwwAuthenticate, 401, null, null, cancellationToken);
+
+Console.WriteLine(result.AuthorizationServer.TokenEndpoint);
+Console.WriteLine(result.Resource);
+if (result.AdvertisedGrants.Contains(ODataMcpAuthConstants.DeviceCodeGrantType))
+{
+    // Start a device code grant against result.AuthorizationServer.
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthDiscoveryResult](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscoveryResult) class.
+
+#### Syntax
+
+```csharp
+public OAuthDiscoveryResult(Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge challenge, ModelContextProtocol.Authentication.ProtectedResourceMetadata protectedResource, Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata authorizationServer, System.Uri authorizationServerBase, System.Collections.Generic.IReadOnlyList<string> advertisedGrants, string challengeScope, System.Uri resource)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `challenge` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge?` | The `Bearer` challenge discovery started from, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `protectedResource` | `ModelContextProtocol.Authentication.ProtectedResourceMetadata?` | The RFC 9728 protected resource metadata document, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `authorizationServer` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata document discovery selected. |
+| `authorizationServerBase` | `System.Uri` | The candidate base URI *authorizationServer* was discovered from. |
+| `advertisedGrants` | `System.Collections.Generic.IReadOnlyList<string>` | The grant types *authorizationServer* advertises. |
+| `challengeScope` | `string?` | The `scope` the challenge asked for, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator a token request should ask for, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when it should carry none. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *authorizationServer*, *authorizationServerBase*, or
+*advertisedGrants* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AdvertisedGrants
+
+Gets the grant types [OAuthDiscoveryResult.AuthorizationServer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscoveryResult#authorizationserver) advertises, or an empty list when it
+advertises none.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> AdvertisedGrants { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+
+#### Remarks
+
+Never [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), so grant selection can enumerate it without a null check.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationServer
+
+Gets the authorization server metadata document discovery selected.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata AuthorizationServer { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata`
+
+#### Remarks
+
+Guaranteed to carry an absolute `token_endpoint`, because
+[AuthorizationServerMetadataClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadataClient) rejects a document without one.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationServerBase
+
+Gets the candidate base URI that [OAuthDiscoveryResult.AuthorizationServer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscoveryResult#authorizationserver) was discovered from.
+
+#### Syntax
+
+```csharp
+public System.Uri AuthorizationServerBase { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+#### Remarks
+
+This is the operator's `--auth-server` value, a protected resource metadata
+`authorization_servers` entry, or a remainder stripped from the challenge
+`authorization_uri`; it is not necessarily the issuer the document advertises.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Challenge
+
+Gets the `Bearer` challenge discovery started from, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the response
+carried no `Bearer` challenge.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge Challenge { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ChallengeScope
+
+Gets the space-delimited `scope` the challenge asked for, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when it
+asked for none.
+
+#### Syntax
+
+```csharp
+public string ChallengeScope { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+This is the highest priority input to scope resolution per step 8 of the discovery algorithm.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ProtectedResource
+
+Gets the RFC 9728 protected resource metadata document, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when every
+candidate was missing, unauthorized, or unparseable.
+
+#### Syntax
+
+```csharp
+public ModelContextProtocol.Authentication.ProtectedResourceMetadata ProtectedResource { get; }
+```
+
+#### Property Value
+
+Type: `ModelContextProtocol.Authentication.ProtectedResourceMetadata?`
+
+#### Remarks
+
+A [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) value is normal and non-fatal per `AUTH-14`; it means discovery
+continued from the challenge and the operator's overrides.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resource
+
+Gets the RFC 8707 resource indicator a token request should ask for, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when
+no token request should carry one.
+
+#### Syntax
+
+```csharp
+public System.Uri Resource { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+#### Remarks
+
+Resolved per step 8b of the discovery algorithm: the protected resource metadata `resource` when
+it is absolute, else the operator's `--resource`, else [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). There is
+deliberately no origin fallback: RFC 8707 `resource` is only meaningful when the resource itself
+published it or the operator named it, and an invented audience is rejected by strict authorization
+servers that would otherwise have honored `scope` alone.
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

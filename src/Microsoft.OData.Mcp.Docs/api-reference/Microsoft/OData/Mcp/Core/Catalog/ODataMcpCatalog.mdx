@@ -1,0 +1,282 @@
+---
+title: ODataMcpCatalog
+description: "Builds MCP resources and tools from a Core EDM. Only declared model members are serialized into catalogs, schemas, and completions."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog
+```
+
+## Summary
+
+Builds MCP resources and tools from a Core EDM. Only declared model members
+are serialized into catalogs, schemas, and completions.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) class.
+
+#### Syntax
+
+```csharp
+public ODataMcpCatalog(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resources
+
+Gets the resource descriptors.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataResourceDescriptor> Resources { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataResourceDescriptor>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceTemplates
+
+Gets the resource templates.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataResourceTemplateDescriptor> ResourceTemplates { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataResourceTemplateDescriptor>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Shapes
+
+Gets the cached type shapes keyed by EDM full name. Empty when [ODataMcpCatalogOptions.IsDynamicModel](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#isdynamicmodel) is `true`.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape> Shapes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Tools
+
+Gets the tool descriptors (generic first, then named).
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataToolDescriptor> Tools { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Catalog.ODataToolDescriptor>`
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CompleteEntitySetNames
+
+Completes entity set names for resource templates.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> CompleteEntitySetNames(string prefix)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `prefix` | `string` | The prefix typed so far. Empty means all declared sets. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+Matching declared entity set names from the EDM. Never invents names.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetShape
+
+Gets the shape for an entity type, from the cache when the model is static.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape GetShape(Microsoft.OData.Mcp.Core.Models.EdmEntityType entityType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `entityType` | `Microsoft.OData.Mcp.Core.Models.EdmEntityType` | The entity type. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape`
+The cached shape, or a freshly built one when [ODataMcpCatalogOptions.IsDynamicModel](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#isdynamicmodel) is `true`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *entityType* is null. |
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

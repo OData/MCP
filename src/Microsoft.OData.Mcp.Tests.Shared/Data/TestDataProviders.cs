@@ -4,7 +4,6 @@
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.OData.Mcp.Tests.Shared.Data
 {

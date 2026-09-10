@@ -1,0 +1,1 @@
+{"operations":{"GetPersonWithMostFriends":"() -> Person","GetNearestAirport":"(lat: number, lon: number) -> Airport","ResetDataSource":"() // writes"}}

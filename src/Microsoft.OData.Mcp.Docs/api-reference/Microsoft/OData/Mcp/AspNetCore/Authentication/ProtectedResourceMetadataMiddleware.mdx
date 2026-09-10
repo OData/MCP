@@ -1,0 +1,238 @@
+---
+title: ProtectedResourceMetadataMiddleware
+description: "Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the `WWW-Authenticate` challenge on a `401` beneath one of those ..."
+icon: lock
+sidebarTitle: ProtectedResourceMetadataMiddleware
+tag: "SEALED"
+keywords: ['ProtectedResourceMetadataMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Authentication
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware
+```
+
+## Summary
+
+Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the
+`WWW-Authenticate` challenge on a `401` beneath one of those bases so a client is told
+where that document lives.
+
+## Remarks
+
+[ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) puts this at the very front of the pipeline, before
+authentication and authorization, because a protected resource metadata document that answers `401`
+is useless — a client that follows `resource_metadata` into a challenge has learned nothing. That
+is the "Graph trap" in `specs/v3/AUTHENTICATION.md`, and the only defence against it is serving the
+document anonymously.
+
+The default route base is the application root. Explicit [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes)
+entries are Endpoint Routing route bases, including an empty string.
+
+## Examples
+
+```csharp
+GET /.well-known/oauth-protected-resource
+200 application/json
+{"resource":"https://api.contoso.com","authorization_servers":["https://login.contoso.com/v2.0"],"bearer_methods_supported":["header"]}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ProtectedResourceMetadataMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware) class.
+
+#### Syntax
+
+```csharp
+public ProtectedResourceMetadataMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions> options, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `next` | `Microsoft.AspNetCore.Http.RequestDelegate` | The next middleware in the pipeline. |
+| `options` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions>` | What this resource publishes about itself. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware>` | The logger the resolved prefixes and any unparseable challenge are recorded to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *next*, *options*, or *logger* is
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InvokeAsync
+
+Serves a protected resource metadata document, or arms the challenge annotation for a request that
+falls beneath a covered route base, then continues the pipeline.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task InvokeAsync(Microsoft.AspNetCore.Http.HttpContext context)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `context` | `Microsoft.AspNetCore.Http.HttpContext` | The request being served. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task`
+A task that completes when the request has been handled.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *context* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Remarks
+
+A well-known path that names a prefix this app does not serve is passed through untouched rather
+than answered with a `404`: the path may belong to another component in the same host.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

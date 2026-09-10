@@ -1,0 +1,320 @@
+---
+title: ODataMcpHostOptions
+description: "Host options for `AddODataMcp`."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions
+```
+
+## Summary
+
+Host options for `AddODataMcp`.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public ODataMcpHostOptions()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Catalog
+
+Gets the catalog options applied to every enabled OData route.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions Catalog { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExcludeRoutes
+
+Gets prefixes that must not be exposed over MCP, matched without regard to case or leading slashes.
+Applied after [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes).
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> ExcludeRoutes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExplicitRoutes
+
+Gets routes registered explicitly when endpoint discovery cannot see an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel).
+Discovered routes with the same prefix replace these entries.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding> ExplicitRoutes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludePrefixes
+
+Gets prefixes that should be exposed over MCP. When empty, every discovered (and explicit) prefix is enabled.
+When non-empty, only matching prefixes are enabled. Prefer this over an OData-version-specific helper.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> IncludePrefixes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+
+#### Examples
+
+```csharp
+builder.Services.AddODataMcp(options =&gt;
+{
+    options.IncludePrefixes.Add("odata");
+});
+```
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RateLimitingPolicyName
+
+Gets or sets the ASP.NET Core rate-limiting policy name attached to each MCP endpoint.
+When null, the endpoint still participates in a global limiter configured with `UseRateLimiter`.
+
+#### Syntax
+
+```csharp
+public string RateLimitingPolicyName { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Examples
+
+```csharp
+builder.Services.AddRateLimiter(options =&gt;
+{
+    options.AddFixedWindowLimiter("mcp", limiter =&gt;
+    {
+        limiter.PermitLimit = 30;
+        limiter.Window = TimeSpan.FromMinutes(1);
+    });
+});
+builder.Services.AddODataMcp(options =&gt;
+{
+    options.RateLimitingPolicyName = "mcp";
+});
+```
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequireAuthorization
+
+Gets or sets a value indicating whether MCP endpoints require an authenticated user.
+When `true`, the mapped MCP endpoints call `RequireAuthorization` and participate
+in the host's authentication and authorization pipeline.
+
+#### Syntax
+
+```csharp
+public bool RequireAuthorization { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddRoute
+
+Registers an explicit *prefix* and *model* when the routing table
+does not carry an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel) (for example a custom host that never wrote OData metadata).
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions AddRoute(string prefix, Microsoft.OData.Edm.IEdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `prefix` | `string` | The OData route prefix, for example `odata`. Empty is the application root. |
+| `model` | `Microsoft.OData.Edm.IEdmModel` | The EdmLib model for that prefix. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions`
+The same options instance.
+
+#### Examples
+
+```csharp
+builder.Services.AddODataMcp(options =&gt;
+{
+    options.AddRoute("odata", GetEdmModel());
+});
+```
+
+#### Remarks
+
+Discovery from `EndpointDataSource` still runs and wins when it finds the same prefix.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

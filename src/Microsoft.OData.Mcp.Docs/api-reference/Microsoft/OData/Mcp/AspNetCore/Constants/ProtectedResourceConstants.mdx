@@ -1,0 +1,40 @@
+---
+title: ProtectedResourceConstants
+description: "The literal wire values `AddProtectedResourceMetadata` publishes: the RFC 9728 well-known path, the RFC 6750 `Bearer` scheme, and the auth-params an annotate..."
+icon: bolt
+tag: "STATIC"
+keywords: ['ProtectedResourceConstants', 'Microsoft.OData.Mcp.AspNetCore.Constants.ProtectedResourceConstants', 'Microsoft.OData.Mcp.AspNetCore.Constants', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Constants
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Constants.ProtectedResourceConstants
+```
+
+## Summary
+
+The literal wire values `AddProtectedResourceMetadata` publishes: the RFC 9728 well-known path, the
+RFC 6750 `Bearer` scheme, and the auth-params an annotated challenge carries.
+
+## Remarks
+
+These strings are deliberately duplicated from `Microsoft.OData.Mcp.Authentication` rather than
+shared with it. The dependency direction in `specs/v3/ARCHITECTURE.md` is one way: the CLI may
+reference an ASP.NET Core hosting concept, an ASP.NET Core host may never reference outbound
+authentication. Four constants is a cheaper price than a reference that inverts the graph.
+
+## Examples
+
+```csharp
+var url = $"{origin}{ProtectedResourceConstants.WellKnownPath}";
+```
+

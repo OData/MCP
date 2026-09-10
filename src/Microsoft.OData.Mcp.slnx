@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+
 <Solution>
   <Configurations>
     <Platform Name="Any CPU" />
@@ -24,13 +24,32 @@
     <File Path="Directory.Build.props" />
     <File Path="global.json" />
     <File Path="../README.md" />
-    <File Path="../specs/TESTING_PLUS_REFACTOR_PLAN.md" />
+  </Folder>
+  <Folder Name="/Solution Items/Specs/">
+    <File Path="../specs/v3/ARCHITECTURE.md" />
+    <File Path="../specs/v3/AUTHENTICATION.md" />
+    <File Path="../specs/v3/CRITICAL-ANALYSIS.md" />
+    <File Path="../specs/v3/EXECUTION-PLAN.md" />
+    <File Path="../specs/v3/INVENTORY.md" />
+    <File Path="../specs/v3/METADATA-STRATEGY.md" />
+    <File Path="../specs/v3/ODATA-HOSTING.md" />
+    <File Path="../specs/v3/OPTIMIZATION-PLAN.md" />
+    <File Path="../specs/v3/OPTIMIZATION.md" />
+    <File Path="../specs/v3/PROTOCOL.md" />
+    <File Path="../specs/v3/README.md" />
+    <File Path="../specs/v3/TESTING.md" />
+    <File Path="../specs/v3/TOOL-SURFACE.md" />
+    <File Path="../specs/v3/TOOL-TEST-MANIFEST.md" />
+    <File Path="../specs/v3/TYPE-SHAPES.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore.Restier/Microsoft.OData.Mcp.Tests.AspNetCore.Restier.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.AspNetCore/Microsoft.OData.Mcp.Tests.AspNetCore.csproj" />
+    <Project Path="Microsoft.OData.Mcp.Tests.Authentication.Restier/Microsoft.OData.Mcp.Tests.Authentication.Restier.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Authentication/Microsoft.OData.Mcp.Tests.Authentication.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Integration/Microsoft.OData.Mcp.Tests.Integration.csproj" />
+    <Project Path="Microsoft.OData.Mcp.Tests.Shared.Authentication/Microsoft.OData.Mcp.Tests.Shared.Authentication.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Shared/Microsoft.OData.Mcp.Tests.Shared.csproj" />
     <Project Path="Microsoft.OData.Mcp.Tests.Tools/Microsoft.OData.Mcp.Tests.Tools.csproj" />
   </Folder>

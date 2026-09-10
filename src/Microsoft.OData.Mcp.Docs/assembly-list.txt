@@ -1,4 +1,4 @@
-D:\GitHub\MCP\src\Microsoft.OData.Mcp.AspNetCore\bin\Debug\net10.0\Microsoft.OData.Mcp.AspNetCore.dll
-D:\GitHub\MCP\src\Microsoft.OData.Mcp.Authentication\bin\Debug\net10.0\Microsoft.OData.Mcp.Authentication.dll
-D:\GitHub\MCP\src\Microsoft.OData.Mcp.Core\bin\Debug\net10.0\Microsoft.OData.Mcp.Core.dll
-D:\GitHub\MCP\src\Microsoft.OData.Mcp.Tools\bin\Debug\net10.0\Microsoft.OData.Mcp.Tools.dll
+D:\GitHub\MCP\src\Microsoft.OData.Mcp.AspNetCore\bin\Debug\net11.0\Microsoft.OData.Mcp.AspNetCore.dll
+D:\GitHub\MCP\src\Microsoft.OData.Mcp.Authentication\bin\Debug\net11.0\Microsoft.OData.Mcp.Authentication.dll
+D:\GitHub\MCP\src\Microsoft.OData.Mcp.Core\bin\Debug\net11.0\Microsoft.OData.Mcp.Core.dll
+D:\GitHub\MCP\src\Microsoft.OData.Mcp.Tools\bin\Debug\net11.0\Microsoft.OData.Mcp.Tools.dll

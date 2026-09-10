@@ -1,0 +1,366 @@
+---
+title: OAuthDiscovery
+description: "Runs steps 3 through 5 and 8b of the outbound OAuth discovery algorithm: parse the `WWW-Authenticate` challenge, fetch RFC 9728 protected resource metadata, ..."
+icon: lock
+tag: "SEALED"
+keywords: ['OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery
+```
+
+## Summary
+
+Runs steps 3 through 5 and 8b of the outbound OAuth discovery algorithm: parse the
+`WWW-Authenticate` challenge, fetch RFC 9728 protected resource metadata, select an authorization
+server from every candidate base the challenge and that metadata imply, and resolve the RFC 8707
+resource indicator.
+
+## Remarks
+
+Fail first, vendor neutral: Microsoft Graph is a trap this algorithm survives generically, never a
+special branch. Per `AUTH-14` a 401, 403, 404, or failed parse on any well-known document is
+non-fatal and discovery continues; only a timeout, a repeated 5xx (surfaced by the metadata clients), a
+401/403 with no challenge at all, or an exhausted candidate list is fatal. Per `AUTH-13` the
+challenge `client_id` is logged as the &lt;em&gt;resource&lt;/em&gt; application id and never promoted to a
+client id. Tokens and response bodies are never logged.
+
+## Examples
+
+```csharp
+var discovery = new OAuthDiscovery(protectedResourceMetadataClient, authorizationServerMetadataClient, logger);
+var result = await discovery.DiscoverAsync(
+    new Uri("https://graph.microsoft.com/v1.0/"),
+    response.Headers.WwwAuthenticate.Select(x =&gt; x.ToString()).ToList(),
+    401,
+    authorizationServerOverride: null,
+    resourceOverride: null,
+    cancellationToken);
+
+Console.WriteLine(result.AuthorizationServer.TokenEndpoint);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OAuthDiscovery](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscovery) class.
+
+#### Syntax
+
+```csharp
+public OAuthDiscovery(Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient protectedResourceClient, Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient authorizationServerClient, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `protectedResourceClient` | `Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient` | The client that fetches RFC 9728 protected resource metadata. |
+| `authorizationServerClient` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient` | The client that probes authorization server metadata for a candidate base URI. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery>` | The logger this instance records each discovery step and its outcome to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *protectedResourceClient*, *authorizationServerClient*,
+or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationServerBases
+
+Collects the authorization server base URIs to probe, in order, per step 5 of the discovery
+algorithm.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<System.Uri> AuthorizationServerBases(Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge challenge, ModelContextProtocol.Authentication.ProtectedResourceMetadata protectedResource, System.Uri authorizationServerOverride)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `challenge` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge?` | The `Bearer` challenge, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the response carried none. |
+| `protectedResource` | `ModelContextProtocol.Authentication.ProtectedResourceMetadata?` | The RFC 9728 protected resource metadata, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when none was found. |
+| `authorizationServerOverride` | `System.Uri?` | The operator's `--auth-server` value, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<System.Uri>`
+Exactly *authorizationServerOverride* when it is set; otherwise the absolute
+`authorization_servers` entries of *protectedResource* in order, followed by
+every unique remainder of the challenge `authorization_uri` after stripping each
+[ODataMcpAuthConstants.AuthorizeSuffixes](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#authorizesuffixes) entry, deduplicated preserving first
+occurrence. The list is empty when nothing implies a base.
+
+#### Examples
+
+```csharp
+var challenge = WwwAuthenticateParser.Parse("Bearer authorization_uri=\"https://login.microsoftonline.com/common/oauth2/authorize\"");
+var bases = OAuthDiscovery.AuthorizationServerBases(challenge, null, null);
+
+// https://login.microsoftonline.com/common
+// https://login.microsoftonline.com/common/oauth2
+```
+
+#### Remarks
+
+A single `authorization_uri` can imply more than one base because a suffix later in
+[ODataMcpAuthConstants.AuthorizeSuffixes](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#authorizesuffixes) may also match; both remainders are probed so a
+server that publishes its metadata under either one is found. Non-absolute
+`authorization_servers` entries are skipped silently here;
+[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.discoverasync(system.uri,system.collections.generic.ireadonlylist{system.string},system.int32,system.uri,system.uri,system.threading.cancellationtoken)) logs them.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DiscoverAsync
+
+Discovers the authorization server, grants, scope, and resource indicator for an OData service that
+answered with an authentication challenge.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult> DiscoverAsync(System.Uri serviceRoot, System.Collections.Generic.IReadOnlyList<string> wwwAuthenticate, int statusCode, System.Uri authorizationServerOverride, System.Uri resourceOverride, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The absolute OData service root the challenge came from. |
+| `wwwAuthenticate` | `System.Collections.Generic.IReadOnlyList<string>` | The `WWW-Authenticate` header values of that response, in order. |
+| `statusCode` | `int` | The HTTP status code of that response. |
+| `authorizationServerOverride` | `System.Uri?` | The operator's `--auth-server` value, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset. |
+| `resourceOverride` | `System.Uri?` | The operator's `--resource` value, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when unset. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels discovery. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult>`
+The discovery result, always carrying a usable authorization server.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *serviceRoot* or *wwwAuthenticate* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *serviceRoot* is not an absolute URI. |
+| `FormatException` | Thrown when a *wwwAuthenticate* value is not a well-formed challenge. |
+| `OutboundDiscoveryException` | Thrown when *statusCode* is 401 or 403, *wwwAuthenticate* carries no
+challenge, and no *authorizationServerOverride* is set; when a well-known request
+times out or repeats a 5xx; or when no candidate base yields an authorization server. |
+
+#### Examples
+
+```csharp
+var result = await discovery.DiscoverAsync(
+    new Uri("http://localhost/odata/"),
+    ["Bearer realm=\"\", resource_metadata=\"http://localhost/.well-known/oauth-protected-resource/odata\""],
+    401,
+    authorizationServerOverride: null,
+    resourceOverride: null,
+    cancellationToken);
+
+Console.WriteLine(result.AuthorizationServerBase);              // http://localhost/oauth/v2.0
+Console.WriteLine(result.AuthorizationServer.TokenEndpoint);    // http://localhost/oauth/v2.0/token
+Console.WriteLine(result.Resource);                             // http://localhost (from the PRM document)
+```
+
+#### Remarks
+
+Protected resource metadata candidates are probed in the order
+[OAuthChallenge)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.prmcandidates(system.uri,microsoft.odata.mcp.authentication.outbound.oauthchallenge)) returns them and probing stops at the first
+document, so the Graph trap costs exactly one GET when the challenge named a
+`resource_metadata` URL. Authorization server bases are probed the same way. An
+*authorizationServerOverride* also suppresses the "401 with no
+`WWW-Authenticate`" failure, because the operator has already supplied what that failure asks
+for.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PrmCandidates
+
+Builds the RFC 9728 protected resource metadata URLs to probe, in order, per step 4 of the discovery
+algorithm.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<System.Uri> PrmCandidates(System.Uri serviceRoot, Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge challenge)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The absolute OData service root the challenge came from. |
+| `challenge` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge?` | The `Bearer` challenge, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the response carried none. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<System.Uri>`
+Exactly the challenge `resource_metadata` URL when the challenge carries an absolute one;
+otherwise the origin well-known URL followed by the path-prefixed one, with the path-prefixed URL
+omitted when the service root's path is `/`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *serviceRoot* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *serviceRoot* is not an absolute URI. |
+
+#### Examples
+
+```csharp
+var candidates = OAuthDiscovery.PrmCandidates(new Uri("http://localhost/odata/"), null);
+
+// http://localhost/.well-known/oauth-protected-resource
+// http://localhost/.well-known/oauth-protected-resource/odata
+```
+
+#### Remarks
+
+A trailing `/` on the service root's path is trimmed before the path is appended, so
+`http://localhost/odata/` and `http://localhost/odata` produce the same candidates.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

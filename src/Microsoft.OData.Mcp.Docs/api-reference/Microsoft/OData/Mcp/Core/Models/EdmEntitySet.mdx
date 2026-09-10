@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmEntitySet', 'Microsoft.OData.Mcp.Core.Models.EdmEntitySet', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -29,13 +27,13 @@ Represents an entity set in an OData entity container.
 ## Remarks
 
 Entity sets define collections of entities that can be accessed through the OData service.
-            They provide the addressable resources that clients can query, create, update, and delete.
-            Each entity set is associated with a specific entity type and may include navigation
-            property bindings to establish relationships with other entity sets.
+They provide the addressable resources that clients can query, create, update, and delete.
+Each entity set is associated with a specific entity type and may include navigation
+property bindings to establish relationships with other entity sets.
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmEntitySet](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntitySet) class.
 
@@ -45,7 +43,7 @@ Initializes a new instance of the [EdmEntitySet](/api-reference/Microsoft/OData/
 public EdmEntitySet()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmEntitySet](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntitySet) class with the specified name and entity type.
 
@@ -68,7 +66,7 @@ public EdmEntitySet(string name, string entityType)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *name* or *entityType* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -80,7 +78,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Annotations
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Annotations
 
 Gets or sets the annotations for this entity set.
 
@@ -98,9 +96,24 @@ A dictionary of annotations that provide additional metadata about the entity se
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets the CSDL documentation summary or `Core.Description` for this entity set.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A human-readable summary from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityType
 
 Gets or sets the entity type of the entities in this set.
 
@@ -118,9 +131,9 @@ The fully qualified name of the entity type for entities in this set.
 #### Remarks
 
 All entities in the set must be instances of this entity type or its derived types.
-            This determines the structure and properties available for entities in the set.
+This determines the structure and properties available for entities in the set.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityTypeName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityTypeName
 
 Gets the short name of the entity type (without namespace).
 
@@ -135,7 +148,7 @@ public string EntityTypeName { get; }
 Type: `string`
 The entity type name without the namespace prefix.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntityTypeNamespace
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityTypeNamespace
 
 Gets the namespace of the entity type.
 
@@ -150,7 +163,7 @@ public string EntityTypeNamespace { get; }
 Type: `string`
 The namespace portion of the entity type, or an empty string if no namespace.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  HasNavigationPropertyBindings
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasNavigationPropertyBindings
 
 Gets a value indicating whether this entity set has any navigation property bindings.
 
@@ -165,7 +178,7 @@ public bool HasNavigationPropertyBindings { get; }
 Type: `bool`
 `true` if the entity set has navigation property bindings; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IncludeInServiceDocument
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeInServiceDocument
 
 Gets or sets a value indicating whether change tracking is enabled for this entity set.
 
@@ -183,9 +196,24 @@ Type: `bool`
 #### Remarks
 
 When change tracking is enabled, the service can provide delta tokens and support
-            for change tracking queries, allowing clients to efficiently retrieve only changed data.
+for change tracking queries, allowing clients to efficiently retrieve only changed data.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Name
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
+
+Gets or sets the CSDL long description or `Core.LongDescription` for this entity set.
+
+#### Syntax
+
+```csharp
+public string LongDescription { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A longer documentation string from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
 Gets or sets the name of the entity set.
 
@@ -203,9 +231,9 @@ The name used to address this entity set in OData URLs.
 #### Remarks
 
 The entity set name appears in the URL path when accessing the collection
-            or individual entities within the set.
+or individual entities within the set.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  NavigationPropertyBindings
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NavigationPropertyBindings
 
 Gets or sets the navigation property bindings for this entity set.
 
@@ -223,12 +251,12 @@ A collection of navigation property bindings that establish relationships with o
 #### Remarks
 
 Navigation property bindings specify which entity set should be used when following
-            a navigation property from entities in this set. They establish the connections
-            between related entity sets in the model.
+a navigation property from entities in this set. They establish the connections
+between related entity sets in the model.
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddAnnotation
 
 Adds an annotation to this entity set.
 
@@ -251,7 +279,7 @@ public void AddAnnotation(string term, object value)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *term* is null or whitespace. |
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddNavigationPropertyBinding
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddNavigationPropertyBinding
 
 Adds a navigation property binding to this entity set.
 
@@ -274,7 +302,7 @@ public void AddNavigationPropertyBinding(string navigationPropertyPath, string t
 |-----------|-------------|
 | `ArgumentException` | Thrown when *navigationPropertyPath* or *target* is null or whitespace. |
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="blue">Override</Badge>
 
 Determines whether the specified object is equal to the current entity set.
 
@@ -295,7 +323,7 @@ public override bool Equals(object obj)
 Type: `bool`
 `true` if the specified object is equal to the current entity set; otherwise, `false`.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -315,7 +343,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -336,7 +364,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAnnotation
 
 Gets an annotation value by term.
 
@@ -361,7 +389,7 @@ The annotation value, or the default value of *T* if not found.
 
 - `T` - The type of the annotation value.
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="blue">Override</Badge>
 
 Returns a hash code for the current entity set.
 
@@ -376,7 +404,7 @@ public override int GetHashCode()
 Type: `int`
 A hash code for the current entity set.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -390,7 +418,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetNavigationPropertyBinding
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetNavigationPropertyBinding
 
 Gets a navigation property binding by navigation property path.
 
@@ -411,7 +439,7 @@ public Microsoft.OData.Mcp.Core.Models.EdmNavigationPropertyBinding GetNavigatio
 Type: `Microsoft.OData.Mcp.Core.Models.EdmNavigationPropertyBinding?`
 The navigation property binding with the specified path, or `null` if not found.
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -425,7 +453,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -439,7 +467,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -460,7 +488,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  RemoveNavigationPropertyBinding
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RemoveNavigationPropertyBinding
 
 Removes a navigation property binding from this entity set.
 
@@ -481,7 +509,7 @@ public bool RemoveNavigationPropertyBinding(string navigationPropertyPath)
 Type: `bool`
 `true` if the binding was removed; otherwise, `false`.
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the entity set.
 
@@ -496,7 +524,7 @@ public override string ToString()
 Type: `string`
 A string containing the entity set name and entity type.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

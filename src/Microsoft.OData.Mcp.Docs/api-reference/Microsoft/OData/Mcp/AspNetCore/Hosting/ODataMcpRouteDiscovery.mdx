@@ -1,0 +1,52 @@
+---
+title: ODataMcpRouteDiscovery
+description: "Discovers `(prefix, IEdmModel)` pairs from ASP.NET Core endpoint routing without compiling against Microsoft.AspNetCore.OData 7 or 8."
+icon: bolt
+tag: "STATIC"
+keywords: ['ODataMcpRouteDiscovery', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteDiscovery', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteDiscovery
+```
+
+## Summary
+
+Discovers `(prefix, IEdmModel)` pairs from ASP.NET Core endpoint routing without compiling against
+Microsoft.AspNetCore.OData 7 or 8.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Discover
+
+Discovers OData prefixes and models from explicit registration, endpoint metadata, OData 7/Restier
+catch-all routes, and (when present) an already-loaded OData options dictionary.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding> Discover(System.IServiceProvider services, Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `services` | `System.IServiceProvider` | The application service provider. |
+| `options` | `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions` | Host include/exclude and explicit routes. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding>`
+Bindings after include/exclude filters. Duplicate prefixes keep the last discovered model.
+

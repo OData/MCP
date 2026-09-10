@@ -1,0 +1,419 @@
+---
+title: EdmEnumType
+description: "Represents an enumeration type in an OData model."
+icon: lock
+tag: "SEALED"
+keywords: ['EdmEnumType', 'Microsoft.OData.Mcp.Core.Models.EdmEnumType', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Models
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Models.EdmEnumType
+```
+
+## Summary
+
+Represents an enumeration type in an OData model.
+
+## Remarks
+
+Enumeration types declare a closed set of named members over an integral underlying type. The members
+are part of the type shape the calling AI reads, so a type with zero members is rejected at parse time.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [EdmEnumType](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEnumType) class.
+
+#### Syntax
+
+```csharp
+public EdmEnumType()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [EdmEnumType](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmEnumType) class with the specified name and namespace.
+
+#### Syntax
+
+```csharp
+public EdmEnumType(string name, string namespace)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `name` | `string` | The name of the enumeration type. |
+| `namespace` | `string` | The namespace of the enumeration type. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *name* or *namespace* is null or whitespace. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets the CSDL documentation summary or `Core.Description` for this type.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A human-readable summary from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
+
+Gets the fully qualified name of the enumeration type.
+
+#### Syntax
+
+```csharp
+public string FullName { get; }
+```
+
+#### Property Value
+
+Type: `string`
+The namespace and name combined with a dot separator.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsFlags
+
+Gets or sets a value indicating whether members can be combined as bit flags.
+
+#### Syntax
+
+```csharp
+public bool IsFlags { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+`true` when CSDL declares `IsFlags="true"`; otherwise, `false`.
+
+#### Remarks
+
+Flag enumerations accept comma-separated member names in JSON, for example `"Read,Write"`.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
+
+Gets or sets the CSDL long description or `Core.LongDescription` for this type.
+
+#### Syntax
+
+```csharp
+public string LongDescription { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A longer documentation string from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Members
+
+Gets or sets the declared members in declaration order.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmEnumMember> Members { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmEnumMember>`
+The members of the enumeration. Never empty for a parsed model.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
+
+Gets or sets the name of the enumeration type.
+
+#### Syntax
+
+```csharp
+public required string Name { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+The local name of the type within its namespace.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Namespace
+
+Gets or sets the namespace of the enumeration type.
+
+#### Syntax
+
+```csharp
+public required string Namespace { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+The namespace that contains this type.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UnderlyingType
+
+Gets or sets the integral EDM type that stores member values.
+
+#### Syntax
+
+```csharp
+public string UnderlyingType { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+One of `Edm.Byte`, `Edm.SByte`, `Edm.Int16`, `Edm.Int32`, or `Edm.Int64`. Defaults to `Edm.Int32`.
+
+#### Remarks
+
+This is the storage type only. It does not describe the JSON wire format, which carries member names by default.
+
+## Methods
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="blue">Override</Badge>
+
+Determines whether the specified object is equal to the current enumeration type.
+
+#### Syntax
+
+```csharp
+public override bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | The object to compare with the current type. |
+
+#### Returns
+
+Type: `bool`
+`true` if the specified object declares the same type; otherwise, `false`.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="blue">Override</Badge>
+
+Returns a hash code for the current enumeration type.
+
+#### Syntax
+
+```csharp
+public override int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+A hash code for the current type.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetMember
+
+Gets a member by name.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmEnumMember GetMember(string memberName)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `memberName` | `string` | The name of the member to retrieve. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmEnumMember?`
+The member with the specified name, or `null` if not found.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMember
+
+Determines whether the enumeration declares a member with the specified name.
+
+#### Syntax
+
+```csharp
+public bool HasMember(string memberName)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `memberName` | `string` | The name of the member to check. |
+
+#### Returns
+
+Type: `bool`
+`true` if the member exists; otherwise, `false`.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
+
+Returns a string representation of the enumeration type.
+
+#### Syntax
+
+```csharp
+public override string ToString()
+```
+
+#### Returns
+
+Type: `string`
+The fully qualified name of the type.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

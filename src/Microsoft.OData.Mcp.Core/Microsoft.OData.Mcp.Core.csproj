@@ -1,42 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0;</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <PackageId>Microsoft.OData.Mcp.Core</PackageId>
-        <Title>Microsoft OData MCP Server Core</Title>
-        <Description>Core library for creating MCP servers from OData metadata, including CSDL parsing and domain models.</Description>
+        <Title>Microsoft OData for AI — Core</Title>
+        <Description>Shared catalog, CSDL parser, and models for Microsoft OData for AI. Used by Local MCP and Remote MCP. Take a direct dependency only if you are building a custom host.</Description>
         <PackageTags>odata;mcp;server;metadata;csdl</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="9.*" />
-        <PackageReference Include="ModelContextProtocol" Version="0.*-*" />
+        <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
+        <PackageReference Include="ModelContextProtocol" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="11.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="11.*-*" />
+        <PackageReference Include="System.Text.Json" Version="11.*-*" />
+
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*-*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*-*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*-*" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.*-*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.*" />
+        <PackageReference Include="System.Text.Json" Version="10.*" />
+
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
+        <PackageReference Include="System.Text.Json" Version="10.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.*" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+        <PackageReference Include="System.Text.Json" Version="10.*" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
-    </ItemGroup>
 
 </Project>

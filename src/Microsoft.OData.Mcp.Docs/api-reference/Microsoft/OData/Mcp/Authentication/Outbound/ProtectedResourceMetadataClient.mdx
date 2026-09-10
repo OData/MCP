@@ -1,0 +1,238 @@
+---
+title: ProtectedResourceMetadataClient
+description: "Fetches an RFC 9728 protected resource metadata document over the handler-free `'OAuth'` named [HttpClient](https://learn.microsoft.com/dotnet/api/system.net..."
+icon: lock
+sidebarTitle: ProtectedResourceMetadataClient
+tag: "SEALED"
+keywords: ['ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient
+```
+
+## Summary
+
+Fetches an RFC 9728 protected resource metadata document over the handler-free `"OAuth"` named
+[HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient), treating every well-known failure per `AUTH-14`: 401, 403, 404, and a
+failed parse are logged and swallowed; a timeout or 5xx is retried once before it becomes fatal.
+
+## Remarks
+
+A new `"OAuth"` client is requested from [IHttpClientFactory](https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory) on every call rather than
+cached, matching the "Two named HttpClients" table in `specs/v3/AUTHENTICATION.md`: this client
+carries no delegating handler and is safe to create per request. Response bodies are never logged.
+
+## Examples
+
+```csharp
+var client = new ProtectedResourceMetadataClient(httpClientFactory, logger);
+var metadata = await client.TryGetAsync(new Uri("https://api.example.com/.well-known/oauth-protected-resource"), cancellationToken);
+if (metadata is not null &amp;&amp; metadata.AuthorizationServers?.Count &gt; 0)
+{
+    // Continue discovery against metadata.AuthorizationServers[0].
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ProtectedResourceMetadataClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ProtectedResourceMetadataClient) class.
+
+#### Syntax
+
+```csharp
+public ProtectedResourceMetadataClient(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory used to create the `"OAuth"` named client per call. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient>` | The logger this instance records non-fatal well-known outcomes to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *httpClientFactory* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TryGetAsync
+
+Attempts to fetch and parse the RFC 9728 protected resource metadata document at a well-known URL.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.ProtectedResourceMetadata> TryGetAsync(System.Uri url, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `System.Uri` | The absolute protected resource metadata URL. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.ProtectedResourceMetadata?>`
+The parsed document on a `200` response with a well-formed body; otherwise [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null)
+after a 401, 403, 404, unparseable body, or any other non-retryable non-success status.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *url* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *url* is not an absolute URI, or is an `http` URI whose host is not loopback. |
+| `OutboundDiscoveryException` | Thrown when the request times out, fails at the transport, or returns a 5xx status, after one retry. |
+
+#### Examples
+
+```csharp
+var metadata = await client.TryGetAsync(server.ProtectedResourceMetadataUri, cancellationToken);
+```
+

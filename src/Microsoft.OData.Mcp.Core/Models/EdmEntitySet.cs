@@ -44,6 +44,18 @@ namespace Microsoft.OData.Mcp.Core.Models
         public required string EntityType { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSDL documentation summary or <c>Core.Description</c> for this entity set.
+        /// </summary>
+        /// <value>A human-readable summary from metadata, or <c>null</c> when none is declared.</value>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this entity set.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether change tracking is enabled for this entity set.
         /// </summary>
         /// <value><c>true</c> if change tracking is enabled; otherwise, <c>false</c>.</value>

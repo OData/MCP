@@ -1,0 +1,229 @@
+---
+title: EdmPayloadValidator
+description: "Validates tool payloads against the declared EDM before any OData HTTP is sent, and formats values for the wire."
+icon: bolt
+tag: "STATIC"
+keywords: ['EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog.EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.EdmPayloadValidator
+```
+
+## Summary
+
+Validates tool payloads against the declared EDM before any OData HTTP is sent, and formats values for the wire.
+
+## Remarks
+
+This is how the first `tools/call` becomes the right one: a wrong JSON kind, an unknown property, a missing
+required-on-create value, an enum member that does not exist, or a string over `MaxLength` is reported with
+the declared shape instead of a round trip to the service. Every rule here is OPTIMIZATION.md §4 and §5.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DescribeExpected
+
+Describes the JSON the EDM type expects, for error messages.
+
+#### Syntax
+
+```csharp
+public static string DescribeExpected(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `edmType` | `string` | The EDM type name. |
+
+#### Returns
+
+Type: `string`
+Text such as `a JSON number` or `one of Red, Green`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FormatUrlLiteral
+
+Formats a primitive or enumeration argument as an OData URL literal for a function call.
+
+#### Syntax
+
+```csharp
+public static string FormatUrlLiteral(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType, System.Text.Json.JsonElement value)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `edmType` | `string` | The parameter's EDM type. |
+| `value` | `System.Text.Json.JsonElement` | The validated JSON value. |
+
+#### Returns
+
+Type: `string?`
+The literal (for example `'open'`, `33`, `NS.Color'Red'`, `duration'P1D'`), or `null` when the
+value must travel as a parameter alias (complex types, collections, entities).
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> NormalizeBodyValue
+
+Converts a validated argument to the value written into an action's JSON body.
+
+#### Syntax
+
+```csharp
+public static object NormalizeBodyValue(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType, System.Text.Json.JsonElement value)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `edmType` | `string` | The parameter's EDM type. |
+| `value` | `System.Text.Json.JsonElement` | The validated JSON value. |
+
+#### Returns
+
+Type: `object?`
+The member name for enumerations given as numbers or OData literals; otherwise the element unchanged.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateEntityBody
+
+Validates a create or update body against the declared type.
+
+#### Syntax
+
+```csharp
+public static string ValidateEntityBody(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape shape, System.Text.Json.JsonElement body, bool isCreate)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (required-on-create enforcement, enum wire format). |
+| `shape` | `Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape` | The target type's shape. |
+| `body` | `System.Text.Json.JsonElement` | The parsed JSON object. |
+| `isCreate` | `bool` | `true` for POST, which also checks required-on-create; `false` for PATCH. |
+
+#### Returns
+
+Type: `string?`
+`null` when the body is valid; otherwise the message the caller returns as a tool error.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model*, *options*, or *shape* is null. |
+
+#### Remarks
+
+Checks, in order: required-on-create (POST only, unless [ODataMcpCatalogOptions.EnforceRequiredOnCreate](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#enforcerequiredoncreate)
+is off), unknown properties on closed types, JSON kind per EDM type, `null` for non-nullable properties, enum
+membership, and `MaxLength`. Keys containing `@` (annotations, `Nav@odata.bind`) and navigation
+property names (deep insert) are passed through.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateOperationArguments
+
+Validates the `parameters` object of an `odata_call` against the operation's declared parameters.
+
+#### Syntax
+
+```csharp
+public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, bool isBound, System.Nullable<System.Text.Json.JsonElement> arguments, string signature, out System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>> values)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
+| `parameters` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter>` | The declared parameters, including the binding parameter when bound. |
+| `isBound` | `bool` | Whether the first declared parameter is the binding parameter. |
+| `arguments` | `System.Nullable<System.Text.Json.JsonElement>` | The caller's `parameters` object, or `null` when omitted. |
+| `signature` | `string` | The rendered signature, appended to errors. |
+| `values` | `System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>>` | Receives the accepted arguments keyed by declared parameter name, in declaration order. |
+
+#### Returns
+
+Type: `string?`
+`null` when every argument is declared, required ones are present, and kinds match; otherwise the error message.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model*, *options*, or *parameters* is null. |
+
+#### Remarks
+
+Names match by exact spelling; there is no fuzzy matching. Passing the binding parameter is an unknown-parameter error.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateValue
+
+Validates one JSON value against an EDM type.
+
+#### Syntax
+
+```csharp
+public static string ValidateValue(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, string edmType, bool nullable, System.Nullable<int> maxLength, System.Text.Json.JsonElement value, string label)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
+| `edmType` | `string` | The EDM type name, possibly `Collection(...)`. |
+| `nullable` | `bool` | Whether JSON `null` is acceptable. |
+| `maxLength` | `System.Nullable<int>` | The declared `MaxLength` for strings, or `null`. |
+| `value` | `System.Text.Json.JsonElement` | The JSON value. |
+| `label` | `string` | How to name the value in errors, for example `Parameter 'lat'` or `Property 'Age' on Person`. |
+
+#### Returns
+
+Type: `string?`
+`null` when the value fits; otherwise a sentence ending in a period.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *options* is null. |
+

@@ -1,56 +1,56 @@
-# OData MCP Performance Benchmarks
+# OData MCP Benchmarks
 
-This project contains performance benchmarks for critical components of the OData MCP system.
+Two kinds of measurement for the OData MCP catalog, in one console app:
 
-## Running Benchmarks
+- **Compute** — BenchmarkDotNet suites for the hot paths: CSDL parse, catalog build, the describe/list tools, and the pre-HTTP validation on create and update.
+- **Tokens** — how many `cl100k_base` tokens a model spends on what we send it, compared with what it used to spend and with the raw metadata formats.
+
+Both run against the public Northwind and TripPin services, the same ones the tests use.
+
+## Running
 
 ```bash
-cd benchmarks/Microsoft.OData.Mcp.Benchmarks
+cd src/Microsoft.OData.Mcp.Benchmarks
+
+# every compute suite (takes a while)
 dotnet run -c Release
+
+# one suite
+dotnet run -c Release -- --filter *Describe*
+
+# token reports (writes Reports/TOKENS.md, Reports/FORMATS.md, Reports/Formats/*)
+dotnet run -c Release -- --tokens
+
+# token reports somewhere else
+dotnet run -c Release -- --tokens --out C:\temp\reports
 ```
 
-## Benchmark Categories
+BenchmarkDotNet results land in `BenchmarkDotNet.Artifacts/` (git-ignored). Token reports are committed under `Reports/` so the numbers are reviewable in pull requests.
 
-### Route Parsing Benchmarks
-Compares different approaches to parsing MCP routes:
-- **SpanRouteParser** (our implementation) - Zero-allocation parsing using `ReadOnlySpan<char>`
-- Regex parsing - Traditional regex-based approach
-- String.Split - Allocation-heavy splitting approach
-- IndexOf - Simple string searching
+## Compute suites
 
-### Tool Caching Benchmarks
-Evaluates different caching strategies:
-- **StartupToolCache** (our implementation) - Frozen dictionary-based caching
-- FrozenDictionary - Direct frozen dictionary usage
-- IMemoryCache - ASP.NET Core memory cache
-- ConcurrentDictionary - Thread-safe dictionary
-- Dictionary - Simple dictionary (not thread-safe)
+| Suite | Measures | Parameterized by |
+|---|---|---|
+| `CsdlParseBenchmarks` | `CsdlParser.ParseFromString` on a live `$metadata` document | service |
+| `CatalogBuildBenchmarks` | `new ODataMcpCatalog(...)`: resources, tools, typed schemas, and (static model) every type shape | service, static vs dynamic model |
+| `DescribeBenchmarks` | `odata_describe_type` (text, json), `odata_describe_model` (summary, complete text, complete json), `odata_list_entity_sets`, `odata_list_operations` | service |
+| `WritePathBenchmarks` | `odata_create` (valid, missing required) and `odata_update` through a canned executor, so only validation and formatting are timed | service |
 
-### Route Matching Benchmarks
-Tests route matching performance:
-- **McpRouteMatcher** (our implementation) - Optimized route matching
-- Dictionary lookup - Simple dictionary-based matching
-- Regex matching - Pattern-based matching
-- Linear search - Brute force approach
+All suites use `[MemoryDiagnoser]`. Read **Mean** for time and **Allocated** for heap pressure.
 
-## Expected Results
+## Token reports
 
-Based on our zero-allocation design:
+| Report | What it says |
+|---|---|
+| [`Reports/TOKENS.md`](./Reports/TOKENS.md) | Every Breakdance baseline file, Before vs Current, plus a per-section breakdown of the `tools/list` aggregate. |
+| [`Reports/FORMATS.md`](./Reports/FORMATS.md) | The same model as CSDL XML, CSDL JSON, and our shapes, for one entity type and for the whole service, with every counted artifact in `Reports/Formats/`. |
 
-1. **Route Parsing**: SpanRouteParser should be 5-10x faster than regex and allocate zero heap memory
-2. **Tool Caching**: StartupToolCache with FrozenDictionary should provide O(1) lookups with minimal overhead
-3. **Route Matching**: McpRouteMatcher should outperform regex by 3-5x for typical workloads
+The baselines themselves live in [`../Microsoft.OData.Mcp.Tests.Core/Baselines/TypeShapes`](../Microsoft.OData.Mcp.Tests.Core/Baselines/TypeShapes) because the tests assert them. This project links them into its output (see the `Content` item in the project file) rather than copying, so a regenerated baseline is picked up on the next build. `Before/` provenance is documented in that folder's `README.md`.
 
-## Interpreting Results
+The build-time guard that fails when a paired tool result grows is `TokenBaselineTests` in Tests.Core; this project only reports.
 
-Look for:
-- **Mean** - Average execution time (lower is better)
-- **Allocated** - Heap allocations (zero is ideal for hot paths)
-- **Gen 0/1/2** - Garbage collection pressure (lower is better)
+## Adding a suite
 
-## Adding New Benchmarks
-
-1. Create a new class with `[MemoryDiagnoser]` attribute
-2. Add `[Benchmark]` methods to compare approaches
-3. Use `[GlobalSetup]` for initialization
-4. Add to Program.cs to include in benchmark runs
+1. Add a class under `Compute/` with `[MemoryDiagnoser]`, a `[Params(LiveModels.Northwind, LiveModels.TripPin)]` property, and an async `[GlobalSetup]` that calls `LiveModels.LoadAsync`.
+2. Keep everything that is not the measured call in setup. Use `NoopODataExecutor` for model-only tools and `CannedODataExecutor` for write paths.
+3. `BenchmarkSwitcher` finds it by reflection; nothing to register.

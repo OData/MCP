@@ -1,0 +1,345 @@
+---
+title: ToolsMcpHost
+description: "The local MCP host for a remote OData service: one generic host that owns the authenticating `'OData'` client, the unauthenticated `'OAuth'` client, the toke..."
+icon: lock
+tag: "SEALED"
+keywords: ['ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting', 'class', 'System.Object', 'System.IDisposable']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Tools.dll
+
+**Namespace:** Microsoft.OData.Mcp.Tools.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost
+```
+
+## Summary
+
+The local MCP host for a remote OData service: one generic host that owns the authenticating
+`"OData"` client, the unauthenticated `"OAuth"` client, the token cache, the catalog built from
+the service's `$metadata`, and — when the process is serving stdio — the MCP server itself.
+
+## Remarks
+
+There is exactly one `Build()`, and everything the process needs is registered before it. That
+matters because [IHttpClientFactory](https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory) cannot be shared between service providers: the
+`$metadata` GET has to run through the same authenticating client the tools later run through, or
+the credential the handler negotiated would be attached to one client and thrown away with the other.
+
+## Examples
+
+```csharp
+using var lifetime = new CancellationTokenSource();
+using var toolsHost = await ToolsMcpHost.CreateAsync(
+    "https://api.example.com/odata",
+    new OutboundOAuthOptions { ClientId = "cli" },
+    includeStdioMcp: true,
+    verbose: false,
+    lifetime,
+    lifetime.Token);
+
+await toolsHost.Host.RunAsync(lifetime.Token);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ToolsMcpHost](/api-reference/Microsoft/OData/Mcp/Tools/Hosting/ToolsMcpHost) class.
+
+#### Syntax
+
+```csharp
+public ToolsMcpHost(Microsoft.Extensions.Hosting.IHost host, System.Uri serviceRoot, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession session)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `host` | `Microsoft.Extensions.Hosting.IHost` | The generic host that owns every service this host resolves. |
+| `serviceRoot` | `System.Uri` | The OData service root. |
+| `session` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession` | The MCP session. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *host*, *serviceRoot*, or *session* is
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Catalog
+
+Gets the catalog advertised by this host.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog Catalog { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Host
+
+Gets the generic host that owns every service this host resolves, including the two named HTTP
+clients and, when stdio is enabled, the MCP server.
+
+#### Syntax
+
+```csharp
+public Microsoft.Extensions.Hosting.IHost Host { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.Extensions.Hosting.IHost`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ServiceRoot
+
+Gets the remote service root, always with a trailing slash.
+
+#### Syntax
+
+```csharp
+public System.Uri ServiceRoot { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Session
+
+Gets the MCP session.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession Session { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession`
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CreateAsync
+
+Builds the host, authenticates against the remote service, fetches and parses `$metadata`, and
+returns a host whose catalog and session are ready to serve.
+
+#### Syntax
+
+```csharp
+public static System.Threading.Tasks.Task<Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost> CreateAsync(string serviceUrl, Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options, bool includeStdioMcp, bool verbose, System.Threading.CancellationTokenSource lifetime, System.Threading.CancellationToken cancellationToken, System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceUrl` | `string` | The OData service root URL. |
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The operator's outbound authentication settings. |
+| `includeStdioMcp` | `bool` | Whether to register the stdio MCP server and its `shutdown_server` tool. |
+| `verbose` | `bool` | Whether to log at [Debug](https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.loglevel.debug) instead of [Information](https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.loglevel.information). |
+| `lifetime` | `System.Threading.CancellationTokenSource?` | The lifetime `shutdown_server` cancels; required when *includeStdioMcp* is [`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool). |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the metadata fetch and any sign-in it triggers. |
+| `configureServices` | `System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection>?` | A last chance to add or replace registrations, applied immediately before the single `Build()`. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost>`
+The host.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *serviceUrl* is empty, is not absolute, or is not `http` or `https`. |
+| `ArgumentNullException` | Thrown when *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), or *lifetime* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) while *includeStdioMcp* is [`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool). |
+| `InvalidOperationException` | Thrown when the `$metadata` fetch has to run an OAuth grant and this host's credential store cannot round-trip a value. |
+| `HttpRequestException` | Thrown when the `$metadata` request fails after authentication. |
+
+#### Examples
+
+```csharp
+// A test can point both named clients at in-process servers without touching the network.
+using var toolsHost = await ToolsMcpHost.CreateAsync(
+    resource.ServiceRoot.ToString(),
+    options,
+    includeStdioMcp: false,
+    verbose: false,
+    lifetime: null,
+    cancellationToken,
+    services =&gt;
+    {
+        services.AddHttpClient(ODataMcpAuthConstants.ODataHttpClientName)
+            .ConfigurePrimaryHttpMessageHandler(() =&gt; resource.Server.CreateHandler());
+    });
+```
+
+#### Remarks
+
+The order here is the whole point. Registrations first, *configureServices* last,
+then one `Build()`; only afterwards does anything touch the network, because the
+`$metadata` GET is what drives the authentication handler through discovery, consent, and the
+token cache. A restart that finds a still-valid cached token spends exactly one request here: no
+device code, no token endpoint, no discovery.
+
+The credential store is not probed here either: `OutboundOAuthClient` proves it usable on the
+first acquisition, so a service that answers `$metadata` without a challenge never touches the
+operating system keyring and never creates a token cache directory.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Dispose
+
+#### Syntax
+
+```csharp
+public void Dispose()
+```
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+## Related APIs
+
+- System.IDisposable
+

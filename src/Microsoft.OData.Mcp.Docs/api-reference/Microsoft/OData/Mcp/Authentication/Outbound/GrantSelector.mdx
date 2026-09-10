@@ -1,0 +1,122 @@
+---
+title: GrantSelector
+description: "Selects the [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) outbound OAuth runs for a remote OData service,..."
+icon: bolt
+tag: "STATIC"
+keywords: ['GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound.GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.GrantSelector
+```
+
+## Summary
+
+Selects the [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) outbound OAuth runs for a remote OData service, per step 6 of
+the discovery algorithm: an operator override when advertised and implemented, else enterprise identity
+assertion, else non-interactive client credentials, else the interactive default of device code falling
+back to authorization code.
+
+## Remarks
+
+This type never runs a grant itself; it only decides which one a caller should run. Per `AUTH-5` it
+is a top-level type, and per `specs/v3/AUTHENTICATION.md` it throws
+[NotSupportedException](https://learn.microsoft.com/dotnet/api/system.notsupportedexception) — never silently substituting another grant — for a kind this build
+has not registered a grant class for yet, so a PR that lands a new grant only has to add it to
+[GrantSelector.Implemented](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/GrantSelector#implemented).
+
+## Examples
+
+```csharp
+var kind = GrantSelector.Select(discovery, options, interactive: true);
+if (kind == OutboundGrantKind.DeviceCode)
+{
+    // Run the device code grant against discovery.AuthorizationServer.
+}
+```
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsImplemented
+
+Determines whether a grant kind is registered in this build.
+
+#### Syntax
+
+```csharp
+public static bool IsImplemented(Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind kind)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind` | The grant kind to check. |
+
+#### Returns
+
+Type: `bool`
+[`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool) when *kind* is in [GrantSelector.Implemented](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/GrantSelector#implemented).
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Select
+
+Selects the grant kind to run for a discovered authorization server, per step 6 of the discovery
+algorithm.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind Select(Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult discovery, Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions options, bool interactive)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `discovery` | `Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult` | The discovery result whose advertised grants and authorization server are consulted. |
+| `options` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions` | The operator's outbound OAuth settings. |
+| `interactive` | `bool` | Whether this process can run an interactive grant, such as device code. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind`
+The selected grant kind.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *discovery* or *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#refreshtoken),
+which is never an operator-selectable grant. |
+| `OutboundDiscoveryException` | Thrown when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is set to a grant the authorization server does
+not advertise, when identity assertion is configured but the authorization server does not advertise
+the RFC 7523 JWT bearer grant type, or when nothing usable is advertised and none of the automatic
+selection rules apply. |
+| `NotSupportedException` | Thrown when the grant that would otherwise be selected is not in [GrantSelector.Implemented](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/GrantSelector#implemented). |
+
+#### Examples
+
+```csharp
+var kind = GrantSelector.Select(discovery, options, interactive: !Console.IsInputRedirected);
+```
+
+#### Remarks
+
+Selection order is: (1) an explicit [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) override; (2) enterprise
+identity assertion when an IdP endpoint and an id token source are both configured, which fails first
+rather than silently falling through when the authorization server does not advertise the RFC 7523
+JWT bearer grant type; (3) non-interactive client
+credentials when advertised and a client secret is configured; (4) the interactive default of device
+code, falling back to authorization code, when *interactive* is [`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+

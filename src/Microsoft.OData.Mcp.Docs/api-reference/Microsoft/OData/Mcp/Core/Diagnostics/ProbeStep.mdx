@@ -1,0 +1,263 @@
+---
+title: ProbeStep
+description: "One step of a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe): what was tried, how it ended, and what the service said."
+icon: lock
+tag: "SEALED"
+keywords: ['ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep
+```
+
+## Summary
+
+One step of a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe): what was tried, how it ended, and what the service said.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ProbeStep](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeStep) class.
+
+#### Syntax
+
+```csharp
+public ProbeStep(Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome outcome, string detail, System.Nullable<int> statusCode = null, System.Collections.Generic.IReadOnlyList<string> challenges = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `outcome` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome` | The outcome. |
+| `detail` | `string` | One readable line. |
+| `statusCode` | `System.Nullable<int>` | The HTTP status code, if any. |
+| `challenges` | `System.Collections.Generic.IReadOnlyList<string>?` | The `WWW-Authenticate` values, if any. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Challenges
+
+Every `WWW-Authenticate` value the response carried. Empty unless the outcome is
+[ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#unauthorized) or [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#forbidden).
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> Challenges { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Detail
+
+One line a person can read, for example `Categories?$top=1 → 200`.
+
+#### Syntax
+
+```csharp
+public string Detail { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Outcome
+
+The outcome.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome Outcome { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StatusCode
+
+The HTTP status code when a response was received, otherwise `null`.
+
+#### Syntax
+
+```csharp
+public System.Nullable<int> StatusCode { get; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<int>`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsSecured
+
+Whether the step ended with an authentication or authorization refusal.
+
+#### Syntax
+
+```csharp
+public bool IsSecured()
+```
+
+#### Returns
+
+Type: `bool`
+`true` for [ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#unauthorized) and [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#forbidden).
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
+
+#### Syntax
+
+```csharp
+public override string ToString()
+```
+
+#### Returns
+
+Type: `string`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

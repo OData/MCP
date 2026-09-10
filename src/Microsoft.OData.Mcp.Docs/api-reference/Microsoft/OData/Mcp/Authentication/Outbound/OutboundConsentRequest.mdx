@@ -1,0 +1,310 @@
+---
+title: OutboundConsentRequest
+description: "The consent-request payload passed to [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions..."
+icon: lock
+tag: "SEALED"
+keywords: ['OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest
+```
+
+## Summary
+
+The consent-request payload passed to [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#consentpresenter), and carried by
+[OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException), when interactive sign-in is required to complete an outbound
+OAuth grant.
+
+## Remarks
+
+Per `AUTH-12` this type never carries a `device_code`, an access token, a refresh token, or a
+PKCE `code_verifier` — only what a human or an MCP client needs to complete sign-in out of band.
+Fields that must stay off this type (the pending grant's `device_code`, `interval`,
+`code_verifier`, expected `state`, and live `HttpListener`) live instead on
+`OutboundOAuthClient`'s internal pending-grant state.
+
+Every URL on this type is server-controlled: it comes from an authorization server that a malicious
+protected resource could have named. Because a consent URL is handed to `ShellExecute` by the stdio
+presenter and to an MCP client as an elicitation URL, the constructor is the chokepoint that refuses any
+scheme other than `https`, or `http` on a loopback host, before either can happen.
+
+## Examples
+
+```csharp
+var request = new OutboundConsentRequest(
+    OutboundGrantKind.DeviceCode,
+    new Uri("https://login.microsoftonline.com/common/oauth2/v2.0/devicecode"),
+    "Sign in to continue.",
+    userCode: "ABCD-EFGH",
+    verificationUri: new Uri("https://microsoft.com/devicelogin"));
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OutboundConsentRequest](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest) class.
+
+#### Syntax
+
+```csharp
+public OutboundConsentRequest(Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind kind, System.Uri url, string message, string userCode, System.Uri verificationUri, string elicitationId = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?` | The grant kind this consent request is completing. |
+| `url` | `System.Uri` | The absolute URL to open to complete sign-in. |
+| `message` | `string` | The human-readable message describing what to do. |
+| `userCode` | `string?` | The short code a human types at *verificationUri*, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `verificationUri` | `System.Uri?` | The verification URI a human is directed to, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `elicitationId` | `string?` | The correlation identifier, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to generate a new `D`-format GUID. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *url* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *url* is not an absolute URI, when *message* is empty or
+white space, or when *elicitationId* is non-[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) and empty or white space. |
+| `OutboundDiscoveryException` | Thrown when *url* or *verificationUri* is neither an `https`
+URI nor an `http` URI on a loopback host. |
+
+#### Remarks
+
+The scheme check runs on both URLs and it runs here rather than at each presenter, because there is
+no presenter this instance is guaranteed to reach: it is also carried by
+[OAuthConsentRequiredException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthConsentRequiredException) to whatever host catches it.
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitationId
+
+Gets the identifier this consent request correlates an MCP elicitation to.
+
+#### Syntax
+
+```csharp
+public string ElicitationId { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Kind
+
+Gets the grant kind this consent request is completing.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind Kind { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Message
+
+Gets the human-readable message describing what the operator or the LLM should do.
+
+#### Syntax
+
+```csharp
+public string Message { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Url
+
+Gets the absolute URL to open to complete sign-in: an authorization URI for interactive grants, or a
+device verification URI for the device code grant.
+
+#### Syntax
+
+```csharp
+public System.Uri Url { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UserCode
+
+Gets the short code a human types at [OutboundConsentRequest.VerificationUri](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#verificationuri), or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when
+the grant kind does not use one.
+
+#### Syntax
+
+```csharp
+public string UserCode { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> VerificationUri
+
+Gets the verification URI a human is directed to enter [OutboundConsentRequest.UserCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest#usercode) at, or
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant kind does not use one.
+
+#### Syntax
+
+```csharp
+public System.Uri VerificationUri { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

@@ -1,0 +1,232 @@
+---
+title: EdmModelShape
+description: "Renders the whole-service map behind `odata_describe_model`: a summary of sets and navigations, a complete dump of every in-scope type, a relationship-only m..."
+icon: bolt
+tag: "STATIC"
+keywords: ['EdmModelShape', 'Microsoft.OData.Mcp.Core.Catalog.EdmModelShape', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.EdmModelShape
+```
+
+## Summary
+
+Renders the whole-service map behind `odata_describe_model`: a summary of sets and navigations, a complete
+dump of every in-scope type, a relationship-only mermaid diagram, and the unbound operation list.
+
+## Remarks
+
+This is the context-sized stand-in for `$metadata`. Every shape is composed from the cached
+[EdmTypeShape](/api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmTypeShape) instances so `odata_describe_type`, type cards, and the model map never disagree.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderCompleteJson
+
+Renders the complete model as compact JSON: every in-scope type body, the complex types they use, and unbound operations.
+
+#### Syntax
+
+```csharp
+public static string RenderCompleteJson(Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog catalog, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet> sets)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `catalog` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog` | The catalog. |
+| `sets` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>` | The in-scope entity sets. |
+
+#### Returns
+
+Type: `string`
+`{ "types": {...}, "complexTypes"?: {...}, "operations"?: {...} }`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *catalog* or *sets* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderCompleteText
+
+Renders the complete model as text: every in-scope type in the declaration grammar, the complex types they use, then unbound operations.
+
+#### Syntax
+
+```csharp
+public static string RenderCompleteText(Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog catalog, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet> sets)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `catalog` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog` | The catalog. |
+| `sets` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>` | The in-scope entity sets. |
+
+#### Returns
+
+Type: `string`
+Blank-line separated blocks, LF endings, no trailing newline.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *catalog* or *sets* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderMermaid
+
+Renders a relationship-only mermaid `erDiagram` for the in-scope types.
+
+#### Syntax
+
+```csharp
+public static string RenderMermaid(Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog catalog, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet> sets)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `catalog` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog` | The catalog. |
+| `sets` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>` | The in-scope entity sets. |
+
+#### Returns
+
+Type: `string`
+One `A ||--o{ B : Nav` line per navigation (`||--o|` for single targets) and a bare entity line for types with no navigations.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *catalog* or *sets* is null. |
+
+#### Remarks
+
+No attribute compartments, whatever the requested detail. Names that are not mermaid-safe are quoted.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderOperationLines
+
+Renders the unbound operations block for text shapes.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<string> RenderOperationLines(Microsoft.OData.Mcp.Core.Models.EdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+`operations` followed by one indented signature per unbound operation, or an empty list when none are declared.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderOperationsJson
+
+Renders the unbound operations as a name-to-signature map.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.Dictionary<string, string> RenderOperationsJson(Microsoft.OData.Mcp.Core.Models.EdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+
+#### Returns
+
+Type: `System.Collections.Generic.Dictionary<string, string>`
+`{ "Name": "(args) -&gt; Return // writes" }` in declaration order, functions first. Empty when none are declared.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderSummaryJson
+
+Renders the model summary as compact JSON: every in-scope set with its type, key, docs, and navigations, then unbound operations.
+
+#### Syntax
+
+```csharp
+public static string RenderSummaryJson(Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog catalog, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet> sets)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `catalog` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog` | The catalog. |
+| `sets` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>` | The in-scope entity sets. |
+
+#### Returns
+
+Type: `string`
+`{ "sets": { "Customers": { "type", "key", "description"?, "navs"? } }, "operations"?: {...} }`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *catalog* or *sets* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderSummaryText
+
+Renders the model summary as text: one header per in-scope set with at most one doc line and its navigations, then unbound operations.
+
+#### Syntax
+
+```csharp
+public static string RenderSummaryText(Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog catalog, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet> sets)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `catalog` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog` | The catalog. |
+| `sets` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmEntitySet>` | The in-scope entity sets. |
+
+#### Returns
+
+Type: `string`
+LF-separated lines, no property lists, no trailing newline.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *catalog* or *sets* is null. |
+

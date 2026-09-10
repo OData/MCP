@@ -1,0 +1,1 @@
+{"type":"object","properties":{"key":{"type":"string"},"body":{"type":"string"}},"required":["key","body"]}

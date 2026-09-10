@@ -1,0 +1,441 @@
+---
+title: ODataMcpCatalogOptions
+description: "Options that control how an [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) is built from an EDM."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions
+```
+
+## Summary
+
+Options that control how an [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) is built from an EDM.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public ODataMcpCatalogOptions()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnforceRequiredOnCreate
+
+Gets or sets a value indicating whether create calls fail before HTTP when a required-on-create property is missing.
+
+#### Syntax
+
+```csharp
+public bool EnforceRequiredOnCreate { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+Defaults to `true`: the declared metadata is the contract. Turn it off only for a service whose metadata
+declares properties non-nullable that its POST handler actually rejects or defaults (live TripPin does this
+with `Gender`). JSON kind, unknown property, enum, and `MaxLength` checks stay on regardless.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnumJsonFormat
+
+Gets or sets how enumeration values are advertised in JSON Schema and accepted on input.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat EnumJsonFormat { get; set; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat`
+
+#### Remarks
+
+Defaults to [ODataEnumJsonFormat.Auto](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat#auto): member names are advertised and JSON numbers are
+also accepted. The advertised schema never changes during a catalog's lifetime.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExcludeEntitySets
+
+Gets or sets entity set names to exclude from named tools and resources.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> ExcludeEntitySets { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeCreate
+
+Gets or sets a value indicating whether create tools are generated.
+
+#### Syntax
+
+```csharp
+public bool IncludeCreate { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeDelete
+
+Gets or sets a value indicating whether delete tools are generated.
+
+#### Syntax
+
+```csharp
+public bool IncludeDelete { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeEntitySets
+
+Gets or sets entity set names that receive named tools first.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> IncludeEntitySets { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeUpdate
+
+Gets or sets a value indicating whether update tools are generated.
+
+#### Syntax
+
+```csharp
+public bool IncludeUpdate { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InstructionsPreface
+
+Gets or sets service-specific guidance placed before the default MCP server instructions.
+
+#### Syntax
+
+```csharp
+public string InstructionsPreface { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+#### Remarks
+
+The default text in [ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default) is always included; this only prepends.
+See [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.core.catalog.odatamcpinstructions.compose(system.string)).
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsDynamicModel
+
+Gets or sets a value indicating whether the EDM can change while the catalog is alive.
+
+#### Syntax
+
+```csharp
+public bool IsDynamicModel { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+When `false` (the default) type shapes are computed once at catalog construction and cached.
+Set to `true` for models whose declared members change at runtime so shapes are rebuilt per request.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxCompletionValues
+
+Gets or sets the maximum number of entity-set completion values returned for an empty prefix.
+
+#### Syntax
+
+```csharp
+public int MaxCompletionValues { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxExpandLength
+
+Gets or sets the maximum length of an `expand` argument.
+
+#### Syntax
+
+```csharp
+public int MaxExpandLength { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxFilterLength
+
+Gets or sets the maximum length of a `filter` argument.
+
+#### Syntax
+
+```csharp
+public int MaxFilterLength { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxNamedTools
+
+Gets or sets the maximum number of tools including generics.
+
+#### Syntax
+
+```csharp
+public int MaxNamedTools { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxRequestBodyBytes
+
+Gets or sets the maximum JSON body size in bytes for create, update, and operation calls.
+
+#### Syntax
+
+```csharp
+public int MaxRequestBodyBytes { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxResources
+
+Gets or sets the maximum number of catalog resources, including `$metadata`.
+
+#### Syntax
+
+```csharp
+public int MaxResources { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxResponseBytes
+
+Gets or sets the maximum response size in bytes before a tool result is rejected.
+
+#### Syntax
+
+```csharp
+public int MaxResponseBytes { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxSelectLength
+
+Gets or sets the maximum length of a `select` argument.
+
+#### Syntax
+
+```csharp
+public int MaxSelectLength { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RouteName
+
+Gets or sets the MCP resource route name (for example, "remote" or "odata").
+
+#### Syntax
+
+```csharp
+public string RouteName { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

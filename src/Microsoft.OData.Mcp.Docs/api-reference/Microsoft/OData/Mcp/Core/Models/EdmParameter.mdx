@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmParameter', 'Microsoft.OData.Mcp.Core.Models.EdmParameter', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -32,7 +30,7 @@ Parameters are used to define inputs to functions and actions in the OData model
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmParameter](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmParameter) class.
 
@@ -42,7 +40,7 @@ Initializes a new instance of the [EdmParameter](/api-reference/Microsoft/OData/
 public EdmParameter()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmParameter](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmParameter) class with the specified name and type.
 
@@ -59,7 +57,7 @@ public EdmParameter(string name, string type)
 | `name` | `string` | The parameter name. |
 | `type` | `string` | The parameter type. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -71,7 +69,37 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MaxLength
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets the CSDL documentation summary or `Core.Description` for this parameter.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A human-readable summary from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
+
+Gets or sets the CSDL long description or `Core.LongDescription` for this parameter.
+
+#### Syntax
+
+```csharp
+public string LongDescription { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A longer documentation string from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxLength
 
 Gets or sets the maximum length for string parameters.
 
@@ -86,7 +114,7 @@ public System.Nullable<int> MaxLength { get; set; }
 Type: `System.Nullable<int>`
 The maximum length, or null if not specified.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Name
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
 Gets or sets the name of the parameter.
 
@@ -101,7 +129,7 @@ public string Name { get; set; }
 Type: `string`
 The parameter name.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Nullable
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Nullable
 
 Gets or sets a value indicating whether the parameter is nullable.
 
@@ -116,7 +144,7 @@ public bool Nullable { get; set; }
 Type: `bool`
 `true` if the parameter accepts null values; otherwise, `false`.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Precision
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Precision
 
 Gets or sets the precision for numeric parameters.
 
@@ -131,7 +159,7 @@ public System.Nullable<int> Precision { get; set; }
 Type: `System.Nullable<int>`
 The precision, or null if not specified.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Scale
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scale
 
 Gets or sets the scale for decimal parameters.
 
@@ -146,7 +174,7 @@ public System.Nullable<int> Scale { get; set; }
 Type: `System.Nullable<int>`
 The scale, or null if not specified.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Type
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Type
 
 Gets or sets the type of the parameter.
 
@@ -163,7 +191,7 @@ The parameter type.
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -183,7 +211,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -204,7 +232,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -218,7 +246,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -232,7 +260,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -246,7 +274,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -267,7 +295,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

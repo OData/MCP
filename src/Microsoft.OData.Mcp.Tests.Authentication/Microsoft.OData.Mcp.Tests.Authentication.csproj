@@ -1,13 +1,68 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);NU1608</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Breakdance.AspNetCore" Version="8.*-*" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="11.*-*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="11.*-*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
         <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared\Microsoft.OData.Mcp.Tests.Shared.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared.Authentication\Microsoft.OData.Mcp.Tests.Shared.Authentication.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tools\Microsoft.OData.Mcp.Tools.csproj" />
+    </ItemGroup>
+
+    <!-- Linked verbatim from the in-process OData 8 suite; only ConventionRichHost is redefined here (TESTING.md §8). -->
+    <ItemGroup>
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\CustomersController.cs" Link="Linked\CustomersController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\DocumentsController.cs" Link="Linked\Fixtures\DocumentsController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\FlagsController.cs" Link="Linked\Fixtures\FlagsController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\McpJsonRpc.cs" Link="Linked\Fixtures\McpJsonRpc.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\OperationControllers.cs" Link="Linked\Fixtures\OperationControllers.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\OrderDetailsController.cs" Link="Linked\Fixtures\OrderDetailsController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\OrdersController.cs" Link="Linked\Fixtures\OrdersController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\StatusControllers.cs" Link="Linked\Fixtures\StatusControllers.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\WidgetsController.cs" Link="Linked\Fixtures\WidgetsController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Paging\ClientCustomersController.cs" Link="Linked\Paging\ClientCustomersController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Paging\PagingCustomerSeed.cs" Link="Linked\Paging\PagingCustomerSeed.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Paging\ServerCustomersController.cs" Link="Linked\Paging\ServerCustomersController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\LocalhostTestServerFactory.cs" Link="Linked\RateLimit\LocalhostTestServerFactory.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\MostValuableController.cs" Link="Linked\RateLimit\MostValuableController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\ODataPartitionedLimiter.cs" Link="Linked\RateLimit\ODataPartitionedLimiter.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\ProductsController.cs" Link="Linked\RateLimit\ProductsController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\RateLimitBudget.cs" Link="Linked\RateLimit\RateLimitBudget.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Security\McpJsonContent.cs" Link="Linked\Security\McpJsonContent.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Security\TestJwt.cs" Link="Linked\Security\TestJwt.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudHostTests.cs" Link="Linked\Tools\NamedCrudHostTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\Odata*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,132 @@
+---
+title: OutboundDiscoveryException
+description: "The single exception type outbound discovery throws when a well-known request fails in a way that `AUTH-14` does not treat as a non-fatal fallback: a timeout..."
+icon: file-brackets-curly
+keywords: ['OutboundDiscoveryException', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundDiscoveryException', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Exception']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Exception
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundDiscoveryException
+```
+
+## Summary
+
+The single exception type outbound discovery throws when a well-known request fails in a way that
+`AUTH-14` does not treat as a non-fatal fallback: a timeout, a transport failure, or a repeated
+server error after the one retry discovery allows.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` AUTH-14, well-known 401/403/404 and a failed parse are not fatal
+and never throw this type; only a timeout or a repeated 5xx after retrying once does. Every discovery
+failure in this package throws this exception, so a caller can catch one type regardless of which
+well-known request failed.
+
+## Examples
+
+```csharp
+throw new OutboundDiscoveryException(url, (int)response.StatusCode);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OutboundDiscoveryException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundDiscoveryException) class with a message.
+
+#### Syntax
+
+```csharp
+public OutboundDiscoveryException(string message)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string` | The error message. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OutboundDiscoveryException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundDiscoveryException) class with a message and
+the exception that caused this failure.
+
+#### Syntax
+
+```csharp
+public OutboundDiscoveryException(string message, System.Exception inner)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string` | The error message. |
+| `inner` | `System.Exception` | The exception that caused this failure. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [OutboundDiscoveryException](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundDiscoveryException) class for a well-known
+request that failed with an HTTP status code.
+
+#### Syntax
+
+```csharp
+public OutboundDiscoveryException(System.Uri url, int statusCode)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `System.Uri` | The well-known URL that was requested. |
+| `statusCode` | `int` | The HTTP status code the request failed with. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *url* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StatusCode
+
+Gets the HTTP status code the failing request returned, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the failure
+was a transport exception with no response.
+
+#### Syntax
+
+```csharp
+public System.Nullable<int> StatusCode { get; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<int>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Url
+
+Gets the well-known URL the failing request was sent to, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when this
+instance was constructed with only a message.
+
+#### Syntax
+
+```csharp
+public System.Uri Url { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+

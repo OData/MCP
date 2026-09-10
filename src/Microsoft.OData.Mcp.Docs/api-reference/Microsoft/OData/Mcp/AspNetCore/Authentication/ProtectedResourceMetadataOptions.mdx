@@ -1,0 +1,341 @@
+---
+title: ProtectedResourceMetadataOptions
+description: "What an API publishes about how to sign in to it: the RFC 8414 authorization servers that issue its tokens, the scopes a client should ask for, and which rou..."
+icon: lock
+sidebarTitle: ProtectedResourceMetadataOptions
+tag: "SEALED"
+keywords: ['ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Authentication
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions
+```
+
+## Summary
+
+What an API publishes about how to sign in to it: the RFC 8414 authorization servers that issue
+its tokens, the scopes a client should ask for, and which route bases the published document covers.
+
+## Remarks
+
+Nothing here describes how the API validates a token. That stays with whatever authentication handler
+the app already registered; this type only describes the API to a client that has not signed in yet.
+The default route base is the application root, which is the usual shape of an API that is not sharing
+a host with MVC.
+
+## Examples
+
+```csharp
+builder.Services.AddProtectedResourceMetadata(options =&gt;
+{
+    options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+    options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+    options.ResourceName = "Contoso API";
+});
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public ProtectedResourceMetadataOptions()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AnnotateChallenges
+
+Gets or sets a value indicating whether a `401` under a covered route base has its
+`WWW-Authenticate` challenge rewritten to carry `resource_metadata`.
+
+#### Syntax
+
+```csharp
+public bool AnnotateChallenges { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+Defaults to [`true`](https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool).
+
+#### Remarks
+
+Turn this off only when the app already emits an RFC 9728 hint of its own. A client that never sees
+`resource_metadata` still finds the document through the two well-known URLs, but it spends an
+extra request doing so.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthorizationServers
+
+Gets the RFC 8414 issuer URLs of the authorization servers that issue tokens for this API, in the
+order a client should try them.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<System.Uri> AuthorizationServers { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<System.Uri>`
+At least one entry is required. Each must be absolute and `https`; `http` is accepted only
+for loopback hosts so a test or a local identity provider still works.
+
+#### Examples
+
+```csharp
+options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+```
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Prefixes
+
+Gets the route bases the published documents cover, in the same form Endpoint Routing and Minimal
+APIs accept.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> Prefixes { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+Empty by default, which means the application root only. A non-empty list replaces that default.
+
+#### Examples
+
+```csharp
+options.Prefixes.Add("");
+options.Prefixes.Add("odata");
+options.Prefixes.Add("api/v1");
+```
+
+#### Remarks
+
+An empty string and `/` are the application root, matching `MapGroup("")` and
+`AddRouteComponents(string.Empty, model)`. `odata` and `/odata/` both mean the
+`/odata` base. Nested bases such as `api/v1` are valid. A whitespace-only entry is
+rejected by [ProtectedResourceMetadataOptions.Validate](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#validate): it is not a route base.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceDocumentation
+
+Gets or sets the URL of a page a developer can read to learn how to call this API.
+
+#### Syntax
+
+```csharp
+public System.Uri ResourceDocumentation { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Uri?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceName
+
+Gets or sets the human-readable name of this API, shown to a user during consent.
+
+#### Syntax
+
+```csharp
+public string ResourceName { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ScopesSupported
+
+Gets the scope values a client should request to call this API.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> ScopesSupported { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>`
+Empty by default, in which case a client falls back to whatever scopes its operator configured.
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Validate
+
+Fails the host when the published document would be unusable.
+
+#### Syntax
+
+```csharp
+public void Validate()
+```
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `InvalidOperationException` | Thrown when [ProtectedResourceMetadataOptions.AuthorizationServers](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#authorizationservers) is empty, carries a [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), a
+non-absolute, or a non-`https` non-loopback entry; or when [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes) carries a
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) or whitespace-only entry. |
+
+#### Examples
+
+```csharp
+var options = new ProtectedResourceMetadataOptions();
+options.AuthorizationServers.Add(new Uri("https://login.example.com/tenant"));
+
+options.Validate();
+```
+
+#### Remarks
+
+Called by [ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) before the pipeline is built, so a
+misconfigured API refuses to start rather than serving a document that sends every client to an
+authorization server that does not exist. An empty string and `/` in [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes)
+are the application root and pass.
+

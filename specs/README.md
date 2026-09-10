@@ -1,100 +1,26 @@
-# Microsoft OData MCP Server Documentation
+# Specs
 
-Welcome to the Microsoft OData MCP Server documentation! This system enables AI models to interact with OData APIs through the Model Context Protocol (MCP), automatically generating tools from OData metadata.
+## Authoritative specification
 
-## What is OData MCP Server?
+**→ [v3/](./v3/)** — OData MCP Platform v3 (MCP `2026-07-28` / SDK 2.x)
 
-The OData MCP Server is a bridge that:
-- **Discovers** OData services and their metadata
-- **Generates** MCP tools automatically from OData CSDL
-- **Exposes** these tools to AI models through the MCP protocol
-- **Handles** authentication, authorization, and secure API access
+| Document | Purpose |
+|----------|---------|
+| [v3/README.md](./v3/README.md) | Index and hard rules |
+| [v3/CRITICAL-ANALYSIS.md](./v3/CRITICAL-ANALYSIS.md) | Autopsy of the dual prototypes |
+| [v3/ARCHITECTURE.md](./v3/ARCHITECTURE.md) | Packages, hosts, public API |
+| [v3/PROTOCOL.md](./v3/PROTOCOL.md) | MCP 2 resources, tools, discovery |
+| [v3/METADATA-STRATEGY.md](./v3/METADATA-STRATEGY.md) | Custom EDM, `IEdmModel` adapter, docs |
+| [v3/TOOL-SURFACE.md](./v3/TOOL-SURFACE.md) | Generic + named tools, `shutdown_server` |
+| [v3/TYPE-SHAPES.md](./v3/TYPE-SHAPES.md) | Declaration grammar and compact JSON for types and models |
+| [v3/OPTIMIZATION.md](./v3/OPTIMIZATION.md) | Instructions, descriptions, schemas, pre-HTTP validation, baselines |
+| [v3/OPTIMIZATION-PLAN.md](./v3/OPTIMIZATION-PLAN.md) | Task list that implemented the optimization spec |
+| [v3/OPTIMIZATION-REPORT.md](./v3/OPTIMIZATION-REPORT.md) | Token measurements per round |
+| [v3/ODATA-HOSTING.md](./v3/ODATA-HOSTING.md) | Web MCP inside ASP.NET Core OData apps |
+| [v3/AUTHENTICATION.md](./v3/AUTHENTICATION.md) | Outbound OAuth and protected-resource metadata |
+| [v3/TESTING.md](./v3/TESTING.md) | Test strategy: real HTTP, no mocks |
+| [v3/TOOL-TEST-MANIFEST.md](./v3/TOOL-TEST-MANIFEST.md) | Per-tool contract and test inventory |
+| [v3/INVENTORY.md](./v3/INVENTORY.md) | Concept vs delete for every prior type |
+| [v3/EXECUTION-PLAN.md](./v3/EXECUTION-PLAN.md) | Agent task list for the v3 build |
 
-## Documentation Overview
-
-### Getting Started
-- [Quick Start Guide](getting-started.md) - Get up and running in 5 minutes
-- [Installation](installation.md) - Detailed installation instructions
-- [Configuration](configuration.md) - Configuration options and settings
-
-### Integration
-- [Integration Guide](integration-guide.md) - Integrate with existing OData APIs
-- [Security Setup](security.md) - Configure authentication and authorization
-- [Examples](examples.md) - Real-world examples and use cases
-
-### Reference
-- [API Reference](api-reference.md) - Detailed API documentation
-- [Troubleshooting](troubleshooting.md) - Common issues and solutions
-
-## Key Features
-
-✨ **Automatic Tool Generation** - No manual tool definition needed  
-🔒 **Built-in Security** - OAuth2/JWT authentication support  
-🚀 **High Performance** - Caching and optimized tool generation  
-🔧 **Flexible Deployment** - Run as middleware or standalone server  
-📊 **Full OData Support** - Queries, relationships, functions, actions  
-🤖 **AI-Ready** - Designed for LLM interaction patterns
-
-## Architecture Overview
-
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   AI/LLM Model  │────▶│  MCP Protocol   │────▶│  OData Service  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │  OData MCP      │
-                        │  Server         │
-                        │                 │
-                        │ • Tool Gen      │
-                        │ • Auth          │
-                        │ • Routing       │
-                        └─────────────────┘
-```
-
-## Quick Example
-
-```csharp
-// Add to your ASP.NET Core application
-var builder = WebApplication.CreateBuilder(args);
-
-// Add OData MCP Server
-builder.Services.AddODataMcpServer(options =>
-{
-    options.ServiceUrl = "https://api.example.com/odata";
-    options.EnableAuthentication = true;
-});
-
-var app = builder.Build();
-
-// Use OData MCP middleware
-app.UseODataMcp("/mcp");
-
-app.Run();
-```
-
-This automatically exposes your OData service to AI models through MCP!
-
-## Use Cases
-
-- **Enterprise Data Access** - Enable AI to query and update business data
-- **API Integration** - Connect AI models to existing OData APIs
-- **Automation** - Build AI-powered automation workflows
-- **Data Analysis** - Let AI analyze and report on OData sources
-- **Customer Service** - AI agents accessing customer data via OData
-
-## Getting Help
-
-- 📖 Read the [Getting Started Guide](getting-started.md)
-- 💬 Check [Troubleshooting](troubleshooting.md) for common issues
-- 🐛 Report issues on [GitHub](https://github.com/microsoft/odata-mcp-server)
-- 📧 Contact support at odata-mcp@microsoft.com
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](../CONTRIBUTING.md) for details.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+Do **not** implement from documents outside `v3/`. Earlier planning material was removed from the repository; it remains in history before this folder was trimmed, and [v3/CRITICAL-ANALYSIS.md](./v3/CRITICAL-ANALYSIS.md) records what was learned from it.

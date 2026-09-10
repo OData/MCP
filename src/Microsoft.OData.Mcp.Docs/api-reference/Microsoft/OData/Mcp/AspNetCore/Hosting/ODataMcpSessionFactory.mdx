@@ -1,0 +1,226 @@
+---
+title: ODataMcpSessionFactory
+description: "Builds one MCP session per enabled OData route prefix discovered from endpoint routing."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpSessionFactory', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpSessionFactory', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpSessionFactory
+```
+
+## Summary
+
+Builds one MCP session per enabled OData route prefix discovered from endpoint routing.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ODataMcpSessionFactory](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpSessionFactory) class.
+
+#### Syntax
+
+```csharp
+public ODataMcpSessionFactory(System.IServiceProvider services, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions> hostOptions, System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `services` | `System.IServiceProvider` | The application service provider used to read `EndpointDataSource`. |
+| `hostOptions` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions>` | Host catalog, include/exclude, and explicit routes. |
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The in-process HTTP client factory. |
+| `httpContextAccessor` | `Microsoft.AspNetCore.Http.IHttpContextAccessor` | The current HTTP context. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Sessions
+
+Gets sessions keyed by OData route prefix. Discovery runs on first access when
+`UseODataMcp` has not already rebuilt after endpoints exist.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession> Sessions { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession>`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Rebuild
+
+Discovers routes from the current endpoint data source and rebuilds sessions.
+Called by the startup filter after routing is built so Restier/OData catch-alls are visible.
+
+#### Syntax
+
+```csharp
+public void Rebuild()
+```
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resolve
+
+Resolves the session for the current HTTP path.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession Resolve(Microsoft.AspNetCore.Http.HttpContext http)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `http` | `Microsoft.AspNetCore.Http.HttpContext?` | The current HTTP context. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession`
+The matching session.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

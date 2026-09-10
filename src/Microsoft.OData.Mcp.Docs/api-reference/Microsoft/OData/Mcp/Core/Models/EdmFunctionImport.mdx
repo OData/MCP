@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmFunctionImport', 'Microsoft.OData.Mcp.Core.Models.EdmFunctionImport', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -29,13 +27,13 @@ Represents a function import in an OData entity container.
 ## Remarks
 
 Function imports expose functions as addressable resources in the OData service.
-            They allow functions to be called through the service interface, providing custom
-            operations that don't fit the standard CRUD pattern. Functions are side-effect free
-            and can be invoked using GET requests.
+They allow functions to be called through the service interface, providing custom
+operations that don't fit the standard CRUD pattern. Functions are side-effect free
+and can be invoked using GET requests.
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmFunctionImport](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmFunctionImport) class.
 
@@ -45,7 +43,7 @@ Initializes a new instance of the [EdmFunctionImport](/api-reference/Microsoft/O
 public EdmFunctionImport()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmFunctionImport](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmFunctionImport) class with the specified name and function.
 
@@ -68,7 +66,7 @@ public EdmFunctionImport(string name, string function)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *name* or *function* is null or whitespace. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -80,7 +78,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Annotations
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Annotations
 
 Gets or sets the annotations for this function import.
 
@@ -98,9 +96,9 @@ A dictionary of annotations that provide additional metadata about the function 
 #### Remarks
 
 Annotations can be used to specify additional behaviors, constraints, or metadata
-            that are not captured by the standard OData model elements.
+that are not captured by the standard OData model elements.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  EntitySet
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySet
 
 Gets or sets the entity set associated with this function import.
 
@@ -118,10 +116,10 @@ The name of the entity set, or `null` if the function doesn't return entities fr
 #### Remarks
 
 When the function returns entities, this property specifies which entity set
-            those entities belong to. This is important for establishing the correct context
-            for navigation properties and other operations.
+those entities belong to. This is important for establishing the correct context
+for navigation properties and other operations.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Function
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Function
 
 Gets or sets the fully qualified name of the function being imported.
 
@@ -139,9 +137,9 @@ The namespace and name of the function that this import exposes.
 #### Remarks
 
 This references a function defined elsewhere in the model. The function import
-            makes the function accessible as part of the entity container's interface.
+makes the function accessible as part of the entity container's interface.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IncludeInServiceDocument
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeInServiceDocument
 
 Gets or sets a value indicating whether this function import is included in the service document.
 
@@ -159,10 +157,10 @@ Type: `bool`
 #### Remarks
 
 When true, the function import will be listed in the service document, making it
-            discoverable by clients. When false, clients must know the function import name
-            in advance to use it.
+discoverable by clients. When false, clients must know the function import name
+in advance to use it.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Name
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
 Gets or sets the name of the function import.
 
@@ -183,7 +181,7 @@ The function import name appears in the URL path when invoking the function.
 
 ## Methods
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  AddAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddAnnotation
 
 Adds an annotation to this function import.
 
@@ -206,7 +204,7 @@ public void AddAnnotation(string term, object value)
 |-----------|-------------|
 | `ArgumentException` | Thrown when *term* is null or whitespace. |
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="blue">Override</Badge>
 
 Determines whether the specified object is equal to the current function import.
 
@@ -227,7 +225,7 @@ public override bool Equals(object obj)
 Type: `bool`
 `true` if the specified object is equal to the current function import; otherwise, `false`.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -247,7 +245,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -268,7 +266,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetAnnotation
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetAnnotation
 
 Gets an annotation value by term.
 
@@ -293,7 +291,7 @@ The annotation value, or the default value of *T* if not found.
 
 - `T` - The type of the annotation value.
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="blue">Override</Badge>
 
 Returns a hash code for the current function import.
 
@@ -308,7 +306,7 @@ public override int GetHashCode()
 Type: `int`
 A hash code for the current function import.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -322,7 +320,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -336,7 +334,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -350,7 +348,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -371,7 +369,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Override" variant="info" />
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
 
 Returns a string representation of the function import.
 
@@ -386,7 +384,7 @@ public override string ToString()
 Type: `string`
 A string containing the function import name and function.
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
