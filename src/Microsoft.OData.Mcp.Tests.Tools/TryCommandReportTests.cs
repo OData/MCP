@@ -77,7 +77,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             report.Should().Contain("[2/4] Data      ok    Categories?$top=1 -> 200 application/json");
             report.Should().Contain("[3/4] Security  none  metadata and data both answered");
             report.Should().Contain("[4/4] Results   ok    1 Category row; all 4 properties match the model");
-            report.Should().Contain($"Verdict: ready. Next: odata-mcp start {LiveOData.Northwind}/");
+            report.Should().Contain($"Verdict: ready. Next: dotnet odata-mcp start {LiveOData.Northwind}/");
             report.Should().NotContain("credentials you passed", "an open service never needs the second pass");
         }
 
