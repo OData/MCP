@@ -191,7 +191,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             result.Verdict.Should().Be(ServiceVerdict.Ready);
             requested.Should().Be("/Things?$top=1");
             result.Results.Detail.Should().Be("1 Thing row; all 2 properties match the model");
-            TryCommand.Render(result, "anonymously").Should().Contain("Verdict: ready. Next: odata-mcp start http://localhost/");
+            TryCommand.Render(result, "anonymously").Should().Contain("Verdict: ready. Next: dotnet odata-mcp start http://localhost/");
         }
 
         /// <summary>

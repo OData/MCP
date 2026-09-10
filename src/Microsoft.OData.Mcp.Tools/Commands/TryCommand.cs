@@ -20,15 +20,15 @@ namespace Microsoft.OData.Mcp.Tools.Commands
 {
 
     /// <summary>
-    /// <c>odata-mcp try &lt;url&gt;</c>: probe a service before committing to it. Fetches <c>$metadata</c>, reads one row
+    /// <c>dotnet odata-mcp try &lt;url&gt;</c>: probe a service before committing to it. Fetches <c>$metadata</c>, reads one row
     /// from the first entity set, says which of the two is secured, checks the row against the model, and prints a
     /// verdict. With auth flags it probes again through the authenticating client; without them, on a 401 it runs
     /// OAuth discovery and prints what it found.
     /// </summary>
     /// <example>
     /// <code>
-    /// odata-mcp try https://services.odata.org/V4/Northwind/Northwind.svc
-    /// odata-mcp try https://api.example.com/odata --client-id {app-id}
+    /// dotnet odata-mcp try https://services.odata.org/V4/Northwind/Northwind.svc
+    /// dotnet odata-mcp try https://api.example.com/odata --client-id {app-id}
     /// </code>
     /// </example>
     [Command(Name = "try", Description = "Probe an OData service: metadata, one row, security, and whether the results match the model.")]
@@ -264,13 +264,13 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                 }
 
                 report.AppendLine();
-                report.AppendLine($"Next: odata-mcp try {result.ServiceRoot} --client-id <your-app-id>   (add --grant, --scopes, or --auth-server if discovery needs help)");
+                report.AppendLine($"Next: dotnet odata-mcp try {result.ServiceRoot} --client-id <your-app-id>   (add --grant, --scopes, or --auth-server if discovery needs help)");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 report.AppendLine($"  Discovery failed: {ex.Message}");
                 report.AppendLine();
-                report.AppendLine($"Next: pass credentials explicitly, e.g. odata-mcp try {result.ServiceRoot} --auth-token <token>, or --auth-server <issuer> --client-id <app-id> when the service publishes no OAuth metadata.");
+                report.AppendLine($"Next: pass credentials explicitly, e.g. dotnet odata-mcp try {result.ServiceRoot} --auth-token <token>, or --auth-server <issuer> --client-id <app-id> when the service publishes no OAuth metadata.");
             }
 
             return report.ToString();
@@ -381,7 +381,7 @@ namespace Microsoft.OData.Mcp.Tools.Commands
 
             return result.Verdict switch
             {
-                ServiceVerdict.Ready => $"ready. Next: odata-mcp start {result.ServiceRoot}",
+                ServiceVerdict.Ready => $"ready. Next: dotnet odata-mcp start {result.ServiceRoot}",
                 ServiceVerdict.DataSecured => "data requires sign-in.",
                 ServiceVerdict.MetadataSecured => "metadata requires sign-in.",
                 ServiceVerdict.Unreachable => "unreachable. Check the service root; the tool appends $metadata itself.",

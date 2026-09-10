@@ -487,7 +487,7 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
 
                 return new CallToolResult
                 {
-                    Content = [new TextContentBlock { Text = "Sign-in declined or timed out; re-run 'odata-mcp start' if needed." }],
+                    Content = [new TextContentBlock { Text = "Sign-in declined or timed out; re-run 'dotnet odata-mcp start' if needed." }],
                     IsError = true
                 };
             }
