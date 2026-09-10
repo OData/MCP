@@ -16,7 +16,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
     /// await JsonSerializer.SerializeAsync(
     ///     context.Response.Body,
     ///     metadata,
-    ///     ODataProtectedResourceJsonContext.Default.ProtectedResourceMetadata,
+    ///     ProtectedResourceMetadataJsonContext.Default.ProtectedResourceMetadata,
     ///     context.RequestAborted);
     /// </code>
     /// </example>
@@ -27,7 +27,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
     /// </remarks>
     [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(SdkAuth.ProtectedResourceMetadata))]
-    internal sealed partial class ODataProtectedResourceJsonContext : JsonSerializerContext
+    internal sealed partial class ProtectedResourceMetadataJsonContext : JsonSerializerContext
     {
     }
 

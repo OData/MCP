@@ -3,7 +3,7 @@ title: Overview
 description: "Summary of the Microsoft.OData.Mcp.AspNetCore.Authentication Namespace"
 icon: folder-tree
 mode: wide
-keywords: ['Microsoft.OData.Mcp.AspNetCore.Authentication', 'namespace', 'ODataProtectedResourceMiddleware', 'ODataProtectedResourceOptions', 'ODataProtectedResourceStartupFilter']
+keywords: ['Microsoft.OData.Mcp.AspNetCore.Authentication', 'namespace', 'ProtectedResourceMetadataMiddleware', 'ProtectedResourceMetadataOptions', 'ProtectedResourceMetadataStartupFilter']
 ---
 
 ## Types
@@ -12,7 +12,7 @@ keywords: ['Microsoft.OData.Mcp.AspNetCore.Authentication', 'namespace', 'ODataP
 
 | Name | Summary |
 | ---- | ------- |
-| [ODataProtectedResourceMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceMiddleware) | Publishes RFC 9728 protected resource metadata for every OData route prefix the app serves, and rewrites  the `WWW-Authenticate` challenge on a `401` beneath one of those prefixes so a client is told  where that document lives. |
-| [ODataProtectedResourceOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions) | What an OData API publishes about how to sign in to it: the RFC 8414 authorization servers that issue  its tokens, the scopes a client should ask for, and which route prefixes the published document covers. |
-| [ODataProtectedResourceStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceStartupFilter) | Validates [ODataProtectedResourceOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions) at startup and prepends  [ODataProtectedResourceMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceMiddleware) to the pipeline, no matter how the app wrote its own  `Configure` delegate. |
+| [ProtectedResourceMetadataMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware) | Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the  `WWW-Authenticate` challenge on a `401` beneath one of those bases so a client is told  where that document lives. |
+| [ProtectedResourceMetadataOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions) | What an API publishes about how to sign in to it: the RFC 8414 authorization servers that issue  its tokens, the scopes a client should ask for, and which route bases the published document covers. |
+| [ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) | Validates [ProtectedResourceMetadataOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions) at startup and prepends  [ProtectedResourceMetadataMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware) to the pipeline, no matter how the app wrote its own  `Configure` delegate. |
 

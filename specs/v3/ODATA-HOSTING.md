@@ -36,7 +36,7 @@ A NuGet range `[7, 9)` on **Microsoft.AspNetCore.OData** is not sufficient. Rest
 
 `GetEdmVersion`, schema elements, entity sets, navigations, functions, actions, and vocabulary annotations used by the adapter are EdmLib APIs. They do **not** justify an OData 7 vs 8 product split.
 
-`IOdataExecutor` for the in-app host is HTTP under the route prefix. It does not need OData 7 or 8 types.
+`IODataExecutor` for the in-app host is HTTP under the route prefix. It does not need OData 7 or 8 types.
 
 ---
 

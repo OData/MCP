@@ -135,13 +135,15 @@ A global `UseRateLimiter` still applies when no policy name is set.
 Publish protected-resource metadata (RFC 9728) so `dotnet odata-mcp start` can discover the authorization server from a `401`. Independent of `AddODataMcp`.
 
 ```csharp
-builder.Services.AddODataProtectedResource(options =>
+builder.Services.AddProtectedResourceMetadata(options =>
 {
     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
 });
 ```
 
-There is no `Use` call. The document is served anonymously at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/{prefix}`. A `401` under a covered prefix gains `resource_metadata="…"`.
+There is no `Use` call. The default protected resource is the application root. The document is served anonymously at `/.well-known/oauth-protected-resource`. A `401` on the host — OData HTTP or `{prefix}/mcp` — gains `resource_metadata="…"`. Same authorization server, same scopes, same Bearer.
 
-Inbound OAuth on the MCP transport itself (agent → MCP HTTP) is not this package. Use your host’s authentication, or a gateway, in front of `{prefix}/mcp`.
+Set `options.Prefixes` when the resource is not the whole host — any route base Endpoint Routing or Minimal APIs accept, including `""` and `"/"`. Each extra base is also published at `/.well-known/oauth-protected-resource/{prefix}`.
+
+Token validation is your host’s authentication, or a gateway, in front of the API and MCP. This method publishes discovery; it does not issue or validate tokens.

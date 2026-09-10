@@ -86,9 +86,9 @@
                             "icon": "folder-tree",
                             "pages": [
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/index",
-                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceMiddleware",
-                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions",
-                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceStartupFilter"
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter"
                             ]
                           },
                           {

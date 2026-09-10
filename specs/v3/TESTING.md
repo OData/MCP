@@ -87,7 +87,7 @@ Core and Tools tests never reference Restier or AspNetCore.OData.
 
 ---
 
-## 8. Authenticated OData end to end (outbound OAuth, hop 2)
+## 8. Authenticated OData end to end (Local MCP → OData HTTP)
 
 [`AUTHENTICATION.md`](./AUTHENTICATION.md) tests discovery and grants against a **static-CSDL protected resource** and drives only the startup handshake through `ToolsMcpHost`. That leaves the handler's real job — attaching and refreshing `Authorization: Bearer` on every **data** call — untested against a real OData service unless live credentials are present (`Assert.Inconclusive` otherwise). This section closes that gap. It is authoritative for the layout below; `AUTHENTICATION.md` §Testing defers to it.
 
@@ -117,7 +117,7 @@ The authenticated project defines a class with the **same fully-qualified name a
 
 OData 7 and OData 8 still never share a process. `Tests.Shared.Authentication` has no OData dependency, so both authenticated projects may reference it.
 
-**Not linked** (hop 1, host-only behavior): JSON-RPC protocol suites, multi-prefix, include/exclude prefix, rate limiting, paging, `EndpointDataSource` discovery, `ODataMcpSessionFactory` tests. Hop-1 JSON-RPC calls that appear inside an otherwise-linked file run against the secured AspNetCore MCP endpoint (which requires the same Bearer); they are a regression check, not outbound coverage.
+**Not linked** (Remote MCP host suites): JSON-RPC protocol suites, multi-prefix, include/exclude prefix, rate limiting, paging, `EndpointDataSource` discovery, `ODataMcpSessionFactory` tests. JSON-RPC calls that appear inside an otherwise-linked file run against the secured AspNetCore MCP endpoint, which requires the **same Bearer** as OData when they share the host; they are a regression check that the colocated resource is one resource, not outbound-client coverage.
 
 ### 8.3 How the CLI reaches a `TestServer`
 

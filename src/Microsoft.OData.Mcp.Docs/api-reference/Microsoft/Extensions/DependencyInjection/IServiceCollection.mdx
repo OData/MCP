@@ -155,19 +155,19 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
 The service collection.
 
-### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataProtectedResource <Badge color="green">Extension</Badge>
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddProtectedResourceMetadata <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
 
-Publishes RFC 9728 protected resource metadata for every OData route this app serves, and annotates
-the `WWW-Authenticate` challenge on a `401` beneath one of those routes with the URL of
-that document. This is how a client such as `odata-mcp start` discovers how to sign in to the
-API without being told.
+Publishes RFC 9728 protected resource metadata for this host, and annotates the
+`WWW-Authenticate` challenge on a `401` beneath a covered route base with the URL of
+that document. This is how a client such as `dotnet odata-mcp start` discovers how to sign in
+without being told.
 
 #### Syntax
 
 ```csharp
-public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataProtectedResource(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions> configure)
+public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddProtectedResourceMetadata(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions> configure)
 ```
 
 #### Parameters
@@ -175,7 +175,7 @@ public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODa
 | Name | Type | Description |
 |------|------|-------------|
 | `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
-| `configure` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions>` | Configures what the API publishes about itself. |
+| `configure` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions>` | Configures what the API publishes about itself. |
 
 #### Returns
 
@@ -191,26 +191,23 @@ The service collection.
 #### Examples
 
 ```csharp
-builder.Services
-    .AddControllers()
-    .AddOData(options =&gt; options.AddRouteComponents("odata", GetEdmModel()));
-
-builder.Services.AddODataProtectedResource(options =&gt;
+builder.Services.AddProtectedResourceMetadata(options =&gt;
 {
     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
 });
 
-// GET /.well-known/oauth-protected-resource/odata now answers 200, anonymously.
+// GET /.well-known/oauth-protected-resource now answers 200, anonymously.
+// The protected resource is the application root.
 ```
 
 #### Remarks
 
-This is independent of [IServiceCollection)](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.odatamcp_aspnetcore_servicecollectionextensions.addodatamcp(microsoft.extensions.dependencyinjection.iservicecollection)): an API that hosts no MCP server
-at all still benefits, because the discovery this feeds is the client's, not ours. When
-`AddODataMcp`&lt;em&gt;is&lt;/em&gt; present, its
-[ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) and [ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes)
-filters apply here too, so a prefix hidden from agents is not advertised to them either.
+Independent of [IServiceCollection)](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.odatamcp_aspnetcore_servicecollectionextensions.addodatamcp(microsoft.extensions.dependencyinjection.iservicecollection)): an API that hosts no MCP server at all
+still benefits, because the discovery this feeds is the client's, not ours. The default route base
+is the application root. Set [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes) to any route
+base Endpoint Routing or Minimal APIs accept, including an empty string, when the resource is not
+the whole host.
 
 The middleware is inserted at the front of the pipeline through an `IStartupFilter`, which is
 what keeps the metadata document anonymously readable. There is no `Use` call to add. Calling

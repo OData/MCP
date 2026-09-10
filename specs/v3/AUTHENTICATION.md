@@ -2,11 +2,11 @@
 
 **Status:** Living (authoritative for CLI → remote OData auth)  
 **Author:** TBD  
-**Revised:** 2026-09-08 (rev 10 — `AddODataProtectedResource`: the other end of this hop, so an OData API can publish what the discovery algorithm below is looking for; see [Zero-config protected resource (`AddODataProtectedResource`)](#zero-config-protected-resource-addodataprotectedresource) and [Revision notes (rev 10)](#revision-notes-rev-10))  
-**Previously:** 2026-09-08 (rev 9 — `ToolsMcpHost.CreateAsync` `configureServices` hook and `verbose`; `OutboundOAuthClient` owns the service root; `PrmCandidates` ordered list; RFC 8707 `resource` gated on advertisement or `--resource`; `VerifyPersistence` on first acquisition, not startup; DCR for client credentials registers `client_secret_post`; see [Revision notes (rev 9)](#revision-notes-rev-9))  
+**Revised:** 2026-09-10 (rev 12 — colocated API and MCP share one RFC 9728 protected resource; split at who is calling, not at two resources; see [Who is calling](#who-is-calling) and [Revision notes (rev 12)](#revision-notes-rev-12))  
+**Previously:** 2026-09-10 (rev 11 — `AddProtectedResourceMetadata`: rename, default root; see [Revision notes (rev 11)](#revision-notes-rev-11))  
 **Protocol:** MCP `2026-07-28` via **ModelContextProtocol C# SDK 2.2**  
-**Hop:** `odata-mcp` (stdio) → remote OData HTTP we do not own  
-**Not this hop:** agent → MCP HTTP (`ClientOAuthProvider` / RFC 9728 on the MCP resource)
+**This document:** Local MCP (`dotnet odata-mcp`) authenticating to OData HTTP  
+**Same document when colocated:** assistant → MCP HTTP reads the same RFC 9728 metadata `AddProtectedResourceMetadata` publishes for the host
 
 ---
 
@@ -44,27 +44,29 @@ The operator specifies a URL. The `"OData"` handler reads `ObtainedAt + ExpiresI
 4. `CreateAsync` builds a throwaway `ServiceCollection`/`IHttpClientFactory` for the session executor, then `BuildStdioHost` registers a **different** named client. Unify that while wiring auth.
 5. Graph’s `/.well-known/oauth-protected-resource` is not anonymously readable. Naive RFC 9728 clients die.
 
-### Two hops — do not confuse them
+### Who is calling
+
+There are not two protected resources. When MCP HTTP and OData HTTP share a host — the Remote MCP case — they share **one** RFC 9728 document, typically the application root. Same authorization server, same scopes, same Bearer. A `401` under that base, whether it was `/mcp` or `$metadata`, points at that document.
+
+The split is **who is calling**:
 
 ```mermaid
 flowchart LR
-  subgraph hop1 [Hop 1 — OUT OF SCOPE]
-    Agent[Agent / MCP client]
-    McpHttp[AspNetCore MCP HTTP]
-    Agent -->|"ClientOAuthProvider + RFC 9728 on the MCP resource"| McpHttp
+  Agent[Assistant / MCP client]
+  CLI["dotnet odata-mcp"]
+  subgraph host [One host]
+    PRM["/.well-known/oauth-protected-resource"]
+    Mcp["MCP HTTP"]
+    Api[OData HTTP]
   end
-
-  subgraph hop2 [Hop 2 — THIS SPEC]
-    CLI["odata-mcp stdio"]
-    OData[Remote OData HTTP]
-    CLI -->|"outbound OAuth client / API key / Basic"| OData
-  end
-
-  Agent -.->|"stdio: no MCP OAuth"| CLI
+  Agent -->|"SDK ClientOAuthProvider"| Mcp
+  CLI -->|"Microsoft.OData.Mcp.Authentication"| Api
+  Agent -.-> PRM
+  CLI -.-> PRM
 ```
 
-- **Hop 1** is SDK `ClientOAuthProvider`: it authenticates an **MCP client (agent) to an MCP HTTP server** (RFC 9728 on the MCP resource). It is not an OData client and not a generic `HttpClient` handler. Stdio has no MCP OAuth, so hop 1 does not apply to `odata-mcp`. Do not start inbound MCP OAuth on `Microsoft.OData.Mcp.AspNetCore`. Do not mix `Add` vs `Use` via `IStartupFilter`. Do not invent Restier host helpers.
-- **Hop 2** is this document: credentials on **OData HTTP** (`$metadata` and data), same target as today’s `--auth-token`, without pasting a bearer into MCP config. Do **not** attach `ClientOAuthProvider` to the `"OData"` `HttpClient`.
+- **Assistant → MCP HTTP.** The client is the SDK `ClientOAuthProvider`. The server is the host’s existing authentication (`AddJwtBearer`, a gateway, …) plus `AddProtectedResourceMetadata`. We do not ship an inbound MCP OAuth package, and we do not attach `ClientOAuthProvider` to the `"OData"` `HttpClient`. Stdio has no MCP HTTP, so this caller does not exist for Local MCP.
+- **Local MCP → OData HTTP.** This document. Credentials on `$metadata` and data, same target as today’s `--auth-token`, without pasting a bearer into MCP config. The client is `Microsoft.OData.Mcp.Authentication`. When the operator **owns** the API, `AddProtectedResourceMetadata` is how that API publishes what this client is looking for — and, if MCP is on the same host, what the assistant is looking for too.
 
 Reuse SDK **types** (PRM, `ITokenCache`, DCR, callback/PKCE, `TokenContainer`, `ScopeSelector`, Identity Assertion Grant). Build our own outbound handler for OData HTTP.
 
@@ -89,8 +91,8 @@ Reuse SDK **types** (PRM, `ITokenCache`, DCR, callback/PKCE, `TokenContainer`, `
 
 | Non-goal | Why |
 |----------|-----|
-| Inbound MCP OAuth on AspNetCore | Wrong hop. Later spec. |
-| Wiring `ClientOAuthProvider` onto `"OData"` | That type is MCP agent → MCP HTTP server only. Stdio MCP is unauthenticated; OData (including `$metadata`) is authenticated by **our** outbound handler, not by the SDK MCP client. |
+| An inbound MCP OAuth package | Token validation is the host’s `AddJwtBearer` (or a gateway). Discovery is `AddProtectedResourceMetadata`, which is already the document for MCP HTTP and OData HTTP when they share a host. |
+| Wiring `ClientOAuthProvider` onto `"OData"` | That type is the assistant → MCP HTTP client. Local MCP authenticates OData HTTP with **our** outbound handler. |
 | MSAL / Graph-only SDK | Not vendor-neutral. |
 | Shipping a first-party Entra client id | Operator always supplies `--client-id` for Entra. |
 | Guessing API keys from HTML | Fail first. |
@@ -108,7 +110,7 @@ Numbered **AUTH-n** so they do not collide with [README](./README.md) / [ARCHITE
 | Id | Rule |
 |----|------|
 | **AUTH-1** | **Official MCP only.** SDK 2.x pinned. No `0.*-*`. |
-| **AUTH-2** | **This is hop 2.** `ClientOAuthProvider` is MCP **agent → MCP HTTP server** authentication only. Do not reuse it as “call Graph” or as the `"OData"` handler. Proof it is MCP-client scoped: [`ClientOAuthOptions.RedirectUri` is `required`](https://csharp.sdk.modelcontextprotocol.io/v2/api/ModelContextProtocol.Authentication.ClientOAuthOptions.html) and options comments describe the MCP transport. The v2 doc page for `ClientOAuthProvider` itself 404s (2026-09-07); the type is still referenced from `ClientOAuthOptions` and may exist in `ModelContextProtocol.Core.dll`. |
+| **AUTH-2** | **This document is Local MCP → OData HTTP.** `ClientOAuthProvider` is the assistant → MCP HTTP client. Do not reuse it as “call Graph” or as the `"OData"` handler. When MCP and OData share a host they share one protected resource; the clients differ. Proof `ClientOAuthProvider` is MCP-client scoped: [`ClientOAuthOptions.RedirectUri` is `required`](https://csharp.sdk.modelcontextprotocol.io/v2/api/ModelContextProtocol.Authentication.ClientOAuthOptions.html) and options comments describe the MCP transport. The v2 doc page for `ClientOAuthProvider` itself 404s (2026-09-07); the type is still referenced from `ClientOAuthOptions` and may exist in `ModelContextProtocol.Core.dll`. |
 | **AUTH-3** | **Core does not ProjectReference `Microsoft.OData.Mcp.Authentication`.** That is *our* outbound OAuth package (`Outbound/`). It is **not** `ModelContextProtocol.Authentication`. Core already PackageReferences `ModelContextProtocol` 2.*, and those SDK types (`ProtectedResourceMetadata`, `ITokenCache`, `TokenContainer`, …) live in `ModelContextProtocol.Core.dll` — Core may `using` that namespace. At most generic HTTP challenge **strings** on `ODataExecuteResult`. `RemoteODataExecutor` does not retry and does not parse challenges. |
 | **AUTH-4** | **Tools may reference Authentication.** Outbound types live under `Microsoft.OData.Mcp.Authentication.Outbound`. AspNetCore does not ProjectReference this package. |
 | **AUTH-5** | **One class per file.** No nested types in *our* source. Source-generated `JsonSerializerContext` nested `JsonTypeInfo` is the compiler’s, not ours. Wire DTOs (`DeviceAuthorizationResponse`, `TokenEndpointResponse`, `OutboundGrantKind`) are top-level files. |
@@ -131,9 +133,9 @@ Numbered **AUTH-n** so they do not collide with [README](./README.md) / [ARCHITE
 
 ```
 Core            — ODataExecuteResult.WwwAuthenticate (raw header values). No OAuth types.
-Authentication  — Outbound/ (discovery, grants, cache, handler, constants)
+Authentication  — Outbound/ (Local MCP → OData HTTP: discovery, grants, cache, handler, constants)
 Tools           — CLI flags, ToolsMcpHost wiring, add wizard, stdio consent / elicitation
-AspNetCore      — unchanged. Inbound MCP OAuth is a later spec. Does not reference this package.
+AspNetCore      — AddProtectedResourceMetadata (RFC 9728 for the host). Does not reference Authentication.
 ```
 
 ```
@@ -396,42 +398,38 @@ OIDC metadata is public. `grant_types_supported` includes `urn:ietf:params:oauth
 
 `ODataMcpAuthConstants.MicrosoftGraphResourceAppId = "00000003-0000-0000-c000-000000000000"` exists so tests and logs can **detect** the trap, not so we can use it as a client id.
 
-### Zero-config protected resource (`AddODataProtectedResource`)
+### Zero-config protected resource (`AddProtectedResourceMetadata`)
 
 Every step above is the client's half of the handshake. The steps only pay off when the API answered with something. Most real OData services answer `401` with a bare `WWW-Authenticate: Bearer` and publish no RFC 9728 document at all, and the algorithm's only honest response to that is `Could not discover an authorization server; pass --auth-server.` — an operator typing an issuer URL that the API already knows.
 
-`AddODataProtectedResource` closes that gap from the API's side, in one line, in `Microsoft.OData.Mcp.AspNetCore`:
+`AddProtectedResourceMetadata` closes that gap from the API's side, in one line, in `Microsoft.OData.Mcp.AspNetCore`. The default protected resource is the **application root**, because that is where a real API lives unless MVC and the API share a host. When MCP HTTP is mapped on that same host — `{prefix}/mcp`, and with the default prefix that is `/mcp` at the origin — it is the **same** resource. One document, one audience, one Bearer for the assistant talking to MCP and for Local MCP talking to OData.
 
 ```csharp
-builder.Services
-    .AddControllers()
-    .AddOData(options => options.AddRouteComponents("odata", GetEdmModel()));
-
-builder.Services.AddODataProtectedResource(options =>
+builder.Services.AddProtectedResourceMetadata(options =>
 {
     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
 });
 ```
 
-**What it emits.** Both RFC 9728 URL forms, one document per OData route prefix, with prefixes taken from `ODataMcpRouteDiscovery.Discover` on the first request — the same discovery `ODataMcpSessionFactory` runs, so `IncludePrefixes` / `ExcludeRoutes` apply when the app also called `AddODataMcp`:
+**What it emits.** RFC 9728 URL forms for the configured route bases. An empty `Prefixes` list means the application root only — not OData route discovery, and not `AddODataMcp`'s `IncludePrefixes` / `ExcludeRoutes`. Explicit entries are whatever Endpoint Routing or Minimal APIs accept as a route base, including an empty string and `/`:
 
-- origin `/.well-known/oauth-protected-resource` → the document for the **first** discovered prefix (which is *the* document when the host serves one OData service);
-- path-suffixed `/.well-known/oauth-protected-resource/{prefix}` → one per prefix.
+- origin `/.well-known/oauth-protected-resource` → the document for the root when the root is covered, otherwise the first configured prefix;
+- path-suffixed `/.well-known/oauth-protected-resource/{prefix}` → one per non-empty prefix (`api/v1` included).
 
-Body is the SDK's `ProtectedResourceMetadata`, written through a source-generated `JsonSerializerContext`, `Content-Type: application/json`, `Cache-Control: public, max-age=300`. `resource` is `{scheme}://{host}{pathBase}/{prefix}` with **no** trailing slash — the same value step 8b then feeds to the token endpoint as the RFC 8707 audience, so an API that publishes this must accept it as the audience it validates. `bearer_methods_supported` is `["header"]`.
+Body is the SDK's `ProtectedResourceMetadata`, written through a source-generated `JsonSerializerContext`, `Content-Type: application/json`, `Cache-Control: public, max-age=300`. `resource` is `{scheme}://{host}{pathBase}` for the root, or `{scheme}://{host}{pathBase}/{prefix}` otherwise, with **no** trailing slash — the same value step 8b then feeds to the token endpoint as the RFC 8707 audience, so an API that publishes this must accept it as the audience it validates. `bearer_methods_supported` is `["header"]`.
 
-**The annotated challenge.** Any `401` under a covered prefix has its `WWW-Authenticate` rewritten on the way out: the first `Bearer` challenge that lacks `resource_metadata` gains `resource_metadata="{path-suffixed URL}"`, plus `scope="{space-joined scopes}"` when scopes are published and the challenge carried none. A bare `Bearer` therefore becomes
+**The annotated challenge.** Any `401` under a covered route base has its `WWW-Authenticate` rewritten on the way out: the first `Bearer` challenge that lacks `resource_metadata` gains `resource_metadata="{well-known URL}"`, plus `scope="{space-joined scopes}"` when scopes are published and the challenge carried none. A bare `Bearer` on the default (root) resource therefore becomes
 
 ```
-WWW-Authenticate: Bearer resource_metadata="https://api.contoso.com/.well-known/oauth-protected-resource/odata"
+WWW-Authenticate: Bearer resource_metadata="https://api.contoso.com/.well-known/oauth-protected-resource"
 ```
 
-which collapses step 4 from two speculative GETs to one. A `401` that carried no header at all gets that whole challenge. Everything else is left byte-for-byte alone: a challenge that already names a document, a non-`Bearer` scheme sharing the header, a non-`401`, a path outside every prefix, and any header the RFC 9110 grammar cannot parse (left untouched, logged at Debug). Prefix matching is segment-safe, so `odata` never claims `/odatafoo`.
+which collapses step 4 from two speculative GETs to one. A `401` that carried no header at all gets that whole challenge. Everything else is left byte-for-byte alone: a challenge that already names a document, a non-`Bearer` scheme sharing the header, a non-`401`, a path outside every prefix, and any header the RFC 9110 grammar cannot parse (left untouched, logged at Debug). Prefix matching is segment-safe, so `odata` never claims `/odatafoo`. The empty prefix matches every path that a more specific sibling did not claim.
 
-**Anonymous readability is the whole point.** The middleware goes in at the front of the pipeline through an `IStartupFilter`, before authentication and authorization. A protected resource metadata document that answers `401` teaches a client nothing — that is the Graph trap above, seen from the serving side. There is no `UseODataProtectedResource` to add, and therefore no way to put it after `UseAuthentication` by mistake. `ODataProtectedResourceOptions.Validate` runs in that filter, so a missing, relative, or non-`https` (non-loopback) authorization server fails the host rather than the first client.
+**Anonymous readability is the whole point.** The middleware goes in at the front of the pipeline through an `IStartupFilter`, before authentication and authorization. A protected resource metadata document that answers `401` teaches a client nothing — that is the Graph trap above, seen from the serving side. There is no `UseProtectedResourceMetadata` to add, and therefore no way to put it after `UseAuthentication` by mistake. `ProtectedResourceMetadataOptions.Validate` runs in that filter, so a missing, relative, or non-`https` (non-loopback) authorization server fails the host rather than the first client. An empty string and `/` in `Prefixes` pass; a whitespace-only entry is a typo and fails.
 
-**What it does not do.** It does not validate tokens, register an authentication scheme, or host an MCP server — `AddODataMcp` remains independent and unnecessary. It publishes no `jwks_uri` and no signed-response algorithms. It does not reference `Microsoft.OData.Mcp.Authentication`: the dependency direction in [`ARCHITECTURE.md`](./ARCHITECTURE.md) is one way, so the four wire strings it needs live in `Constants/ProtectedResourceConstants.cs` instead.
+**What it does not do.** It does not validate tokens or register an authentication scheme — that stays with the host’s `AddJwtBearer` (or a gateway). It does not host an MCP server — `AddODataMcp` remains independent and unnecessary, but when MCP **is** on this host, a `401` under a covered base (including `/mcp`) is annotated with the same `resource_metadata`. It does not discover OData prefixes from the routing table. It publishes no `jwks_uri` and no signed-response algorithms. It does not reference `Microsoft.OData.Mcp.Authentication`: the dependency direction in [`ARCHITECTURE.md`](./ARCHITECTURE.md) is one way, so the four wire strings it needs live in `Constants/ProtectedResourceConstants.cs` instead.
 
 ---
 
@@ -600,7 +598,7 @@ Always generate `ElicitationId` (new GUID string) whenever a URL payload is buil
 | `CreateAsync` / `odata-mcp try` (second pass, auth flags present) / `add` wizard | No | `options.ConsentPresenter` (`StdioConsentPresenter`) → stderr + OS browser / printed device code. `--auth-timeout`. No `McpServer`. |
 | Mid-session 401 after refresh failure | Yes, stdio, client has URL elicitation | PR 8+: `ConsentPresenter` is null. Handler **starts** the grant then throws. Tools: `ElicitAsync` **and** `CompleteInteractiveGrantAsync`, then **retry `InvokeAsync` once**. Elicit Content is not the tool result. |
 | Mid-session, stdio, no URL elicitation | Yes | stderr + device-code poll, or tool `isError` “re-run `odata-mcp start` to sign in” — **without** tokens. |
-| Optional Tools Streamable HTTP (stateless) | Yes, `ElicitAsync` throws in stateless | **Only if/when Tools HTTP is enabled:** throw `UrlElicitationRequiredException` (−32042) with the same URL + `ElicitationId` payload. `InputRequiredException` (MRTR) is the 2026-07-28 alternative if the host already uses MRTR. Same rule: URL only, never tokens. **Do not implement hop-1 inbound OAuth.** |
+| Optional Tools Streamable HTTP (stateless) | Yes, `ElicitAsync` throws in stateless | **Only if/when Tools HTTP is enabled:** throw `UrlElicitationRequiredException` (−32042) with the same URL + `ElicitationId` payload. `InputRequiredException` (MRTR) is the 2026-07-28 alternative if the host already uses MRTR. Same rule: URL only, never tokens. Do not stand up a second OAuth server on Tools HTTP. |
 
 Form-mode elicitation must **not** request `access_token` / `refresh_token` / `device_code` / passwords for OAuth. Basic/API key remain CLI flags or the `add` TTY wizard (`PromptPassword`), not MCP forms.
 
@@ -775,24 +773,24 @@ new BackendMap()
 
 Source: [ModelContextProtocol.Authentication](https://csharp.sdk.modelcontextprotocol.io/v2/api/ModelContextProtocol.Authentication.html).
 
-| SDK type | Purpose | CLI → OData (this spec) | Later agent → MCP HTTP | Our consumer |
-|----------|---------|-------------------------|------------------------|--------------|
-| `AuthorizationCallbackContext` | Auth URI + redirect URI for the user | **Use as-is** for PKCE loopback | Same pattern on hop 1 | `LoopbackAuthorizationCallback`, `AuthorizationCodePkceGrant` |
-| `AuthorizationResult` | `code`, `state`, `iss` (RFC 9207) | **Use as-is** | Hop 1 | `AuthorizationCodePkceGrant` |
-| `ClientOAuthOptions` | Options for `ClientOAuthProvider` | **Do not use.** `RedirectUri` is `required`; remarks are MCP-transport / MCP scope strategy. This is the proof the provider is hop-1. | Hop 1 | — (mirror useful fields on `OutboundOAuthOptions`) |
-| `ClientOAuthProvider` | MCP transport OAuth client | **Do not use.** v2 doc page `…/Authentication.ClientOAuthProvider.html` 404s (2026-09-07); type is still referenced from `ClientOAuthOptions` and may be public in `ModelContextProtocol.Core.dll`. | Hop 1 | — |
-| `DynamicClientRegistrationOptions` | RFC 7591 request options | **Use as-is** | Hop 1 | `DynamicClientRegistrar` |
-| `DynamicClientRegistrationResponse` | RFC 7591 response | **Use as-is** | Hop 1 | `DynamicClientRegistrar` |
-| `IdentityAssertionGrantContext` | Resource + AS URLs for Id token callback | **Use as-is**; point at OData resource | Hop 1 (MCP resource) | `OutboundOAuthClient` |
-| `IdentityAssertionGrantException` | Flow failure | **Use as-is** | Hop 1 | `OutboundOAuthClient` |
-| `IdentityAssertionGrantProvider` | RFC 8693 + 7523 | **Use as-is** with OData `resourceUrl` + AS; wrap RFCs ourselves if SDK hard-codes MCP well-known | Hop 1 | `OutboundOAuthClient` |
-| `IdentityAssertionGrantProviderOptions` | IdP + MCP client settings | **Use as-is** (names say “MCP”; values are our client + OData resource) | Hop 1 | CLI flag mapping |
-| `ProtectedResourceMetadata` | RFC 9728 document | **Use as-is** (deserialize well-known / `resource_metadata`) | Hop 1 | `ProtectedResourceMetadataClient` |
-| `TokenContainer` | Cacheable tokens | **Use as-is** | Hop 1 | `LatchkeyTokenCache`, grants, handler |
-| `ITokenCache` | Concurrent get/store | **Implement** (`LatchkeyTokenCache`). Do not wrap. | Hop 1 | Handler + `OutboundOAuthClient` |
+| SDK type | Purpose | Local MCP → OData HTTP (this spec) | Assistant → MCP HTTP | Our consumer |
+|----------|---------|------------------------------------|----------------------|--------------|
+| `AuthorizationCallbackContext` | Auth URI + redirect URI for the user | **Use as-is** for PKCE loopback | Same pattern | `LoopbackAuthorizationCallback`, `AuthorizationCodePkceGrant` |
+| `AuthorizationResult` | `code`, `state`, `iss` (RFC 9207) | **Use as-is** | Same type | `AuthorizationCodePkceGrant` |
+| `ClientOAuthOptions` | Options for `ClientOAuthProvider` | **Do not use.** `RedirectUri` is `required`; remarks are MCP-transport / MCP scope strategy. That is the proof the provider is the assistant → MCP HTTP client. | SDK client options | — (mirror useful fields on `OutboundOAuthOptions`) |
+| `ClientOAuthProvider` | Assistant → MCP HTTP OAuth client | **Do not use** on the `"OData"` `HttpClient`. v2 doc page `…/Authentication.ClientOAuthProvider.html` 404s (2026-09-07); type is still referenced from `ClientOAuthOptions` and may be public in `ModelContextProtocol.Core.dll`. | The client | — |
+| `DynamicClientRegistrationOptions` | RFC 7591 request options | **Use as-is** | Same type | `DynamicClientRegistrar` |
+| `DynamicClientRegistrationResponse` | RFC 7591 response | **Use as-is** | Same type | `DynamicClientRegistrar` |
+| `IdentityAssertionGrantContext` | Resource + AS URLs for Id token callback | **Use as-is**; point at the host resource (origin by default when colocated) | Same document when colocated | `OutboundOAuthClient` |
+| `IdentityAssertionGrantException` | Flow failure | **Use as-is** | Same type | `OutboundOAuthClient` |
+| `IdentityAssertionGrantProvider` | RFC 8693 + 7523 | **Use as-is** with the host `resourceUrl` + AS; wrap RFCs ourselves if SDK hard-codes MCP well-known | Same type | `OutboundOAuthClient` |
+| `IdentityAssertionGrantProviderOptions` | IdP + MCP client settings | **Use as-is** (names say “MCP”; values are our client + the host resource) | Same type | CLI flag mapping |
+| `ProtectedResourceMetadata` | RFC 9728 document | **Use as-is** (deserialize well-known / `resource_metadata`) | **Same document** when MCP and OData share a host | `ProtectedResourceMetadataClient`; served by `AddProtectedResourceMetadata` |
+| `TokenContainer` | Cacheable tokens | **Use as-is** | Same type | `LatchkeyTokenCache`, grants, handler |
+| `ITokenCache` | Concurrent get/store | **Implement** (`LatchkeyTokenCache`). Do not wrap. | SDK cache | Handler + `OutboundOAuthClient` |
 | `AuthorizationRedirectDelegate` | Obsolete; no `iss`/`state` | **Do not use** (MCP9007) | Do not use | — |
-| `IdentityAssertionGrantIdTokenCallback` | Supplies OIDC Id token | **Use as-is** via `FileIdTokenCallback` (`--idp-id-token-file` / `ODATA_MCP_ID_TOKEN`) | Hop 1 | `FileIdTokenCallback`, `OutboundOAuthClient` |
-| `ScopeSelectorDelegate` | Filter/append scopes **after** `offline_access` is appended | **Use as-is** on `OutboundOAuthOptions.ScopeSelector`. Runs last; may remove `offline_access`. | Hop 1 | `ScopeResolver` |
+| `IdentityAssertionGrantIdTokenCallback` | Supplies OIDC Id token | **Use as-is** via `FileIdTokenCallback` (`--idp-id-token-file` / `ODATA_MCP_ID_TOKEN`) | Same type | `FileIdTokenCallback`, `OutboundOAuthClient` |
+| `ScopeSelectorDelegate` | Filter/append scopes **after** `offline_access` is appended | **Use as-is** on `OutboundOAuthOptions.ScopeSelector`. Runs last; may remove `offline_access`. | Same policy | `ScopeResolver` |
 
 Elicitation (not in the Authentication namespace, still required):
 
@@ -815,7 +813,7 @@ Elicitation (not in the Authentication namespace, still required):
 ### 2. Reuse `ClientOAuthProvider` against the OData URL
 
 **Pros:** Discovery, PKCE, DCR, cache already implemented in the SDK.  
-**Cons:** That type authenticates the **MCP transport** (hop 1). Proof: [`ClientOAuthOptions.RedirectUri` is `required`](https://csharp.sdk.modelcontextprotocol.io/v2/api/ModelContextProtocol.Authentication.ClientOAuthOptions.html) (wrong for device_code); options remarks describe MCP scope strategy (WWW-Authenticate → PRM → client Scopes). The `ClientOAuthProvider` v2 doc page 404s (2026-09-07); do not treat that as “the type does not exist.” Wiring whatever lives in `ModelContextProtocol.Core.dll` onto `"OData"` teaches the next agent the wrong hop.  
+**Cons:** That type authenticates the **assistant to MCP HTTP**. Proof: [`ClientOAuthOptions.RedirectUri` is `required`](https://csharp.sdk.modelcontextprotocol.io/v2/api/ModelContextProtocol.Authentication.ClientOAuthOptions.html) (wrong for device_code); options remarks describe MCP scope strategy (WWW-Authenticate → PRM → client Scopes). The `ClientOAuthProvider` v2 doc page 404s (2026-09-07); do not treat that as “the type does not exist.” Wiring whatever lives in `ModelContextProtocol.Core.dll` onto `"OData"` teaches the next agent that MCP HTTP and OData HTTP are different clients they are not — they can share a resource; they do not share this type.  
 **Decision:** Reject. Reuse **types**, not the provider.
 
 ### 3. MSAL / Graph-only
@@ -966,15 +964,15 @@ If `ODATA_MCP_LIVE_OAUTH_URL` / `ODATA_MCP_CLIENT_ID` are unset → `Assert.Inco
 
 ## Key Decisions
 
-1. **Hop 2 only.** CLI → remote OData (`$metadata` and data get `Authorization`). Inbound MCP OAuth on AspNetCore is a later spec. Rationale: stdio MCP is unauthenticated; `ClientOAuthProvider` is MCP agent → MCP HTTP server, not an OData HTTP client.
-2. **Reuse SDK types, not `ClientOAuthProvider`.** PRM, `TokenContainer`, `ITokenCache`, DCR, `AuthorizationCallbackContext`/`AuthorizationResult`, `ScopeSelectorDelegate`, Identity Assertion Grant. Proof the provider is hop-1: `ClientOAuthOptions.RedirectUri` is `required` and options remarks are MCP-transport scoped. The v2 `ClientOAuthProvider` doc page 404s (2026-09-07); that does not change the decision. Rationale: those types are RFC-shaped; the provider is MCP-transport-shaped.
+1. **This document is Local MCP → OData HTTP.** `$metadata` and data get `Authorization`. The assistant → MCP HTTP client is SDK `ClientOAuthProvider`; we do not attach it to `"OData"`. When MCP HTTP and OData HTTP share a host they share one RFC 9728 document from `AddProtectedResourceMetadata` — typically the application root. Rationale: split at who is calling, not at two resources. Stdio has no MCP HTTP; Remote MCP on the API host does.
+2. **Reuse SDK types, not `ClientOAuthProvider`.** PRM, `TokenContainer`, `ITokenCache`, DCR, `AuthorizationCallbackContext`/`AuthorizationResult`, `ScopeSelectorDelegate`, Identity Assertion Grant. Proof the provider is the assistant → MCP HTTP client: `ClientOAuthOptions.RedirectUri` is `required` and options remarks are MCP-transport scoped. The v2 `ClientOAuthProvider` doc page 404s (2026-09-07); that does not change the decision. Rationale: those types are RFC-shaped; the provider is MCP-transport-shaped.
 3. **Outbound code in `Authentication/Outbound`.** Tools wires flags/UX. Core only surfaces raw `WWW-Authenticate`. `RemoteODataExecutor` does not parse challenges or retry; `ODataOutboundAuthHandler` retries; `WwwAuthenticateParser` parses. ARCHITECTURE / README **hard rule 11**.
-4. **This package is outbound-only.** AspNetCore inbound MCP OAuth is a later spec and, if it ships, uses framework `AddJwtBearer` on the host — not types in this package.
+4. **`Microsoft.OData.Mcp.Authentication` is outbound-only** (Local MCP → OData HTTP). AspNetCore does not reference it. The serving half of discovery is `AddProtectedResourceMetadata` in AspNetCore. Token validation is the host’s `AddJwtBearer` (or a gateway), used for MCP HTTP and OData HTTP alike when they share the host. We do not ship a second inbound OAuth package.
 5. **Device code first for interactive stdio; PKCE loopback second; client credentials for daemons (secret only).** Rationale: RFC 8628 fits a process with no browser redirect; RFC 8252 needs a loopback we can own; daemons have secrets. No client cert in v1.
 6. **Well-known 401, 403, 404, and failed parse are non-fatal.** Rationale: Graph treats PRM as a Graph API call; most OData APIs have no RFC 9728 at all (404). Fail only when no AS remains. Timeout/5xx: retry once then fail first.
 7. **Challenge `client_id` is the resource app id.** Rationale: Graph `00000003-0000-0000-c000-000000000000` is Microsoft Graph, not `odata-mcp`.
 8. **DCR if `registration_endpoint`, else `--client-id`.** Rationale: Entra does not DCR; RFC 7591 servers do.
-9. **Scope order matches SDK 2.2 exactly:** challenge → PRM `scopes_supported` → `--scopes` → omit; append `offline_access` if advertised; **then** `ScopeSelector` (may remove `offline_access`). Rationale: hop 1 later must not invent a second policy.
+9. **Scope order matches SDK 2.2 exactly:** challenge → PRM `scopes_supported` → `--scopes` → omit; append `offline_access` if advertised; **then** `ScopeSelector` (may remove `offline_access`). Rationale: the assistant → MCP HTTP client and Local MCP → OData HTTP must not invent a second policy for the same document.
 10. **Access/refresh tokens never through the LLM.** Elicitation is URL/consent with `ElicitationId`. `--auth-token` / `add` paste is escape-only. API key/Basic in MCP config are warned residual risk. Client credentials: `add` does **not** emit `--env`; operator exports `ODATA_MCP_CLIENT_SECRET`; `start` binds it.
 11. **Implement SDK `ITokenCache` as `LatchkeyTokenCache`; do not wrap it.** Latchkey is the OS backing (Windows Dpapi, macOS Keychain, Linux Secret Service, File fallback). No background refresh. On each `"OData"` send, if remaining lifetime > 30 s attach and go; if ≤ 30 s or expired, one coalesced refresh then go. 401 is fallback. Interactive grants request `offline_access` when advertised. Rationale: idle processes must not mint tokens; `ExpiresIn` is cheaper than a failed OData round trip.
 12. **Local real HTTP AS in tests; no Graph mocks; live OAuth is inconclusive without creds; elicitation tests use a real SDK `McpClient`.** Rationale: TESTING.md non-negotiables.
@@ -1006,11 +1004,27 @@ Implementation landed ahead of the spec text in a few places. This section is au
 
 ## Revision notes (rev 10)
 
-1. **`AddODataProtectedResource` lands in `Microsoft.OData.Mcp.AspNetCore`,** namespace `Microsoft.OData.Mcp.AspNetCore.Authentication`: `ODataProtectedResourceOptions`, `ODataProtectedResourceMiddleware`, `ODataProtectedResourceStartupFilter`, `ODataProtectedResourceJsonContext`, plus `Constants/ProtectedResourceConstants.cs`. See [Zero-config protected resource](#zero-config-protected-resource-addodataprotectedresource). This is the serving side of the discovery algorithm and changes nothing about the client side.
+1. **`AddODataProtectedResource` lands in `Microsoft.OData.Mcp.AspNetCore`.** Superseded in rev 11 by `AddProtectedResourceMetadata`; see [Zero-config protected resource](#zero-config-protected-resource-addprotectedresourcemetadata). This is the serving side of the discovery algorithm and changes nothing about the client side.
 2. **The published `resource` carries the route path** (`{scheme}://{host}{pathBase}/{prefix}`), not the bare origin. Step 8b is unchanged — it takes PRM `resource` verbatim — but an API that turns this on is asserting that path is the audience its token validation accepts. The origin-only default in `LocalAuthorizationServerOptions.ResourceUri` is why the zero-config end-to-end sets `ResourceUri = "http://localhost/odata"`.
 3. **Challenge annotation stops at the first `Bearer` that lacks `resource_metadata`.** A challenge that already names a document, a `token68` credential, a second `Bearer`, and every other scheme are copied verbatim. Anything the RFC 9110 grammar rejects leaves the header exactly as the app wrote it; `OnStarting` never throws.
 4. **`ProtectedResourceMetadata.ScopesSupported` is non-nullable in SDK 2.2**, so a resource that publishes no scopes emits `"scopes_supported": []` rather than omitting the member. `ScopeResolver` already treats an empty list as "not advertised" (`is { Count: > 0 }`), so this is cosmetic on the wire and inert in the algorithm.
 5. **`OutboundToolsHostFixture.OAuthHandler`** is a new opt-in on the shared fixture. In process the authorization server and the resource share `http://localhost`, so a test that needs the PRM GET answered by the *resource* — which is the only way to prove the document came from this feature — routes the `"OAuth"` client by well-known path through `WellKnownRoutingHandler`. Every existing fixture leaves it null and dispatches straight into the authorization server as before.
+
+---
+
+## Revision notes (rev 11)
+
+1. **`AddODataProtectedResource` is `AddProtectedResourceMetadata`.** Types follow: `ProtectedResourceMetadataOptions`, `ProtectedResourceMetadataMiddleware`, `ProtectedResourceMetadataStartupFilter`, `ProtectedResourceMetadataJsonContext`. The public name is the RFC 9728 document, not OData and not RFC 8414 authorization-server discovery. The PR had not been accepted; there is no compatibility alias.
+2. **The default route base is the application root**, not OData route discovery. An empty `Prefixes` list publishes `{origin}` and annotates every `401` on the host. Explicit `Prefixes` are Endpoint Routing / Minimal API route bases: `""` and `"/"` are the root, `"odata"` / `"/odata/"` are `/odata`, `"api/v1"` is nested. Whitespace-only entries still fail `Validate()`.
+3. **The published `resource` for the default is the origin** (`{scheme}://{host}{pathBase}`, no trailing slash). Rev 10 item 2 (path as the default audience, zero-config `ResourceUri = "http://localhost/odata"`) is superseded. A host that only covers `/odata` still sets `options.Prefixes.Add("odata")` and publishes that path as `resource`.
+
+---
+
+## Revision notes (rev 12)
+
+1. **MCP HTTP and OData HTTP on the same host are one protected resource.** `AddProtectedResourceMetadata` publishes that document (default: the application root). A `401` under a covered base — `/mcp`, `$metadata`, data — carries the same `resource_metadata`. Same authorization server, same scopes, same Bearer. The old “Hop 1 / Hop 2” split as two resources is withdrawn.
+2. **The split is who is calling.** Assistant → MCP HTTP uses SDK `ClientOAuthProvider`. Local MCP → OData HTTP uses `Microsoft.OData.Mcp.Authentication`. Stdio has no MCP HTTP. We do not ship an inbound MCP OAuth package; token validation is the host’s `AddJwtBearer` (or a gateway).
+3. **AUTH-2, non-goals, key decisions 1 and 4** no longer call inbound MCP OAuth “a later spec” or “out of scope.” Discovery has landed. What we still do not do is wire `ClientOAuthProvider` onto `"OData"` or reference `Microsoft.OData.Mcp.Authentication` from AspNetCore.
 
 ---
 

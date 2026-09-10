@@ -1,10 +1,10 @@
 ---
-title: ODataProtectedResourceMiddleware
-description: "Publishes RFC 9728 protected resource metadata for every OData route prefix the app serves, and rewrites the `WWW-Authenticate` challenge on a `401` beneath ..."
+title: ProtectedResourceMetadataMiddleware
+description: "Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the `WWW-Authenticate` challenge on a `401` beneath one of those ..."
 icon: lock
-sidebarTitle: ODataProtectedResourceMiddleware
+sidebarTitle: ProtectedResourceMetadataMiddleware
 tag: "SEALED"
-keywords: ['ODataProtectedResourceMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
+keywords: ['ProtectedResourceMetadataMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
 ---
 
 ## Definition
@@ -18,45 +18,44 @@ keywords: ['ODataProtectedResourceMiddleware', 'Microsoft.OData.Mcp.AspNetCore.A
 ## Syntax
 
 ```csharp
-Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceMiddleware
+Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware
 ```
 
 ## Summary
 
-Publishes RFC 9728 protected resource metadata for every OData route prefix the app serves, and rewrites
-the `WWW-Authenticate` challenge on a `401` beneath one of those prefixes so a client is told
+Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the
+`WWW-Authenticate` challenge on a `401` beneath one of those bases so a client is told
 where that document lives.
 
 ## Remarks
 
-[ODataProtectedResourceStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceStartupFilter) puts this at the very front of the pipeline, before
+[ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) puts this at the very front of the pipeline, before
 authentication and authorization, because a protected resource metadata document that answers `401`
 is useless — a client that follows `resource_metadata` into a challenge has learned nothing. That
 is the "Graph trap" in `specs/v3/AUTHENTICATION.md`, and the only defence against it is serving the
 document anonymously.
 
-Prefix discovery is deferred to the first request because endpoint data sources are not complete until
-the host has started; [ODataMcpSessionFactory](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpSessionFactory) defers for the same reason and reads the same
-discovery.
+The default route base is the application root. Explicit [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes)
+entries are Endpoint Routing route bases, including an empty string.
 
 ## Examples
 
 ```csharp
-GET /.well-known/oauth-protected-resource/odata
+GET /.well-known/oauth-protected-resource
 200 application/json
-{"resource":"https://api.contoso.com/odata","authorization_servers":["https://login.contoso.com/v2.0"],"bearer_methods_supported":["header"]}
+{"resource":"https://api.contoso.com","authorization_servers":["https://login.contoso.com/v2.0"],"bearer_methods_supported":["header"]}
 ```
 
 ## Constructors
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
-Initializes a new instance of the [ODataProtectedResourceMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceMiddleware) class.
+Initializes a new instance of the [ProtectedResourceMetadataMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware) class.
 
 #### Syntax
 
 ```csharp
-public ODataProtectedResourceMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, System.IServiceProvider services, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions> options, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceMiddleware> logger)
+public ProtectedResourceMetadataMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions> options, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware> logger)
 ```
 
 #### Parameters
@@ -64,16 +63,15 @@ public ODataProtectedResourceMiddleware(Microsoft.AspNetCore.Http.RequestDelegat
 | Name | Type | Description |
 |------|------|-------------|
 | `next` | `Microsoft.AspNetCore.Http.RequestDelegate` | The next middleware in the pipeline. |
-| `services` | `System.IServiceProvider` | The application service provider route discovery reads endpoint data sources from. |
-| `options` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions>` | What this resource publishes about itself. |
-| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceMiddleware>` | The logger the discovered prefixes and any unparseable challenge are recorded to. |
+| `options` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions>` | What this resource publishes about itself. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataMiddleware>` | The logger the resolved prefixes and any unparseable challenge are recorded to. |
 
 #### Exceptions
 
 | Exception | Description |
 |-----------|-------------|
-| `ArgumentNullException` | Thrown when *next*, *services*, *options*, or
-*logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentNullException` | Thrown when *next*, *options*, or *logger* is
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
@@ -159,7 +157,7 @@ Type: `System.Type`
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InvokeAsync
 
 Serves a protected resource metadata document, or arms the challenge annotation for a request that
-falls beneath a covered prefix, then continues the pipeline.
+falls beneath a covered route base, then continues the pipeline.
 
 #### Syntax
 

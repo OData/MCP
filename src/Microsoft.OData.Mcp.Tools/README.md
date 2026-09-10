@@ -110,7 +110,7 @@ dotnet odata-mcp start https://graph.microsoft.com/v1.0 \
 
 Sign-in prompts show as `Sign in at <url>` and `Code: <code>`. Tokens are stored on your machine and refreshed for you.
 
-If you **own** the API, one line in that app (`AddODataProtectedResource`) lets Local MCP discover how to sign in with no extra flags. That is documented with [Remote MCP](../Microsoft.OData.Mcp.AspNetCore/readme.md).
+If you **own** the API, one line in that app (`AddProtectedResourceMetadata`) lets Local MCP discover how to sign in with no extra flags. That is documented with [Remote MCP](../Microsoft.OData.Mcp.AspNetCore/readme.md).
 
 ## Commands you will actually use
 

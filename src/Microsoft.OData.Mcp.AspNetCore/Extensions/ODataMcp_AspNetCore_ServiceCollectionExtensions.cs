@@ -138,10 +138,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Publishes RFC 9728 protected resource metadata for every OData route this app serves, and annotates
-        /// the <c>WWW-Authenticate</c> challenge on a <c>401</c> beneath one of those routes with the URL of
-        /// that document. This is how a client such as <c>odata-mcp start</c> discovers how to sign in to the
-        /// API without being told.
+        /// Publishes RFC 9728 protected resource metadata for this host, and annotates the
+        /// <c>WWW-Authenticate</c> challenge on a <c>401</c> beneath a covered route base with the URL of
+        /// that document. This is how a client such as <c>dotnet odata-mcp start</c> discovers how to sign in
+        /// without being told.
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configure">Configures what the API publishes about itself.</param>
@@ -151,38 +151,35 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
         /// <example>
         /// <code>
-        /// builder.Services
-        ///     .AddControllers()
-        ///     .AddOData(options =&gt; options.AddRouteComponents("odata", GetEdmModel()));
-        ///
-        /// builder.Services.AddODataProtectedResource(options =&gt;
+        /// builder.Services.AddProtectedResourceMetadata(options =&gt;
         /// {
         ///     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
         ///     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
         /// });
         ///
-        /// // GET /.well-known/oauth-protected-resource/odata now answers 200, anonymously.
+        /// // GET /.well-known/oauth-protected-resource now answers 200, anonymously.
+        /// // The protected resource is the application root.
         /// </code>
         /// </example>
         /// <remarks>
-        /// This is independent of <see cref="AddODataMcp(IServiceCollection)"/>: an API that hosts no MCP server
-        /// at all still benefits, because the discovery this feeds is the client's, not ours. When
-        /// <c>AddODataMcp</c> <em>is</em> present, its
-        /// <see cref="ODataMcpHostOptions.IncludePrefixes"/> and <see cref="ODataMcpHostOptions.ExcludeRoutes"/>
-        /// filters apply here too, so a prefix hidden from agents is not advertised to them either.
+        /// Independent of <see cref="AddODataMcp(IServiceCollection)"/>: an API that hosts no MCP server at all
+        /// still benefits, because the discovery this feeds is the client's, not ours. The default route base
+        /// is the application root. Set <see cref="ProtectedResourceMetadataOptions.Prefixes"/> to any route
+        /// base Endpoint Routing or Minimal APIs accept, including an empty string, when the resource is not
+        /// the whole host.
         /// <para>
         /// The middleware is inserted at the front of the pipeline through an <c>IStartupFilter</c>, which is
         /// what keeps the metadata document anonymously readable. There is no <c>Use</c> call to add. Calling
         /// this more than once adds the extra configuration and registers the filter once.
         /// </para>
         /// </remarks>
-        public static IServiceCollection AddODataProtectedResource(this IServiceCollection services, Action<ODataProtectedResourceOptions> configure)
+        public static IServiceCollection AddProtectedResourceMetadata(this IServiceCollection services, Action<ProtectedResourceMetadataOptions> configure)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configure);
 
-            services.AddOptions<ODataProtectedResourceOptions>().Configure(configure);
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ODataProtectedResourceStartupFilter>());
+            services.AddOptions<ProtectedResourceMetadataOptions>().Configure(configure);
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ProtectedResourceMetadataStartupFilter>());
 
             return services;
         }

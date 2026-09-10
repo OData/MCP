@@ -126,12 +126,12 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 | `UseODataMcp` | KEEP — pipeline activation after OData routes are mapped |
 | Health checks that lie | DELETE |
 | `IEdmModel` adapter | **NEW** |
-| In-app `IOdataExecutor` | **NEW** |
-| `AddODataProtectedResource()` | **NEW — landed.** One line that publishes RFC 9728 protected resource metadata for every discovered OData prefix and annotates the `401` challenge with `resource_metadata`. Independent of `AddODataMcp`. See [AUTHENTICATION.md](./AUTHENTICATION.md) §Zero-config protected resource. |
-| `Authentication/ODataProtectedResourceOptions` | **NEW — landed.** Authorization servers, scopes, display metadata, optional explicit prefixes, `AnnotateChallenges`, and a `Validate()` the startup filter calls. |
-| `Authentication/ODataProtectedResourceMiddleware` | **NEW — landed.** Serves both well-known forms anonymously, 405s other verbs, passes an unknown prefix through, and rewrites the `Bearer` challenge on a `401` beneath a covered prefix. Lazy, locked, cached prefix discovery via `ODataMcpRouteDiscovery`. |
-| `Authentication/ODataProtectedResourceStartupFilter` | **NEW — landed.** Validates at startup and puts the middleware at the front of the pipeline, which is what keeps the document readable without a token. |
-| `Authentication/ODataProtectedResourceJsonContext` | **NEW — landed.** Source-generated writer for the SDK `ProtectedResourceMetadata`; no reflection JSON in this package. |
+| In-app `IODataExecutor` | **NEW** |
+| `AddProtectedResourceMetadata()` | **NEW — landed.** One line that publishes RFC 9728 protected resource metadata for the host (default: application root) and annotates the `401` challenge with `resource_metadata`. Independent of `AddODataMcp`. Prefixes are Endpoint Routing / Minimal API route bases, including `""`. See [AUTHENTICATION.md](./AUTHENTICATION.md) §Zero-config protected resource. |
+| `Authentication/ProtectedResourceMetadataOptions` | **NEW — landed.** Authorization servers, scopes, display metadata, optional explicit prefixes (`""` / `"/"` = root), `AnnotateChallenges`, and a `Validate()` the startup filter calls. |
+| `Authentication/ProtectedResourceMetadataMiddleware` | **NEW — landed.** Serves both well-known forms anonymously, 405s other verbs, passes an unknown prefix through, and rewrites the `Bearer` challenge on a `401` beneath a covered route base. Empty `Prefixes` means the application root; no OData route discovery. |
+| `Authentication/ProtectedResourceMetadataStartupFilter` | **NEW — landed.** Validates at startup and puts the middleware at the front of the pipeline, which is what keeps the document readable without a token. |
+| `Authentication/ProtectedResourceMetadataJsonContext` | **NEW — landed.** Source-generated writer for the SDK `ProtectedResourceMetadata`; no reflection JSON in this package. |
 | `Constants/ProtectedResourceConstants` | **NEW — landed.** `WellKnownPath`, `BearerScheme`, `ResourceMetadataParameter`, `ScopeParameter`, and the served content type / cache header. Deliberately duplicated rather than referencing `Microsoft.OData.Mcp.Authentication`. |
 
 ---

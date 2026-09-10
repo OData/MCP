@@ -34,8 +34,8 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [OPTIMIZATION.md](./OPTIMIZATION.md) | Hide EDMX from the calling AI; steer first-call success so the user is not waiting on retries |
 | [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md) | Agent task list for that work. Do not use EXECUTION-PLAN.md. |
 | [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md) | Exhaustive per-tool test cases (happy, malformed, overwhelm) |
-| [TESTING.md](./TESTING.md) | Suites, OData 7 vs 8 process isolation, Restier on 7; §8 authenticated OData end to end (outbound OAuth, hop 2) |
-| [AUTHENTICATION.md](./AUTHENTICATION.md) | CLI outbound OAuth to remote OData (SDK 2.2); not inbound MCP OAuth |
+| [TESTING.md](./TESTING.md) | Suites, OData 7 vs 8 process isolation, Restier on 7; §8 authenticated OData end to end (Local MCP → OData HTTP) |
+| [AUTHENTICATION.md](./AUTHENTICATION.md) | Local MCP → OData HTTP OAuth (SDK 2.2). Colocated MCP HTTP and OData HTTP share one RFC 9728 document. |
 | [INVENTORY.md](./INVENTORY.md) | Concept keep vs implementation delete |
 | [EXECUTION-PLAN.md](./EXECUTION-PLAN.md) | **Complete.** Catalog + hosts + tools. Do not implement from it. |
 
@@ -53,7 +53,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 8. **Public AspNetCore API:** `AddODataMcp()` registers services. `UseODataMcp()` maps MCP at `{prefix}/mcp` after OData routes exist. Prefix include/exclude on host options. SDK `MapMcp` is internal. The host package **must not** reference `Microsoft.AspNetCore.OData` (7 or 8). See [ODATA-HOSTING.md](./ODATA-HOSTING.md).
 9. **`shutdown_server`** is part of the **local Tools** spec. Never on AspNetCore endpoints.
 10. **Tools host is AOT-first.** Explicit registration, JSON source-gen, no assembly scan on the native path.
-11. **Core does not reference `Microsoft.OData.Mcp.Authentication`.** That package is the CLI outbound OAuth client (hop 2). It is not the SDK namespace `ModelContextProtocol.Authentication`, which already ships in `ModelContextProtocol` 2.x — Core already PackageReferences that.
+11. **Core does not reference `Microsoft.OData.Mcp.Authentication`.** That package is Local MCP’s outbound OAuth client (OData HTTP). It is not the SDK namespace `ModelContextProtocol.Authentication`, which already ships in `ModelContextProtocol` 2.x — Core already PackageReferences that. AspNetCore publishes RFC 9728 with `AddProtectedResourceMetadata` and does not reference this package either.
 12. **Tests:** Breakdance, real Northwind and TripPin, **never mock.** OData 7 and OData 8 **must not** share a test process. Restier is tested **only** with OData 7 until Restier hosts on 8. See [TESTING.md](./TESTING.md).
 
 ---

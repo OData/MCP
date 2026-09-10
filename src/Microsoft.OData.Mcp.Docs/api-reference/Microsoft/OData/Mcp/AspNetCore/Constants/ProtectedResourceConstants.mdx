@@ -1,6 +1,6 @@
 ---
 title: ProtectedResourceConstants
-description: "The literal wire values `AddODataProtectedResource` publishes: the RFC 9728 well-known path, the RFC 6750 `Bearer` scheme, and the auth-params an annotated c..."
+description: "The literal wire values `AddProtectedResourceMetadata` publishes: the RFC 9728 well-known path, the RFC 6750 `Bearer` scheme, and the auth-params an annotate..."
 icon: bolt
 tag: "STATIC"
 keywords: ['ProtectedResourceConstants', 'Microsoft.OData.Mcp.AspNetCore.Constants.ProtectedResourceConstants', 'Microsoft.OData.Mcp.AspNetCore.Constants', 'class', 'System.Object']
@@ -22,7 +22,7 @@ Microsoft.OData.Mcp.AspNetCore.Constants.ProtectedResourceConstants
 
 ## Summary
 
-The literal wire values `AddODataProtectedResource` publishes: the RFC 9728 well-known path, the
+The literal wire values `AddProtectedResourceMetadata` publishes: the RFC 9728 well-known path, the
 RFC 6750 `Bearer` scheme, and the auth-params an annotated challenge carries.
 
 ## Remarks
@@ -35,6 +35,6 @@ authentication. Four constants is a cheaper price than a reference that inverts 
 ## Examples
 
 ```csharp
-var url = $"{origin}{ProtectedResourceConstants.WellKnownPath}/odata";
+var url = $"{origin}{ProtectedResourceConstants.WellKnownPath}";
 ```
 

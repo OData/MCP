@@ -1,9 +1,10 @@
 ---
-title: ODataProtectedResourceOptions
-description: "What an OData API publishes about how to sign in to it: the RFC 8414 authorization servers that issue its tokens, the scopes a client should ask for, and whi..."
+title: ProtectedResourceMetadataOptions
+description: "What an API publishes about how to sign in to it: the RFC 8414 authorization servers that issue its tokens, the scopes a client should ask for, and which rou..."
 icon: lock
+sidebarTitle: ProtectedResourceMetadataOptions
 tag: "SEALED"
-keywords: ['ODataProtectedResourceOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
+keywords: ['ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
 ---
 
 ## Definition
@@ -17,27 +18,29 @@ keywords: ['ODataProtectedResourceOptions', 'Microsoft.OData.Mcp.AspNetCore.Auth
 ## Syntax
 
 ```csharp
-Microsoft.OData.Mcp.AspNetCore.Authentication.ODataProtectedResourceOptions
+Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions
 ```
 
 ## Summary
 
-What an OData API publishes about how to sign in to it: the RFC 8414 authorization servers that issue
-its tokens, the scopes a client should ask for, and which route prefixes the published document covers.
+What an API publishes about how to sign in to it: the RFC 8414 authorization servers that issue
+its tokens, the scopes a client should ask for, and which route bases the published document covers.
 
 ## Remarks
 
 Nothing here describes how the API validates a token. That stays with whatever authentication handler
 the app already registered; this type only describes the API to a client that has not signed in yet.
+The default route base is the application root, which is the usual shape of an API that is not sharing
+a host with MVC.
 
 ## Examples
 
 ```csharp
-builder.Services.AddODataProtectedResource(options =&gt;
+builder.Services.AddProtectedResourceMetadata(options =&gt;
 {
     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
     options.ScopesSupported.Add("api://contoso-odata/Data.Read");
-    options.ResourceName = "Contoso OData";
+    options.ResourceName = "Contoso API";
 });
 ```
 
@@ -48,7 +51,7 @@ builder.Services.AddODataProtectedResource(options =&gt;
 #### Syntax
 
 ```csharp
-public ODataProtectedResourceOptions()
+public ProtectedResourceMetadataOptions()
 ```
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
@@ -65,7 +68,7 @@ public Object()
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AnnotateChallenges
 
-Gets or sets a value indicating whether a `401` under a covered prefix has its
+Gets or sets a value indicating whether a `401` under a covered route base has its
 `WWW-Authenticate` challenge rewritten to carry `resource_metadata`.
 
 #### Syntax
@@ -110,7 +113,8 @@ options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/cont
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Prefixes
 
-Gets the OData route prefixes the published documents cover, without leading or trailing slashes.
+Gets the route bases the published documents cover, in the same form Endpoint Routing and Minimal
+APIs accept.
 
 #### Syntax
 
@@ -121,22 +125,22 @@ public System.Collections.Generic.List<string> Prefixes { get; }
 #### Property Value
 
 Type: `System.Collections.Generic.List<string>`
-Empty by default, which means the prefixes come from
-[ODataMcpHostOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcproutediscovery.discover(system.iserviceprovider,microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions)) on the first
-request. A non-empty list replaces discovery outright.
+Empty by default, which means the application root only. A non-empty list replaces that default.
 
 #### Examples
 
 ```csharp
+options.Prefixes.Add("");
 options.Prefixes.Add("odata");
+options.Prefixes.Add("api/v1");
 ```
 
 #### Remarks
 
-Set this only when the routing table cannot be read for a prefix — a hand-rolled OData host, or a
-reverse proxy that rewrites the path. A blank entry is rejected by [ODataProtectedResourceOptions.Validate](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions#validate): an
-OData service mounted at the application root is discovered as the empty prefix on its own, so a
-blank entry here is a typo rather than a configuration.
+An empty string and `/` are the application root, matching `MapGroup("")` and
+`AddRouteComponents(string.Empty, model)`. `odata` and `/odata/` both mean the
+`/odata` base. Nested bases such as `api/v1` are valid. A whitespace-only entry is
+rejected by [ProtectedResourceMetadataOptions.Validate](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#validate): it is not a route base.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ResourceDocumentation
 
@@ -315,14 +319,14 @@ public void Validate()
 
 | Exception | Description |
 |-----------|-------------|
-| `InvalidOperationException` | Thrown when [ODataProtectedResourceOptions.AuthorizationServers](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions#authorizationservers) is empty, carries a [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), a
-non-absolute, or a non-`https` non-loopback entry; or when [ODataProtectedResourceOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceOptions#prefixes) carries a
-blank entry. |
+| `InvalidOperationException` | Thrown when [ProtectedResourceMetadataOptions.AuthorizationServers](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#authorizationservers) is empty, carries a [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), a
+non-absolute, or a non-`https` non-loopback entry; or when [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes) carries a
+[`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) or whitespace-only entry. |
 
 #### Examples
 
 ```csharp
-var options = new ODataProtectedResourceOptions();
+var options = new ProtectedResourceMetadataOptions();
 options.AuthorizationServers.Add(new Uri("https://login.example.com/tenant"));
 
 options.Validate();
@@ -330,7 +334,8 @@ options.Validate();
 
 #### Remarks
 
-Called by [ODataProtectedResourceStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ODataProtectedResourceStartupFilter) before the pipeline is built, so a
+Called by [ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) before the pipeline is built, so a
 misconfigured API refuses to start rather than serving a document that sends every client to an
-authorization server that does not exist.
+authorization server that does not exist. An empty string and `/` in [ProtectedResourceMetadataOptions.Prefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#prefixes)
+are the application root and pass.
 

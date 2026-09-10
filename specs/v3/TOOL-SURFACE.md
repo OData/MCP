@@ -123,7 +123,7 @@ Normative copy: [OPTIMIZATION.md](./OPTIMIZATION.md) §2. CSDL docs when present
 ## 8. Execution
 
 ```
-tools/call → catalog handler → IOdataExecutor → structuredContent + short text
+tools/call → catalog handler → IODataExecutor → structuredContent + short text
 ```
 
 Honor `CancellationToken`. Size-guard responses; suggest `$select` / `$top` when over limit.

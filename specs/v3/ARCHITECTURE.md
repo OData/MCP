@@ -32,10 +32,10 @@ Agents run real OData operations through MCP 2.
 ## 3. Packages
 
 ```
-Microsoft.OData.Mcp.Core            # Models/ (IEdmModel-shaped EDM), CSDL, catalogs, IOdataExecutor
+Microsoft.OData.Mcp.Core            # Models/ (IEdmModel-shaped EDM), CSDL, catalogs, IODataExecutor
 Microsoft.OData.Mcp.AspNetCore      # AddODataMcp; EndpointDataSource discovery; IEdmModel adapter; in-app HTTP
 Microsoft.OData.Mcp.Tools           # AOT / dotnet tool; stdio; shutdown_server
-Microsoft.OData.Mcp.Authentication  # Outbound OAuth (CLI → remote OData)
+Microsoft.OData.Mcp.Authentication  # Outbound OAuth (Local MCP → OData HTTP)
 ```
 
 ```
@@ -67,7 +67,7 @@ Hosts:  Tools (stdio / optional HTTP, AOT)     AspNetCore (internal MapMcp per p
                               │
               ┌───────────────┴───────────────┐
               ▼                               ▼
-        MetadataSource                  IOdataExecutor
+        MetadataSource                  IODataExecutor
         $metadata → CsdlParser          Tools: HttpClient → remote
         IEdmModel → adapter             AspNetCore: route into app OData
               │
@@ -119,10 +119,12 @@ Fluent `ODataOptions.WithMcp()` after `AddRouteComponents` is OData **8** sugar 
 
 Internally each enabled prefix calls SDK `MapMcp("{prefix}/mcp")` with a catalog bound to that prefix’s model. Developers never call `MapMcp`.
 
-### 4.2 `IOdataExecutor`
+`AddProtectedResourceMetadata` is independent of `AddODataMcp`. It publishes one RFC 9728 document for the host (default: the application root). When MCP HTTP and OData HTTP share that host, they are the same protected resource: same authorization server, same scopes, same Bearer. Token validation stays with the host’s `AddJwtBearer` (or a gateway). AspNetCore does not reference `Microsoft.OData.Mcp.Authentication`. See [AUTHENTICATION.md](./AUTHENTICATION.md).
+
+### 4.2 `IODataExecutor`
 
 ```csharp
-public interface IOdataExecutor
+public interface IODataExecutor
 {
 
     Task<ODataExecuteResult> ExecuteAsync(ODataExecuteRequest request, CancellationToken cancellationToken);
@@ -164,6 +166,7 @@ Ship options that drive a code path:
 | Remote service | Base URL, metadata path |
 | Catalog | Max named tools, include/exclude sets |
 | Outbound auth | None / discovered OAuth (device code, authorization code + PKCE, client credentials, identity assertion) via `Microsoft.OData.Mcp.Authentication` / `--auth-token` Bearer / API key / Basic escape hatches. See [AUTHENTICATION.md](./AUTHENTICATION.md) |
+| Host discovery | `AddProtectedResourceMetadata` — one RFC 9728 document for the host (default: application root). Covers MCP HTTP and OData HTTP when they share the host. Independent of `AddODataMcp`. |
 | AspNetCore | ExcludeRoutes (with `AddODataMcp` only) |
 | Logging | stderr for stdio |
 

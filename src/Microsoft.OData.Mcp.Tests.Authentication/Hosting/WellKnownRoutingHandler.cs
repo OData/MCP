@@ -25,7 +25,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
     /// by DNS. In process they do not, so the split has to be made on the one thing that distinguishes them:
     /// the well-known path. That is not a convenience — it is the whole assertion. A protected resource
     /// metadata document that came back through this handler provably came from
-    /// <c>AddODataProtectedResource</c> and not from the authorization server fixture, which is why the
+    /// <c>AddProtectedResourceMetadata</c> and not from the authorization server fixture, which is why the
     /// fixture's own document is turned off in the tests that use this.
     /// </remarks>
     public sealed class WellKnownRoutingHandler : HttpMessageHandler

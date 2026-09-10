@@ -8,54 +8,51 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Constants;
-using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using SdkAuth = ModelContextProtocol.Authentication;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Authentication
 {
 
     /// <summary>
-    /// Publishes RFC 9728 protected resource metadata for every OData route prefix the app serves, and rewrites
-    /// the <c>WWW-Authenticate</c> challenge on a <c>401</c> beneath one of those prefixes so a client is told
+    /// Publishes RFC 9728 protected resource metadata for the configured route bases, and rewrites the
+    /// <c>WWW-Authenticate</c> challenge on a <c>401</c> beneath one of those bases so a client is told
     /// where that document lives.
     /// </summary>
     /// <example>
     /// <code>
-    /// GET /.well-known/oauth-protected-resource/odata
+    /// GET /.well-known/oauth-protected-resource
     /// 200 application/json
-    /// {"resource":"https://api.contoso.com/odata","authorization_servers":["https://login.contoso.com/v2.0"],"bearer_methods_supported":["header"]}
+    /// {"resource":"https://api.contoso.com","authorization_servers":["https://login.contoso.com/v2.0"],"bearer_methods_supported":["header"]}
     /// </code>
     /// </example>
     /// <remarks>
-    /// <see cref="ODataProtectedResourceStartupFilter"/> puts this at the very front of the pipeline, before
+    /// <see cref="ProtectedResourceMetadataStartupFilter"/> puts this at the very front of the pipeline, before
     /// authentication and authorization, because a protected resource metadata document that answers <c>401</c>
     /// is useless — a client that follows <c>resource_metadata</c> into a challenge has learned nothing. That
     /// is the "Graph trap" in <c>specs/v3/AUTHENTICATION.md</c>, and the only defence against it is serving the
     /// document anonymously.
     /// <para>
-    /// Prefix discovery is deferred to the first request because endpoint data sources are not complete until
-    /// the host has started; <see cref="ODataMcpSessionFactory"/> defers for the same reason and reads the same
-    /// discovery.
+    /// The default route base is the application root. Explicit <see cref="ProtectedResourceMetadataOptions.Prefixes"/>
+    /// entries are Endpoint Routing route bases, including an empty string.
     /// </para>
     /// </remarks>
-    public sealed class ODataProtectedResourceMiddleware
+    public sealed class ProtectedResourceMetadataMiddleware
     {
 
         #region Fields
 
         /// <summary>
-        /// Guards the one-time prefix discovery.
+        /// Guards the one-time prefix resolution.
         /// </summary>
         internal readonly object _gate = new();
 
         /// <summary>
-        /// The logger the discovered prefixes and any unparseable challenge are recorded to.
+        /// The logger the resolved prefixes and any unparseable challenge are recorded to.
         /// </summary>
-        internal readonly ILogger<ODataProtectedResourceMiddleware> _logger;
+        internal readonly ILogger<ProtectedResourceMetadataMiddleware> _logger;
 
         /// <summary>
         /// The next middleware in the pipeline.
@@ -65,48 +62,39 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// <summary>
         /// What this resource publishes about itself.
         /// </summary>
-        internal readonly IOptions<ODataProtectedResourceOptions> _options;
+        internal readonly IOptions<ProtectedResourceMetadataOptions> _options;
 
         /// <summary>
-        /// The discovered or configured OData route prefixes, or <see langword="null"/> before the first request.
+        /// The configured route bases, or <see langword="null"/> before the first request.
         /// </summary>
         internal IReadOnlyList<string>? _prefixes;
-
-        /// <summary>
-        /// The application service provider route discovery reads endpoint data sources from.
-        /// </summary>
-        internal readonly IServiceProvider _services;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ODataProtectedResourceMiddleware"/> class.
+        /// Initializes a new instance of the <see cref="ProtectedResourceMetadataMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="services">The application service provider route discovery reads endpoint data sources from.</param>
         /// <param name="options">What this resource publishes about itself.</param>
-        /// <param name="logger">The logger the discovered prefixes and any unparseable challenge are recorded to.</param>
+        /// <param name="logger">The logger the resolved prefixes and any unparseable challenge are recorded to.</param>
         /// <exception cref="ArgumentNullException">
-        /// Thrown when <paramref name="next"/>, <paramref name="services"/>, <paramref name="options"/>, or
-        /// <paramref name="logger"/> is <see langword="null"/>.
+        /// Thrown when <paramref name="next"/>, <paramref name="options"/>, or <paramref name="logger"/> is
+        /// <see langword="null"/>.
         /// </exception>
-        public ODataProtectedResourceMiddleware(
+        public ProtectedResourceMetadataMiddleware(
             RequestDelegate next,
-            IServiceProvider services,
-            IOptions<ODataProtectedResourceOptions> options,
-            ILogger<ODataProtectedResourceMiddleware> logger)
+            IOptions<ProtectedResourceMetadataOptions> options,
+            ILogger<ProtectedResourceMetadataMiddleware> logger)
         {
             ArgumentNullException.ThrowIfNull(next);
-            ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(logger);
 
             _logger = logger;
             _next = next;
             _options = options;
-            _services = services;
         }
 
         #endregion
@@ -115,7 +103,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
 
         /// <summary>
         /// Serves a protected resource metadata document, or arms the challenge annotation for a request that
-        /// falls beneath a covered prefix, then continues the pipeline.
+        /// falls beneath a covered route base, then continues the pipeline.
         /// </summary>
         /// <param name="context">The request being served.</param>
         /// <returns>
@@ -255,7 +243,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// Builds the RFC 9728 document for one prefix, in terms of the request that asked for it.
         /// </summary>
         /// <param name="context">The request the document is being served to.</param>
-        /// <param name="prefix">The OData route prefix, empty for a service at the application root.</param>
+        /// <param name="prefix">The route base, empty for the application root.</param>
         /// <returns>
         /// The document.
         /// </returns>
@@ -286,7 +274,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// <summary>
         /// Lists the well-known paths a set of prefixes is published at, for the startup log line.
         /// </summary>
-        /// <param name="prefixes">The covered prefixes, in discovery order.</param>
+        /// <param name="prefixes">The covered prefixes, in configuration order.</param>
         /// <returns>
         /// The origin form followed by one path-suffixed form per non-empty prefix.
         /// </returns>
@@ -341,7 +329,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// Builds the absolute protected resource metadata URL for one prefix.
         /// </summary>
         /// <param name="context">The request the URL is built in terms of.</param>
-        /// <param name="prefix">The OData route prefix, empty for a service at the application root.</param>
+        /// <param name="prefix">The route base, empty for the application root.</param>
         /// <returns>
         /// The path-suffixed well-known URL, or the origin form when <paramref name="prefix"/> is empty.
         /// </returns>
@@ -360,15 +348,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         }
 
         /// <summary>
-        /// Returns the OData route prefixes this resource covers, discovering them once on first use.
+        /// Returns the route bases this resource covers, resolving the default root on first use.
         /// </summary>
         /// <returns>
-        /// The prefixes without leading or trailing slashes, deduplicated, in discovery order.
+        /// The prefixes without leading or trailing slashes, deduplicated, in configuration order. An empty
+        /// <see cref="ProtectedResourceMetadataOptions.Prefixes"/> list becomes the application root.
         /// </returns>
-        /// <remarks>
-        /// A non-empty <see cref="ODataProtectedResourceOptions.Prefixes"/> replaces discovery outright, which
-        /// is the escape hatch for a host whose routing table carries no OData metadata at all.
-        /// </remarks>
         internal IReadOnlyList<string> Prefixes()
         {
             if (_prefixes is not null)
@@ -383,27 +368,24 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
                     return _prefixes;
                 }
 
-                var options = _options.Value;
-                var discovered = options.Prefixes.Count > 0
-                    ? options.Prefixes.Select(prefix => prefix.Trim('/'))
-                    : ODataMcpRouteDiscovery
-                        .Discover(_services, _services.GetService<IOptions<ODataMcpHostOptions>>()?.Value ?? new ODataMcpHostOptions())
-                        .Select(binding => binding.Prefix.Trim('/'));
+                var configured = _options.Value.Prefixes;
+                IEnumerable<string> source = configured.Count > 0 ? configured : [string.Empty];
 
                 var prefixes = new List<string>();
                 var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var prefix in discovered)
+                foreach (var prefix in source)
                 {
-                    if (seen.Add(prefix))
+                    var normalized = ProtectedResourceMetadataOptions.NormalizePrefix(prefix);
+                    if (seen.Add(normalized))
                     {
-                        prefixes.Add(prefix);
+                        prefixes.Add(normalized);
                     }
                 }
 
                 _prefixes = prefixes;
 
                 _logger.LogInformation(
-                    "Publishing RFC 9728 protected resource metadata for OData prefixes [{Prefixes}] at [{Documents}]",
+                    "Publishing RFC 9728 protected resource metadata for route bases [{Prefixes}] at [{Documents}]",
                     string.Join(", ", prefixes.Select(prefix => prefix.Length == 0 ? "(root)" : prefix)),
                     string.Join(", ", DocumentPaths(prefixes)));
 
@@ -437,9 +419,10 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// Builds the RFC 8707 resource identifier one prefix is published under.
         /// </summary>
         /// <param name="context">The request the identifier is built in terms of.</param>
-        /// <param name="prefix">The OData route prefix, empty for a service at the application root.</param>
+        /// <param name="prefix">The route base, empty for the application root.</param>
         /// <returns>
-        /// <c>{scheme}://{host}{pathBase}/{prefix}</c>, with no trailing slash.
+        /// <c>{scheme}://{host}{pathBase}</c> for the root, or <c>{scheme}://{host}{pathBase}/{prefix}</c>
+        /// otherwise, with no trailing slash.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="prefix"/> is <see langword="null"/>.</exception>
         internal static string ResourceIdentifier(HttpContext context, string prefix)
@@ -498,13 +481,13 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// </returns>
         /// <example>
         /// <code>
-        /// ODataProtectedResourceMiddleware.TryAnnotateChallenges(
+        /// ProtectedResourceMetadataMiddleware.TryAnnotateChallenges(
         ///     "Basic realm=\"legacy\", Bearer",
-        ///     "https://api.contoso.com/.well-known/oauth-protected-resource/odata",
+        ///     "https://api.contoso.com/.well-known/oauth-protected-resource",
         ///     null,
         ///     out var annotated);
         ///
-        /// // Basic realm="legacy", Bearer resource_metadata="https://api.contoso.com/.well-known/oauth-protected-resource/odata"
+        /// // Basic realm="legacy", Bearer resource_metadata="https://api.contoso.com/.well-known/oauth-protected-resource"
         /// </code>
         /// </example>
         /// <remarks>
@@ -684,7 +667,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// <param name="path">The request path, with the path base already removed.</param>
         /// <param name="prefix">The matched prefix when this method returns <see langword="true"/>.</param>
         /// <returns>
-        /// <see langword="true"/> when the path is part of a covered OData service.
+        /// <see langword="true"/> when the path is part of a covered route base.
         /// </returns>
         /// <remarks>
         /// Matching is segment-safe, so a prefix of <c>odata</c> never claims <c>/odatafoo</c>. A non-empty
@@ -728,8 +711,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// <see langword="true"/> when this middleware serves the request.
         /// </returns>
         /// <remarks>
-        /// The origin form answers for the first prefix in discovery order, which is the whole document when a
-        /// host serves exactly one OData service. A suffix that names no known prefix is not ours.
+        /// The origin form describes the application root when that base is covered, otherwise the first
+        /// configured prefix. A suffix that names no known prefix is not ours.
         /// </remarks>
         internal bool TryResolveDocumentPrefix(PathString remainder, out string prefix)
         {
@@ -744,6 +727,16 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
             var suffix = (remainder.Value ?? string.Empty).Trim('/');
             if (suffix.Length == 0)
             {
+                foreach (var candidate in prefixes)
+                {
+                    if (candidate.Length == 0)
+                    {
+                        prefix = candidate;
+
+                        return true;
+                    }
+                }
+
                 prefix = prefixes[0];
 
                 return true;
@@ -856,7 +849,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
         /// Writes the protected resource metadata document for one prefix.
         /// </summary>
         /// <param name="context">The request being answered.</param>
-        /// <param name="prefix">The OData route prefix the document describes.</param>
+        /// <param name="prefix">The route base the document describes.</param>
         /// <returns>
         /// A task that completes once the document has been written.
         /// </returns>
@@ -884,7 +877,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Authentication
             await JsonSerializer.SerializeAsync(
                 context.Response.Body,
                 metadata,
-                ODataProtectedResourceJsonContext.Default.ProtectedResourceMetadata,
+                ProtectedResourceMetadataJsonContext.Default.ProtectedResourceMetadata,
                 context.RequestAborted).ConfigureAwait(false);
         }
 

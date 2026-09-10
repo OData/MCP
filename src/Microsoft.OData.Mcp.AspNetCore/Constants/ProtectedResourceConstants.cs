@@ -5,12 +5,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Constants
 {
 
     /// <summary>
-    /// The literal wire values <c>AddODataProtectedResource</c> publishes: the RFC 9728 well-known path, the
+    /// The literal wire values <c>AddProtectedResourceMetadata</c> publishes: the RFC 9728 well-known path, the
     /// RFC 6750 <c>Bearer</c> scheme, and the auth-params an annotated challenge carries.
     /// </summary>
     /// <example>
     /// <code>
-    /// var url = $"{origin}{ProtectedResourceConstants.WellKnownPath}/odata";
+    /// var url = $"{origin}{ProtectedResourceConstants.WellKnownPath}";
     /// </code>
     /// </example>
     /// <remarks>

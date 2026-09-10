@@ -93,15 +93,15 @@ Shared by `start` and `try`.
 If you own the OData service, add protected resource metadata to it and the CLI needs no sign-in flags beyond a client id:
 
 ```csharp
-// In the OData API, using Microsoft.OData.Mcp.AspNetCore
-builder.Services.AddODataProtectedResource(options =>
+// In the API, using Microsoft.OData.Mcp.AspNetCore
+builder.Services.AddProtectedResourceMetadata(options =>
 {
     options.AuthorizationServers.Add(new Uri("https://login.example.com/oauth2/v2.0"));
     options.ScopesSupported.Add("api://example-odata/Data.Read");
 });
 ```
 
-That publishes RFC 9728 documents at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/{prefix}` for every OData route the app serves, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a 401. No MCP server and no pipeline call are required in the API.
+That publishes an RFC 9728 document at `/.well-known/oauth-protected-resource` for the application root, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a 401. Set `options.Prefixes` to any Endpoint Routing or Minimal API route base (including `""`) when the resource is not the whole host. No MCP server and no pipeline call are required in the API.
 
 ## Exit codes
 

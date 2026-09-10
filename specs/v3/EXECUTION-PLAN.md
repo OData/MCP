@@ -44,7 +44,7 @@ src/Microsoft.OData.Mcp.Core/
   Models/          # EXISTING — evolve in place (IEdmModel-shaped)
   Parsing/         # EXISTING CsdlParser — evolve
   Catalog/         # NEW — ODataMcpCatalog, ODataMcpCatalogOptions
-  Execution/       # NEW — IOdataExecutor, RemoteODataExecutor
+  Execution/       # NEW — IODataExecutor, RemoteODataExecutor
   Json/            # NEW — source-gen context
   Extensions/      # EXISTING — rewrite registration
 
@@ -395,10 +395,10 @@ dotnet test src/Microsoft.OData.Mcp.Tests.Core/Microsoft.OData.Mcp.Tests.Core.cs
 
 ---
 
-### Task 4: Remote `IOdataExecutor`
+### Task 4: Remote `IODataExecutor`
 
 **Files:**
-- Create: `src/Microsoft.OData.Mcp.Core/Execution/IOdataExecutor.cs`, `ODataExecuteRequest.cs`, `ODataExecuteResult.cs`, `RemoteODataExecutor.cs`
+- Create: `src/Microsoft.OData.Mcp.Core/Execution/IODataExecutor.cs`, `ODataExecuteRequest.cs`, `ODataExecuteResult.cs`, `RemoteODataExecutor.cs`
 - Test: `src/Microsoft.OData.Mcp.Tests.Core/Execution/RemoteODataExecutorLiveTests.cs`
 
 **Interfaces:**
@@ -421,7 +421,7 @@ namespace Microsoft.OData.Mcp.Core.Execution
     /// Executes one OData HTTP request. Query option keys must not include '$';
     /// implementations add the prefix on the wire.
     /// </summary>
-    public interface IOdataExecutor
+    public interface IODataExecutor
     {
 
         /// <summary>
@@ -781,7 +781,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 - Test: `src/Microsoft.OData.Mcp.Tests.Integration/NorthwindGenericQueryTests.cs`
 
 **Interfaces:**
-- Consumes: `IOdataExecutor`, catalog from Task 5
+- Consumes: `IODataExecutor`, catalog from Task 5
 - Produces: tool descriptors named exactly: `odata_list_entity_sets`, `odata_describe_type`, `odata_query`, `odata_get`, `odata_create`, `odata_update`, `odata_delete`, `odata_navigate`
 
 Each descriptor includes `title`, `inputSchema`, `outputSchema`, `readOnlyHint` / `destructiveHint` / `idempotentHint`, `openWorldHint: true`.

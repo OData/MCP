@@ -63,7 +63,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
         internal OutboundToolsHostFixture? Outbound { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the OData host calls <c>AddODataProtectedResource</c>.
+        /// Gets a value indicating whether the OData host calls <c>AddProtectedResourceMetadata</c>.
         /// </summary>
         internal abstract bool PublishesProtectedResource { get; }
 
@@ -85,8 +85,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
             AuthorizationServer = new LocalAuthorizationServer(new LocalAuthorizationServerOptions
             {
                 EnableDynamicClientRegistration = true,
-                ProtectedResourceMetadataMode = ProtectedResourceMetadataMode.NotFound,
-                ResourceUri = "http://localhost/odata"
+                ProtectedResourceMetadataMode = ProtectedResourceMetadataMode.NotFound
             });
             TestHostBuilder.ConfigureServices((_, services) =>
             {
@@ -94,7 +93,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
 
                 if (PublishesProtectedResource)
                 {
-                    services.AddODataProtectedResource(options => options.AuthorizationServers.Add(AuthorizationServer.Issuer));
+                    services.AddProtectedResourceMetadata(options => options.AuthorizationServers.Add(AuthorizationServer.Issuer));
                 }
 
                 services.AddSecuredResource(AuthorizationServer, bareBearerChallenge: true);
@@ -222,7 +221,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
     }
 
     /// <summary>
-    /// The negative twin: the same bare <c>Bearer</c> API without <c>AddODataProtectedResource</c> leaves the
+    /// The negative twin: the same bare <c>Bearer</c> API without <c>AddProtectedResourceMetadata</c> leaves the
     /// CLI with nothing to discover, and it says so rather than guessing.
     /// </summary>
     [TestClass]
