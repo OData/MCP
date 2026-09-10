@@ -29,14 +29,14 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Product>Microsoft OData MCP Framework</Product>
+        <Product>Microsoft OData for AI</Product>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <PackageVersion>1.0.0-preview.7</PackageVersion>
+        <PackageVersion>1.0.0-rc.1</PackageVersion>
 
         <Authors>Microsoft</Authors>
         <Company>Microsoft Corporation</Company>
         <RpmPackageVendor>Microsoft</RpmPackageVendor>
-        <Copyright>Copyright © 2025 Microsoft Corporation. All rights reserved.</Copyright>
+        <Copyright>Copyright © 2025-2026 Microsoft Corporation. All rights reserved.</Copyright>
         <NeutralLanguage>en-US</NeutralLanguage>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile Condition="$(IncludeReadmeFile) == 'true'">readme.md</PackageReadmeFile>
@@ -49,8 +49,8 @@
 
         <!-- <PackageIcon>odata.png</PackageIcon> -->
         <Summary>
-            Microsoft OData MCP Framework enables AI assistants to interact with OData services through the Model Context Protocol (MCP).
-            It provides both embedded (AspNetCore) and standalone (Tools) deployment options for exposing OData APIs as MCP tools.
+            Microsoft OData for AI connects assistants to OData APIs through the Model Context Protocol 2.0.
+            Local MCP (`dotnet odata-mcp`) runs on your machine. Remote MCP (AspNetCore) sits on the API you already host.
         </Summary>
         <Description>
             $(Summary)

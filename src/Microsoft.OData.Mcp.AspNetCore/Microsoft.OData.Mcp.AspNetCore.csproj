@@ -4,9 +4,9 @@
         <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <PackageId>Microsoft.OData.Mcp.AspNetCore</PackageId>
-        <Title>Microsoft OData MCP Server ASP.NET Core</Title>
-        <Description>ASP.NET Core hosting and HTTP transport for OData MCP servers with integrated authentication and dependency injection.</Description>
-        <PackageTags>odata;mcp;server;aspnetcore;hosting;http</PackageTags>
+        <Title>Microsoft OData for AI — Remote MCP</Title>
+        <Description>Expose an existing ASP.NET Core OData API to AI assistants at {prefix}/mcp. AddODataMcp / UseODataMcp. The app brings OData 7 or 8.</Description>
+        <PackageTags>odata;mcp;server;aspnetcore;hosting;http;ai</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

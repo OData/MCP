@@ -18,8 +18,9 @@
 
         <!-- Package metadata -->
         <PackageId>Microsoft.OData.Mcp.Tools</PackageId>
-        <Description>Command-line tools for running a standalone MCP server that connects to external OData APIs</Description>
-        <PackageTags>OData;MCP;ModelContextProtocol;Tools;CLI</PackageTags>
+        <Title>Microsoft OData for AI — Local MCP</Title>
+        <Description>Local MCP server for any OData API. Ask your assistant about customers, orders, and accounts without reading $metadata yourself.</Description>
+        <PackageTags>OData;MCP;ModelContextProtocol;Tools;CLI;AI</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

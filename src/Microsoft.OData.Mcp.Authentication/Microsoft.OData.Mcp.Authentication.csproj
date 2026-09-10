@@ -4,8 +4,8 @@
         <TargetFrameworks>net11.0;net10.0;net9.0;net8.0;</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <PackageId>Microsoft.OData.Mcp.Authentication</PackageId>
-        <Title>Microsoft OData MCP Authentication</Title>
-        <Description>Outbound OAuth client for remote OData (CLI hop 2). Types land in Outbound/ per specs/v3/AUTHENTICATION.md.</Description>
+        <Title>Microsoft OData for AI — Authentication</Title>
+        <Description>Outbound OAuth client used by Local MCP (odata-mcp) to sign in to an OData API. Not inbound MCP OAuth.</Description>
         <PackageTags>odata;mcp;oauth;authentication</PackageTags>
     </PropertyGroup>
 

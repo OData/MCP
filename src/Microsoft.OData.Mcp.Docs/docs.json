@@ -21,8 +21,7 @@
         "group": "Guides",
         "icon": "dog-leashed",
         "pages": [
-          "guides/page-1",
-          "guides/page-2"
+          "guides/cli/how-it-works"
         ]
       },
       {

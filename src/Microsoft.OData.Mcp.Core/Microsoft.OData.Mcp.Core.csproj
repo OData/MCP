@@ -4,8 +4,8 @@
         <TargetFrameworks>net11.0;net10.0;net9.0;net8.0;</TargetFrameworks>
         <DocumentationFile>$(DocumentationFile)\$(AssemblyName).xml</DocumentationFile>
         <PackageId>Microsoft.OData.Mcp.Core</PackageId>
-        <Title>Microsoft OData MCP Server Core</Title>
-        <Description>Core library for creating MCP servers from OData metadata, including CSDL parsing and domain models.</Description>
+        <Title>Microsoft OData for AI — Core</Title>
+        <Description>Shared catalog, CSDL parser, and models for Microsoft OData for AI. Used by Local MCP and Remote MCP. Take a direct dependency only if you are building a custom host.</Description>
         <PackageTags>odata;mcp;server;metadata;csdl</PackageTags>
     </PropertyGroup>
 
