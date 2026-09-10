@@ -67,6 +67,37 @@ namespace Microsoft.OData.Mcp.Tests.Tools
             exit.Should().Be(0);
         }
 
+
+        /// <summary>
+        /// A service root is kept as-is, with exactly one trailing slash.
+        /// </summary>
+        [TestMethod]
+        public void NormalizeServiceRoot_ServiceRoot_AddsTrailingSlash()
+        {
+            ToolsMcpHost.NormalizeServiceRoot("https://services.odata.org/V4/Northwind/Northwind.svc").ToString().Should().Be("https://services.odata.org/V4/Northwind/Northwind.svc/");
+            ToolsMcpHost.NormalizeServiceRoot("https://services.odata.org/V4/Northwind/Northwind.svc/").ToString().Should().Be("https://services.odata.org/V4/Northwind/Northwind.svc/");
+        }
+
+        /// <summary>
+        /// A pasted $metadata URL is trimmed to its service root, including any query or fragment after it.
+        /// </summary>
+        [TestMethod]
+        public void NormalizeServiceRoot_MetadataUrl_TrimsToServiceRoot()
+        {
+            ToolsMcpHost.NormalizeServiceRoot("https://services.odata.org/V4/Northwind/Northwind.svc/$metadata").ToString().Should().Be("https://services.odata.org/V4/Northwind/Northwind.svc/");
+            ToolsMcpHost.NormalizeServiceRoot("https://services.odata.org/V4/Northwind/Northwind.svc/$metadata/").ToString().Should().Be("https://services.odata.org/V4/Northwind/Northwind.svc/");
+            ToolsMcpHost.NormalizeServiceRoot("https://api.example.com/odata/$METADATA?$format=xml#x").ToString().Should().Be("https://api.example.com/odata/");
+            ToolsMcpHost.NormalizeServiceRoot("https://api.example.com/$metadata").ToString().Should().Be("https://api.example.com/");
+        }
+
+        /// <summary>
+        /// $metadata in the middle of a path is part of the service root and is left alone.
+        /// </summary>
+        [TestMethod]
+        public void NormalizeServiceRoot_MetadataNotLastSegment_IsKept()
+        {
+            ToolsMcpHost.NormalizeServiceRoot("https://api.example.com/$metadata/v2").ToString().Should().Be("https://api.example.com/$metadata/v2/");
+        }
         #endregion
 
     }

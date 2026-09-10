@@ -528,6 +528,16 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
                 throw new ArgumentException($"Invalid URL: {serviceUrl}", nameof(serviceUrl));
             }
 
+            // People paste the $metadata URL they already have open. The host fetches $metadata itself, so strip a
+            // trailing /$metadata segment (plus any ?$format=... query or fragment) and keep the service root.
+            var path = uri.AbsolutePath.TrimEnd('/');
+            var metadataIndex = path.LastIndexOf("/$metadata", StringComparison.OrdinalIgnoreCase);
+            if (metadataIndex >= 0 && path.Length == metadataIndex + "/$metadata".Length)
+            {
+                var builder = new UriBuilder(uri) { Path = path[..metadataIndex], Query = string.Empty, Fragment = string.Empty };
+                uri = builder.Uri;
+            }
+
             return new Uri(uri.ToString().TrimEnd('/') + "/", UriKind.Absolute);
         }
 

@@ -33,14 +33,14 @@ dotnet tool install --global --add-source ./bin/Debug Microsoft.OData.Mcp.Tools
 The tool runs in STDIO mode by default, which is the standard transport for MCP servers:
 
 ```bash
-# Connect to a public OData service
-odata-mcp start https://services.odata.org/V4/Northwind/Northwind.svc/$metadata
+# Connect to a public OData service. Pass the service root; the tool fetches $metadata itself.
+odata-mcp start https://services.odata.org/V4/Northwind/Northwind.svc
 
 # With authentication
-odata-mcp start https://api.example.com/odata/$metadata --auth-token "Bearer YOUR_TOKEN"
+odata-mcp start https://api.example.com/odata --auth-token "Bearer YOUR_TOKEN"
 
 # With verbose logging (logs to stderr, doesn't interfere with protocol)
-odata-mcp start https://api.example.com/odata/$metadata --verbose
+odata-mcp start https://api.example.com/odata --verbose
 ```
 
 ### HTTP Mode (Optional for Debugging)
@@ -49,7 +49,7 @@ For debugging or special scenarios, you can run in HTTP mode by specifying a por
 
 ```bash
 # Run on port 3000
-odata-mcp start https://api.example.com/odata/$metadata --port 3000
+odata-mcp start https://api.example.com/odata --port 3000
 ```
 
 ### Test Command
@@ -57,14 +57,14 @@ odata-mcp start https://api.example.com/odata/$metadata --port 3000
 Test that an OData service is accessible and parse its metadata:
 
 ```bash
-odata-mcp test https://services.odata.org/V4/Northwind/Northwind.svc/$metadata
+odata-mcp test https://services.odata.org/V4/Northwind/Northwind.svc
 ```
 
 ## How It Works
 
 ### 1. Metadata Discovery
 When started, the tool:
-- Fetches the OData metadata document from the specified URL
+- Fetches `$metadata` from the service root you pass (a URL that already ends in `/$metadata` is trimmed to its root)
 - Parses the CSDL (Common Schema Definition Language) to understand:
   - Entity types and their properties
   - Entity sets (collections)
@@ -108,13 +108,13 @@ Add to your Claude Desktop configuration:
   "mcpServers": {
     "northwind": {
       "command": "odata-mcp",
-      "args": ["start", "https://services.odata.org/V4/Northwind/Northwind.svc/$metadata"]
+      "args": ["start", "https://services.odata.org/V4/Northwind/Northwind.svc"]
     },
     "my-api": {
       "command": "odata-mcp",
       "args": [
         "start",
-        "https://api.example.com/odata/$metadata",
+        "https://api.example.com/odata",
         "--auth-token",
         "Bearer YOUR_TOKEN"
       ]
@@ -133,7 +133,7 @@ import json
 
 # Start the MCP server
 process = subprocess.Popen(
-    ["odata-mcp", "start", "https://api.example.com/odata/$metadata"],
+    ["odata-mcp", "start", "https://api.example.com/odata"],
     stdin=subprocess.PIPE,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
@@ -225,7 +225,7 @@ Get detailed schema information for an entity type:
 ## Command-Line Options
 
 ### start Command
-- `url` (required) - The OData metadata URL
+- `url` (required) - The OData service root, for example `https://host/odata`. The tool appends `$metadata` itself; a pasted `.../$metadata` URL is accepted and trimmed.
 - `--port, -p` - Port for HTTP mode (omit for STDIO mode)
 - `--config, -c` - Path to configuration file
 - `--verbose, -v` - Enable verbose logging
@@ -255,7 +255,7 @@ Access and refresh tokens are stored in the OS credential store (Latchkey) and n
 **Device code example** (default interactive grant for stdio; prints a code and URL to stderr):
 
 ```bash
-odata-mcp start "https://graph.microsoft.com/v1.0/$metadata" \
+odata-mcp start "https://graph.microsoft.com/v1.0" \
   --client-id "{your-app-registration-id}" \
   --scopes "https://graph.microsoft.com/.default" \
   --grant device_code
@@ -264,7 +264,7 @@ odata-mcp start "https://graph.microsoft.com/v1.0/$metadata" \
 **`--auth-server` example** — some APIs return only `WWW-Authenticate: Bearer realm="..."` with no `resource_metadata` and no RFC 9728 well-known document, so discovery cannot find an authorization server on its own. Point it there explicitly:
 
 ```bash
-odata-mcp start "https://api.example.com/odata/$metadata" \
+odata-mcp start "https://api.example.com/odata" \
   --auth-server "https://login.example.com/oauth2" \
   --client-id "{your-app-registration-id}"
 ```
@@ -280,10 +280,10 @@ builder.Services.AddODataProtectedResource(options =>
 });
 ```
 
-That publishes RFC 9728 protected resource metadata at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/{prefix}` for every OData route the app serves, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a `401`. No MCP server, no `UseODataMcp`, and no pipeline call are required. `odata-mcp start "https://api.example.com/odata/$metadata"` then signs itself in with no flags at all.
+That publishes RFC 9728 protected resource metadata at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/{prefix}` for every OData route the app serves, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a `401`. No MCP server, no `UseODataMcp`, and no pipeline call are required. `odata-mcp start "https://api.example.com/odata"` then signs itself in with no flags at all.
 
 ### test Command
-- `url` (required) - The OData metadata URL to test
+- `url` (required) - The OData service root, for example `https://host/odata`. The tool appends `$metadata` itself; a pasted `.../$metadata` URL is accepted and trimmed. to test
 
 ### version Command
 Shows the tool version
@@ -320,7 +320,7 @@ Shows the tool version
 ## Troubleshooting
 
 ### Tool doesn't start
-- Ensure the OData URL is accessible and ends with `/$metadata` or `/metadata`
+- Ensure the service root is reachable and that `{url}/$metadata` returns a CSDL document (try `odata-mcp test <url>`)
 - Check network connectivity
 - Verify authentication token if required
 
@@ -347,7 +347,7 @@ cd odata-mcp-server/src/Microsoft.OData.Mcp.Tools
 dotnet build
 
 # Run locally
-dotnet run -- start https://services.odata.org/V4/Northwind/Northwind.svc/$metadata
+dotnet run -- start https://services.odata.org/V4/Northwind/Northwind.svc
 ```
 
 ### Testing
@@ -357,7 +357,7 @@ dotnet run -- start https://services.odata.org/V4/Northwind/Northwind.svc/$metad
 dotnet test
 
 # Test with a real OData service
-dotnet run -- test https://services.odata.org/V4/Northwind/Northwind.svc/$metadata
+dotnet run -- test https://services.odata.org/V4/Northwind/Northwind.svc
 ```
 
 ### Contributing
