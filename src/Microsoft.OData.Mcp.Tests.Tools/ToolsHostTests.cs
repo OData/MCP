@@ -55,9 +55,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// The test command prints the entity set count for live Northwind.
         /// </summary>
         [TestMethod]
-        public async Task TestCommand_Northwind_ReturnsZero()
+        public async Task TryCommand_Northwind_ReturnsZero()
         {
-            var command = new TestCommand
+            var command = new TryCommand
             {
                 Url = LiveOData.Northwind
             };

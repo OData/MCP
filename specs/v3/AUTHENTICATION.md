@@ -597,7 +597,7 @@ Always generate `ElicitationId` (new GUID string) whenever a URL payload is buil
 
 | Phase | MCP session? | Mechanism |
 |-------|--------------|-----------|
-| `CreateAsync` / `odata-mcp test` / `add` wizard | No | `options.ConsentPresenter` (`StdioConsentPresenter`) → stderr + OS browser / printed device code. `--auth-timeout`. No `McpServer`. |
+| `CreateAsync` / `odata-mcp try` (second pass, auth flags present) / `add` wizard | No | `options.ConsentPresenter` (`StdioConsentPresenter`) → stderr + OS browser / printed device code. `--auth-timeout`. No `McpServer`. |
 | Mid-session 401 after refresh failure | Yes, stdio, client has URL elicitation | PR 8+: `ConsentPresenter` is null. Handler **starts** the grant then throws. Tools: `ElicitAsync` **and** `CompleteInteractiveGrantAsync`, then **retry `InvokeAsync` once**. Elicit Content is not the tool result. |
 | Mid-session, stdio, no URL elicitation | Yes | stderr + device-code poll, or tool `isError` “re-run `odata-mcp start` to sign in” — **without** tokens. |
 | Optional Tools Streamable HTTP (stateless) | Yes, `ElicitAsync` throws in stateless | **Only if/when Tools HTTP is enabled:** throw `UrlElicitationRequiredException` (−32042) with the same URL + `ElicitationId` payload. `InputRequiredException` (MRTR) is the 2026-07-28 alternative if the host already uses MRTR. Same rule: URL only, never tokens. **Do not implement hop-1 inbound OAuth.** |

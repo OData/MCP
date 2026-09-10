@@ -52,12 +52,12 @@ For debugging or special scenarios, you can run in HTTP mode by specifying a por
 odata-mcp start https://api.example.com/odata --port 3000
 ```
 
-### Test Command
+### Try Command
 
-Test that an OData service is accessible and parse its metadata:
+Probe a service before wiring it into an MCP host. `try` fetches `$metadata`, reads one row from the first entity set, reports which of the two is secured, checks the row against the model, and prints a verdict. Without auth flags it never signs in; on a 401 it runs OAuth discovery and prints what it found. With auth flags it probes again through the authenticating client. Exit codes: 0 ready, 2 sign-in required, 1 unreachable or unreadable.
 
 ```bash
-odata-mcp test https://services.odata.org/V4/Northwind/Northwind.svc
+odata-mcp try https://services.odata.org/V4/Northwind/Northwind.svc
 ```
 
 ## How It Works
@@ -282,7 +282,7 @@ builder.Services.AddODataProtectedResource(options =>
 
 That publishes RFC 9728 protected resource metadata at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-protected-resource/{prefix}` for every OData route the app serves, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a `401`. No MCP server, no `UseODataMcp`, and no pipeline call are required. `odata-mcp start "https://api.example.com/odata"` then signs itself in with no flags at all.
 
-### test Command
+### try Command
 - `url` (required) - The OData service root, for example `https://host/odata`. The tool appends `$metadata` itself; a pasted `.../$metadata` URL is accepted and trimmed. to test
 
 ### version Command
@@ -320,14 +320,14 @@ Shows the tool version
 ## Troubleshooting
 
 ### Tool doesn't start
-- Ensure the service root is reachable and that `{url}/$metadata` returns a CSDL document (try `odata-mcp test <url>`)
+- Ensure the service root is reachable and that `{url}/$metadata` returns a CSDL document (run `odata-mcp try <url>`)
 - Check network connectivity
 - Verify authentication token if required
 
 ### No tools available
 - Verify the OData service has entity sets defined
 - Check the metadata document is valid CSDL
-- Use the `test` command to validate the service
+- Use the `try` command to see which step fails: metadata, data, security, or result shape
 
 ### Protocol errors in STDIO mode
 - Ensure no other output is sent to stdout (only JSON-RPC messages)
@@ -357,7 +357,7 @@ dotnet run -- start https://services.odata.org/V4/Northwind/Northwind.svc
 dotnet test
 
 # Test with a real OData service
-dotnet run -- test https://services.odata.org/V4/Northwind/Northwind.svc
+dotnet run -- try https://services.odata.org/V4/Northwind/Northwind.svc
 ```
 
 ### Contributing

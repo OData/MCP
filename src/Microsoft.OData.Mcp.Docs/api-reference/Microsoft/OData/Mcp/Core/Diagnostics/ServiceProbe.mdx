@@ -1,0 +1,281 @@
+---
+title: ServiceProbe
+description: "Answers four questions about an OData service with three requests: is `$metadata` reachable, is the data reachable, is either of them secured, and does a rea..."
+icon: lock
+tag: "SEALED"
+keywords: ['ServiceProbe', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbe', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbe
+```
+
+## Summary
+
+Answers four questions about an OData service with three requests: is `$metadata` reachable, is the
+data reachable, is either of them secured, and does a real row look like the model says it should.
+
+## Remarks
+
+The probe uses whatever [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient) it is given. Pass a plain client to learn what an anonymous
+caller sees; pass the authenticated OData client to learn what the catalog will see. It never throws for a
+service that misbehaves; every failure lands in a [ProbeStep](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeStep).
+
+## Examples
+
+```csharp
+var probe = new ServiceProbe(httpClient, new CsdlParser());
+var result = await probe.ProbeAsync(new Uri("https://services.odata.org/V4/Northwind/Northwind.svc/"), ct);
+Console.WriteLine(result.Verdict); // Ready
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) class.
+
+#### Syntax
+
+```csharp
+public ServiceProbe(System.Net.Http.HttpClient client, Microsoft.OData.Mcp.Core.Parsing.CsdlParser parser)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `client` | `System.Net.Http.HttpClient` | The client every request goes through. |
+| `parser` | `Microsoft.OData.Mcp.Core.Parsing.CsdlParser` | The CSDL parser. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ChooseEntitySet
+
+Picks the entity set to sample: the first one the container declares whose type the model resolves.
+
+#### Syntax
+
+```csharp
+public static System.Nullable<(Microsoft.OData.Mcp.Core.Models.EdmEntitySet, Microsoft.OData.Mcp.Core.Models.EdmEntityType)> ChooseEntitySet(Microsoft.OData.Mcp.Core.Models.EdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The model. |
+
+#### Returns
+
+Type: `System.Nullable<(Microsoft.OData.Mcp.Core.Models.EdmEntitySet, Microsoft.OData.Mcp.Core.Models.EdmEntityType)>`
+The set and its type, or `null` when the model declares no usable set.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InterpretRow
+
+Checks a data response body against the model: is it JSON, is it an OData collection, and do the first
+row's property names belong to the type.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep InterpretRow(Microsoft.OData.Mcp.Core.Models.EdmEntityType type, string json)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `type` | `Microsoft.OData.Mcp.Core.Models.EdmEntityType` | The entity type behind the sampled set. |
+| `json` | `string` | The response body. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep`
+[ProbeOutcome.Passed](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#passed) when the row's properties are declared on the type (an empty set also
+passes, with a note); [ProbeOutcome.Unreadable](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#unreadable) when the body is not JSON, has no
+`value` array, or shares no property names with the type.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ProbeAsync
+
+Runs all three steps.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult> ProbeAsync(System.Uri serviceRoot, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The service root; a trailing slash is added when missing. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult>`
+The result. Never throws for a misbehaving service.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ProbeWithModelAsync
+
+Runs steps 2 and 3 against a model that is already parsed, for hosts that fetched `$metadata` themselves.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult> ProbeWithModelAsync(System.Uri serviceRoot, Microsoft.OData.Mcp.Core.Models.EdmModel model, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | The service root. |
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The parsed model. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult>`
+A result whose metadata step is recorded as passed.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

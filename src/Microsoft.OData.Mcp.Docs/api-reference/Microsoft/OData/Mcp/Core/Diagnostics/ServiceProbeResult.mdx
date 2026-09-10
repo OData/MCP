@@ -1,0 +1,358 @@
+---
+title: ServiceProbeResult
+description: "Everything a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) learned about one service: the three steps, the parsed model wh..."
+icon: lock
+tag: "SEALED"
+keywords: ['ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult
+```
+
+## Summary
+
+Everything a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) learned about one service: the three steps, the parsed model when
+there was one, the entity set that was sampled, and the overall verdict.
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ServiceProbeResult](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbeResult) class.
+
+#### Syntax
+
+```csharp
+public ServiceProbeResult(System.Uri serviceRoot, Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep metadata, Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep data, Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep results, Microsoft.OData.Mcp.Core.Models.EdmModel model, string entitySet, string entityType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `serviceRoot` | `System.Uri` | - |
+| `metadata` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | - |
+| `data` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | - |
+| `results` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | - |
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel?` | - |
+| `entitySet` | `string?` | - |
+| `entityType` | `string?` | - |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Challenges
+
+Every `WWW-Authenticate` value seen on a 401 or 403, metadata first.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> Challenges { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Data
+
+Step 2: `GET {root}{EntitySet}?$top=1`.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep Data { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySet
+
+The entity set that was sampled, or `null` when the model declared none.
+
+#### Syntax
+
+```csharp
+public string EntitySet { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityType
+
+The qualified name of the type behind [ServiceProbeResult.EntitySet](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbeResult#entityset), or `null`.
+
+#### Syntax
+
+```csharp
+public string EntityType { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Metadata
+
+Step 1: `GET {root}$metadata` and parse.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep Metadata { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Model
+
+The parsed model when step 1 passed, otherwise `null`.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmModel Model { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmModel?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Results
+
+Step 3: does the sampled row match the model?
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep Results { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SecuredStatusCode
+
+The HTTP status of the step that refused access, when one did. Used to drive OAuth discovery.
+
+#### Syntax
+
+```csharp
+public System.Nullable<int> SecuredStatusCode { get; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<int>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ServiceRoot
+
+The normalized service root, always ending in `/`.
+
+#### Syntax
+
+```csharp
+public System.Uri ServiceRoot { get; }
+```
+
+#### Property Value
+
+Type: `System.Uri`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Verdict
+
+The overall conclusion.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict Verdict { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict`
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Decide
+
+Derives the verdict from the three steps.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict Decide(Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep metadata, Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep data, Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep results)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | Step 1. |
+| `data` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | Step 2. |
+| `results` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep` | Step 3. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict`
+The verdict. Security refusals win over reachability, which wins over readability.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
+
+#### Syntax
+
+```csharp
+public override string ToString()
+```
+
+#### Returns
+
+Type: `string`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

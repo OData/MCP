@@ -140,11 +140,18 @@ No `$filter` evaluation in this repo.
 ### 4.3 Tools CLI
 
 ```
-odata-mcp start <serviceUrl> [options]
-odata-mcp test  <serviceUrl>
+odata-mcp start <serviceRoot> [auth options]
+odata-mcp try   <serviceRoot> [auth options]
+odata-mcp add   [serviceRoot]
 ```
 
 Public command name `odata-mcp` (align `ToolCommandName`; today it is `dotnet-odata-mcp`). Stdio default. Optional stateless HTTP. AOT publish is a first-class artifact. Always registers `shutdown_server`.
+
+`<serviceRoot>` is the service root; the host appends `$metadata` itself and trims a pasted `.../$metadata` URL (`ToolsMcpHost.NormalizeServiceRoot`).
+
+**`try`** probes a service before anyone commits to it (`Core.Diagnostics.ServiceProbe`): (1) `GET $metadata` and parse; (2) `GET {firstSet}?$top=1`; (3) which of the two refused an anonymous caller, with the `WWW-Authenticate` challenge; (4) whether the row's properties are declared on the type. The first pass is always anonymous and never signs in. On a 401/403 with auth flags present it probes again through the authenticating `"OData"` client; with no flags it runs `OAuthDiscovery` and prints the authorization server, advertised grants, and the flags to pass. Exit codes: `0` ready, `2` sign-in required, `1` unreachable or unreadable.
+
+**`start`** runs steps 2–4 of the same probe through the default (unauthenticated) client after the catalog is built. The verdict is logged; when data is secured and no credential was passed, `ODataMcpCatalogOptions.InstructionsPreface` tells the model so before its first call. Probe failures never block startup, and the interactive sign-in still happens lazily on the first real tool call.
 
 ---
 

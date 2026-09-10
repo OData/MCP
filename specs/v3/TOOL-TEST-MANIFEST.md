@@ -1741,7 +1741,7 @@ Local-only control-plane tool. Acknowledges shutdown and cancels host lifetime a
 
 736. **ShutdownServer_AfterOdataQuery_StillAcksThenDies** — query first, then shutdown.  
 737. **ShutdownServer_DoesNotRemoveCatalogToolsMidCall**  
-738. **ShutdownServer_TestCommandNorthwind_DoesNotRequireShutdown** — `odata-mcp test` exit 0 without calling shutdown.
+738. **ShutdownServer_TryCommandNorthwind_DoesNotRequireShutdown** — `odata-mcp try` exit 0 without calling shutdown.
 
 ---
 
@@ -1942,7 +1942,7 @@ Current suites over-use `odata_query` and catalog-name assertions. The following
 
 - `OpenMcpHostTests`, `AuthenticatedMcpHostTests`, `RateLimitedMcpHostTests`, `RestierCustomerMcpTests.Restier_McpEndpoint_IsNotMissing` POST **empty `{}`** to `{prefix}/mcp` and only assert not 404 / 401 / 429. **No JSON-RPC `tools/call`.**  
 - No `tools/call` for each generic on Streamable HTTP.  
-- No stdio JSON-RPC `tools/call` in `Tests.Tools` (host tests check catalog names + `ShutdownServerTool` delay 0 + `test` command).  
+- No stdio JSON-RPC `tools/call` in `Tests.Tools` (host tests check catalog names + `ShutdownServerTool` delay 0 + `try` command).  
 - `resources/read` type-card-vs-feed is not asserted on AspNetCore/Restier HTTP.  
 - Completions honor-exclude is untested (and likely wrong).  
 - Valid JWT tests do not actually invoke `odata_query`.

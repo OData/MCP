@@ -202,6 +202,18 @@
                             ]
                           },
                           {
+                            "group": "Diagnostics",
+                            "icon": "folder-tree",
+                            "pages": [
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/index",
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome",
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeStep",
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe",
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbeResult",
+                              "api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceVerdict"
+                            ]
+                          },
+                          {
                             "group": "Execution",
                             "icon": "folder-tree",
                             "pages": [
@@ -265,7 +277,7 @@
                               "api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings",
                               "api-reference/Microsoft/OData/Mcp/Tools/Commands/ODataMcpRootCommand",
                               "api-reference/Microsoft/OData/Mcp/Tools/Commands/StartCommand",
-                              "api-reference/Microsoft/OData/Mcp/Tools/Commands/TestCommand"
+                              "api-reference/Microsoft/OData/Mcp/Tools/Commands/TryCommand"
                             ]
                           },
                           {

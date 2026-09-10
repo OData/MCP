@@ -17,7 +17,7 @@ namespace Microsoft.OData.Mcp.Tests.Console
         /// Tests that the test command parses URLs correctly.
         /// </summary>
         [TestMethod]
-        public void TestCommand_ParsesUrl_ExtractsMetadataPath()
+        public void TryCommand_ParsesUrl_ExtractsMetadataPath()
         {
             // Arrange
             const string url1 = "https://api.example.com/odata/$metadata";

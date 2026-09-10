@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Constants;
+using Microsoft.OData.Mcp.Core.Diagnostics;
 using Microsoft.OData.Mcp.Core.Execution;
 using Microsoft.OData.Mcp.Core.Parsing;
 using ModelContextProtocol.Protocol;
@@ -169,6 +170,52 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
             }
 
             var root = NormalizeServiceRoot(serviceUrl);
+            var host = BuildHost(root, options, includeStdioMcp, verbose, lifetime, configureServices, out var catalogOptions);
+
+            try
+            {
+                var metadataXml = await FetchMetadataAsync(host, root, cancellationToken).ConfigureAwait(false);
+                var model = host.Services.GetRequiredService<CsdlParser>().ParseFromString(metadataXml);
+                var catalog = new ODataMcpCatalog(model, catalogOptions);
+                var session = new ODataMcpSession(
+                    catalog,
+                    new ODataToolRuntime(catalog, host.Services.GetRequiredService<RemoteODataExecutor>()),
+                    metadataXml);
+
+                host.Services.GetRequiredService<ToolsMcpSessionHolder>().Session = session;
+                await ProbeStartupAsync(host, root, model, options, catalogOptions, cancellationToken).ConfigureAwait(false);
+
+                if (includeStdioMcp)
+                {
+                    options.ConsentPresenter = null;
+                }
+
+                return new ToolsMcpHost(host, root, session);
+            }
+            catch
+            {
+                host.Dispose();
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Registers every service the CLI host needs and builds it, without fetching metadata. <see cref="CreateAsync"/>
+        /// builds the session on top; <c>odata-mcp try</c> uses the bare host to probe a service first.
+        /// </summary>
+        /// <param name="root">The normalized service root.</param>
+        /// <param name="options">Outbound authentication options.</param>
+        /// <param name="includeStdioMcp">Whether to register the stdio MCP server and <c>shutdown_server</c>.</param>
+        /// <param name="verbose">Whether to log at debug level.</param>
+        /// <param name="lifetime">The lifetime <c>shutdown_server</c> cancels; required when <paramref name="includeStdioMcp"/> is true.</param>
+        /// <param name="configureServices">Optional extra registrations.</param>
+        /// <param name="catalogOptions">The catalog options registered in the host, so callers can set the instructions preface before the MCP server starts.</param>
+        /// <returns>
+        /// The built host. The caller owns disposal.
+        /// </returns>
+        internal static IHost BuildHost(Uri root, OutboundOAuthOptions options, bool includeStdioMcp, bool verbose, CancellationTokenSource? lifetime, Action<IServiceCollection>? configureServices, out ODataMcpCatalogOptions catalogOptions)
+        {
 
             options.ConsentPresenter ??= StdioConsentPresenter.PresentAsync;
 
@@ -208,12 +255,13 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
 
             // Catalog options exist before Build() so initialize.instructions can be configured up front, the same way
             // the session holder is registered before the session exists. Never assign ServerInstructions after Build().
-            var catalogOptions = new ODataMcpCatalogOptions
+            var catalog = new ODataMcpCatalogOptions
             {
                 RouteName = "remote"
             };
-            builder.Services.AddSingleton(catalogOptions);
-            builder.Services.Configure<McpServerOptions>(mcp => mcp.ServerInstructions = ODataMcpInstructions.Compose(catalogOptions.InstructionsPreface));
+            catalogOptions = catalog;
+            builder.Services.AddSingleton(catalog);
+            builder.Services.Configure<McpServerOptions>(mcp => mcp.ServerInstructions = ODataMcpInstructions.Compose(catalog.InstructionsPreface));
 
             if (includeStdioMcp)
             {
@@ -250,31 +298,7 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
 
             var host = builder.Build();
 
-            try
-            {
-                var metadataXml = await FetchMetadataAsync(host, root, cancellationToken).ConfigureAwait(false);
-                var model = host.Services.GetRequiredService<CsdlParser>().ParseFromString(metadataXml);
-                var catalog = new ODataMcpCatalog(model, catalogOptions);
-                var session = new ODataMcpSession(
-                    catalog,
-                    new ODataToolRuntime(catalog, host.Services.GetRequiredService<RemoteODataExecutor>()),
-                    metadataXml);
-
-                host.Services.GetRequiredService<ToolsMcpSessionHolder>().Session = session;
-
-                if (includeStdioMcp)
-                {
-                    options.ConsentPresenter = null;
-                }
-
-                return new ToolsMcpHost(host, root, session);
-            }
-            catch
-            {
-                host.Dispose();
-
-                throw;
-            }
+            return host;
         }
 
         /// <inheritdoc />
@@ -309,6 +333,20 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
                 Name = "shutdown_server",
                 Title = "Shut down MCP server"
             };
+        }
+
+        /// <summary>
+        /// The instructions preface for a service whose metadata is public but whose data answered 401 or 403.
+        /// </summary>
+        /// <param name="result">The probe result.</param>
+        /// <returns>
+        /// One sentence the model reads before the default instructions.
+        /// </returns>
+        internal static string DataSecuredPreface(ServiceProbeResult result)
+        {
+            ArgumentNullException.ThrowIfNull(result);
+
+            return $"This service's metadata is public but its data requires sign-in ({result.EntitySet} answered {result.Data.StatusCode}). The first data call may pause for authentication or ask the user for consent; relay that request rather than retrying.";
         }
 
         /// <summary>
@@ -589,6 +627,55 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
             using var document = JsonDocument.Parse(json);
 
             return document.RootElement.Clone();
+        }
+
+        /// <summary>
+        /// Runs the anonymous data probe once the catalog exists, logs the verdict, and tells the model up front
+        /// when the service's data needs sign-in that no flag has provided.
+        /// </summary>
+        /// <param name="host">The built host.</param>
+        /// <param name="root">The service root.</param>
+        /// <param name="model">The parsed model.</param>
+        /// <param name="options">The operator's outbound authentication settings.</param>
+        /// <param name="catalogOptions">The catalog options whose <see cref="ODataMcpCatalogOptions.InstructionsPreface"/> may be set.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// A task that never faults for a misbehaving service; probe failures are logged and startup continues.
+        /// </returns>
+        /// <remarks>
+        /// The probe goes through the default, unauthenticated client on purpose. It answers "what does an
+        /// anonymous caller see" without triggering the interactive sign-in that the <c>"OData"</c> client's
+        /// handler would start on a 401; that still happens lazily on the first real tool call, exactly as before.
+        /// </remarks>
+        internal static async Task ProbeStartupAsync(IHost host, Uri root, Core.Models.EdmModel model, OutboundOAuthOptions options, ODataMcpCatalogOptions catalogOptions, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(host);
+            ArgumentNullException.ThrowIfNull(root);
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(catalogOptions);
+
+            var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger<ToolsMcpHost>();
+            try
+            {
+                var anonymous = host.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
+                var probe = new ServiceProbe(anonymous, host.Services.GetRequiredService<CsdlParser>());
+                var result = await probe.ProbeWithModelAsync(root, model, cancellationToken).ConfigureAwait(false);
+
+                logger.LogInformation("Startup probe: {Verdict}. Data: {Data}. Results: {Results}.", result.Verdict, result.Data.Detail, result.Results.Detail);
+                if (result.Verdict == ServiceVerdict.DataSecured && !options.HasExplicitCredentials)
+                {
+                    catalogOptions.InstructionsPreface = DataSecuredPreface(result);
+                }
+                else if (result.Verdict is ServiceVerdict.Unreadable or ServiceVerdict.Unreachable)
+                {
+                    logger.LogWarning("The service's metadata parsed but its data did not probe cleanly ({Verdict}): {Detail}", result.Verdict, result.Data.Outcome == ProbeOutcome.Passed ? result.Results.Detail : result.Data.Detail);
+                }
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                logger.LogWarning(exception, "Startup probe failed; continuing without it.");
+            }
         }
 
         /// <summary>

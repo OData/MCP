@@ -19,7 +19,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
     /// Additional Tools command coverage.
     /// </summary>
     [TestClass]
-    public class TestCommandMoreTests
+    public class TryCommandMoreTests
     {
 
         #region Public Methods
@@ -28,9 +28,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// Missing URL fails.
         /// </summary>
         [TestMethod]
-        public async Task TestCommand_MissingUrl_ReturnsOne()
+        public async Task TryCommand_MissingUrl_ReturnsOne()
         {
-            var exit = await new TestCommand().OnExecuteAsync();
+            var exit = await new TryCommand().OnExecuteAsync();
             exit.Should().Be(1);
         }
 
@@ -38,9 +38,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// Invalid URL fails.
         /// </summary>
         [TestMethod]
-        public async Task TestCommand_InvalidUrl_ReturnsOne()
+        public async Task TryCommand_InvalidUrl_ReturnsOne()
         {
-            var exit = await new TestCommand
+            var exit = await new TryCommand
             {
                 Url = "not-a-url"
             }.OnExecuteAsync();

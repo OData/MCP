@@ -297,9 +297,9 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// Test command with a bearer token still fetches public Northwind metadata.
         /// </summary>
         [TestMethod]
-        public async Task TestCommand_AuthToken_NorthwindReturnsZero()
+        public async Task TryCommand_AuthToken_NorthwindReturnsZero()
         {
-            var exit = await new TestCommand
+            var exit = await new TryCommand
             {
                 AuthToken = "token",
                 Url = LiveOData.Northwind
