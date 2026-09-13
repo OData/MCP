@@ -5,15 +5,15 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OData.Mcp.Tests.Shared.Authentication;
 
-namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
+namespace Microsoft.Extensions.DependencyInjection
 {
 
     /// <summary>
     /// Turns an ordinary test host into an OAuth protected resource backed by a <see cref="LocalAuthorizationServer"/>.
     /// </summary>
-    public static class SecuredResourceServiceCollectionExtensions
+    public static class ODataMcp_TestsSharedAuthentication_ServiceCollectionExtensions
     {
 
         #region Public Methods

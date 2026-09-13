@@ -84,7 +84,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
         /// <summary>
         /// Gets the verbatim <c>WWW-Authenticate</c> value this resource answers an unauthenticated request
         /// with, or <see langword="null"/> when the challenge is the one
-        /// <see cref="SecuredResourceServiceCollectionExtensions.CreateChallenge(LocalAuthorizationServer, bool)"/>
+        /// <see cref="ODataMcp_TestsSharedAuthentication_ServiceCollectionExtensions.CreateChallenge(LocalAuthorizationServer, bool)"/>
         /// builds.
         /// </summary>
         /// <remarks>

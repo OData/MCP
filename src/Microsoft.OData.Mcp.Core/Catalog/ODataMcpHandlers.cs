@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Core.Constants;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -16,50 +15,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 {
 
     /// <summary>
-    /// Registers catalog-backed MCP 2 handlers without assembly scanning.
+    /// Catalog-backed MCP 2 request handlers. Registered by <c>WithODataCatalogHandlers</c> in <c>Microsoft.Extensions.DependencyInjection</c>.
     /// </summary>
-    public static class ODataMcpHandlerExtensions
+    internal static class ODataMcpHandlers
     {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Adds list/call/resource/complete handlers that resolve an <see cref="ODataMcpSession"/> per request.
-        /// </summary>
-        /// <param name="builder">The MCP server builder.</param>
-        /// <param name="resolveSession">Resolves the session for the current request.</param>
-        /// <param name="listExtraTools">Optional extra tools (for example, <c>shutdown_server</c>).</param>
-        /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
-        /// <param name="tryHandleCallException">Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself.</param>
-        /// <returns>
-        /// The builder.
-        /// </returns>
-        /// <remarks>
-        /// <paramref name="tryHandleCallException"/> exists so a host can recover from a failure Core has no
-        /// vocabulary for — an outbound sign-in that needs a human, for instance — without Core learning
-        /// anything about authentication: it is handed the exception and either answers the call or returns
-        /// <see langword="null"/>, in which case the original exception propagates unchanged.
-        /// </remarks>
-        public static IMcpServerBuilder WithODataCatalogHandlers(
-            this IMcpServerBuilder builder,
-            Func<IServiceProvider, ODataMcpSession> resolveSession,
-            Func<IServiceProvider, IReadOnlyList<Tool>>? listExtraTools = null,
-            Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra = null,
-            Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException = null)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(resolveSession);
-
-            return builder
-                .WithListToolsHandler((request, cancellationToken) => ListToolsAsync(RequireServices(request.Services), resolveSession, listExtraTools, cancellationToken))
-                .WithCallToolHandler((request, cancellationToken) => CallToolAsync(request, resolveSession, tryHandleExtra, tryHandleCallException, cancellationToken))
-                .WithListResourcesHandler((request, cancellationToken) => ListResourcesAsync(RequireServices(request.Services), resolveSession, cancellationToken))
-                .WithReadResourceHandler((request, cancellationToken) => ReadResourceAsync(request, resolveSession, cancellationToken))
-                .WithListResourceTemplatesHandler((request, cancellationToken) => ListTemplatesAsync(RequireServices(request.Services), resolveSession, cancellationToken))
-                .WithCompleteHandler((request, cancellationToken) => CompleteAsync(request, resolveSession, cancellationToken));
-        }
-
-        #endregion
 
         #region Internal Methods
 

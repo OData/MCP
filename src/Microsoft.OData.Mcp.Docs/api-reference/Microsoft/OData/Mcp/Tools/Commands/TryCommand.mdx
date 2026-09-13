@@ -1,6 +1,6 @@
 ---
 title: TryCommand
-description: "`odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row from the first entity set, says which of the two is ..."
+description: "`dotnet odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row from the first entity set, says which of the ..."
 icon: file-brackets-curly
 keywords: ['TryCommand', 'Microsoft.OData.Mcp.Tools.Commands.TryCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
 ---
@@ -21,7 +21,7 @@ Microsoft.OData.Mcp.Tools.Commands.TryCommand
 
 ## Summary
 
-`odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row
+`dotnet odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row
 from the first entity set, says which of the two is secured, checks the row against the model, and prints a
 verdict. With auth flags it probes again through the authenticating client; without them, on a 401 it runs
 OAuth discovery and prints what it found.
@@ -29,8 +29,8 @@ OAuth discovery and prints what it found.
 ## Examples
 
 ```csharp
-odata-mcp try https://services.odata.org/V4/Northwind/Northwind.svc
-odata-mcp try https://api.example.com/odata --client-id {app-id}
+dotnet odata-mcp try https://services.odata.org/V4/Northwind/Northwind.svc
+dotnet odata-mcp try https://api.example.com/odata --client-id {app-id}
 ```
 
 ## Constructors

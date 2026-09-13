@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
+using Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

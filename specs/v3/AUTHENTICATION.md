@@ -157,7 +157,7 @@ All new production types: copyright header, normal namespace, `#region` Fields /
 |------|-----|
 | `ODataExecuteResult` (evolve, `Execution`) | Add `IReadOnlyList<string> WwwAuthenticate { get; set; }`. `FromHttp` copies **raw** `TryGetValues("WWW-Authenticate")` only (lossless; `AuthenticationHeaderValue.ToString()` drops quoting). Deduplicate identical values. Do not parse OAuth params here. `RemoteODataExecutor` does not retry. |
 | `RemoteODataExecutor` (evolve, `Execution`) | PR 4b: set `Accept: application/json` on each `HttpRequestMessage`. No Authentication types. |
-| `ODataMcpHandlerExtensions` (evolve, `Catalog`) | Add optional `tryHandleCallException` that runs in `try/catch` **around** `session.Runtime.InvokeAsync`. Signature: `Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>?`. **Contract:** non-null return is the tool result (do not treat elicit Content as the result); `null` means Core **rethrows**. One retry of `InvokeAsync` is Tools’ job inside the callback, not Core’s. Core still has no Authentication reference. **`tryHandleExtra` stays pre-invoke** (shutdown_server) and cannot see OData 401s. |
+| `ODataMcpHandlers` (evolve, `Catalog`) | Add optional `tryHandleCallException` that runs in `try/catch` **around** `session.Runtime.InvokeAsync`. Signature: `Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>?`. **Contract:** non-null return is the tool result (do not treat elicit Content as the result); `null` means Core **rethrows**. One retry of `InvokeAsync` is Tools’ job inside the callback, not Core’s. Core still has no Authentication reference. **`tryHandleExtra` stays pre-invoke** (shutdown_server) and cannot see OData 401s. |
 
 No `HttpAuthenticationChallenge` in Core unless a second consumer needs generic RFC 9110 parsing independent of OAuth. First PR: raw strings only.
 
@@ -1105,7 +1105,7 @@ Each PR is independently mergeable, reviewable, and must pass `dotnet test -c De
 ### PR 8 — Mid-session elicitation (tokens never to the model)
 
 - **Title:** URL elicitation for OAuth consent on stdio
-- **Files:** `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpHandlerExtensions.cs` (`tryHandleCallException`); `ToolsMcpHost.CreateAsync` (null `ConsentPresenter` after metadata when `includeStdioMcp`); Tools elicit + `CompleteInteractiveGrantAsync` + retry lambda; Tests.Tools
+- **Files:** `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpHandlers.cs` (`tryHandleCallException`); `ToolsMcpHost.CreateAsync` (null `ConsentPresenter` after metadata when `includeStdioMcp`); Tools elicit + `CompleteInteractiveGrantAsync` + retry lambda; Tests.Tools
 - **Depends on:** PR 4b (exception type already in Authentication; and PR 5 for auth-code URL)
 - **Description:** Do **not** use `tryHandleExtra`. Core: non-null callback result is the tool result; null rethrows. Tools: elicit URL payload **and** `CompleteInteractiveGrantAsync`, then **retry `InvokeAsync` once**. Do not treat elicit Content as the tool result. **Then** null `ConsentPresenter` after metadata. Tests: real SDK `McpClient` over stdio; after `accept`, the **same tool call succeeds**. Assert Mode, Url, `ElicitationId`, no token/`device_code` fields. No Moq / fake `IMcpServer`. `UrlElicitationRequiredException` throw path only if Tools HTTP is already enabled.
 

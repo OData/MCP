@@ -39,13 +39,6 @@
 
     <!-- Linked verbatim from the in-process OData 7 Restier suite; only RestierToolTestBase is redefined here (TESTING.md §8). -->
     <ItemGroup>
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomer.cs" Link="Linked\McpCustomer.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomerApi.cs" Link="Linked\McpCustomerApi.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomerContext.cs" Link="Linked\McpCustomerContext.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpOrder.cs" Link="Linked\McpOrder.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProduct.cs" Link="Linked\McpProduct.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProductApi.cs" Link="Linked\McpProductApi.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProductContext.cs" Link="Linked\McpProductContext.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierGenericReadToolTests.cs" Link="Linked\RestierGenericReadToolTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierGenericWriteToolTests.cs" Link="Linked\RestierGenericWriteToolTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierJsonContent.cs" Link="Linked\RestierJsonContent.cs" />
@@ -54,7 +47,14 @@
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierPartitionedLimiter.cs" Link="Linked\RestierPartitionedLimiter.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierProtocolToolTests.cs" Link="Linked\RestierProtocolToolTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierRateLimitBudget.cs" Link="Linked\RestierRateLimitBudget.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierTestSeed.cs" Link="Linked\RestierTestSeed.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpCustomer.cs" Link="Linked\Scenarios\McpCustomer.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpCustomerApi.cs" Link="Linked\Scenarios\McpCustomerApi.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpCustomerContext.cs" Link="Linked\Scenarios\McpCustomerContext.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpOrder.cs" Link="Linked\Scenarios\McpOrder.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpProduct.cs" Link="Linked\Scenarios\McpProduct.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpProductApi.cs" Link="Linked\Scenarios\McpProductApi.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\McpProductContext.cs" Link="Linked\Scenarios\McpProductContext.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\Scenarios\RestierTestSeed.cs" Link="Linked\Scenarios\RestierTestSeed.cs" />
     </ItemGroup>
 
 </Project>

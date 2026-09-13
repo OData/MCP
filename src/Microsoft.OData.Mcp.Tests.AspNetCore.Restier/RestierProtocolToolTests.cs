@@ -11,6 +11,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
+using Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

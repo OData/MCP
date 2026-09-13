@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
+namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
 {
 
     /// <summary>

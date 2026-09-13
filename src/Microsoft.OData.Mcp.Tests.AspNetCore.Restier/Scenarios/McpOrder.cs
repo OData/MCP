@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
-namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
+namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
 {
 
     /// <summary>

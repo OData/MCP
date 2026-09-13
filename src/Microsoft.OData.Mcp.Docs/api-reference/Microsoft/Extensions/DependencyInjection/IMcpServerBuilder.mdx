@@ -25,7 +25,7 @@ This type is defined in ModelContextProtocol.
 
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithODataCatalogHandlers <Badge color="green">Extension</Badge>
 
-<Note>Extension method from `Microsoft.OData.Mcp.Core.Catalog.ODataMcpHandlerExtensions`</Note>
+<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_McpServerBuilderExtensions`</Note>
 
 Adds list/call/resource/complete handlers that resolve an [ODataMcpSession](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession) per request.
 
@@ -49,6 +49,19 @@ public static Microsoft.Extensions.DependencyInjection.IMcpServerBuilder WithODa
 
 Type: `Microsoft.Extensions.DependencyInjection.IMcpServerBuilder`
 The builder.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *builder* or *resolveSession* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+services.AddMcpServer()
+    .WithODataCatalogHandlers(provider =&gt; provider.GetRequiredService&lt;ODataMcpSession&gt;());
+```
 
 #### Remarks
 

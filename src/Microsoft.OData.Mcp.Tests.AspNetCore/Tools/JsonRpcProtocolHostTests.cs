@@ -656,7 +656,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                     }
                 })
                 .Should()
-                .NotContain(type => type!.FullName == "Microsoft.OData.Mcp.Tests.AspNetCore.Restier.McpCustomerApi");
+                .NotContain(type => type!.FullName == "Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios.McpCustomerApi");
         }
 
         #endregion

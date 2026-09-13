@@ -12,7 +12,7 @@ Grounded in:
 - `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpCatalog.cs` (`BuildGenericTools`, `BuildNamedFamily`, `BuildTools`)
 - `src/Microsoft.OData.Mcp.Core/Catalog/ODataToolRuntime.cs` (`InvokeAsync` switch + `InvokeNamedAsync`)
 - `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpCatalogOptions.cs`
-- `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpHandlerExtensions.cs`
+- `src/Microsoft.OData.Mcp.Core/Catalog/ODataMcpHandlers.cs`
 - `src/Microsoft.OData.Mcp.Core/Execution/RemoteODataExecutor.cs`
 - `src/Microsoft.OData.Mcp.AspNetCore/Execution/InProcessODataExecutor.cs`
 - `src/Microsoft.OData.Mcp.Tools/Hosting/ToolsMcpHost.cs` (`shutdown_server`)

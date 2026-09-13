@@ -35,7 +35,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         public async Task ListToolsAsync_AppendsExtraTools()
         {
             var session = Session();
-            var result = await ODataMcpHandlerExtensions.ListToolsAsync(
+            var result = await ODataMcpHandlers.ListToolsAsync(
                 new ServiceCollection().BuildServiceProvider(),
                 _ => session,
                 _ => [new Tool { Name = "shutdown_server" }],
@@ -51,7 +51,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ListResourcesAsync_ReturnsOdataUris()
         {
-            var result = await ODataMcpHandlerExtensions.ListResourcesAsync(
+            var result = await ODataMcpHandlers.ListResourcesAsync(
                 new ServiceCollection().BuildServiceProvider(),
                 _ => Session(),
                 CancellationToken.None);
@@ -66,7 +66,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ListTemplatesAsync_ReturnsTemplates()
         {
-            var result = await ODataMcpHandlerExtensions.ListTemplatesAsync(
+            var result = await ODataMcpHandlers.ListTemplatesAsync(
                 new ServiceCollection().BuildServiceProvider(),
                 _ => Session(),
                 CancellationToken.None);
@@ -80,7 +80,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task CompleteAsync_EntitySet_ReturnsPeople()
         {
-            var result = await ODataMcpHandlerExtensions.CompleteAsync(
+            var result = await ODataMcpHandlers.CompleteAsync(
                 Context(new CompleteRequestParams
                 {
                     Argument = new Argument
@@ -102,7 +102,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task CompleteAsync_OtherArgument_IsEmpty()
         {
-            var result = await ODataMcpHandlerExtensions.CompleteAsync(
+            var result = await ODataMcpHandlers.CompleteAsync(
                 Context(new CompleteRequestParams
                 {
                     Argument = new Argument
@@ -124,7 +124,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ReadResourceAsync_Metadata_ReturnsXml()
         {
-            var result = await ODataMcpHandlerExtensions.ReadResourceAsync(
+            var result = await ODataMcpHandlers.ReadResourceAsync(
                 Context(new ReadResourceRequestParams
                 {
                     Uri = "odata://remote/$metadata"
@@ -142,7 +142,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ReadResourceAsync_People_ReturnsTypeCard()
         {
-            var result = await ODataMcpHandlerExtensions.ReadResourceAsync(
+            var result = await ODataMcpHandlers.ReadResourceAsync(
                 Context(new ReadResourceRequestParams
                 {
                     Uri = "odata://remote/People"
@@ -159,7 +159,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ReadResourceAsync_MissingUri_IsEmpty()
         {
-            var result = await ODataMcpHandlerExtensions.ReadResourceAsync(
+            var result = await ODataMcpHandlers.ReadResourceAsync(
                 Context(new ReadResourceRequestParams { Uri = " " }),
                 _ => Session(),
                 CancellationToken.None);
@@ -177,7 +177,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             {
                 Content = [new TextContentBlock { Text = "extra" }]
             };
-            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+            var result = await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams { Name = "shutdown_server" }),
                 _ => Session(),
                 (_, _) => ValueTask.FromResult<CallToolResult?>(extra),
@@ -193,7 +193,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task CallToolAsync_MissingName_IsError()
         {
-            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+            var result = await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams { Name = " " }),
                 _ => Session(),
                 null,
@@ -209,7 +209,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task CallToolAsync_ListEntitySets_ReturnsJson()
         {
-            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+            var result = await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams
                 {
                     Name = "odata_list_entity_sets",
@@ -230,7 +230,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public void RequireServices_Null_Throws()
         {
-            var act = () => ODataMcpHandlerExtensions.RequireServices(null);
+            var act = () => ODataMcpHandlers.RequireServices(null);
             act.Should().Throw<InvalidOperationException>();
         }
 
@@ -240,7 +240,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task ReadResourceAsync_UnknownUri_ReturnsEmptyText()
         {
-            var result = await ODataMcpHandlerExtensions.ReadResourceAsync(
+            var result = await ODataMcpHandlers.ReadResourceAsync(
                 Context(new ReadResourceRequestParams
                 {
                     Uri = "odata://remote/DoesNotExist"
@@ -258,7 +258,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task CallToolAsync_UnknownTool_IsError()
         {
-            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+            var result = await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams { Name = "nope" }),
                 _ => Session(),
                 null,
@@ -278,7 +278,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var boom = new InvalidOperationException("sign-in required");
             var seen = 0;
 
-            Func<Task> act = async () => await ODataMcpHandlerExtensions.CallToolAsync(
+            Func<Task> act = async () => await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams
                 {
                     Name = "odata_query",
@@ -315,7 +315,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             };
             Exception? observed = null;
 
-            var result = await ODataMcpHandlerExtensions.CallToolAsync(
+            var result = await ODataMcpHandlers.CallToolAsync(
                 Context(new CallToolRequestParams
                 {
                     Name = "odata_query",
@@ -344,8 +344,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public void Mapping_NullDescriptors_Throw()
         {
-            var tool = () => ODataMcpHandlerExtensions.ToTool(null!);
-            var resource = () => ODataMcpHandlerExtensions.ToResource(null!);
+            var tool = () => ODataMcpHandlers.ToTool(null!);
+            var resource = () => ODataMcpHandlers.ToResource(null!);
 
             tool.Should().Throw<ArgumentNullException>();
             resource.Should().Throw<ArgumentNullException>();

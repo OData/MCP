@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
+using Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

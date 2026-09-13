@@ -169,8 +169,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public void ToTool_MapsOutputSchemaWhenPresent()
         {
-            var with = ODataMcpHandlerExtensions.ToTool(new ODataToolDescriptor { InputSchema = """{"type":"object"}""", Name = "a", OutputSchema = """{"type":"object"}""" });
-            var without = ODataMcpHandlerExtensions.ToTool(new ODataToolDescriptor { InputSchema = """{"type":"object"}""", Name = "b" });
+            var with = ODataMcpHandlers.ToTool(new ODataToolDescriptor { InputSchema = """{"type":"object"}""", Name = "a", OutputSchema = """{"type":"object"}""" });
+            var without = ODataMcpHandlers.ToTool(new ODataToolDescriptor { InputSchema = """{"type":"object"}""", Name = "b" });
 
             with.OutputSchema.Should().NotBeNull();
             with.OutputSchema!.Value.GetProperty("type").GetString().Should().Be("object");

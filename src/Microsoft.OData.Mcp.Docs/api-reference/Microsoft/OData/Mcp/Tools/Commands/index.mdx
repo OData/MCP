@@ -17,7 +17,7 @@ keywords: ['Microsoft.OData.Mcp.Tools.Commands', 'namespace', 'AddAuthChoice', '
 | [AddCommandAuthSettings](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings) | Everything the `odata-mcp add` wizard collected about how the generated `start` command should  authenticate. |
 | [ODataMcpRootCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/ODataMcpRootCommand) | Root command for the OData MCP CLI tool. |
 | [StartCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/StartCommand) | Command to start the OData MCP server over stdio. |
-| [TryCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/TryCommand) | `odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row  from the first entity set, says which of the two is secured, checks the row against the model, and prints a  verdict. With auth flags it probes again through the authenticating client; without them, on a 401 it runs  OAuth discovery and prints what it found. |
+| [TryCommand](/api-reference/Microsoft/OData/Mcp/Tools/Commands/TryCommand) | `dotnet odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row  from the first entity set, says which of the two is secured, checks the row against the model, and prints a  verdict. With auth flags it probes again through the authenticating client; without them, on a 401 it runs  OAuth discovery and prints what it found. |
 
 ### <Icon icon="list-ol" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} /> Enums
 

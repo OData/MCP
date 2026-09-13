@@ -569,7 +569,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
 
         /// <summary>
         /// Invalidates every access token minted so far, so a protected resource wired through
-        /// <see cref="SecuredResourceServiceCollectionExtensions.AddSecuredResource(Microsoft.Extensions.DependencyInjection.IServiceCollection, LocalAuthorizationServer, string)"/>
+        /// <see cref="ODataMcp_TestsSharedAuthentication_ServiceCollectionExtensions.AddSecuredResource(Microsoft.Extensions.DependencyInjection.IServiceCollection, LocalAuthorizationServer, string)"/>
         /// answers them with <c>401</c> and <c>error="invalid_token"</c>.
         /// </summary>
         /// <example>

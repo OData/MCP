@@ -4,7 +4,7 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
+namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
 {
 
     /// <summary>

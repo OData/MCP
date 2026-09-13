@@ -86,7 +86,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         {
             var catalog = Catalog();
             var query = catalog.Tools.Single(tool => tool.Name == "odata_query");
-            var tool = ODataMcpHandlerExtensions.ToTool(query);
+            var tool = ODataMcpHandlers.ToTool(query);
 
             tool.Name.Should().Be("odata_query");
             tool.Annotations!.ReadOnlyHint.Should().BeTrue();
@@ -102,7 +102,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         {
             var catalog = Catalog();
             var people = catalog.Resources.Single(resource => resource.Name == "People");
-            var mapped = ODataMcpHandlerExtensions.ToResource(people);
+            var mapped = ODataMcpHandlers.ToResource(people);
 
             mapped.Uri.Should().StartWith("odata://");
             mapped.Description.Should().Contain("People who travel.");

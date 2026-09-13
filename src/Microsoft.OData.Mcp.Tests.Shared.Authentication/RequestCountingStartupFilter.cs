@@ -21,7 +21,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
     /// </example>
     /// <remarks>
     /// Startup filters are composed in reverse registration order, so this filter must be registered
-    /// <em>before</em> <see cref="SecuredResourceServiceCollectionExtensions.AddSecuredResource(Microsoft.Extensions.DependencyInjection.IServiceCollection, LocalAuthorizationServer, string)"/>
+    /// <em>before</em> <see cref="Microsoft.Extensions.DependencyInjection.ODataMcp_TestsSharedAuthentication_ServiceCollectionExtensions.AddSecuredResource(Microsoft.Extensions.DependencyInjection.IServiceCollection, LocalAuthorizationServer, string)"/>
     /// for its middleware to run first. That ordering is what lets a fixture count the unauthenticated probe
     /// that draws the <c>401</c> as well as the retry that carries the bearer token.
     /// </remarks>

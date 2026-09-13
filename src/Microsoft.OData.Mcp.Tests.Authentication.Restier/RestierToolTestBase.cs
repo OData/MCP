@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Core.Catalog;
+using Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios;
 using Microsoft.OData.Mcp.Tests.Shared.Authentication;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;

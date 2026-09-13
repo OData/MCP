@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Restier;
+using Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios;
 using Microsoft.OData.Mcp.Tests.Shared.Authentication;
 using Microsoft.Restier.Breakdance;
 using Microsoft.Restier.Core;

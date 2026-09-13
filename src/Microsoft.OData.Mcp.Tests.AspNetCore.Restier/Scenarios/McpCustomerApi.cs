@@ -5,7 +5,7 @@ using System;
 using Microsoft.Restier.AspNetCore.Model;
 using Microsoft.Restier.EntityFrameworkCore;
 
-namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
+namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
 {
 
     /// <summary>
