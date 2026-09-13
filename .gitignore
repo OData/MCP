@@ -418,5 +418,13 @@ FodyWeavers.xsd
 *.msp
 /nul
 /coverage
-/docs/superpowers/plans
-/specs/Historical Plans
+
+# Local planning notes; never checked in.
+docs/superpowers/
+.superpowers/
+
+
+# Only the v3 spec and the index ship; everything else under specs/ is local reference.
+specs/*
+!specs/README.md
+!specs/v3/

@@ -6,8 +6,6 @@ tag: "SEALED"
 keywords: ['EdmAction', 'Microsoft.OData.Mcp.Core.Models.EdmAction', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
-import { DocsBadge } from '/snippets/DocsBadge.jsx';
-
 ## Definition
 
 **Assembly:** Microsoft.OData.Mcp.Core.dll
@@ -29,11 +27,11 @@ Represents an action in the Entity Data Model.
 ## Remarks
 
 Actions are operations that may have side effects and are used to modify
-            data or perform operations that cannot be expressed through standard CRUD operations.
+data or perform operations that cannot be expressed through standard CRUD operations.
 
 ## Constructors
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmAction](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmAction) class.
 
@@ -43,7 +41,7 @@ Initializes a new instance of the [EdmAction](/api-reference/Microsoft/OData/Mcp
 public EdmAction()
 ```
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
 
 Initializes a new instance of the [EdmAction](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmAction) class with the specified name and namespace.
 
@@ -60,7 +58,7 @@ public EdmAction(string name, string namespaceName)
 | `name` | `string` | The action name. |
 | `namespaceName` | `string` | The namespace containing this action. |
 
-### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  .ctor <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -72,7 +70,7 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  BindingParameterType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BindingParameterType
 
 Gets or sets the type that this action is bound to.
 
@@ -87,7 +85,22 @@ public string BindingParameterType { get; set; }
 Type: `string?`
 The type name that this action is bound to, if applicable.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  FullName
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets the CSDL documentation summary or `Core.Description` for this action.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A human-readable summary from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
 
 Gets the fully qualified name of the action.
 
@@ -102,7 +115,7 @@ public string FullName { get; }
 Type: `string`
 The namespace and name separated by a dot.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  IsBound
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsBound
 
 Gets or sets a value indicating whether the action is bound.
 
@@ -121,7 +134,22 @@ Type: `bool`
 
 Bound actions are called on instances of a specific type.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Name
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
+
+Gets or sets the CSDL long description or `Core.LongDescription` for this action.
+
+#### Syntax
+
+```csharp
+public string LongDescription { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+A longer documentation string from metadata, or `null` when none is declared.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 
 Gets or sets the name of the action.
 
@@ -136,7 +164,7 @@ public string Name { get; set; }
 Type: `string`
 The action name.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Namespace
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Namespace
 
 Gets or sets the namespace of the action.
 
@@ -151,7 +179,7 @@ public string Namespace { get; set; }
 Type: `string`
 The namespace containing this action.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Parameters
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Parameters
 
 Gets or sets the parameters of the action.
 
@@ -166,7 +194,7 @@ public System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmParame
 Type: `System.Collections.Generic.List<Microsoft.OData.Mcp.Core.Models.EdmParameter>`
 A collection of parameters that the action accepts.
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReturnType
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReturnType
 
 Gets or sets the return type of the action.
 
@@ -183,7 +211,7 @@ The type returned by the action, if any.
 
 ## Methods
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -203,7 +231,7 @@ public virtual bool Equals(object obj)
 
 Type: `bool`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  Equals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -224,7 +252,7 @@ public static bool Equals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetHashCode <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -238,7 +266,7 @@ public virtual int GetHashCode()
 
 Type: `int`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  GetType <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -252,7 +280,7 @@ public System.Type GetType()
 
 Type: `System.Type`
 
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  MemberwiseClone <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -266,7 +294,7 @@ protected internal object MemberwiseClone()
 
 Type: `object`
 
-### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ReferenceEquals <DocsBadge text="Inherited" variant="neutral" />
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
 
 <Note>Inherited from `object`</Note>
 
@@ -287,7 +315,7 @@ public static bool ReferenceEquals(object objA, object objB)
 
 Type: `bool`
 
-### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} />  ToString <DocsBadge text="Inherited" variant="neutral" /> <DocsBadge text="Virtual" variant="warning" />
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 
 <Note>Inherited from `object`</Note>
 

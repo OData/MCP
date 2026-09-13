@@ -1,0 +1,19 @@
+---
+title: Overview
+description: "Summary of the Microsoft.OData.Mcp.Tools.Hosting Namespace"
+icon: folder-tree
+mode: wide
+keywords: ['Microsoft.OData.Mcp.Tools.Hosting', 'namespace', 'ShutdownServerTool', 'StdioConsentPresenter', 'ToolsMcpHost', 'ToolsMcpSessionHolder']
+---
+
+## Types
+
+### <Icon icon="file-brackets-curly" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} /> Classes
+
+| Name | Summary |
+| ---- | ------- |
+| [ShutdownServerTool](/api-reference/Microsoft/OData/Mcp/Tools/Hosting/ShutdownServerTool) | Local-only control-plane tool that cancels the host lifetime after an optional delay. |
+| [StdioConsentPresenter](/api-reference/Microsoft/OData/Mcp/Tools/Hosting/StdioConsentPresenter) | The Tools host's consent presenter: it writes the sign-in URL and user code to stderr and tries to open  the operator's browser, then returns so the outbound OAuth client can complete the grant. |
+| [ToolsMcpHost](/api-reference/Microsoft/OData/Mcp/Tools/Hosting/ToolsMcpHost) | The local MCP host for a remote OData service: one generic host that owns the authenticating  `"OData"` client, the unauthenticated `"OAuth"` client, the token cache, the catalog built from  the service's `$metadata`, and — when the process is serving stdio — the MCP server itself. |
+| [ToolsMcpSessionHolder](/api-reference/Microsoft/OData/Mcp/Tools/Hosting/ToolsMcpSessionHolder) | A mutable slot for the one [ODataMcpSession](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession) a Tools host serves, registered before the host  is built and filled once `$metadata` has been fetched and parsed. |
+

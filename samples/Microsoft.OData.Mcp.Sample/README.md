@@ -17,10 +17,10 @@ This sample demonstrates the **magical zero-configuration** integration of MCP (
 
 ## ✨ What This Sample Demonstrates
 
-### Magical Zero-Configuration
-- Just `services.AddODataMcp()` - that's it!
-- MCP endpoints automatically created for all OData routes
-- No manual registration required
+### AddODataMcp and UseODataMcp
+- `services.AddODataMcp()` registers MCP services
+- `app.UseODataMcp()` maps official MCP at `{prefix}/mcp` after OData routes exist
+- Hide a prefix with `IncludePrefixes` or `ExcludeRoutes` on host options
 
 ### Multiple OData Routes
 - **V1 API** (`/api/v1`) - Basic entities (Customers, Orders)
@@ -52,7 +52,7 @@ The service includes pre-populated sample data:
 ├─────────────────────┤
 │  OData Middleware   │ ← Handles OData routing
 ├─────────────────────┤
-│  MCP Middleware     │ ← Automatically added by AddODataMcp()
+│  MCP at {prefix}/mcp│ ← SDK MapMcp from UseODataMcp()
 ├─────────────────────┤
 │ In-Memory DataStore │ ← Thread-safe data storage
 └─────────────────────┘
@@ -199,15 +199,18 @@ builder.Services.AddControllers()
         .AddRouteComponents("api/v2", GetV2Model())
         .AddRouteComponents("odata", GetMainModel()));
 
-// That's all you need for MCP!
 builder.Services.AddODataMcp();
+
+var app = builder.Build();
+app.MapControllers();
+app.UseODataMcp();
 ```
 
 ### How It Works
-1. `AddODataMcp()` hooks into OData route registration
-2. For each OData route, MCP endpoints are automatically created
-3. Tools are generated based on the EDM model
-4. Everything is cached at startup for performance
+1. `AddODataMcp()` registers MCP services (DI only)
+2. `MapControllers()` maps OData routes
+3. `UseODataMcp()` discovers those prefixes and maps `{prefix}/mcp`
+4. Tools are generated from the EDM model
 
 ## 🎨 Customization Options
 
@@ -228,8 +231,6 @@ builder.Services.AddODataMcp(options =>
 
 ## 📚 Learn More
 
-- [OData MCP Documentation](../../docs/README.md)
-- [Magical Zero-Config Guide](../../docs/MAGICAL_ZERO_CONFIG.md)
 - [ASP.NET Core OData](https://docs.microsoft.com/odata)
 - [Model Context Protocol](https://modelcontextprotocol.com)
 

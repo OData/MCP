@@ -1,0 +1,300 @@
+---
+title: AuthorizationCodePkceGrant
+description: "Runs the RFC 6749 authorization code grant with RFC 7636 PKCE over an RFC 8252 loopback redirect: build the authorization URL with an `S256` challenge and a ..."
+icon: lock
+tag: "SEALED"
+keywords: ['AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant
+```
+
+## Summary
+
+Runs the RFC 6749 authorization code grant with RFC 7636 PKCE over an RFC 8252 loopback redirect: build
+the authorization URL with an `S256` challenge and a bound `state`, then exchange the returned
+code — after the RFC 9207 `iss` check — for a token.
+
+## Remarks
+
+Per `specs/v3/AUTHENTICATION.md` "Grants → Authorization code + PKCE + loopback": `S256` is
+required and a server that publishes `code_challenge_methods_supported` without it is refused
+rather than downgraded to `plain`; the SDK's obsolete `AuthorizationRedirectDelegate` is never
+used; and an `iss` that disagrees with the selected issuer stops the grant &lt;em&gt;before&lt;/em&gt; the code
+reaches any token endpoint, which is the RFC 9207 mix-up defense. Per `AUTH-12` the code verifier,
+the code, and the state never reach a log: the Debug lines carry only the endpoints.
+
+## Examples
+
+```csharp
+using var callback = LoopbackAuthorizationCallback.Start(options.RedirectUri);
+
+var begin = grant.Begin(metadata, clientId, scope, resource, callback.RedirectUri);
+var result = await callback.WaitAsync(begin.State, cancellationToken);
+var response = await grant.ExchangeAsync(metadata, result, begin.CodeVerifier, clientId, callback.RedirectUri, resource, cancellationToken);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [AuthorizationCodePkceGrant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationCodePkceGrant) class.
+
+#### Syntax
+
+```csharp
+public AuthorizationCodePkceGrant(Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient tokenEndpointClient, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `tokenEndpointClient` | `Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient` | The client the code exchange goes through. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant>` | The logger this instance records the authorization and token endpoints to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *tokenEndpointClient* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Begin
+
+Builds the authorization URL the operator signs in at, together with the `state` and code
+verifier the response is validated and exchanged against.
+
+#### Syntax
+
+```csharp
+public (System.Uri, string, string) Begin(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, string clientId, string scope, System.Uri resource, System.Uri redirectUri)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `authorization_endpoint` is used. |
+| `clientId` | `string` | The public client identifier the grant runs as. |
+| `scope` | `string?` | The space-delimited scope to request, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to request none. |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the request sends none. |
+| `redirectUri` | `System.Uri` | The loopback redirect URI the authorization response is delivered to. |
+
+#### Returns
+
+Type: `(System.Uri, string, string)`
+The absolute authorization URI, the freshly generated `state`, and the code verifier.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata* or *redirectUri* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *clientId* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace, or when *redirectUri* is not absolute. |
+| `InvalidOperationException` | Thrown when *metadata* carries no authorization endpoint. |
+| `OutboundDiscoveryException` | Thrown when *metadata*'s `authorization_endpoint` is neither an `https`
+URI nor an `http` URI on a loopback host. |
+| `NotSupportedException` | Thrown when *metadata* publishes `code_challenge_methods_supported` and it does
+not include [ODataMcpAuthConstants.CodeChallengeMethodS256](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#codechallengemethods256). |
+
+#### Examples
+
+```csharp
+var begin = grant.Begin(metadata, "cli", "read offline_access", resource, callback.RedirectUri);
+
+Console.Error.WriteLine($"Sign in at {begin.AuthorizationUri}");
+```
+
+#### Remarks
+
+The returned code verifier is a secret: it is the only thing that proves the process redeeming the
+code is the one that requested it, so it must never be logged, elicited, or placed on
+[OutboundConsentRequest](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundConsentRequest). Existing query parameters on the authorization endpoint —
+a tenant hint, for instance — are preserved rather than replaced.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExchangeAsync
+
+Exchanges an authorization code for a token, after proving the response came from the authorization
+server this grant was started against.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse> ExchangeAsync(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, ModelContextProtocol.Authentication.AuthorizationResult result, string codeVerifier, string clientId, System.Uri redirectUri, System.Uri resource, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `token_endpoint` is posted to and whose issuer the RFC 9207 `iss` is matched against. |
+| `result` | `ModelContextProtocol.Authentication.AuthorizationResult` | The authorization response the loopback callback captured. |
+| `codeVerifier` | `string` | The code verifier [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationcodepkcegrant.begin(microsoft.odata.mcp.authentication.outbound.authorizationservermetadata,system.string,system.string,system.uri,system.uri)) produced. |
+| `clientId` | `string` | The public client identifier the grant runs as. |
+| `redirectUri` | `System.Uri` | The redirect URI the authorization request carried, echoed back per RFC 6749 section 4.1.3. |
+| `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the request sends none. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the exchange. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse>`
+The successful token response.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *metadata*, *result*, or *redirectUri* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *codeVerifier* or *clientId* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), empty, or whitespace. |
+| `InvalidOperationException` | Thrown when *metadata* carries no token endpoint. |
+| `OutboundDiscoveryException` | Thrown when *result* carries no code, or when its RFC 9207 `iss` is present and
+does not equal [AuthorizationServerMetadata.Issuer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadata#issuer). |
+| `OAuthTokenException` | Thrown when the token endpoint rejects the code or the request fails at the transport. |
+
+#### Remarks
+
+The `iss` check runs before anything is sent, so a code minted by another authorization server
+is never presented to this one — the whole point of RFC 9207. An absent `iss` is not invented:
+the grant still relies on the `state` binding the loopback callback enforced.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

@@ -1,0 +1,116 @@
+---
+title: How the CLI works
+description: What `dotnet odata-mcp` does between the service root you give it and the tools your assistant sees, including startup, the probe, the generated tools, transport, and outbound authentication.
+---
+
+`dotnet odata-mcp` is a local MCP server for one remote OData service. This page is the technical companion to the package README: what happens at startup, what the assistant is given, how `try` reaches its verdict, how sign-in is discovered and cached, and every flag.
+
+## The service root
+
+Every command takes the **service root**, for example `https://host/odata`. The CLI appends `$metadata` itself. A pasted URL that ends in `/$metadata` (with or without `?$format=xml`) is trimmed to its root by `ToolsMcpHost.NormalizeServiceRoot`; `$metadata` anywhere else in the path is left alone. The root always ends in `/` internally so relative segments append instead of replacing the last path segment.
+
+## Startup sequence (`start`)
+
+1. **Build the host.** One generic host owns everything: the authenticating `"OData"` HTTP client, the plain `"OAuth"` client used to talk to authorization servers, the token cache, the CSDL parser, the catalog options, and (for `start`) the stdio MCP server with its `shutdown_server` tool. There is exactly one `Build()`, and nothing touches the network before it, because the two named clients must share one `IHttpClientFactory` for the negotiated credential to reach the tools.
+2. **Fetch and parse `$metadata`** through the `"OData"` client. If the service answers 401, the authentication handler runs discovery, acquires a token (interactively or not, depending on flags), and retries. A restart with a still-valid cached token spends exactly one request here.
+3. **Build the catalog.** `ODataMcpCatalog` turns the parsed model into resources and tools (below). Type shapes are computed once and cached.
+4. **Probe the data anonymously.** After the catalog exists, the CLI runs steps 2 to 4 of the service probe through the default, unauthenticated client: one `GET {firstSet}?$top=1` and a check of the row against the model. The verdict is logged at Information level. When the data answered 401 or 403 and no credential flag was passed, the model's `initialize.instructions` gain a one-sentence preface saying that data requires sign-in and that the first call may pause for authentication. Probe failures never block startup, and the interactive sign-in still happens lazily on the first real tool call, so an unattended process does not stall on a prompt at boot.
+5. **Serve stdio.** JSON-RPC in on stdin, out on stdout. All logging goes to stderr. There is no HTTP transport in the CLI.
+
+## What the assistant is given
+
+**Instructions.** `initialize.instructions` carries the handful of rules a model cannot infer from schemas: parameter names omit `$`, prefer named tools, where bound and unbound operations are listed, how to pass arguments to `odata_call`, and not to read the raw `$metadata` resource to explore. A developer-supplied preface can precede it.
+
+**Generic tools**, always present and named `odata_*`: list entity sets, describe a type, describe the whole model (summary, complete, or a mermaid relationship diagram), query, get by key, create, update, delete, navigate a relationship, list unbound operations, and call an operation. `describe_type` returns a compact declaration grammar by default (`Name?: type`, `-> Type[]`, `// key, store-generated`, `enum(A|B)`, bound operations inline) or a compact JSON form on request. A TripPin `Person`, with its two enums and four bound operations, is 194 tokens in that grammar against 726 for the equivalent CSDL XML; the whole TripPin service is 346 tokens complete, or 91 as a summary, against 1,859 for the XML. Across the reference services the shapes run roughly 70% smaller than the raw metadata at the same level of detail.
+
+**Named tools**, one family per entity set while the configured cap allows a complete family: `list_{set}`, `get_{type}`, `create_{type}`, `update_{type}`, `delete_{type}`. Create and update schemas are typed from the model: `required` lists exactly the properties required on create, enums carry their members, `maxLength` is emitted when short, and every `key` argument describes how to write the literal.
+
+**Validation before HTTP.** Create, update, and `odata_call` are checked against the model first: required-on-create, unknown properties on closed types, JSON kind per EDM type, enum membership, `MaxLength`, and operation binding (instance, collection, unbound). A bad request fails locally with the declared signature in the message.
+
+**`shutdown_server`.** Registered in `start` only. Lets an assistant end a local development session cleanly.
+
+## The probe and `try`
+
+`Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbe` answers four questions with three requests and never throws for a misbehaving service:
+
+| Step | Request | Outcomes |
+|---|---|---|
+| 1. Metadata | `GET {root}$metadata` (`Accept: application/xml`) | parsed; 401/403 with the `WWW-Authenticate` value captured; 404; a 200 that is not CSDL (login page, HTML) quoted in the detail; transport failure |
+| 2. Data | `GET {root}{firstSet}?$top=1` (`Accept: application/json`), first declared set whose type resolves | same outcome mapping |
+| 3. Security | derived from steps 1 and 2 | which of the two refused an anonymous caller, and the challenge |
+| 4. Results | the first row against the entity type | all properties declared; some unknown (listed); none declared; not JSON; not an OData collection (no `value` array, which is what OData v2/v3 verbose JSON looks like); empty set (passes with a note) |
+
+Verdicts, in precedence order: `MetadataSecured`, `Unreachable` (metadata 404/5xx/transport), `Unreadable` (metadata not CSDL), `DataSecured`, `Unreachable` (data 404/5xx), `Unreadable` (data not JSON or row does not match), `Ready`.
+
+`dotnet odata-mcp try` runs the probe anonymously and prints the four lines plus the verdict. Then:
+
+- **Verdict `Ready`, `Unreachable`, or `Unreadable`:** exit 0 or 1 accordingly.
+- **Secured and sign-in flags were passed** (`--auth-token`, an API key, Basic credentials, `--client-id`, or `--grant`): probe again through the `"OData"` client, which signs in exactly as `start` would, and print the second report. Exit 0 if that pass is `Ready`.
+- **Secured and no flags:** run `OAuthDiscovery` from the captured challenge and print the protected resource metadata status, the authorization server issuer, the advertised grants, and the scope from the challenge, followed by the command to run next. No grant is started. Exit 2.
+
+## Transport
+
+Standard MCP stdio. One JSON-RPC message per line on stdout; nothing else may be written there. Logging is `Microsoft.Extensions.Logging` console output routed entirely to stderr, at Information by default and Debug with `--verbose`. MCP SDK internals are filtered to Warning unless `--verbose` is set.
+
+## Outbound authentication
+
+The CLI signs in to the OData service on the operator's behalf; it does not proxy the assistant's identity.
+
+**Discovery.** On a 401 the handler reads the `WWW-Authenticate` challenge, then looks for RFC 9728 protected resource metadata (the `resource_metadata` URL from the challenge first, then the well-known locations under the service root), then RFC 8414 or OpenID Connect authorization server metadata at the issuers the resource metadata names. `--auth-server` supplies the issuer when a service returns only a bare `Bearer` challenge and publishes nothing. `--resource` overrides the audience.
+
+**Grants.** `device_code` (default for interactive stdio use; the URL and code are printed to stderr), `authorization_code` with PKCE on a loopback redirect, `client_credentials`, and `identity_assertion` through an enterprise IdP. The grant must be advertised by the authorization server. Dynamic client registration is used when the server supports it and no `--client-id` was given; `--client-metadata-document` supplies a client metadata document URI for that.
+
+**Tokens.** Access and refresh tokens live in the operating system credential store through Latchkey, keyed by service root and client id, or in a file-based backend under `--token-cache`. Refresh happens on the send path before a request goes out; an `invalid_token` answer to an attached token triggers one forced refresh. Tokens never appear in tool results, logs, or the registration command that `add` prints.
+
+**Mid-session re-authentication.** When a token cannot be refreshed while serving stdio, the handler starts the grant, the server elicits the sign-in URL to the assistant so it can relay it to the user, completes the grant, and retries the tool call once.
+
+**Unattended processes.** There is no TTY detection. A daemon must pass `--grant client_credentials` (and `--client-secret` or `ODATA_MCP_CLIENT_SECRET`), or it will fall into an interactive grant nobody is present to complete.
+
+### Flags
+
+Shared by `start` and `try`.
+
+| Flag | Job |
+|---|---|
+| `-t`, `--auth-token` | Bearer token to send as-is. Skips discovery entirely. |
+| `--client-id` | OAuth client id (public or confidential). Required when the server does not support dynamic client registration. |
+| `--client-secret` | Client secret; also read from `ODATA_MCP_CLIENT_SECRET`. |
+| `--grant` | `device_code`, `authorization_code`, `client_credentials`, or `identity_assertion`. |
+| `--scopes` | Space-separated fallback scopes when the challenge and metadata name none. |
+| `--resource` | OAuth resource or audience override. |
+| `--auth-server` | Authorization server issuer when the service publishes no resource metadata. |
+| `--redirect-uri` | Loopback redirect override for `authorization_code`. |
+| `--client-metadata-document` | Client metadata document URI for dynamic registration. |
+| `--token-cache` | Directory for the file-based token cache instead of the OS credential store. |
+| `--auth-timeout` | Seconds to wait for an interactive grant. Default 300. |
+| `--api-key`, `--api-key-header` | API key and the header to send it in; both required together. |
+| `--basic-user`, `--basic-password` | HTTP Basic credentials; both required together. |
+| `--idp-url`, `--idp-token-endpoint`, `--idp-client-id`, `--idp-client-secret`, `--idp-scope`, `--idp-id-token-file` | Enterprise IdP settings for `identity_assertion`. |
+| `-v`, `--verbose` | `start` only. Debug logging to stderr. |
+
+### Making your API self-describing
+
+If you own the OData service, add protected resource metadata to it and the CLI needs no sign-in flags beyond a client id:
+
+```csharp
+// In the API, using Microsoft.OData.Mcp.AspNetCore
+builder.Services.AddProtectedResourceMetadata(options =>
+{
+    options.AuthorizationServers.Add(new Uri("https://login.example.com/oauth2/v2.0"));
+    options.ScopesSupported.Add("api://example-odata/Data.Read");
+});
+```
+
+That publishes an RFC 9728 document at `/.well-known/oauth-protected-resource` for the application root, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a 401. Set `options.Prefixes` to any Endpoint Routing or Minimal API route base (including `""`) when the resource is not the whole host. No MCP server and no pipeline call are required in the API.
+
+## Exit codes
+
+| Command | 0 | 1 | 2 |
+|---|---|---|---|
+| `start` | clean shutdown, including `shutdown_server` and Ctrl+C | startup failure (bad URL, metadata fetch failed after authentication) | |
+| `try` | ready | unreachable, unreadable, or the signed-in pass still failed | sign-in required and no flags were passed |
+| `add` | registration command printed | cancelled or invalid input | |
+
+## Supported OData surface
+
+Entity sets, entity and complex types, enums (including flags), navigation properties, bound and unbound functions and actions, `$filter`, `$select`, `$orderby`, `$expand`, `$top`, `$skip`, `$count`, key access including composite keys, and create, update (PATCH), and delete. `$batch` is not used. OData v4 only; a v2 or v3 service shows up in `try` as `unreadable` at the results step.

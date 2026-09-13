@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);NU1608</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Breakdance.AspNetCore" Version="8.*-*" />
+        <PackageReference Include="Microsoft.Restier.Breakdance" Version="1.*" />
+        <PackageReference Include="Microsoft.Restier.EntityFrameworkCore" Version="1.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.*-*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared\Microsoft.OData.Mcp.Tests.Shared.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tests.Shared.Authentication\Microsoft.OData.Mcp.Tests.Shared.Authentication.csproj" />
+        <ProjectReference Include="..\Microsoft.OData.Mcp.Tools\Microsoft.OData.Mcp.Tools.csproj" />
+    </ItemGroup>
+
+    <!-- Linked verbatim from the in-process OData 7 Restier suite; only RestierToolTestBase is redefined here (TESTING.md §8). -->
+    <ItemGroup>
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomer.cs" Link="Linked\McpCustomer.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomerApi.cs" Link="Linked\McpCustomerApi.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpCustomerContext.cs" Link="Linked\McpCustomerContext.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpOrder.cs" Link="Linked\McpOrder.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProduct.cs" Link="Linked\McpProduct.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProductApi.cs" Link="Linked\McpProductApi.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\McpProductContext.cs" Link="Linked\McpProductContext.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierGenericReadToolTests.cs" Link="Linked\RestierGenericReadToolTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierGenericWriteToolTests.cs" Link="Linked\RestierGenericWriteToolTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierJsonContent.cs" Link="Linked\RestierJsonContent.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierMcpJsonRpc.cs" Link="Linked\RestierMcpJsonRpc.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierNamedCrudToolTests.cs" Link="Linked\RestierNamedCrudToolTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierPartitionedLimiter.cs" Link="Linked\RestierPartitionedLimiter.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierProtocolToolTests.cs" Link="Linked\RestierProtocolToolTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierRateLimitBudget.cs" Link="Linked\RestierRateLimitBudget.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore.Restier\RestierTestSeed.cs" Link="Linked\RestierTestSeed.cs" />
+    </ItemGroup>
+
+</Project>

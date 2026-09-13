@@ -1,0 +1,1060 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License.  See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.OData.Mcp.Core.Constants;
+using Microsoft.OData.Mcp.Core.Execution;
+using Microsoft.OData.Mcp.Core.Models;
+using static Microsoft.OData.Mcp.Core.Constants.ODataMcpCatalogConstants;
+
+namespace Microsoft.OData.Mcp.Core.Catalog
+{
+
+    /// <summary>
+    /// Executes catalog tools against an <see cref="IODataExecutor"/>.
+    /// </summary>
+    public sealed class ODataToolRuntime
+    {
+
+        #region Fields
+
+        internal static readonly HashSet<string> QueryOptionNames =
+        [
+            Filter,
+            Select,
+            OrderBy,
+            Expand,
+            Top,
+            Skip,
+            Count
+        ];
+
+        internal readonly ODataMcpCatalog _catalog;
+        internal readonly IODataExecutor _executor;
+        internal readonly int _maxResponseBytes;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ODataToolRuntime"/> class.
+        /// </summary>
+        /// <param name="catalog">The catalog that advertised the tools.</param>
+        /// <param name="executor">The OData executor.</param>
+        public ODataToolRuntime(ODataMcpCatalog catalog, IODataExecutor executor)
+        {
+            ArgumentNullException.ThrowIfNull(catalog);
+            ArgumentNullException.ThrowIfNull(executor);
+
+            _catalog = catalog;
+            _executor = executor;
+            _maxResponseBytes = catalog._options.MaxResponseBytes > 0 ? catalog._options.MaxResponseBytes : 1_048_576;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Invokes a catalog tool.
+        /// </summary>
+        /// <param name="name">The tool name.</param>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        public async Task<ODataToolInvocationResult> InvokeAsync(string name, IEnumerable<KeyValuePair<string, JsonElement>>? arguments, CancellationToken cancellationToken)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            IReadOnlyDictionary<string, JsonElement> args = arguments is null
+                ? new Dictionary<string, JsonElement>()
+                : arguments as IReadOnlyDictionary<string, JsonElement> ?? new Dictionary<string, JsonElement>(arguments as IDictionary<string, JsonElement> ?? arguments.ToDictionary(pair => pair.Key, pair => pair.Value));
+
+            try
+            {
+                var task = name switch
+                {
+                    OdataListEntitySets => Task.FromResult(ListEntitySets()),
+                    OdataDescribeType => Task.FromResult(DescribeType(args)),
+                    OdataDescribeModel => Task.FromResult(DescribeModel(args)),
+                    OdataQuery => QueryAsync(args, cancellationToken),
+                    OdataGet => GetAsync(args, cancellationToken),
+                    OdataCreate => CreateAsync(args, cancellationToken),
+                    OdataUpdate => UpdateAsync(args, cancellationToken),
+                    OdataDelete => DeleteAsync(args, cancellationToken),
+                    OdataNavigate => NavigateAsync(args, cancellationToken),
+                    OdataListOperations => Task.FromResult(ListOperations()),
+                    OdataCall => CallOperationAsync(args, cancellationToken),
+                    _ => InvokeNamedAsync(name, args, cancellationToken)
+                };
+
+                return await task.ConfigureAwait(false);
+            }
+            catch (ArgumentException ex)
+            {
+                return Error(ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Builds a JSON result, applying the response size guard.
+        /// </summary>
+        /// <param name="json">The JSON payload.</param>
+        /// <param name="fallbackText">Short text when the JSON is omitted.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal ODataToolInvocationResult Complete(string json, string fallbackText)
+        {
+            if (json.Length > _maxResponseBytes)
+            {
+                return new ODataToolInvocationResult
+                {
+                    IsError = true,
+                    Text = "The OData response exceeded the size limit. Add select and top to reduce the payload."
+                };
+            }
+
+            return new ODataToolInvocationResult
+            {
+                StructuredContent = json,
+                Text = fallbackText
+            };
+        }
+
+        /// <summary>
+        /// Rejects oversized filter, expand, and select text. Does not add or rewrite query options.
+        /// </summary>
+        /// <param name="options">Query options without $.</param>
+        /// <returns>
+        /// The same dictionary.
+        /// </returns>
+        internal Dictionary<string, string> ApplyQueryGuards(Dictionary<string, string> options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            GuardQueryLength(options, Expand, _catalog._options.MaxExpandLength > 0 ? _catalog._options.MaxExpandLength : 512);
+            GuardQueryLength(options, Filter, _catalog._options.MaxFilterLength > 0 ? _catalog._options.MaxFilterLength : 2_048);
+            GuardQueryLength(options, Select, _catalog._options.MaxSelectLength > 0 ? _catalog._options.MaxSelectLength : 1_024);
+
+            return options;
+        }
+
+        /// <summary>
+        /// Calls a declared function or action.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> CallOperationAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var name = ReadRequired(arguments, Name);
+            var unexpected = arguments.Keys.FirstOrDefault(key => key is not (Name or Parameters or EntitySet or Key));
+            if (unexpected is not null)
+            {
+                return Error($"Unexpected argument '{unexpected}'. Put operation arguments in parameters as a JSON object.");
+            }
+
+            var action = _catalog._model.Actions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var function = action is null
+                ? _catalog._model.Functions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                : null;
+            if (action is null && function is null)
+            {
+                return Error($"Operation '{name}' is not declared in the model.");
+            }
+
+            JsonElement? parameters = null;
+            if (arguments.TryGetValue(Parameters, out var supplied) && supplied.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+            {
+                if (supplied.ValueKind == JsonValueKind.String)
+                {
+                    return Error("parameters must be a JSON object, not a string.");
+                }
+
+                if (supplied.ValueKind != JsonValueKind.Object)
+                {
+                    return Error("parameters must be a JSON object.");
+                }
+
+                parameters = supplied;
+            }
+
+            var declaredName = action is not null ? action.Name : function!.Name;
+            var declaredParameters = action is not null ? action.Parameters : function!.Parameters;
+            var isBound = action is not null ? action.IsBound : function!.IsBound;
+            var bindingParameterType = action is not null ? action.BindingParameterType : function!.BindingParameterType;
+            var returnType = action is not null ? action.ReturnType : function!.ReturnType;
+            var signature = EdmTypeShape.RenderOperation(_catalog._model, declaredName, declaredParameters, returnType, isBound, bindingParameterType, action is not null, null);
+            var hasEntitySet = arguments.TryGetValue(EntitySet, out var entitySetValue) && entitySetValue.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(entitySetValue.GetString());
+            var hasKey = arguments.TryGetValue(Key, out var keyValue) && keyValue.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+            string path;
+            if (!isBound)
+            {
+                if (hasEntitySet || hasKey)
+                {
+                    return Error($"{declaredName} is unbound. Omit entitySet and key.");
+                }
+
+                path = declaredName;
+            }
+            else if (EdmTypeShape.IsCollectionBound(bindingParameterType))
+            {
+                if (!hasEntitySet || hasKey)
+                {
+                    return Error($"{declaredName} is collection-bound. Pass entitySet; omit key. Signature: {signature}");
+                }
+
+                path = $"{entitySetValue.GetString()}/{declaredName}";
+            }
+            else
+            {
+                if (!hasEntitySet || !hasKey)
+                {
+                    var boundTo = EdmTypeShape.ShortName(bindingParameterType ?? string.Empty);
+
+                    return Error($"{declaredName} is bound to {boundTo}. Pass entitySet and key. Signature: {signature}");
+                }
+
+                path = $"{entitySetValue.GetString()}({FormatKey(ReadRequired(arguments, Key))})/{declaredName}";
+            }
+
+            var failure = EdmPayloadValidator.ValidateOperationArguments(_catalog._model, _catalog._options, declaredParameters, isBound, parameters, signature, out var values);
+            if (failure is not null)
+            {
+                return Error(failure);
+            }
+
+            if (function is not null)
+            {
+                var pairs = new List<string>();
+                var aliases = new List<string>();
+                foreach (var pair in values)
+                {
+                    var literal = EdmPayloadValidator.FormatUrlLiteral(_catalog._model, pair.Key.Type, pair.Value);
+                    if (literal is null)
+                    {
+                        // Complex, collection, and entity arguments travel as OData parameter aliases. Aliases are part
+                        // of the operation call, not query options, so they stay in the path and never get a $ prefix.
+                        pairs.Add($"{pair.Key.Name}=@{pair.Key.Name}");
+                        aliases.Add($"@{pair.Key.Name}={Uri.EscapeDataString(pair.Value.GetRawText())}");
+                        continue;
+                    }
+
+                    pairs.Add($"{pair.Key.Name}={literal}");
+                }
+
+                if (pairs.Count > 0)
+                {
+                    path = $"{path}({string.Join(",", pairs)})";
+                }
+
+                if (aliases.Count > 0)
+                {
+                    path = $"{path}?{string.Join("&", aliases)}";
+                }
+
+                return await ExecuteAsync(HttpMethod.Get, path, null, null, cancellationToken).ConfigureAwait(false);
+            }
+
+            var body = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var pair in values)
+            {
+                body[pair.Key.Name] = EdmPayloadValidator.NormalizeBodyValue(_catalog._model, pair.Key.Type, pair.Value);
+            }
+
+            var json = JsonSerializer.Serialize(body, ODataMcpCatalog.SchemaSerializerOptions);
+            GuardRequestBody(json);
+
+            return await ExecuteAsync(HttpMethod.Post, path, json, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Creates an entity from a JSON body.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> CreateAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+            var body = ReadBody(arguments);
+            GuardRequestBody(body);
+
+            var invalid = ValidateEntityBody(entitySet, body, isCreate: true);
+            if (invalid is not null)
+            {
+                return invalid;
+            }
+
+            return await ExecuteAsync(HttpMethod.Post, entitySet, body, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Deletes an entity by key.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> DeleteAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+            var key = ReadRequired(arguments, Key);
+
+            return await ExecuteAsync(HttpMethod.Delete, $"{entitySet}({FormatKey(key)})", null, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Builds a text-only result, applying the response size guard.
+        /// </summary>
+        /// <param name="text">The text payload.</param>
+        /// <returns>
+        /// The invocation result with no structured content.
+        /// </returns>
+        internal ODataToolInvocationResult CompleteText(string text)
+        {
+            if (text.Length > _maxResponseBytes)
+            {
+                return new ODataToolInvocationResult
+                {
+                    IsError = true,
+                    Text = "The OData response exceeded the size limit. Add select and top to reduce the payload."
+                };
+            }
+
+            return new ODataToolInvocationResult
+            {
+                Text = text
+            };
+        }
+
+        /// <summary>
+        /// Describes the whole model: a summary of sets and navigations, or every in-scope type, as text, JSON, or mermaid.
+        /// </summary>
+        /// <param name="arguments">Tool arguments: <c>detail</c> (<c>summary</c> or <c>complete</c>), <c>format</c> (<c>text</c>, <c>json</c>, or <c>mermaid</c>), <c>sets</c> (string array).</param>
+        /// <returns>
+        /// One representation. Over <see cref="ODataMcpCatalogOptions.MaxResponseBytes"/> the result is an error that says how to scope down; it never falls back to CSDL.
+        /// </returns>
+        internal ODataToolInvocationResult DescribeModel(IReadOnlyDictionary<string, JsonElement> arguments)
+        {
+            var detail = ReadChoice(arguments, Detail, [SummaryDetail, CompleteDetail], SummaryDetail);
+            var format = ReadChoice(arguments, Format, [TextFormat, JsonFormat, MermaidFormat], TextFormat);
+            var requested = ReadStringList(arguments, Sets);
+            var included = _catalog.ResolveIncludedSets();
+            var sets = included;
+            if (requested is not null)
+            {
+                var scoped = new List<EdmEntitySet>();
+                foreach (var name in requested)
+                {
+                    var set = included.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (set is null)
+                    {
+                        return Error($"Entity set '{name}' is not declared in the model.");
+                    }
+
+                    if (!scoped.Contains(set))
+                    {
+                        scoped.Add(set);
+                    }
+                }
+
+                sets = scoped;
+            }
+
+            var payload = (format, detail) switch
+            {
+                (MermaidFormat, _) => EdmModelShape.RenderMermaid(_catalog, sets),
+                (JsonFormat, CompleteDetail) => EdmModelShape.RenderCompleteJson(_catalog, sets),
+                (JsonFormat, _) => EdmModelShape.RenderSummaryJson(_catalog, sets),
+                (_, CompleteDetail) => EdmModelShape.RenderCompleteText(_catalog, sets),
+                _ => EdmModelShape.RenderSummaryText(_catalog, sets)
+            };
+
+            if (payload.Length > _maxResponseBytes)
+            {
+                return Error($"The model description is {payload.Length} bytes across {sets.Count} sets, over the {_maxResponseBytes} byte limit. Pass sets to scope it or use detail=summary.");
+            }
+
+            return format == JsonFormat
+                ? Complete(payload, $"{sets.Count} entity sets described.")
+                : CompleteText(payload);
+        }
+
+        /// <summary>
+        /// Describes a declared type or entity set in the compact shape grammar.
+        /// </summary>
+        /// <param name="arguments">Tool arguments: <c>name</c> (required) and <c>format</c> (<c>text</c> or <c>json</c>).</param>
+        /// <returns>
+        /// The declaration text, or the compact JSON when <c>format=json</c>. One representation per call.
+        /// </returns>
+        internal ODataToolInvocationResult DescribeType(IReadOnlyDictionary<string, JsonElement> arguments)
+        {
+            var name = ReadRequired(arguments, Name);
+            var format = ReadChoice(arguments, Format, [TextFormat, JsonFormat], TextFormat);
+            var set = _catalog.ResolveIncludedSets().FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var type = set is not null
+                ? _catalog.ResolveEntityType(set)
+                : _catalog._model.EntityTypes.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || item.FullName.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            if (type is null)
+            {
+                return Error($"Type or entity set '{name}' is not declared in the model.");
+            }
+
+            var shape = _catalog.GetShape(type);
+            if (set is not null && !ReferenceEquals(shape.EntitySet, set))
+            {
+                shape = new EdmTypeShape(_catalog._model, type, set);
+            }
+
+            return format == JsonFormat
+                ? Complete(shape.Json, type.Name)
+                : CompleteText(shape.Text);
+        }
+
+        /// <summary>
+        /// Executes an OData request and maps the HTTP result.
+        /// </summary>
+        /// <param name="method">The HTTP method.</param>
+        /// <param name="relativePath">The path relative to the service root.</param>
+        /// <param name="jsonBody">The JSON body, if any.</param>
+        /// <param name="queryOptions">Query options without $.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> ExecuteAsync(HttpMethod method, string relativePath, string? jsonBody, Dictionary<string, string>? queryOptions, CancellationToken cancellationToken)
+        {
+            var result = await _executor.ExecuteAsync(
+                new ODataExecuteRequest
+                {
+                    JsonBody = jsonBody,
+                    Method = method,
+                    QueryOptions = queryOptions ?? [],
+                    RelativePath = relativePath
+                },
+                cancellationToken).ConfigureAwait(false);
+
+            if (!result.IsSuccess)
+            {
+                return new ODataToolInvocationResult
+                {
+                    IsError = true,
+                    Text = FormatFailure(result)
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(result.Body))
+            {
+                return new ODataToolInvocationResult
+                {
+                    Text = $"OData {method} {relativePath} succeeded with status {result.StatusCode}."
+                };
+            }
+
+            return Complete(result.Body, $"OData {method} {relativePath} returned {result.StatusCode}.");
+        }
+
+        /// <summary>
+        /// Builds a tool error that always includes the HTTP status and <c>Retry-After</c> when present.
+        /// </summary>
+        /// <param name="result">The failed OData HTTP result.</param>
+        /// <returns>
+        /// The error text.
+        /// </returns>
+        internal static string FormatFailure(ODataExecuteResult result)
+        {
+            ArgumentNullException.ThrowIfNull(result);
+
+            var text = $"OData request failed with status {result.StatusCode}.";
+            if (!string.IsNullOrWhiteSpace(result.RetryAfter))
+            {
+                text = $"{text} Retry-After: {result.RetryAfter}.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.Body))
+            {
+                text = $"{text} {result.Body}";
+            }
+
+            return text;
+        }
+
+        /// <summary>
+        /// Formats an entity key for an OData path.
+        /// </summary>
+        /// <param name="key">The key value.</param>
+        /// <returns>
+        /// The parenthetical key.
+        /// </returns>
+        /// <remarks>
+        /// Numeric, GUID, and Boolean values are unquoted. String values are quoted with
+        /// doubled apostrophes. Named and composite keys such as
+        /// <c>OrderID=10248,ProductID=11</c> format each value independently so the wire
+        /// path is <c>Order_Details(OrderID=10248,ProductID=11)</c>, not a single quoted string.
+        /// </remarks>
+        internal static string FormatKey(string key)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+            if (TryFormatNamedKey(key, out var named))
+            {
+                return named;
+            }
+
+            return FormatSimpleKey(key);
+        }
+
+        /// <summary>
+        /// Formats a single (non-composite) key value.
+        /// </summary>
+        /// <param name="key">The key value.</param>
+        /// <returns>
+        /// The formatted value.
+        /// </returns>
+        internal static string FormatSimpleKey(string key)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+            if (long.TryParse(key, out _) || Guid.TryParse(key, out _) || bool.TryParse(key, out _))
+            {
+                return key;
+            }
+
+            if (key.StartsWith('\'') && key.EndsWith('\''))
+            {
+                return key;
+            }
+
+            return $"'{key.Replace("'", "''", StringComparison.Ordinal)}'";
+        }
+
+        /// <summary>
+        /// Gets an entity by key.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> GetAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+            var key = ReadRequired(arguments, Key);
+
+            return await ExecuteAsync(HttpMethod.Get, $"{entitySet}({FormatKey(key)})", null, ApplyQueryGuards(ReadQueryOptions(arguments)), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Rejects query option text that exceeds the configured length.
+        /// </summary>
+        /// <param name="options">Query options.</param>
+        /// <param name="name">The option name.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        internal static void GuardQueryLength(Dictionary<string, string> options, string name, int maxLength)
+        {
+            if (options.TryGetValue(name, out var value) && value.Length > maxLength)
+            {
+                throw new ArgumentException($"{name} exceeds the maximum length of {maxLength} characters.", nameof(options));
+            }
+        }
+
+        /// <summary>
+        /// Rejects request bodies that exceed <see cref="ODataMcpCatalogOptions.MaxRequestBodyBytes"/>.
+        /// </summary>
+        /// <param name="body">The JSON body.</param>
+        internal void GuardRequestBody(string? body)
+        {
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return;
+            }
+
+            var max = _catalog._options.MaxRequestBodyBytes > 0 ? _catalog._options.MaxRequestBodyBytes : 262_144;
+            if (body.Length > max)
+            {
+                throw new ArgumentException($"The request body exceeds the maximum size of {max} bytes.");
+            }
+        }
+
+        /// <summary>
+        /// Invokes a named CRUD tool.
+        /// </summary>
+        /// <param name="name">The tool name.</param>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal Task<ODataToolInvocationResult> InvokeNamedAsync(string name, IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var descriptor = _catalog.Tools.FirstOrDefault(tool => tool.Name.Equals(name, StringComparison.Ordinal));
+            if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.EntitySetName))
+            {
+                return Task.FromResult(Error($"Unknown tool '{name}'."));
+            }
+
+            var named = new Dictionary<string, JsonElement>(arguments, StringComparer.OrdinalIgnoreCase)
+            {
+                [EntitySet] = JsonSerializer.SerializeToElement(descriptor.EntitySetName)
+            };
+
+            if (name.StartsWith(ListPrefix, StringComparison.Ordinal))
+            {
+                return QueryAsync(named, cancellationToken);
+            }
+
+            if (name.StartsWith(GetPrefix, StringComparison.Ordinal))
+            {
+                return GetAsync(named, cancellationToken);
+            }
+
+            if (name.StartsWith(CreatePrefix, StringComparison.Ordinal))
+            {
+                if (!named.ContainsKey(Body))
+                {
+                    named[Body] = JsonSerializer.SerializeToElement(JsonSerializer.Serialize(arguments.Where(pair => !QueryOptionNames.Contains(pair.Key) && pair.Key is not Key and not EntitySet).ToDictionary(pair => pair.Key, pair => pair.Value), ODataMcpCatalog.SchemaSerializerOptions));
+                }
+
+                return CreateAsync(named, cancellationToken);
+            }
+
+            if (name.StartsWith(UpdatePrefix, StringComparison.Ordinal))
+            {
+                return UpdateAsync(named, cancellationToken);
+            }
+
+            if (name.StartsWith(DeletePrefix, StringComparison.Ordinal))
+            {
+                return DeleteAsync(named, cancellationToken);
+            }
+
+            return Task.FromResult(Error($"Unknown named tool '{name}'."));
+        }
+
+        /// <summary>
+        /// Returns whether <paramref name="name"/> is an OData identifier.
+        /// </summary>
+        /// <param name="name">The candidate name.</param>
+        /// <returns>
+        /// <c>true</c> when the name is a simple identifier.
+        /// </returns>
+        internal static bool IsODataIdentifier(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name) || (!char.IsLetter(name[0]) && name[0] != '_'))
+            {
+                return false;
+            }
+
+            for (var index = 1; index < name.Length; index++)
+            {
+                if (!char.IsLetterOrDigit(name[index]) && name[index] != '_')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Lists declared entity sets, including CSDL documentation.
+        /// </summary>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal ODataToolInvocationResult ListEntitySets()
+        {
+            var sets = _catalog.ResolveIncludedSets().Select(set =>
+            {
+                var type = _catalog.ResolveEntityType(set);
+                var entry = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [Name] = set.Name,
+                    [EntityType] = set.EntityType,
+                    [Keys] = type?.Key ?? []
+                };
+                EdmDocumentation.Add(entry, Description, EdmDocumentation.First(set.Description, set.LongDescription, type?.Description, type?.LongDescription));
+
+                return entry;
+            }).ToList();
+
+            var json = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                [EntitySets] = sets
+            }, ODataMcpCatalog.SchemaSerializerOptions);
+
+            return Complete(json, $"Declared entity sets: {sets.Count}.");
+        }
+
+        /// <summary>
+        /// Lists the unbound operations of the service as compact signatures.
+        /// </summary>
+        /// <returns>
+        /// <c>{ "operations": { "Name": "(args) -> Return // writes" } }</c>, or <c>{}</c> when none are declared.
+        /// Bound operations are on <c>odata_describe_type</c> for their type.
+        /// </returns>
+        internal ODataToolInvocationResult ListOperations()
+        {
+            var operations = EdmModelShape.RenderOperationsJson(_catalog._model);
+            var payload = new Dictionary<string, object?>(StringComparer.Ordinal);
+            if (operations.Count > 0)
+            {
+                payload[Operations] = operations;
+            }
+
+            var json = JsonSerializer.Serialize(payload, ODataMcpCatalog.SchemaSerializerOptions);
+
+            return Complete(json, $"Declared operations: {operations.Count}.");
+        }
+
+        /// <summary>
+        /// Follows a navigation property from a key.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> NavigateAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+            var key = ReadRequired(arguments, Key);
+            var navigation = ReadRequired(arguments, Navigation);
+
+            return await ExecuteAsync(HttpMethod.Get, $"{entitySet}({FormatKey(key)})/{navigation}", null, ApplyQueryGuards(ReadQueryOptions(arguments)), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Queries an entity set.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> QueryAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+
+            return await ExecuteAsync(HttpMethod.Get, entitySet, null, ApplyQueryGuards(ReadQueryOptions(arguments)), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Reads a JSON body from a <c>body</c> argument or the remaining properties.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <returns>
+        /// The JSON body.
+        /// </returns>
+        internal static string ReadBody(IReadOnlyDictionary<string, JsonElement> arguments)
+        {
+            if (arguments.TryGetValue(Body, out var body))
+            {
+                return body.ValueKind == JsonValueKind.String ? body.GetString() ?? "{}" : body.GetRawText();
+            }
+
+            var properties = arguments
+                .Where(pair => pair.Key is not EntitySet and not Key)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            return JsonSerializer.Serialize(properties, ODataMcpCatalog.SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Reads query options without a $ prefix.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <returns>
+        /// Query options for the executor.
+        /// </returns>
+        internal static Dictionary<string, string> ReadQueryOptions(IReadOnlyDictionary<string, JsonElement> arguments)
+        {
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var name in QueryOptionNames)
+            {
+                if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+                {
+                    continue;
+                }
+
+                options[name] = value.ValueKind == JsonValueKind.String ? value.GetString() ?? string.Empty : value.GetRawText();
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// Reads a required string argument.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="name">The argument name.</param>
+        /// <returns>
+        /// The argument value.
+        /// </returns>
+        internal static string ReadRequired(IReadOnlyDictionary<string, JsonElement> arguments, string name)
+        {
+            if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                throw new ArgumentException($"Missing required argument '{name}'.", nameof(arguments));
+            }
+
+            var text = value.ValueKind == JsonValueKind.String ? value.GetString() : value.GetRawText();
+            ArgumentException.ThrowIfNullOrWhiteSpace(text, name);
+
+            return text;
+        }
+
+        /// <summary>
+        /// Reads an optional argument that must be one of a fixed set of lowercase values.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="name">The argument name.</param>
+        /// <param name="allowed">The accepted values, lowercase.</param>
+        /// <param name="defaultValue">The value used when the argument is absent or JSON null.</param>
+        /// <returns>
+        /// The matched allowed value.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not one of <paramref name="allowed"/>.</exception>
+        /// <remarks>
+        /// Matching ignores case and surrounding whitespace. Anything else, including a non-string JSON value, is rejected
+        /// with the accepted values in the message so the caller can correct the first retry.
+        /// </remarks>
+        internal static string ReadChoice(IReadOnlyDictionary<string, JsonElement> arguments, string name, IReadOnlyList<string> allowed, string defaultValue)
+        {
+            if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return defaultValue;
+            }
+
+            var text = value.ValueKind == JsonValueKind.String ? value.GetString() ?? string.Empty : value.GetRawText();
+            var match = allowed.FirstOrDefault(candidate => candidate.Equals(text.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (match is null)
+            {
+                throw new ArgumentException($"Unknown {name} '{text}'. Use {string.Join(" or ", allowed)}.", nameof(arguments));
+            }
+
+            return match;
+        }
+
+        /// <summary>
+        /// Reads an optional argument that must be a JSON array of non-blank strings.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="name">The argument name.</param>
+        /// <returns>
+        /// The strings, or <c>null</c> when the argument is absent or JSON null.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not an array of strings.</exception>
+        internal static IReadOnlyList<string>? ReadStringList(IReadOnlyDictionary<string, JsonElement> arguments, string name)
+        {
+            if (!arguments.TryGetValue(name, out var value) || value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array || value.EnumerateArray().Any(item => item.ValueKind != JsonValueKind.String))
+            {
+                throw new ArgumentException($"{name} must be a JSON array of entity set names.", nameof(arguments));
+            }
+
+            return [.. value.EnumerateArray().Select(item => item.GetString()!).Where(item => !string.IsNullOrWhiteSpace(item))];
+        }
+
+        /// <summary>
+        /// Splits a key on commas that are not inside single-quoted values.
+        /// </summary>
+        /// <param name="key">The key text.</param>
+        /// <returns>
+        /// The segments.
+        /// </returns>
+        internal static List<string> SplitUnquotedCommas(string key)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+            var parts = new List<string>();
+            var start = 0;
+            var inQuote = false;
+            for (var index = 0; index < key.Length; index++)
+            {
+                var character = key[index];
+                if (character == '\'')
+                {
+                    if (inQuote && index + 1 < key.Length && key[index + 1] == '\'')
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    inQuote = !inQuote;
+                    continue;
+                }
+
+                if (character == ',' && !inQuote)
+                {
+                    parts.Add(key[start..index]);
+                    start = index + 1;
+                }
+            }
+
+            parts.Add(key[start..]);
+
+            return parts;
+        }
+
+        /// <summary>
+        /// Formats named or composite keys such as <c>OrderID=10248,ProductID=11</c>.
+        /// </summary>
+        /// <param name="key">The key text.</param>
+        /// <param name="formatted">The formatted key when this method returns <c>true</c>.</param>
+        /// <returns>
+        /// <c>true</c> when every segment is <c>Name=value</c>.
+        /// </returns>
+        internal static bool TryFormatNamedKey(string key, out string formatted)
+        {
+            formatted = string.Empty;
+            if (string.IsNullOrWhiteSpace(key) || !key.Contains('=', StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var parts = SplitUnquotedCommas(key);
+            if (parts.Count == 0)
+            {
+                return false;
+            }
+
+            var pairs = new List<string>(parts.Count);
+            foreach (var part in parts)
+            {
+                var equals = part.IndexOf('=');
+                if (equals <= 0)
+                {
+                    return false;
+                }
+
+                var name = part[..equals].Trim();
+                var value = part[(equals + 1)..].Trim();
+                if (!IsODataIdentifier(name) || string.IsNullOrWhiteSpace(value))
+                {
+                    return false;
+                }
+
+                pairs.Add($"{name}={FormatSimpleKey(value)}");
+            }
+
+            formatted = string.Join(",", pairs);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Updates an entity with PATCH.
+        /// </summary>
+        /// <param name="arguments">Tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> UpdateAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        {
+            var entitySet = ReadRequired(arguments, EntitySet);
+            var key = ReadRequired(arguments, Key);
+            var body = ReadBody(arguments);
+            GuardRequestBody(body);
+
+            var invalid = ValidateEntityBody(entitySet, body, isCreate: false);
+            if (invalid is not null)
+            {
+                return invalid;
+            }
+
+            return await ExecuteAsync(HttpMethod.Patch, $"{entitySet}({FormatKey(key)})", body, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Validates a create or update body against the declared type of an entity set before any OData HTTP.
+        /// </summary>
+        /// <param name="entitySet">The target entity set name.</param>
+        /// <param name="body">The JSON body text.</param>
+        /// <param name="isCreate"><c>true</c> for POST (also checks required-on-create); <c>false</c> for PATCH.</param>
+        /// <returns>
+        /// An error result when the body violates the declared shape; <c>null</c> when it is valid, when the set or its
+        /// type is not declared, or when the body is not a JSON object (those are forwarded so the service answers).
+        /// </returns>
+        internal ODataToolInvocationResult? ValidateEntityBody(string entitySet, string body, bool isCreate)
+        {
+            var set = _catalog.ResolveIncludedSets().FirstOrDefault(item => item.Name.Equals(entitySet, StringComparison.OrdinalIgnoreCase));
+            var type = set is null ? null : _catalog.ResolveEntityType(set);
+            if (type is null || string.IsNullOrWhiteSpace(body))
+            {
+                return null;
+            }
+
+            JsonDocument document;
+            try
+            {
+                document = JsonDocument.Parse(body);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+
+            using (document)
+            {
+                if (document.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    return null;
+                }
+
+                var shape = _catalog.GetShape(type);
+                var failure = EdmPayloadValidator.ValidateEntityBody(_catalog._model, _catalog._options, shape, document.RootElement, isCreate);
+
+                return failure is null ? null : Error(failure);
+            }
+        }
+
+        /// <summary>
+        /// Builds an error result.
+        /// </summary>
+        /// <param name="message">The error message.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal static ODataToolInvocationResult Error(string message)
+        {
+            return new ODataToolInvocationResult
+            {
+                IsError = true,
+                Text = message
+            };
+        }
+
+        #endregion
+
+    }
+
+}

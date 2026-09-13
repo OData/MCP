@@ -1,0 +1,327 @@
+---
+title: AuthorizationServerMetadataClient
+description: "Discovers an RFC 8414 authorization server metadata document (or its OpenID Connect discovery document counterpart) over the handler-free `'OAuth'` named [Ht..."
+icon: lock
+sidebarTitle: AuthorizationServerMetadataClient
+tag: "SEALED"
+keywords: ['AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient
+```
+
+## Summary
+
+Discovers an RFC 8414 authorization server metadata document (or its OpenID Connect discovery document
+counterpart) over the handler-free `"OAuth"` named [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient), probing the well-known
+candidates for a base URI in the order that prefers a Microsoft identity platform v2 document over its
+v1 counterpart.
+
+## Remarks
+
+A new `"OAuth"` client is requested from [IHttpClientFactory](https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory) on every call rather than
+cached, matching the "Two named HttpClients" table in `specs/v3/AUTHENTICATION.md`. Per `AUTH-14`,
+an Entra-style authorization server publishes both a v1 (OpenID Connect only) and a v2 (RFC 8414 and OpenID
+Connect) document at the same base URI; [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationservermetadataclient.candidatedocuments(system.uri)) orders the v2 candidates
+first so discovery never selects the v1 issuer when a v2 one is available. Response bodies are never
+logged.
+
+## Examples
+
+```csharp
+var client = new AuthorizationServerMetadataClient(httpClientFactory, logger);
+var metadata = await client.DiscoverAsync(new Uri("https://login.microsoftonline.com/common"), cancellationToken);
+if (metadata is not null)
+{
+    // metadata.TokenEndpoint is guaranteed non-null and absolute.
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [AuthorizationServerMetadataClient](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadataClient) class.
+
+#### Syntax
+
+```csharp
+public AuthorizationServerMetadataClient(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient> logger)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The factory used to create the `"OAuth"` named client per call. |
+| `logger` | `Microsoft.Extensions.Logging.ILogger<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient>` | The logger this instance records non-fatal well-known outcomes and probe attempts to. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *httpClientFactory* or *logger* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CandidateDocuments
+
+Builds the well-known authorization server metadata candidates for a base URI, in probe order.
+
+#### Syntax
+
+```csharp
+public static System.Collections.Generic.IReadOnlyList<System.Uri> CandidateDocuments(System.Uri baseUri)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `baseUri` | `System.Uri` | The absolute authorization server base URI, such as an issuer or an authorization endpoint's origin and path. |
+
+#### Returns
+
+Type: `System.Collections.Generic.IReadOnlyList<System.Uri>`
+Five candidates when *baseUri* carries a path beyond `/`: the versioned (v2)
+RFC 8414 document, the versioned OpenID Connect document, the unversioned RFC 8414 document, the RFC
+8414 §3.1 path-prefixed document, and the unversioned OpenID Connect document, in that order. The
+path-prefixed candidate is omitted, leaving four candidates, when *baseUri* has no
+path beyond `/`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *baseUri* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *baseUri* is not an absolute URI. |
+
+#### Remarks
+
+A trailing `/` on *baseUri* is trimmed before any suffix is appended, so no
+candidate carries a doubled path separator. The versioned candidates are listed first so that an
+Entra-style authorization server, which publishes a v1 (OpenID Connect only) document at the
+unversioned base and a v2 (RFC 8414 and OpenID Connect) document under `/v2.0`, is discovered
+through its v2 issuer.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DiscoverAsync
+
+Probes [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationservermetadataclient.candidatedocuments(system.uri)) in order and returns the first candidate that resolves to
+a usable metadata document.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata> DiscoverAsync(System.Uri baseUri, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `baseUri` | `System.Uri` | The absolute authorization server base URI to discover metadata for. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata?>`
+The first candidate's parsed document, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when every candidate is non-fatally
+unusable (missing, unparseable, or lacking a `token_endpoint`).
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *baseUri* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *baseUri* is not an absolute URI. |
+| `OutboundDiscoveryException` | Thrown when a probe times out, fails at the transport, or returns a 5xx status, after one retry. |
+
+#### Examples
+
+```csharp
+var metadata = await client.DiscoverAsync(new Uri("https://login.microsoftonline.com/common"), cancellationToken);
+```
+
+#### Remarks
+
+Every probe is attempted over `http` only when its host is loopback; discovery stops at the first
+candidate with a `token_endpoint`, so a later candidate (such as the legacy v1 document) is never
+requested once an earlier one has already succeeded.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TryGetAsync
+
+Attempts to fetch and parse the authorization server metadata document at a well-known URL.
+
+#### Syntax
+
+```csharp
+public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata> TryGetAsync(System.Uri url, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `System.Uri` | The absolute authorization server metadata URL. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels the request. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata?>`
+The parsed document on a `200` response with a well-formed body carrying an absolute
+`token_endpoint`; otherwise [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) after a 401, 403, 404, unparseable body, a
+document without a usable `token_endpoint`, or any other non-retryable non-success status.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *url* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *url* is not an absolute URI, or is an `http` URI whose host is not loopback. |
+| `OutboundDiscoveryException` | Thrown when the request times out, fails at the transport, or returns a 5xx status, after one retry. |
+
+#### Examples
+
+```csharp
+var metadata = await client.TryGetAsync(new Uri("https://login.microsoftonline.com/common/v2.0/.well-known/oauth-authorization-server"), cancellationToken);
+```
+

@@ -63,6 +63,15 @@ namespace Microsoft.OData.Mcp.Core.Models
         public List<EdmEntityContainer> EntityContainers { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the enumeration types defined in this model.
+        /// </summary>
+        /// <value>A collection of enumeration types whose members appear in type shapes and schemas.</value>
+        /// <remarks>
+        /// Structural properties reference these by <see cref="EdmEnumType.FullName"/> in <see cref="EdmProperty.Type"/>.
+        /// </remarks>
+        public List<EdmEnumType> EnumTypes { get; set; } = [];
+
+        /// <summary>
         /// Gets or sets the namespaces used in this model.
         /// </summary>
         /// <value>A collection of namespace strings that organize the types in the model.</value>
@@ -155,6 +164,13 @@ namespace Microsoft.OData.Mcp.Core.Models
         [JsonIgnore]
         public bool HasEntityContainers => EntityContainers.Count > 0;
 
+        /// <summary>
+        /// Gets a value indicating whether this model has any enumeration types.
+        /// </summary>
+        /// <value><c>true</c> if the model has enumeration types; otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool HasEnumTypes => EnumTypes.Count > 0;
+
         #endregion
 
         #region Constructors
@@ -226,6 +242,29 @@ ArgumentException.ThrowIfNullOrWhiteSpace(version);
             return ComplexTypes.FirstOrDefault(ct => 
                 ct.Name.Equals(name, StringComparison.Ordinal) && 
                 ct.Namespace.Equals(@namespace, StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Gets an enumeration type by its fully qualified name.
+        /// </summary>
+        /// <param name="fullName">The fully qualified name of the enumeration type (namespace.name).</param>
+        /// <returns>The enumeration type with the specified name, or <c>null</c> if not found.</returns>
+        public EdmEnumType? GetEnumType(string fullName)
+        {
+            return EnumTypes.FirstOrDefault(enumType => enumType.FullName.Equals(fullName, StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Gets an enumeration type by name and namespace.
+        /// </summary>
+        /// <param name="name">The name of the enumeration type.</param>
+        /// <param name="namespace">The namespace of the enumeration type.</param>
+        /// <returns>The enumeration type with the specified name and namespace, or <c>null</c> if not found.</returns>
+        public EdmEnumType? GetEnumType(string name, string @namespace)
+        {
+            return EnumTypes.FirstOrDefault(enumType =>
+                enumType.Name.Equals(name, StringComparison.Ordinal) &&
+                enumType.Namespace.Equals(@namespace, StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -312,6 +351,28 @@ ArgumentNullException.ThrowIfNull(complexType);
             if (!Namespaces.Contains(complexType.Namespace))
             {
                 Namespaces.Add(complexType.Namespace);
+            }
+        }
+
+        /// <summary>
+        /// Adds an enumeration type to the model.
+        /// </summary>
+        /// <param name="enumType">The enumeration type to add.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="enumType"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when an enumeration type with the same full name already exists.</exception>
+        public void AddEnumType(EdmEnumType enumType)
+        {
+            ArgumentNullException.ThrowIfNull(enumType);
+
+            if (GetEnumType(enumType.FullName) is not null)
+            {
+                throw new InvalidOperationException($"An enum type named '{enumType.FullName}' already exists in the model.");
+            }
+
+            EnumTypes.Add(enumType);
+            if (!Namespaces.Contains(enumType.Namespace))
+            {
+                Namespaces.Add(enumType.Namespace);
             }
         }
 
@@ -414,7 +475,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(term);
         /// <returns>A summary of the model contents.</returns>
         public override string ToString()
         {
-            return $"EDM v{Version}: {EntityTypes.Count} entity types, {ComplexTypes.Count} complex types, {EntityContainers.Count} containers";
+            return $"EDM v{Version}: {EntityTypes.Count} entity types, {ComplexTypes.Count} complex types, {EnumTypes.Count} enum types, {EntityContainers.Count} containers";
         }
 
         #endregion

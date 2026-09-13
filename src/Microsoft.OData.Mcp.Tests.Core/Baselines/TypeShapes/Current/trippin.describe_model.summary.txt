@@ -1,0 +1,10 @@
+Person  (set: People, key: UserName)
+  Friends -> Person[]
+  BestFriend? -> Person
+  Trips -> Trip[]
+Airline  (set: Airlines, key: AirlineCode)
+Airport  (set: Airports, key: IcaoCode)
+operations
+  GetPersonWithMostFriends() -> Person
+  GetNearestAirport(lat: number, lon: number) -> Airport
+  ResetDataSource() // writes

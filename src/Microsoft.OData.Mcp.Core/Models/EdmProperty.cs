@@ -13,6 +13,7 @@ namespace Microsoft.OData.Mcp.Core.Models
     /// <remarks>
     /// Properties define the structure and data characteristics of entity types and complex types.
     /// They specify the name, type, and various constraints of the data elements.
+    /// Only members declared on the EDM belong here. Ignored CLR properties must not be added.
     /// </remarks>
     public sealed class EdmProperty
     {
@@ -57,6 +58,22 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// </summary>
         /// <value>A human-readable description of the property's purpose.</value>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this property.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the service computes this property's value.
+        /// </summary>
+        /// <value><c>true</c> when the metadata declares <c>Org.OData.Core.V1.Computed</c> or <c>Org.OData.Core.V1.ComputedDefaultValue</c>; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// A computed property is store-generated and therefore optional on create even when it is non-nullable.
+        /// This flag is set only from those vocabulary terms. It is never inferred from the property type or key membership.
+        /// </remarks>
+        public bool Computed { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the property can contain null values.
@@ -219,6 +236,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
                    Name == other.Name &&
                    Type == other.Type &&
                    Nullable == other.Nullable &&
+                   Computed == other.Computed &&
                    MaxLength == other.MaxLength &&
                    Precision == other.Precision &&
                    Scale == other.Scale &&
@@ -234,7 +252,7 @@ ArgumentException.ThrowIfNullOrWhiteSpace(name);
         /// <returns>A hash code for the current property.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Type, Nullable, MaxLength, Precision, Scale, Unicode, DefaultValue);
+            return HashCode.Combine(Name, Type, Nullable, Computed, MaxLength, Precision, Scale, Unicode);
         }
 
         #endregion

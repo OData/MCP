@@ -1,0 +1,367 @@
+---
+title: AddCommandAuthSettings
+description: "Everything the `odata-mcp add` wizard collected about how the generated `start` command should authenticate."
+icon: lock
+tag: "SEALED"
+keywords: ['AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands.AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Tools.dll
+
+**Namespace:** Microsoft.OData.Mcp.Tools.Commands
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Tools.Commands.AddCommandAuthSettings
+```
+
+## Summary
+
+Everything the `odata-mcp add` wizard collected about how the generated `start` command should
+authenticate.
+
+## Remarks
+
+Per `AUTH-5` this is a top-level type rather than a tuple or a nested class, because it crosses
+three methods — the prompts that fill it, the connection test that turns it into
+[OutboundOAuthOptions](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions), and the command builder that turns it into flags.
+
+There is deliberately no client secret property. Per `specs/v3/AUTHENTICATION.md` the wizard never
+writes a client secret into MCP configuration at all: it prints an instruction to set
+[ODataMcpAuthConstants.ClientSecretEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#clientsecretenvironmentvariable) in the environment that launches the
+host, which `start` reads. [AddCommandAuthSettings.ApiKey](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings#apikey), [AddCommandAuthSettings.BasicPassword](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings#basicpassword), and
+[AddCommandAuthSettings.AuthToken](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings#authtoken)&lt;em&gt;are&lt;/em&gt; written, and each is warned about when it is.
+
+## Examples
+
+```csharp
+var settings = new AddCommandAuthSettings
+{
+    ClientId = "00000000-0000-0000-0000-000000000000",
+    Grant = OutboundGrantKind.DeviceCode,
+    Scopes = "https://graph.microsoft.com/.default"
+};
+
+var command = wizard.BuildMcpCommand("graph", url, settings, "user", verbose: false);
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public AddCommandAuthSettings()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKey
+
+Gets or sets the raw API key, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the operator chose another path.
+
+#### Syntax
+
+```csharp
+public string ApiKey { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKeyHeader
+
+Gets or sets the header name [AddCommandAuthSettings.ApiKey](/api-reference/Microsoft/OData/Mcp/Tools/Commands/AddCommandAuthSettings#apikey) is sent in.
+
+#### Syntax
+
+```csharp
+public string ApiKeyHeader { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthServer
+
+Gets or sets the authorization server issuer the operator supplied, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when
+discovery found one on its own.
+
+#### Syntax
+
+```csharp
+public string AuthServer { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
+
+Gets or sets the bearer token the operator pasted, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for every other path.
+
+#### Syntax
+
+```csharp
+public string AuthToken { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicPassword
+
+Gets or sets the HTTP Basic password.
+
+#### Syntax
+
+```csharp
+public string BasicPassword { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicUser
+
+Gets or sets the HTTP Basic user name.
+
+#### Syntax
+
+```csharp
+public string BasicUser { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientId
+
+Gets or sets the OAuth client identifier, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the authorization server
+registers one dynamically.
+
+#### Syntax
+
+```csharp
+public string ClientId { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Grant
+
+Gets or sets the grant the generated command pins, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) for a non-OAuth path.
+
+#### Syntax
+
+```csharp
+public System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind> Grant { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?>?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
+
+Gets or sets the space-delimited scope list, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the challenge or the
+protected resource metadata already supplies one.
+
+#### Syntax
+
+```csharp
+public string Scopes { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenCachePath
+
+Gets or sets the token cache directory the operator chose, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to leave the
+default operating system credential store in place.
+
+#### Syntax
+
+```csharp
+public string TokenCachePath { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToOutboundOptions
+
+Turns these settings into the outbound options the `start` command would build from the same
+flags, so a connection test exercises the real authentication path rather than a simplified one.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions ToOutboundOptions()
+```
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions`
+The options, with [ODataMcpAuthConstants.ClientSecretEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#clientsecretenvironmentvariable) and
+[ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) already folded in.
+
+#### Examples
+
+```csharp
+using var host = await ToolsMcpHost.CreateAsync(url, settings.ToOutboundOptions(), false, false, null, ct);
+```
+
+#### Remarks
+
+The environment is read here for the same reason `start` reads it: a client credentials test
+that ignored `ODATA_MCP_CLIENT_SECRET` would fail for a reason the operator has already been
+told how to fix.
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

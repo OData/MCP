@@ -1,0 +1,125 @@
+---
+title: OutboundAuthLogRedactor
+description: "Masks token and credential values out of text before it reaches a log sink, per `specs/v3/AUTHENTICATION.md` 'Observability -&gt; Redaction' and 'Security &a..."
+icon: bolt
+tag: "STATIC"
+keywords: ['OutboundAuthLogRedactor', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundAuthLogRedactor', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Authentication.dll
+
+**Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Authentication.Outbound.OutboundAuthLogRedactor
+```
+
+## Summary
+
+Masks token and credential values out of text before it reaches a log sink, per
+`specs/v3/AUTHENTICATION.md` "Observability -&gt; Redaction" and "Security &amp; Privacy -&gt; Logging
+tokens".
+
+## Remarks
+
+Every regular expression is source-generated ([GeneratedRegexAttribute](https://learn.microsoft.com/dotnet/api/system.text.regularexpressions.generatedregexattribute)), so redaction costs
+no reflection, matching this library's AOT-first posture. [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.redact(system.string)) never throws on
+text that carries no sensitive content, because log text is redacted on every write and must never
+itself become a source of failure.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DescribeToken
+
+Describes a token container for logging without ever emitting
+`AccessToken` or `RefreshToken`.
+
+#### Syntax
+
+```csharp
+public static string DescribeToken(ModelContextProtocol.Authentication.TokenContainer token)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `token` | `ModelContextProtocol.Authentication.TokenContainer` | The token container to describe. |
+
+#### Returns
+
+Type: `string`
+`type={TokenType} expiresIn={ExpiresIn} hasRefresh={true|false} scope={Scope}`, reporting
+`expiresIn` and `scope` as `none` when absent.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *token* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+var description = OutboundAuthLogRedactor.DescribeToken(token);
+logger.LogInformation("Token acquired: {Description}", description);
+// Token acquired: type=Bearer expiresIn=3600 hasRefresh=true scope=read
+```
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Redact
+
+Masks sensitive token and credential values in free-form log text.
+
+#### Syntax
+
+```csharp
+public static string Redact(string text)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `text` | `string` | The text to redact. |
+
+#### Returns
+
+Type: `string`
+*text* with every sensitive JSON property value, `Authorization` header value,
+and sensitive form-encoded value replaced by `***`. Text with no sensitive content, including an
+empty string, is returned unchanged.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *text* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+OutboundAuthLogRedactor.Redact("{\"access_token\":\"abc\"}");
+// {"access_token":"***"}
+
+OutboundAuthLogRedactor.Redact("Authorization: Bearer eyJabc");
+// Authorization: Bearer ***
+
+OutboundAuthLogRedactor.Redact("grant_type=refresh_token&amp;refresh_token=abc");
+// grant_type=refresh_token&amp;refresh_token=***
+```
+
+#### Remarks
+
+Three independent passes run in order, so a single line of text can match more than one: JSON string
+properties named `access_token`, `refresh_token`, `client_secret`, `device_code`,
+`code_verifier`, or `id_token` (case-insensitive, quoted, arbitrary whitespace around
+`:`); an `Authorization` header written as `Authorization: &lt;scheme&gt; &lt;value&gt;`
+or `Authorization=&lt;scheme&gt; &lt;value&gt;` (header name case-insensitive); and
+form-encoded `name=value` pairs for the same six names.
+

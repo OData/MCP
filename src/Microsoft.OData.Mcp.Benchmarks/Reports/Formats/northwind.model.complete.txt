@@ -1,0 +1,253 @@
+Category  (set: Categories, key: CategoryID)
+  CategoryID: int // key
+  CategoryName?: string
+  Description?: string
+  Products -> Product[]
+
+CustomerDemographic  (set: CustomerDemographics, key: CustomerTypeID)
+  CustomerTypeID: string // key
+  CustomerDesc?: string
+  Customers -> Customer[]
+
+Customer  (set: Customers, key: CustomerID)
+  CustomerID: string // key
+  CompanyName?: string
+  ContactName?: string
+  ContactTitle?: string
+  Address?: string
+  City?: string
+  Region?: string
+  PostalCode?: string
+  Country?: string
+  Phone?: string
+  Fax?: string
+  Orders -> Order[]
+  CustomerDemographics -> CustomerDemographic[]
+
+Employee  (set: Employees, key: EmployeeID)
+  EmployeeID: int // key
+  LastName?: string
+  FirstName?: string
+  Title?: string
+  TitleOfCourtesy?: string
+  BirthDate?: datetime
+  HireDate?: datetime
+  Address?: string
+  City?: string
+  Region?: string
+  PostalCode?: string
+  Country?: string
+  HomePhone?: string
+  Extension?: string
+  Notes?: string
+  ReportsTo?: int
+  PhotoPath?: string
+  Employees1 -> Employee[]
+  Employee1? -> Employee
+  Orders -> Order[]
+  Territories -> Territory[]
+
+Order_Detail  (set: Order_Details, key: OrderID, ProductID)
+  OrderID: int // key
+  ProductID: int // key
+  UnitPrice: number
+  Quantity: int
+  Discount: number
+  Order? -> Order
+  Product? -> Product
+
+Order  (set: Orders, key: OrderID)
+  OrderID: int // key
+  CustomerID?: string
+  EmployeeID?: int
+  OrderDate?: datetime
+  RequiredDate?: datetime
+  ShippedDate?: datetime
+  ShipVia?: int
+  Freight?: number
+  ShipName?: string
+  ShipAddress?: string
+  ShipCity?: string
+  ShipRegion?: string
+  ShipPostalCode?: string
+  ShipCountry?: string
+  Customer? -> Customer
+  Employee? -> Employee
+  Order_Details -> Order_Detail[]
+  Shipper? -> Shipper
+
+Product  (set: Products, key: ProductID)
+  ProductID: int // key
+  ProductName?: string
+  SupplierID?: int
+  CategoryID?: int
+  QuantityPerUnit?: string
+  UnitPrice?: number
+  UnitsInStock?: int
+  UnitsOnOrder?: int
+  ReorderLevel?: int
+  Discontinued: bool
+  Category? -> Category
+  Order_Details -> Order_Detail[]
+  Supplier? -> Supplier
+
+Region  (set: Regions, key: RegionID)
+  RegionID: int // key
+  RegionDescription?: string
+  Territories -> Territory[]
+
+Shipper  (set: Shippers, key: ShipperID)
+  ShipperID: int // key
+  CompanyName?: string
+  Phone?: string
+  Orders -> Order[]
+
+Supplier  (set: Suppliers, key: SupplierID)
+  SupplierID: int // key
+  CompanyName?: string
+  ContactName?: string
+  ContactTitle?: string
+  Address?: string
+  City?: string
+  Region?: string
+  PostalCode?: string
+  Country?: string
+  Phone?: string
+  Fax?: string
+  HomePage?: string
+  Products -> Product[]
+
+Territory  (set: Territories, key: TerritoryID)
+  TerritoryID: string // key
+  TerritoryDescription?: string
+  RegionID: int
+  Region? -> Region
+  Employees -> Employee[]
+
+Alphabetical_list_of_product  (set: Alphabetical_list_of_products, key: CategoryName, Discontinued, ProductID, ProductName)
+  ProductID: int // key
+  ProductName: string // key
+  SupplierID?: int
+  CategoryID?: int
+  QuantityPerUnit?: string
+  UnitPrice?: number
+  UnitsInStock?: int
+  UnitsOnOrder?: int
+  ReorderLevel?: int
+  Discontinued: bool // key
+  CategoryName: string // key
+
+Category_Sales_for_1997  (set: Category_Sales_for_1997, key: CategoryName)
+  CategoryName: string // key
+  CategorySales?: number
+
+Current_Product_List  (set: Current_Product_Lists, key: ProductID, ProductName)
+  ProductID: int // key
+  ProductName: string // key
+
+Customer_and_Suppliers_by_City  (set: Customer_and_Suppliers_by_Cities, key: CompanyName, Relationship)
+  City?: string
+  CompanyName: string // key
+  ContactName?: string
+  Relationship: string // key
+
+Invoice  (set: Invoices, key: CustomerName, Discount, OrderID, ProductID, ProductName, Quantity, Salesperson, ShipperName, UnitPrice)
+  ShipName?: string
+  ShipAddress?: string
+  ShipCity?: string
+  ShipRegion?: string
+  ShipPostalCode?: string
+  ShipCountry?: string
+  CustomerID?: string
+  CustomerName: string // key
+  Address?: string
+  City?: string
+  Region?: string
+  PostalCode?: string
+  Country?: string
+  Salesperson: string // key
+  OrderID: int // key
+  OrderDate?: datetime
+  RequiredDate?: datetime
+  ShippedDate?: datetime
+  ShipperName: string // key
+  ProductID: int // key
+  ProductName: string // key
+  UnitPrice: number // key
+  Quantity: int // key
+  Discount: number // key
+  ExtendedPrice?: number
+  Freight?: number
+
+Order_Details_Extended  (set: Order_Details_Extendeds, key: Discount, OrderID, ProductID, ProductName, Quantity, UnitPrice)
+  OrderID: int // key
+  ProductID: int // key
+  ProductName: string // key
+  UnitPrice: number // key
+  Quantity: int // key
+  Discount: number // key
+  ExtendedPrice?: number
+
+Order_Subtotal  (set: Order_Subtotals, key: OrderID)
+  OrderID: int // key
+  Subtotal?: number
+
+Orders_Qry  (set: Orders_Qries, key: CompanyName, OrderID)
+  OrderID: int // key
+  CustomerID?: string
+  EmployeeID?: int
+  OrderDate?: datetime
+  RequiredDate?: datetime
+  ShippedDate?: datetime
+  ShipVia?: int
+  Freight?: number
+  ShipName?: string
+  ShipAddress?: string
+  ShipCity?: string
+  ShipRegion?: string
+  ShipPostalCode?: string
+  ShipCountry?: string
+  CompanyName: string // key
+  Address?: string
+  City?: string
+  Region?: string
+  PostalCode?: string
+  Country?: string
+
+Product_Sales_for_1997  (set: Product_Sales_for_1997, key: CategoryName, ProductName)
+  CategoryName: string // key
+  ProductName: string // key
+  ProductSales?: number
+
+Products_Above_Average_Price  (set: Products_Above_Average_Prices, key: ProductName)
+  ProductName: string // key
+  UnitPrice?: number
+
+Products_by_Category  (set: Products_by_Categories, key: CategoryName, Discontinued, ProductName)
+  CategoryName: string // key
+  ProductName: string // key
+  QuantityPerUnit?: string
+  UnitsInStock?: int
+  Discontinued: bool // key
+
+Sales_by_Category  (set: Sales_by_Categories, key: CategoryID, CategoryName, ProductName)
+  CategoryID: int // key
+  CategoryName: string // key
+  ProductName: string // key
+  ProductSales?: number
+
+Sales_Totals_by_Amount  (set: Sales_Totals_by_Amounts, key: CompanyName, OrderID)
+  SaleAmount?: number
+  OrderID: int // key
+  CompanyName: string // key
+  ShippedDate?: datetime
+
+Summary_of_Sales_by_Quarter  (set: Summary_of_Sales_by_Quarters, key: OrderID)
+  ShippedDate?: datetime
+  OrderID: int // key
+  Subtotal?: number
+
+Summary_of_Sales_by_Year  (set: Summary_of_Sales_by_Years, key: OrderID)
+  ShippedDate?: datetime
+  OrderID: int // key
+  Subtotal?: number

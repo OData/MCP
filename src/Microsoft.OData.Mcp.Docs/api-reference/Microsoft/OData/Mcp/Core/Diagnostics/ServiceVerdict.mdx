@@ -1,0 +1,37 @@
+---
+title: ServiceVerdict
+description: "What a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) concluded about a service as a whole."
+icon: list-ol
+tag: "ENUM"
+keywords: ['ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Enum']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
+
+**Inheritance:** System.Enum
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict
+```
+
+## Summary
+
+What a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) concluded about a service as a whole.
+
+## Values
+
+| Name | Value | Description |
+|------|-------|-------------|
+| `Ready` | 0 | Metadata parsed, a row came back, and the row matched the model. The catalog can serve this service as-is. |
+| `DataSecured` | 1 | Metadata is public but the data answered 401 or 403. Sign-in is needed before any tool call succeeds. |
+| `MetadataSecured` | 2 | The metadata document itself answered 401 or 403. Sign-in is needed before the catalog can be built. |
+| `Unreachable` | 3 | The metadata document or the first entity set could not be fetched: 404, 5xx, or a transport failure. |
+| `Unreadable` | 4 | The service answered but not in a form the catalog understands: non-CSDL metadata, non-JSON data, or a
+            row whose properties do not match the model. |
+

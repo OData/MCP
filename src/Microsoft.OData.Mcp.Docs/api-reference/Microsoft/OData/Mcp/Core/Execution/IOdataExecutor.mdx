@@ -1,0 +1,48 @@
+---
+title: IODataExecutor
+description: "Executes one OData HTTP request. Query option keys must not include '$'; implementations add the prefix on the wire."
+icon: plug
+keywords: ['IODataExecutor', 'Microsoft.OData.Mcp.Core.Execution.IODataExecutor', 'Microsoft.OData.Mcp.Core.Execution', 'interface']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Execution
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Execution.IODataExecutor
+```
+
+## Summary
+
+Executes one OData HTTP request. Query option keys must not include '$';
+implementations add the prefix on the wire.
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExecuteAsync <Badge color="orange">Abstract</Badge>
+
+Executes the request.
+
+#### Syntax
+
+```csharp
+System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Execution.ODataExecuteResult> ExecuteAsync(Microsoft.OData.Mcp.Core.Execution.ODataExecuteRequest request, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `request` | `Microsoft.OData.Mcp.Core.Execution.ODataExecuteRequest` | The OData request. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Execution.ODataExecuteResult>`
+The HTTP result.
+

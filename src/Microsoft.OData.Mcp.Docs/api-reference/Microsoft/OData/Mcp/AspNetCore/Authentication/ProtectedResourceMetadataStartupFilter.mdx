@@ -1,0 +1,226 @@
+---
+title: ProtectedResourceMetadataStartupFilter
+description: "Validates [ProtectedResourceMetadataOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions) at startup and pr..."
+icon: lock
+sidebarTitle: ProtectedResourceMetadataStartupFilter
+tag: "SEALED"
+keywords: ['ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object', 'Microsoft.AspNetCore.Hosting.IStartupFilter']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Authentication
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataStartupFilter
+```
+
+## Summary
+
+Validates [ProtectedResourceMetadataOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions) at startup and prepends
+[ProtectedResourceMetadataMiddleware](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataMiddleware) to the pipeline, no matter how the app wrote its own
+`Configure` delegate.
+
+## Remarks
+
+Going in through an [IStartupFilter](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.hosting.istartupfilter) is what makes the feature one line for an API author:
+there is no `UseProtectedResourceMetadata` to remember, and no way to accidentally place it after
+`UseAuthentication`, where the metadata document would answer `401` and tell a client nothing.
+
+Validation runs here rather than on the first request so a misconfigured API fails the host instead of
+failing whichever client happens to arrive first.
+
+## Examples
+
+```csharp
+services.TryAddEnumerable(ServiceDescriptor.Transient&lt;IStartupFilter, ProtectedResourceMetadataStartupFilter&gt;());
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ProtectedResourceMetadataStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataStartupFilter) class.
+
+#### Syntax
+
+```csharp
+public ProtectedResourceMetadataStartupFilter(Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions> options)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `options` | `Microsoft.Extensions.Options.IOptions<Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions>` | What this resource publishes about itself. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Configure
+
+#### Syntax
+
+```csharp
+public System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `next` | `System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>` | - |
+
+#### Returns
+
+Type: `System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>`
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `InvalidOperationException` | Thrown when [ProtectedResourceMetadataOptions.Validate](/api-reference/Microsoft/OData/Mcp/AspNetCore/Authentication/ProtectedResourceMetadataOptions#validate) rejects the configuration. |
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+## Related APIs
+
+- Microsoft.AspNetCore.Hosting.IStartupFilter
+

@@ -1,0 +1,517 @@
+---
+title: EdmTypeShape
+description: "The shape of one entity type as the calling AI reads it: the declaration-grammar text, the compact JSON, the exposed properties, the required-on-create names..."
+icon: lock
+tag: "SEALED"
+keywords: ['EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape
+```
+
+## Summary
+
+The shape of one entity type as the calling AI reads it: the declaration-grammar text, the compact JSON,
+the exposed properties, the required-on-create names, and the operations bound to the type.
+
+## Remarks
+
+Instances are computed once per type and cached for the catalog lifetime when the model is static
+([ODataMcpCatalogOptions.IsDynamicModel](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions#isdynamicmodel) is `false`). Everything here comes from
+declared EDM members; CLR entity types are never walked. The grammar is specified in
+`specs/v3/TYPE-SHAPES.md`.
+
+## Examples
+
+```csharp
+Customer  (set: Customers, key: CustomerID)
+  CustomerID: string // key
+  CompanyName?: string
+  Orders -&gt; Order[]
+  operations
+    Discount(percentage: int) // writes
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [EdmTypeShape](/api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmTypeShape) class.
+
+#### Syntax
+
+```csharp
+public EdmTypeShape(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Models.EdmEntityType entityType, Microsoft.OData.Mcp.Core.Models.EdmEntitySet entitySet)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM the type belongs to. |
+| `entityType` | `Microsoft.OData.Mcp.Core.Models.EdmEntityType` | The entity type to shape. |
+| `entitySet` | `Microsoft.OData.Mcp.Core.Models.EdmEntitySet?` | The entity set the type is reached through, or `null`. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *entityType* is null. |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BoundActions
+
+Gets the actions bound to this type or one of its base types, in declaration order.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmAction> BoundActions { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmAction>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BoundFunctions
+
+Gets the functions bound to this type or one of its base types, in declaration order.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmFunction> BoundFunctions { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmFunction>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySet
+
+Gets the entity set the shape was resolved through, or `null` when the type has no included set.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmEntitySet EntitySet { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmEntitySet?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntityType
+
+Gets the entity type.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmEntityType EntityType { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmEntityType`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExposedProperties
+
+Gets the declared structural properties that appear in shapes and schemas (binary and stream excluded).
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmProperty> ExposedProperties { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmProperty>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
+
+Gets the fully qualified type name, which is also the cache key.
+
+#### Syntax
+
+```csharp
+public string FullName { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Json
+
+Gets the compact JSON representation used by `format=json` and `resources/read` type cards.
+
+#### Syntax
+
+```csharp
+public string Json { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> JsonBody
+
+Gets the compact JSON body (everything under the type-name key), for embedding in model-level shapes.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyDictionary<string, object> JsonBody { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyDictionary<string, object?>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RequiredOnCreate
+
+Gets the names of exposed properties that a POST must include.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> RequiredOnCreate { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<string>`
+
+#### Remarks
+
+A property is required on create when it is non-nullable, has no `DefaultValue`, and is not
+[EdmProperty.Computed](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmProperty#computed). Store generation is never inferred from the property type.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Text
+
+Gets the declaration-grammar text used by `format=text`, the default describe representation.
+
+#### Syntax
+
+```csharp
+public string Text { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsCollectionBound
+
+Determines whether a binding parameter type is a collection.
+
+#### Syntax
+
+```csharp
+public static bool IsCollectionBound(string bindingParameterType)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `bindingParameterType` | `string?` | The operation's binding parameter type, or `null`. |
+
+#### Returns
+
+Type: `bool`
+`true` when the binding parameter is `Collection(...)`; otherwise, `false`.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsRequiredOnCreate
+
+Determines whether a property must be present on POST.
+
+#### Syntax
+
+```csharp
+public static bool IsRequiredOnCreate(Microsoft.OData.Mcp.Core.Models.EdmProperty property)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `property` | `Microsoft.OData.Mcp.Core.Models.EdmProperty` | The declared property. |
+
+#### Returns
+
+Type: `bool`
+`true` when the property is non-nullable, has no `DefaultValue`, and is not computed.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *property* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MapShapeType
+
+Maps an EDM type name to the shape grammar's type token.
+
+#### Syntax
+
+```csharp
+public static string MapShapeType(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType, System.Nullable<int> maxLength = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM, used to resolve enumeration members. |
+| `edmType` | `string?` | The EDM type name, for example `Edm.String`, `NS.Color`, or `Collection(NS.Order)`. |
+| `maxLength` | `System.Nullable<int>` | The declared `MaxLength`, inlined as `string(n)` only when at most 16. |
+
+#### Returns
+
+Type: `string`
+The token: `string`, `string(n)`, `bool`, `int`, `int64`, `number`, `date`,
+`datetime`, `time`, `duration`, `guid`, `enum(A|B)`, a short type name, or any of those with `[]`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* is null. |
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderNavigation
+
+Renders one navigation line in the shape grammar, without indentation.
+
+#### Syntax
+
+```csharp
+public static string RenderNavigation(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Models.EdmNavigationProperty navigation)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `navigation` | `Microsoft.OData.Mcp.Core.Models.EdmNavigationProperty` | The navigation property. |
+
+#### Returns
+
+Type: `string`
+`Orders -&gt; Order[]` for collections, `BestFriend? -&gt; Person` for optional single targets.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *navigation* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderOperation
+
+Renders an operation signature in the shape grammar, omitting the binding parameter.
+
+#### Syntax
+
+```csharp
+public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel model, string name, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, string returnType, bool isBound, string bindingParameterType, bool writes, string description)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `name` | `string?` | The operation name, or `null` to render only the parenthesized part (compact JSON). |
+| `parameters` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter>` | The declared parameters, including the binding parameter when bound. |
+| `returnType` | `string?` | The declared return type, or `null` for none. |
+| `isBound` | `bool` | Whether the first parameter is the binding parameter. |
+| `bindingParameterType` | `string?` | The binding parameter type, used for the `// collection` marker. |
+| `writes` | `bool` | Whether the operation mutates (an EDM action). |
+| `description` | `string?` | CSDL documentation, or `null`. |
+
+#### Returns
+
+Type: `string`
+For example `ShareTrip(userName: string, tripId: int) // writes` or `(count: int) -&gt; Person[] // collection`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *parameters* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderProperty
+
+Renders one structural property line in the shape grammar, without indentation.
+
+#### Syntax
+
+```csharp
+public static string RenderProperty(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Models.EdmProperty property, bool isKey)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `property` | `Microsoft.OData.Mcp.Core.Models.EdmProperty` | The property. |
+| `isKey` | `bool` | Whether the property is part of the entity key. |
+
+#### Returns
+
+Type: `string`
+For example `CustomerID: string // key` or `Access?: enum(Read|Write) // flags, comma-separated`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *property* is null. |
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+

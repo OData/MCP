@@ -45,6 +45,18 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string? Extends { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSDL documentation summary or <c>Core.Description</c> for this container.
+        /// </summary>
+        /// <value>A human-readable summary from metadata, or <c>null</c> when none is declared.</value>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSDL long description or <c>Core.LongDescription</c> for this container.
+        /// </summary>
+        /// <value>A longer documentation string from metadata, or <c>null</c> when none is declared.</value>
+        public string? LongDescription { get; set; }
+
+        /// <summary>
         /// Gets or sets the entity sets in this container.
         /// </summary>
         /// <value>A collection of entity sets that define the collections of entities available in the service.</value>

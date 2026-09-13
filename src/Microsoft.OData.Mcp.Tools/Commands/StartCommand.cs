@@ -2,34 +2,151 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.OData.Mcp.Core.Constants;
-using Microsoft.OData.Mcp.Core.Models;
-using Microsoft.OData.Mcp.Core.Parsing;
-using Microsoft.OData.Mcp.Core.Tools;
-using Microsoft.OData.Mcp.Tools.Services;
-using ModelContextProtocol.Server;
+using Microsoft.OData.Mcp.Authentication.Outbound;
+using Microsoft.OData.Mcp.Tools.Hosting;
 
 namespace Microsoft.OData.Mcp.Tools.Commands
 {
 
     /// <summary>
-    /// Command to start the OData MCP server.
+    /// Command to start the OData MCP server over stdio.
     /// </summary>
     [Command(Name = "start", Description = "Start the OData MCP server")]
     public class StartCommand
     {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the raw API key value for the API key escape hatch.
+        /// </summary>
+        [Option("--api-key", Description = "Raw key")]
+        public string? ApiKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the header name <see cref="ApiKey"/> is sent under.
+        /// </summary>
+        [Option("--api-key-header", Description = "Header name. Fail if key set without header")]
+        public string? ApiKeyHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operator's authorization server override.
+        /// </summary>
+        [Option("--auth-server", Description = "AS issuer override")]
+        public string? AuthServer { get; set; }
+
+        /// <summary>
+        /// Gets or sets how long, in seconds, an interactive grant may run before it is abandoned.
+        /// </summary>
+        [Option("--auth-timeout <SECONDS>", Description = "Seconds. Default 300")]
+        public int? AuthTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication token.
+        /// </summary>
+        [Option("-t|--auth-token", Description = "Authentication token for the OData service")]
+        public string? AuthToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RFC 7617 Basic authentication password.
+        /// </summary>
+        [Option("--basic-password", Description = "Basic auth password")]
+        public string? BasicPassword { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RFC 7617 Basic authentication user name.
+        /// </summary>
+        [Option("--basic-user", Description = "Basic auth user name")]
+        public string? BasicUser { get; set; }
+
+        /// <summary>
+        /// Gets or sets the OAuth client id this process authenticates as.
+        /// </summary>
+        [Option("--client-id", Description = "Public/confidential client id")]
+        public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client identity metadata document (CIMD) URI.
+        /// </summary>
+        [Option("--client-metadata-document", Description = "CIMD URI")]
+        public string? ClientMetadataDocument { get; set; }
+
+        /// <summary>
+        /// Gets or sets the OAuth client secret for a confidential client.
+        /// </summary>
+        [Option("--client-secret", Description = "Client secret. Also read from ODATA_MCP_CLIENT_SECRET")]
+        public string? ClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operator's <c>--grant</c> selection.
+        /// </summary>
+        [Option("--grant", Description = "device_code | authorization_code | client_credentials | identity_assertion")]
+        public string? Grant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enterprise IdP client id used to obtain the id token the identity assertion grant exchanges.
+        /// </summary>
+        [Option("--idp-client-id", Description = "Enterprise IdP client id")]
+        public string? IdpClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enterprise IdP client secret.
+        /// </summary>
+        [Option("--idp-client-secret", Description = "Enterprise IdP client secret")]
+        public string? IdpClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to a UTF-8 OIDC id token file for the identity assertion grant.
+        /// </summary>
+        [Option("--idp-id-token-file", Description = "Path to a UTF-8 OIDC id token")]
+        public string? IdpIdTokenFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scope requested from the enterprise IdP.
+        /// </summary>
+        [Option("--idp-scope", Description = "Scope requested from the enterprise IdP")]
+        public string? IdpScope { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enterprise IdP token endpoint.
+        /// </summary>
+        [Option("--idp-token-endpoint", Description = "Enterprise IdP token endpoint")]
+        public string? IdpTokenEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enterprise IdP base URL.
+        /// </summary>
+        [Option("--idp-url", Description = "Enterprise IdP base URL")]
+        public string? IdpUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the loopback redirect URI override for the authorization code grant.
+        /// </summary>
+        [Option("--redirect-uri", Description = "Loopback override")]
+        public string? RedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RFC 8707 resource indicator / audience override.
+        /// </summary>
+        [Option("--resource", Description = "OAuth resource/audience override")]
+        public string? Resource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fallback scope list requested when the authorization server advertises none.
+        /// </summary>
+        [Option("--scopes", Description = "Fallback scope list (space-separated)")]
+        public string? Scopes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the directory the Latchkey File and Dpapi backends store cached tokens in.
+        /// </summary>
+        [Option("--token-cache", Description = "Optional directory for Latchkey File/Dpapi backends")]
+        public string? TokenCache { get; set; }
 
         /// <summary>
         /// Gets or sets the OData service URL.
@@ -39,324 +156,121 @@ namespace Microsoft.OData.Mcp.Tools.Commands
         public string? Url { get; set; }
 
         /// <summary>
-        /// Gets or sets the authentication token.
-        /// </summary>
-        [Option("-t|--auth-token", Description = "Authentication token for the OData service")]
-        public string? AuthToken { get; set; }
-
-        /// <summary>
         /// Gets or sets whether to enable verbose logging.
         /// </summary>
         [Option("-v|--verbose", Description = "Enable verbose logging")]
         public bool Verbose { get; set; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Executes the start command.
         /// </summary>
-        /// <returns>Exit code.</returns>
+        /// <returns>
+        /// Exit code.
+        /// </returns>
         public async Task<int> OnExecuteAsync()
         {
+            if (string.IsNullOrWhiteSpace(Url))
+            {
+                Console.Error.WriteLine("Error: OData service URL is required.");
+
+                return 1;
+            }
+
+            using var lifetime = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, args) =>
+            {
+                args.Cancel = true;
+                lifetime.Cancel();
+            };
+
+            return await ExecuteAsync(lifetime).ConfigureAwait(false);
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Authenticates, fetches metadata, and builds the stdio host without running it.
+        /// </summary>
+        /// <param name="lifetime">The lifetime cancelled by <c>shutdown_server</c> or Ctrl+C.</param>
+        /// <returns>
+        /// The built host; the caller disposes it.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="lifetime"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <see cref="Url"/> is <see langword="null"/>, empty, or whitespace.</exception>
+        internal async Task<ToolsMcpHost> BuildHostAsync(CancellationTokenSource lifetime)
+        {
+            ArgumentNullException.ThrowIfNull(lifetime);
+            ArgumentException.ThrowIfNullOrWhiteSpace(Url);
+
+            var toolsHost = await ToolsMcpHost
+                .CreateAsync(Url, BuildOptions(), includeStdioMcp: true, Verbose, lifetime, lifetime.Token)
+                .ConfigureAwait(false);
+            Console.Error.WriteLine($"Registered {toolsHost.Catalog.Tools.Count} OData tools plus shutdown_server.");
+
+            return toolsHost;
+        }
+
+        /// <summary>
+        /// Binds this command's flags into a validated <see cref="OutboundOAuthOptions"/>.
+        /// </summary>
+        /// <returns>
+        /// The bound and validated options.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when a URI-shaped flag is not an absolute URI, <see cref="Grant"/> is not a recognized wire
+        /// name, or the resulting combination of flags fails <see cref="OutboundOAuthOptions.Validate"/>.
+        /// </exception>
+        internal OutboundOAuthOptions BuildOptions()
+        {
+            return OutboundOptionsBinder.Bind(
+                AuthToken,
+                ClientId,
+                ClientSecret,
+                Scopes,
+                AuthServer,
+                Resource,
+                Grant,
+                RedirectUri,
+                TokenCache,
+                AuthTimeout,
+                ApiKey,
+                ApiKeyHeader,
+                BasicUser,
+                BasicPassword,
+                ClientMetadataDocument,
+                IdpUrl,
+                IdpTokenEndpoint,
+                IdpClientId,
+                IdpClientSecret,
+                IdpScope,
+                IdpIdTokenFile);
+        }
+
+        /// <summary>
+        /// Builds and runs the stdio host, mapping expected failures to exit codes.
+        /// </summary>
+        /// <param name="lifetime">The host lifetime.</param>
+        /// <returns>
+        /// Exit code 0 on shutdown or cancel; 1 on unexpected errors.
+        /// </returns>
+        internal async Task<int> ExecuteAsync(CancellationTokenSource lifetime)
+        {
+            ArgumentNullException.ThrowIfNull(lifetime);
+
             try
             {
-                // Validate URL
-                if (string.IsNullOrWhiteSpace(Url))
-                {
-                    Console.Error.WriteLine("Error: OData service URL is required.");
-                    return 1;
-                }
+                using var toolsHost = await BuildHostAsync(lifetime).ConfigureAwait(false);
 
-                if (!Uri.TryCreate(Url, UriKind.Absolute, out var uri) ||
-                    (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-                {
-                    Console.Error.WriteLine($"Error: Invalid URL: {Url}");
-                    return 1;
-                }
-
-                // Build configuration
-                var configuration = new ConfigurationBuilder()
-                    .AddInMemoryCollection(new Dictionary<string, string?>
-                    {
-                        ["McpServer:ODataService:BaseUrl"] = Url,
-                        ["McpServer:ODataService:Authentication:BearerToken"] = AuthToken,
-                        ["Logging:LogLevel:Default"] = Verbose ? "Debug" : "Information"
-                    })
-                    .Build();
-
-                // Fetch and parse metadata before creating the host
-                EdmModel? edmModel = null;
-                List<McpServerTool>? dynamicTools = null;
-                
-                try
-                {
-                    if (Verbose)
-                    {
-                        Console.Error.WriteLine("Fetching OData metadata...");
-                    }
-                    
-                    using var httpClient = new HttpClient();
-                    if (!string.IsNullOrWhiteSpace(AuthToken))
-                    {
-                        httpClient.DefaultRequestHeaders.Authorization = 
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
-                    }
-                    
-                    var metadataUrl = $"{Url.TrimEnd('/')}/$metadata";
-                    var response = await httpClient.GetAsync(metadataUrl);
-                    response.EnsureSuccessStatusCode();
-                    
-                    var metadataXml = await response.Content.ReadAsStringAsync();
-                    
-                    // Parse the metadata
-                    var parser = new CsdlParser(new NullLogger<CsdlParser>());
-                    edmModel = parser.ParseFromString(metadataXml);
-                    
-                    if (Verbose)
-                    {
-                        Console.Error.WriteLine($"Successfully parsed metadata with {edmModel.EntityTypes.Count} entity types");
-                    }
-                    
-                    // Generate tool definitions - create a temporary HttpClientFactory
-                    var tempServices = new ServiceCollection();
-                    tempServices.AddHttpClient();
-                    var tempProvider = tempServices.BuildServiceProvider();
-                    var httpClientFactory = tempProvider.GetRequiredService<IHttpClientFactory>();
-                    
-                    var toolFactory = new McpToolFactory(
-                        logger: new NullLogger<McpToolFactory>(),
-                        httpClientFactory: httpClientFactory
-                    );
-                    
-                    var options = new McpToolGenerationOptions
-                    {
-                        GenerateCrudTools = true,
-                        GenerateQueryTools = true,
-                        GenerateNavigationTools = true,
-                        IncludeExamples = true,
-                        MaxToolCount = 200,
-                        ToolVersion = "1.0.0"
-                    };
-                    
-                    var toolDefinitions = await toolFactory.GenerateToolsAsync(edmModel, options);
-                    
-                    // Convert to McpServerTools
-                    dynamicTools = new List<McpServerTool>();
-                    foreach (var toolDef in toolDefinitions)
-                    {
-                        // Create a delegate for this specific tool
-                        Func<Dictionary<string, object?>, CancellationToken, Task<string>> toolDelegate = 
-                            async (parameters, ct) => 
-                            {
-                                // Create context for tool execution
-                                var context = new McpToolContext()
-                                {
-                                    Model = edmModel,
-                                    ServiceBaseUrl = Url,
-                                    CancellationToken = ct
-                                };
-                                
-                                // Add important properties from tool definition to context
-                                if (!string.IsNullOrWhiteSpace(toolDef.TargetEntitySet))
-                                {
-                                    context.SetProperty("TargetEntitySet", toolDef.TargetEntitySet);
-                                }
-                                
-                                if (!string.IsNullOrWhiteSpace(toolDef.TargetEntityType))
-                                {
-                                    context.SetProperty("TargetEntityType", toolDef.TargetEntityType);
-                                }
-                                
-                                // Add metadata from tool definition
-                                if (toolDef.Metadata != null)
-                                {
-                                    foreach (var kvp in toolDef.Metadata)
-                                    {
-                                        context.SetProperty(kvp.Key, kvp.Value);
-                                    }
-                                }
-                                
-                                // Execute the tool handler
-                                var jsonParams = JsonDocument.Parse(JsonSerializer.Serialize(parameters, JsonConstants.Default));
-                                var result = await toolDef.Handler(context, jsonParams);
-                                
-                                // Return as JSON string
-                                if (result.IsSuccess && result.Data != null)
-                                {
-                                    if (result.Data is JsonDocument jsonDoc)
-                                    {
-                                        return jsonDoc.RootElement.GetRawText();
-                                    }
-                                    return JsonSerializer.Serialize(result.Data, JsonConstants.Default);
-                                }
-                                else
-                                {
-                                    var errorResponse = new { error = result.ErrorMessage ?? "Operation failed", errorCode = result.ErrorCode };
-                                    return JsonSerializer.Serialize(errorResponse, JsonConstants.Default);
-                                }
-                            };
-                        
-                        // Create McpServerTool from the delegate
-                        var mcpTool = McpServerTool.Create(
-                            toolDelegate,
-                            new McpServerToolCreateOptions
-                            {
-                                Name = toolDef.Name,
-                                Description = toolDef.Description,
-                                ReadOnly = toolDef.OperationType == McpToolOperationType.Read,
-                                Idempotent = toolDef.OperationType == McpToolOperationType.Read || 
-                                            toolDef.OperationType == McpToolOperationType.Delete
-                            }
-                        );
-                        
-                        dynamicTools.Add(mcpTool);
-                    }
-                    
-                    if (Verbose)
-                    {
-                        Console.Error.WriteLine($"Generated {dynamicTools.Count} dynamic MCP tools");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Warning: Could not generate dynamic tools: {ex.Message}");
-                    if (Verbose)
-                    {
-                        Console.Error.WriteLine(ex.ToString());
-                    }
-                    Console.Error.WriteLine("Continuing with static tools only...");
-                }
-
-                // Create cancellation token source for graceful shutdown
-                var cts = new CancellationTokenSource();
-                
-                // Add shutdown tool to dynamic tools if we have a list
-                if (dynamicTools == null)
-                {
-                    dynamicTools = new List<McpServerTool>();
-                }
-                
-                // Create shutdown tool
-                Func<Dictionary<string, object?>, CancellationToken, Task<string>> shutdownDelegate = 
-                    (parameters, ct) => 
-                    {
-                        var reason = parameters.GetValueOrDefault("reason")?.ToString() ?? "User requested shutdown";
-                        var delaySecondsObj = parameters.GetValueOrDefault("delay_seconds");
-                        var delaySeconds = delaySecondsObj != null ? Convert.ToInt32(delaySecondsObj) : 2;
-                        
-                        // Validate delay
-                        if (delaySeconds < 0 || delaySeconds > 10)
-                        {
-                            return Task.FromResult(JsonSerializer.Serialize(new { error = "Delay must be between 0 and 10 seconds" }, JsonConstants.Default));
-                        }
-                        
-                        if (Verbose)
-                        {
-                            Console.Error.WriteLine($"Shutdown requested: {reason}");
-                        }
-                        
-                        // Schedule cancellation after delay to allow response to be sent
-                        _ = Task.Run(async () => 
-                        {
-                            if (delaySeconds > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
-                            }
-                            if (Verbose)
-                            {
-                                Console.Error.WriteLine("Initiating server shutdown...");
-                            }
-                            cts.Cancel();
-                        });
-                        
-                        return Task.FromResult(JsonSerializer.Serialize(new 
-                        { 
-                            message = $"Server shutdown initiated. Reason: {reason}. Shutting down in {delaySeconds} second(s)." 
-                        }, JsonConstants.Default));
-                    };
-                
-                var shutdownTool = McpServerTool.Create(
-                    shutdownDelegate,
-                    new McpServerToolCreateOptions
-                    {
-                        Name = "shutdown_server",
-                        Description = "Gracefully shuts down the OData MCP server",
-                        ReadOnly = false,
-                        Idempotent = false
-                    }
-                );
-                
-                dynamicTools.Add(shutdownTool);
-                
-                if (Verbose)
-                {
-                    Console.Error.WriteLine("Added shutdown_server tool to available tools");
-                }
-
-                // Create and run host
-                var host = Host.CreateDefaultBuilder()
-                    .ConfigureLogging(logging =>
-                    {
-                        logging.ClearProviders();
-                        // MCP protocol requires all logs go to stderr
-                        logging.AddConsole(options =>
-                        {
-                            options.LogToStandardErrorThreshold = LogLevel.Trace;
-                        });
-                        
-                        // Set log levels based on verbosity
-                        if (Verbose)
-                        {
-                            logging.SetMinimumLevel(LogLevel.Debug);
-                        }
-                        else
-                        {
-                            logging.SetMinimumLevel(LogLevel.Information);
-                            // Suppress noisy MCP SDK logs unless verbose
-                            logging.AddFilter("ModelContextProtocol", LogLevel.Warning);
-                        }
-                    })
-                    .ConfigureServices((context, services) =>
-                    {
-                        // Register OData services
-                        services.AddODataMcpCore(configuration);
-                        
-                        // Register the parsed model as singleton to avoid re-fetching
-                        if (edmModel != null)
-                        {
-                            services.AddSingleton(edmModel);
-                        }
-                        
-                        // Configure MCP server with dynamic or static tools
-                        var builder = services.AddMcpServer();
-                        
-                        if (dynamicTools != null && dynamicTools.Count > 0)
-                        {
-                            // Register dynamic tools
-                            builder.WithTools(dynamicTools);
-                            Console.Error.WriteLine($"Registered {dynamicTools.Count} dynamic tools with MCP server");
-                        }
-                        
-                        // Also register static tools
-                        builder.WithODataTools()
-                               .WithStdioServerTransport();
-                        
-                        // Add dynamic tool generation service for logging
-                        // It will use the injected EdmModel if available
-                        services.AddHostedService<DynamicToolGeneratorService>();
-                    })
-                    .Build();
-
-                // Handle Ctrl+C gracefully
-                Console.CancelKeyPress += (sender, e) =>
-                {
-                    if (Verbose)
-                    {
-                        Console.Error.WriteLine("Received interrupt signal, shutting down gracefully...");
-                    }
-                    cts.Cancel();
-                    e.Cancel = true; // Prevent immediate termination
-                };
-                
-                await host.RunAsync(cts.Token);
+                return await RunHostAsync(toolsHost.Host, lifetime.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
                 return 0;
             }
             catch (Exception ex)
@@ -366,11 +280,37 @@ namespace Microsoft.OData.Mcp.Tools.Commands
                 {
                     Console.Error.WriteLine(ex.ToString());
                 }
+
                 return 1;
             }
         }
 
-    }
+        /// <summary>
+        /// Runs a built host until it stops or <paramref name="cancellationToken"/> fires.
+        /// </summary>
+        /// <param name="host">The generic host.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// Exit code 0.
+        /// </returns>
+        internal static async Task<int> RunHostAsync(IHost host, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(host);
 
+            try
+            {
+                await host.RunAsync(cancellationToken).ConfigureAwait(false);
+
+                return 0;
+            }
+            catch (OperationCanceledException)
+            {
+                return 0;
+            }
+        }
+
+        #endregion
+
+    }
 
 }
