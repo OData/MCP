@@ -417,3 +417,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 /nul
+/coverage
+/docs/superpowers/plans
+/specs/Historical Plans
