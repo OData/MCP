@@ -1,0 +1,292 @@
+---
+title: McpHttpContextAccessor
+description: "[IHttpContextAccessor](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.ihttpcontextaccessor) that keeps the MCP request and the in-process O..."
+icon: lock
+tag: "SEALED"
+keywords: ['McpHttpContextAccessor', 'Microsoft.OData.Mcp.AspNetCore.Hosting.McpHttpContextAccessor', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object', 'Microsoft.AspNetCore.Http.IHttpContextAccessor']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.McpHttpContextAccessor
+```
+
+## Summary
+
+[IHttpContextAccessor](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.ihttpcontextaccessor) that keeps the MCP request and the in-process OData
+request as two contexts. [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) always returns [McpHttpContextAccessor.Active](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#active).
+[HttpContext)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.mcphttpcontextaccessor.start(microsoft.aspnetcore.http.httpcontext)) / [McpHttpContextAccessor.End](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#end) change which context is active without using
+Microsoft's `HttpContextAccessor` setter (that setter nulls a shared holder and ends
+the outer request).
+
+## Remarks
+
+Register this as [IHttpContextAccessor](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.ihttpcontextaccessor) after `AddHttpContextAccessor` so
+last-wins DI gives Restier and `DefaultHttpContextFactory` this instance.
+
+Host `Initialize` assigns [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) (sets [McpHttpContextAccessor.Outer](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#outer) and
+[McpHttpContextAccessor.Active](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#active)). Inner execute calls [HttpContext)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.mcphttpcontextaccessor.start(microsoft.aspnetcore.http.httpcontext)), then [McpHttpContextAccessor.End](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#end) in
+`finally`. Host `Dispose` assigns [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null), which poisons the
+holder so every execution context sees request-end.
+
+## Examples
+
+```csharp
+accessor.HttpContext = mcpRequest;
+accessor.Start(odataRequest);
+try
+{
+    await pipeline(odataRequest);
+}
+finally
+{
+    accessor.End();
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+#### Syntax
+
+```csharp
+public McpHttpContextAccessor()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Active
+
+Gets the context [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) returns. [HttpContext)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.mcphttpcontextaccessor.start(microsoft.aspnetcore.http.httpcontext)) and
+[McpHttpContextAccessor.End](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#end) change this without using the setter.
+
+#### Syntax
+
+```csharp
+public Microsoft.AspNetCore.Http.HttpContext Active { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.AspNetCore.Http.HttpContext?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HttpContext
+
+#### Syntax
+
+```csharp
+public Microsoft.AspNetCore.Http.HttpContext HttpContext { get; set; }
+```
+
+#### Property Value
+
+Type: `Microsoft.AspNetCore.Http.HttpContext?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Inner
+
+Gets the in-process OData context, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) if [HttpContext)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.mcphttpcontextaccessor.start(microsoft.aspnetcore.http.httpcontext)) has not run
+or [McpHttpContextAccessor.End](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#end) / request-end has already cleared it.
+
+#### Syntax
+
+```csharp
+public Microsoft.AspNetCore.Http.HttpContext Inner { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.AspNetCore.Http.HttpContext?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Outer
+
+Gets the MCP (incoming) context, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) if the host has not assigned
+[McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) yet.
+
+#### Syntax
+
+```csharp
+public Microsoft.AspNetCore.Http.HttpContext Outer { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.AspNetCore.Http.HttpContext?`
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> End
+
+Makes [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) return [McpHttpContextAccessor.Outer](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#outer) again and clears
+[McpHttpContextAccessor.Inner](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#inner). Does not write to [McpHttpContextAccessor.Outer](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#outer)'s response.
+
+#### Syntax
+
+```csharp
+public void End()
+```
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Start
+
+Makes [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) return *inner* without dropping
+[McpHttpContextAccessor.Outer](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#outer). Do not use the [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) setter for this.
+
+#### Syntax
+
+```csharp
+public void Start(Microsoft.AspNetCore.Http.HttpContext inner)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `inner` | `Microsoft.AspNetCore.Http.HttpContext` | The in-process OData request. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *inner* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+## Related APIs
+
+- Microsoft.AspNetCore.Http.IHttpContextAccessor
+

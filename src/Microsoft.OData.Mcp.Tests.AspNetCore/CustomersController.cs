@@ -28,6 +28,22 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
 
         #endregion
 
+        #region Internal Methods
+
+        /// <summary>
+        /// Restores the seed rows so a shared host can serve the next test method.
+        /// </summary>
+        internal void Reset()
+        {
+            lock (Customers)
+            {
+                Customers.Clear();
+                Customers.AddRange(CustomersController.CreateSeed());
+            }
+        }
+
+        #endregion
+
     }
 
     /// <summary>
@@ -130,7 +146,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
-        /// Updates a customer. Requires an Authorization header.
+        /// Updates a customer. Requires an authenticated user or an Authorization header.
         /// </summary>
         /// <param name="key">The customer key.</param>
         /// <param name="update">The patch body.</param>
@@ -140,7 +156,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         [HttpPatch]
         public IActionResult Patch(int key, [FromBody] Customer update)
         {
-            if (!Request.Headers.ContainsKey("Authorization"))
+            if (User.Identity?.IsAuthenticated != true && !Request.Headers.ContainsKey("Authorization"))
             {
                 return Unauthorized();
             }
@@ -164,7 +180,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
-        /// Creates a customer. Requires an Authorization header and a company name.
+        /// Creates a customer. Requires an authenticated user or an Authorization header, and a company name.
         /// </summary>
         /// <param name="customer">The customer body.</param>
         /// <returns>
@@ -173,7 +189,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         [HttpPost]
         public IActionResult Post([FromBody] Customer customer)
         {
-            if (!Request.Headers.ContainsKey("Authorization"))
+            if (User.Identity?.IsAuthenticated != true && !Request.Headers.ContainsKey("Authorization"))
             {
                 return Unauthorized();
             }

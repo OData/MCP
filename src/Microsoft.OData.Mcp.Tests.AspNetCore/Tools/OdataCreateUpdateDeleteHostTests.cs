@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -303,22 +302,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
-        /// Puts a Bearer token on the in-process HTTP context so CUD forwards Authorization.
+        /// Marks the outer context authenticated so in-process CUD copies <see cref="HttpContext.User"/>.
         /// </summary>
         internal void Authorize()
         {
-            var accessor = TestServer.Services.GetRequiredService<IHttpContextAccessor>();
-            if (accessor.HttpContext is null)
-            {
-                accessor.HttpContext = new DefaultHttpContext
-                {
-                    RequestServices = TestServer.Services
-                };
-                accessor.HttpContext.Request.Scheme = "http";
-                accessor.HttpContext.Request.Host = new HostString("localhost");
-            }
-
-            accessor.HttpContext.Request.Headers.Authorization = "Bearer test";
+            Authenticate();
         }
 
         #endregion

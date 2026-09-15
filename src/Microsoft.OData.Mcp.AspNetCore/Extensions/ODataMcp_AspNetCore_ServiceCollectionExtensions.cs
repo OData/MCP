@@ -2,14 +2,11 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Authentication;
-using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
 using ModelContextProtocol.Server;
@@ -105,13 +102,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions<ODataMcpHostOptions>().Configure(configure);
             services.AddHttpContextAccessor();
-            services.AddHttpClient(InProcessODataExecutor.HttpClientName, client =>
-                {
-                    client.BaseAddress = new Uri("http://localhost/");
-                    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
-                })
-                .ConfigurePrimaryHttpMessageHandler(sp =>
-                    InProcessODataExecutor.TryCreateServerHandler(sp.GetService<IServer>()) ?? new SocketsHttpHandler());
+            services.TryAddSingleton<McpHttpContextAccessor>();
+            services.AddSingleton<IHttpContextAccessor>(sp => sp.GetRequiredService<McpHttpContextAccessor>());
+            services.TryAddSingleton<ODataMcpPipeline>();
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ODataMcpPipelineStartupFilter>());
 
             services.TryAddSingleton<ODataMcpSessionFactory>();
 

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
@@ -56,6 +57,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             MapRestierAction = routeBuilder =>
             {
                 routeBuilder.MapApiRoute<McpCustomerApi>("odata", "odata");
+            };
+            ApplicationBuilderLastAction = app =>
+            {
+                app.UseODataMcp();
             };
         }
 

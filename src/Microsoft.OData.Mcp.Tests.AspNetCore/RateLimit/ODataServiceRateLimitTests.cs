@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Execution;
@@ -326,8 +325,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit
         /// </returns>
         internal ODataToolRuntime RemoteRuntime()
         {
-            var handler = InProcessODataExecutor.TryCreateServerHandler(TestServer);
-            handler.Should().NotBeNull();
+            var handler = TestServer.CreateHandler();
             var catalog = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Catalog;
 
             return new ODataToolRuntime(catalog, new RemoteODataExecutor(new LocalhostTestServerFactory(handler!, new Uri("http://localhost/odata/"))));

@@ -10,14 +10,12 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
 {
 
     /// <summary>
-    /// Locks the default values, <see cref="OutboundOAuthOptions.Validate"/> rules, and
-    /// <see cref="OutboundOAuthOptions.FromEnvironment(OutboundOAuthOptions)"/> environment binding of
+    /// Locks the default values and <see cref="OutboundOAuthOptions.Validate"/> rules of
     /// <see cref="OutboundOAuthOptions"/>.
     /// </summary>
     /// <remarks>
-    /// Every test that sets an environment variable restores it in a <c>finally</c> block; this class is not
-    /// safe to run in parallel with itself, which is why the assembly-wide <c>Parallelize(Workers = 1)</c>
-    /// attribute in <c>Directory.Build.props</c> applies.
+    /// Environment-variable binding tests belong to the deferred per-service secret store in
+    /// <c>specs/v3/CLIENT-SECRETS.md</c>, not here.
     /// </remarks>
     [TestClass]
     public class OutboundOAuthOptionsTests
@@ -32,103 +30,6 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
         public void AuthTimeout_Default_Is300Seconds()
         {
             new OutboundOAuthOptions().AuthTimeout.Should().Be(TimeSpan.FromSeconds(300));
-        }
-
-        /// <summary>
-        /// <see cref="OutboundOAuthOptions.FromEnvironment(OutboundOAuthOptions)"/> leaves an explicit
-        /// <see cref="OutboundOAuthOptions.ClientSecret"/> untouched even when the environment variable is set.
-        /// </summary>
-        [TestMethod]
-        public void FromEnvironment_ClientSecretAlreadySet_DoesNotOverwrite()
-        {
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
-            try
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "from-environment");
-                var options = new OutboundOAuthOptions
-                {
-                    ClientSecret = "explicit-secret"
-                };
-
-                OutboundOAuthOptions.FromEnvironment(options);
-
-                options.ClientSecret.Should().Be("explicit-secret");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
-            }
-        }
-
-        /// <summary>
-        /// <see cref="OutboundOAuthOptions.FromEnvironment(OutboundOAuthOptions)"/> binds
-        /// <see cref="OutboundOAuthOptions.ClientSecret"/> from <c>ODATA_MCP_CLIENT_SECRET</c> when unset.
-        /// </summary>
-        [TestMethod]
-        public void FromEnvironment_ClientSecretUnset_BindsFromEnvironmentVariable()
-        {
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
-            try
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "from-environment");
-                var options = new OutboundOAuthOptions();
-
-                OutboundOAuthOptions.FromEnvironment(options);
-
-                options.ClientSecret.Should().Be("from-environment");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
-            }
-        }
-
-        /// <summary>
-        /// <see cref="OutboundOAuthOptions.FromEnvironment(OutboundOAuthOptions)"/> sets
-        /// <see cref="OutboundOAuthOptions.HasEnvironmentIdToken"/> when <c>ODATA_MCP_ID_TOKEN</c> is present and
-        /// <see cref="OutboundOAuthOptions.IdpIdTokenFile"/> is unset.
-        /// </summary>
-        [TestMethod]
-        public void FromEnvironment_IdTokenVariableSet_SetsHasEnvironmentIdToken()
-        {
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable);
-            try
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable, "an-id-token");
-                var options = new OutboundOAuthOptions();
-
-                OutboundOAuthOptions.FromEnvironment(options);
-
-                options.HasEnvironmentIdToken.Should().BeTrue();
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable, previous);
-            }
-        }
-
-        /// <summary>
-        /// <see cref="OutboundOAuthOptions.FromEnvironment(OutboundOAuthOptions)"/> leaves
-        /// <see cref="OutboundOAuthOptions.HasEnvironmentIdToken"/> <see langword="false"/> when
-        /// <c>ODATA_MCP_ID_TOKEN</c> is not set.
-        /// </summary>
-        [TestMethod]
-        public void FromEnvironment_IdTokenVariableUnset_LeavesHasEnvironmentIdTokenFalse()
-        {
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable);
-            try
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable, null);
-                var options = new OutboundOAuthOptions();
-
-                OutboundOAuthOptions.FromEnvironment(options);
-
-                options.HasEnvironmentIdToken.Should().BeFalse();
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.IdTokenEnvironmentVariable, previous);
-            }
         }
 
         /// <summary>

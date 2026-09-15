@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
@@ -17,6 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
+
 
     /// <summary>
     /// Hop-1 resource-enforcement tests: a request with no <c>Authorization</c> header is 401. These tests are
@@ -65,7 +65,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             denied.IsError.Should().BeTrue();
             denied.Text.Should().Contain("status 401");
 
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
+            Authenticate();
             var allowed = await runtime.InvokeAsync(
                 "odata_create",
                 ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"NeedAuth"}"""),
@@ -121,66 +121,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             updated.IsError.Should().BeTrue();
             updated.Text.Should().Contain("status 401");
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Hop-1 resource-enforcement tests for the named <c>create_customer</c>/<c>update_customer</c> tools on the
-    /// convention simple model. Not linked into <c>Microsoft.OData.Mcp.Tests.Authentication</c>; see
-    /// <see cref="AuthEnforcementHostTests"/>.
-    /// </summary>
-    [TestClass]
-    public class NamedCrudAuthEnforcementHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Unauthenticated named create is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task CreateCustomer_OData8_NoAuth_401()
-        {
-            var result = await InvokeAsync("create_customer", ToolArguments.Of("CompanyName", "NoAuthNamed"));
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
-        }
-
-        /// <summary>
-        /// Unauthenticated named update is 401.
-        /// </summary>
-        [TestMethod]
-        public async Task UpdateCustomer_OData8_NoAuth_401()
-        {
-            var result = await InvokeAsync(
-                "update_customer",
-                ToolArguments.Of("key", "1", "body", """{"CompanyName":"X"}"""));
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("status 401");
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<CustomerStore>();
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetSimpleModel());
-                });
-            services.AddODataMcp();
         }
 
         #endregion

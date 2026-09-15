@@ -43,6 +43,7 @@
     <!-- Linked verbatim from the in-process OData 8 suite; only ConventionRichHost is redefined here (TESTING.md §8). -->
     <ItemGroup>
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\CustomersController.cs" Link="Linked\CustomersController.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\AuthDeletesController.cs" Link="Linked\Fixtures\AuthDeletesController.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\DocumentsController.cs" Link="Linked\Fixtures\DocumentsController.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\FlagsController.cs" Link="Linked\Fixtures\FlagsController.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Fixtures\McpJsonRpc.cs" Link="Linked\Fixtures\McpJsonRpc.cs" />
@@ -61,8 +62,19 @@
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\RateLimit\RateLimitBudget.cs" Link="Linked\RateLimit\RateLimitBudget.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Security\McpJsonContent.cs" Link="Linked\Security\McpJsonContent.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Security\TestJwt.cs" Link="Linked\Security\TestJwt.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\DescribeType*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\FewTablesToolHost.cs" Link="Linked\Tools\FewTablesToolHost.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\ListEntitySets*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudCapHostTests.cs" Link="Linked\Tools\NamedCrudCapHostTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudHostTests.cs" Link="Linked\Tools\NamedCrudHostTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudPagingHostTests.cs" Link="Linked\Tools\NamedCrudPagingHostTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudRateLimitHostTests.cs" Link="Linked\Tools\NamedCrudRateLimitHostTests.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudRichHostTests.cs" Link="Linked\Tools\NamedCrudRichHostTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\Odata*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\OperationsOnlyToolHost.cs" Link="Linked\Tools\OperationsOnlyToolHost.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\RateLimitedRichHost.cs" Link="Linked\Tools\RateLimitedRichHost.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\TinyResponseRichHost.cs" Link="Linked\Tools\TinyResponseRichHost.cs" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\WideModelToolHost.cs" Link="Linked\Tools\WideModelToolHost.cs" />
     </ItemGroup>
 
 </Project>

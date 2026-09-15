@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
@@ -55,6 +56,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         #region Fields
 
         /// <summary>
+        /// One Breakdance + outbound Tools host per derived test class.
+        /// </summary>
+        internal static readonly ConcurrentDictionary<Type, OutboundRestierHostLease> HostLeases = new();
+
+        /// <summary>
         /// The name of the in-memory EF Core database backing this test class's <see cref="McpCustomerApi"/> instance.
         /// </summary>
         internal readonly string _databaseName;
@@ -72,6 +78,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Gets the Tools host fixture that owns the outbound session, or <see langword="null"/> before setup.
         /// </summary>
         internal OutboundToolsHostFixture? Outbound { get; set; }
+
+        /// <summary>
+        /// Gets the Breakdance <c>TestServer</c> the class host owns, even when this instance did not build it.
+        /// </summary>
+        internal Microsoft.AspNetCore.TestHost.TestServer SharedTestServer
+        {
+            get
+            {
+                return HostLeases.TryGetValue(GetType(), out var lease) ? lease.Owner.TestServer : TestServer;
+            }
+        }
 
         #endregion
 
@@ -117,34 +134,29 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         #region Public Methods
 
         /// <summary>
-        /// Registers MCP through <see cref="ConfigureServices"/>, starts the secured Restier host, and builds
-        /// the outbound Tools host that talks to it.
+        /// Attaches this test method to the class's shared secured Restier host and outbound Tools session.
         /// </summary>
+        /// <remarks>
+        /// Breakdance's <c>TestSetup</c> and <see cref="OutboundToolsHostFixture.CreateSessionAsync"/> run the
+        /// full OAuth handshake. Doing that on every method is what made this suite take minutes per TFM.
+        /// The host is built once per derived class; the customer seed is reset so write tests cannot leak.
+        /// </remarks>
         [TestInitialize]
         public void Setup()
         {
-            AuthorizationServer = new LocalAuthorizationServer(CreateAuthorizationServerOptions());
-            TestHostBuilder.ConfigureServices((_, services) =>
-            {
-                services.AddSecuredResource(AuthorizationServer);
-                ConfigureServices(services);
-            });
-            TestSetup();
-
-            Outbound = new OutboundToolsHostFixture(AuthorizationServer, TestServer, new Uri("http://localhost/odata/"));
-            Outbound.Options = CreateOutboundOptions();
-            Outbound.CreateSessionAsync(HostCatalogOptions(), CancellationToken.None).GetAwaiter().GetResult();
+            var lease = HostLeases.GetOrAdd(GetType(), _ => CreateHostLease());
+            AuthorizationServer = lease.AuthorizationServer;
+            Outbound = lease.Outbound;
+            lease.ResetCustomerStore();
+            lease.Outbound.Capture.Clear();
         }
 
         /// <summary>
-        /// Tears down the outbound host, the secured Restier host, and the authorization server.
+        /// Intentionally empty: the class host is disposed in <see cref="DisposeHostLeases"/>.
         /// </summary>
         [TestCleanup]
         public void TearDown()
         {
-            Outbound?.Dispose();
-            TestTearDown();
-            AuthorizationServer?.Dispose();
         }
 
         #endregion
@@ -206,6 +218,29 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
+        /// Builds the secured Restier host and the outbound Tools session for this derived class.
+        /// </summary>
+        /// <returns>
+        /// The lease the rest of the class shares.
+        /// </returns>
+        internal OutboundRestierHostLease CreateHostLease()
+        {
+            AuthorizationServer = new LocalAuthorizationServer(CreateAuthorizationServerOptions());
+            TestHostBuilder.ConfigureServices((_, services) =>
+            {
+                services.AddSecuredResource(AuthorizationServer);
+                ConfigureServices(services);
+            });
+            TestSetup();
+
+            Outbound = new OutboundToolsHostFixture(AuthorizationServer, TestServer, new Uri("http://localhost/odata/"));
+            Outbound.Options = CreateOutboundOptions();
+            Outbound.CreateSessionAsync(HostCatalogOptions(), CancellationToken.None).GetAwaiter().GetResult();
+
+            return new OutboundRestierHostLease(this, AuthorizationServer, Outbound);
+        }
+
+        /// <summary>
         /// Builds the outbound authentication settings the Tools host signs in with. Override to pin a grant,
         /// paste an explicit token, or change the client identifier.
         /// </summary>
@@ -218,6 +253,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
+        /// Disposes every shared Restier + outbound host this assembly still holds.
+        /// </summary>
+        internal static void DisposeHostLeases()
+        {
+            foreach (var type in HostLeases.Keys)
+            {
+                if (HostLeases.TryRemove(type, out var lease))
+                {
+                    lease.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the catalog options the embedding host was configured with, which the outbound session's
         /// catalog is built from.
         /// </summary>
@@ -226,7 +275,23 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// </returns>
         internal ODataMcpCatalogOptions HostCatalogOptions()
         {
-            return TestServer.Services.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value.Catalog;
+            return SharedTestServer.Services.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value.Catalog;
+        }
+
+        /// <summary>
+        /// Restores the two-row customer seed on the shared in-memory database.
+        /// </summary>
+        internal void ResetCustomerStore()
+        {
+            var container = GetScopedRequestContainer("odata", useEndpointRouting: true);
+            try
+            {
+                RestierTestSeed.ResetCustomers(container.GetRequiredService<McpCustomerContext>());
+            }
+            finally
+            {
+                (container as IDisposable)?.Dispose();
+            }
         }
 
         /// <summary>
@@ -249,6 +314,78 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         internal virtual ODataMcpSession Session()
         {
             return Outbound!.Session;
+        }
+
+        #endregion
+
+    }
+
+    /// <summary>
+    /// The Breakdance Restier host and outbound Tools session one derived test class shares.
+    /// </summary>
+    internal sealed class OutboundRestierHostLease : IDisposable
+    {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the authorization server protecting the host.
+        /// </summary>
+        internal LocalAuthorizationServer AuthorizationServer { get; }
+
+        /// <summary>
+        /// Gets the outbound Tools fixture.
+        /// </summary>
+        internal OutboundToolsHostFixture Outbound { get; }
+
+        /// <summary>
+        /// Gets the Breakdance instance that owns <see cref="RestierBreakdanceTestBase{TApi}.TestServer"/>.
+        /// </summary>
+        internal RestierToolTestBase Owner { get; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OutboundRestierHostLease"/> class.
+        /// </summary>
+        /// <param name="owner">The Breakdance instance whose <c>TestSetup</c> built the host.</param>
+        /// <param name="authorizationServer">The authorization server protecting the host.</param>
+        /// <param name="outbound">The outbound Tools fixture.</param>
+        internal OutboundRestierHostLease(RestierToolTestBase owner, LocalAuthorizationServer authorizationServer, OutboundToolsHostFixture outbound)
+        {
+            ArgumentNullException.ThrowIfNull(owner);
+            ArgumentNullException.ThrowIfNull(authorizationServer);
+            ArgumentNullException.ThrowIfNull(outbound);
+
+            Owner = owner;
+            AuthorizationServer = authorizationServer;
+            Outbound = outbound;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Outbound.Dispose();
+            Owner.TestTearDown();
+            AuthorizationServer.Dispose();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Restores the two-row customer seed on the shared in-memory database.
+        /// </summary>
+        internal void ResetCustomerStore()
+        {
+            Owner.ResetCustomerStore();
         }
 
         #endregion

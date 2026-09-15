@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Parsing;
-using Microsoft.OData.Mcp.Tests.Core.Parsing;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

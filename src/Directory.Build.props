@@ -132,11 +132,11 @@
         <PackageReference Include="Breakdance.Extensions.MSTest2" Version="8.*-*" />
         <PackageReference Include="coverlet.msbuild" Version="6.*" PrivateAssets="All" />
 
-        <!-- Enable parallel test execution in MSTest 4 and later. -->
+        <!-- Class-level: methods in one class stay serial (shared Breakdance hosts). Workers=0 is processor count. -->
         <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.Parallelize">
-            <_Parameter1>Workers = 1</_Parameter1>
+            <_Parameter1>Workers = 0</_Parameter1>
             <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
-            <_Parameter2>Scope = Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</_Parameter2>
+            <_Parameter2>Scope = Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.ClassLevel</_Parameter2>
             <_Parameter2_IsLiteral>true</_Parameter2_IsLiteral>
         </AssemblyAttribute>
 

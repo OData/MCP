@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,12 +13,12 @@ using CloudNimble.Breakdance.AspNetCore;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using Microsoft.OData.Mcp.Tests.AspNetCore.Execution;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Security;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -208,21 +209,22 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Query
         }
 
         /// <summary>
-        /// In-process execute forwards JSON bodies and authorization from HTTP context.
+        /// In-process execute forwards JSON bodies and the authenticated user from HTTP context.
         /// </summary>
         [TestMethod]
-        public async Task InProcessExecutor_ExecuteAsync_PostsBodyAndAuthorization()
+        public async Task InProcessExecutor_ExecuteAsync_PostsBodyAndUser()
         {
-            var handler = InProcessODataExecutor.TryCreateServerHandler(TestServer);
-            handler.Should().NotBeNull();
-            var accessor = new Microsoft.AspNetCore.Http.HttpContextAccessor
+            var accessor = TestServer.Services.GetRequiredService<McpHttpContextAccessor>();
+            accessor.HttpContext = new DefaultHttpContext
             {
-                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext()
+                RequestServices = TestServer.Services
             };
-            accessor.HttpContext.Request.Scheme = "http";
-            accessor.HttpContext.Request.Host = new Microsoft.AspNetCore.Http.HostString("localhost");
-            accessor.HttpContext.Request.Headers.Authorization = "Bearer test-token";
-            var executor = new InProcessODataExecutor(new TestServerHandlerFactory(handler!), accessor, "odata");
+            accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity("test"));
+            var executor = new InProcessODataExecutor(
+                TestServer.Services.GetRequiredService<ODataMcpPipeline>(),
+                accessor,
+                TestServer.Services.GetRequiredService<IServiceScopeFactory>(),
+                "odata");
             var created = await executor.ExecuteAsync(
                 new Microsoft.OData.Mcp.Core.Execution.ODataExecuteRequest
                 {

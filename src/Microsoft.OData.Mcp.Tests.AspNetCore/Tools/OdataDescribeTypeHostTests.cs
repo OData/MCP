@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
 
+
     /// <summary>
     /// A8 host tests for <c>odata_describe_type</c> on the rich convention model.
     /// </summary>
@@ -454,97 +455,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             root.ValueKind.Should().Be(JsonValueKind.Object);
 
             return root.EnumerateObject().Should().ContainSingle().Subject.Value;
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Describes a type when the response size guard is tiny.
-    /// </summary>
-    [TestClass]
-    public class DescribeTypeTinyResponseHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// A tiny <c>MaxResponseBytes</c> rejects the type card.
-        /// </summary>
-        [TestMethod]
-        public async Task DescribeType_MaxResponseBytesTiny_IsError()
-        {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Customers"));
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("select").And.Contain("top");
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetRichModel());
-                });
-            services.AddODataMcp(options =>
-            {
-                options.Catalog.MaxResponseBytes = 10;
-            });
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Describes a set on a 200-entity-set model.
-    /// </summary>
-    [TestClass]
-    public class DescribeTypeWideModelHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Describing <c>Rows000</c> succeeds.
-        /// </summary>
-        [TestMethod]
-        public async Task DescribeType_WideModel_DescribeRows000_Succeeds()
-        {
-            var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Rows000", "format", "json"));
-
-            result.IsError.Should().BeFalse(result.Text);
-            OdataDescribeTypeHostTests.ReadKeys(result.StructuredContent).Should().Contain("Id");
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddControllers()
-                .AddOData(options =>
-                {
-                    options.AddRouteComponents("odata", TestModels.GetWideModel(200));
-                });
-            services.AddODataMcp(options =>
-            {
-                options.Catalog.MaxNamedTools = 150;
-                options.Catalog.MaxResources = 50;
-            });
         }
 
         #endregion

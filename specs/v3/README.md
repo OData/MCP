@@ -38,6 +38,8 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [AUTHENTICATION.md](./AUTHENTICATION.md) | Local MCP → OData HTTP OAuth (SDK 2.2). Colocated MCP HTTP and OData HTTP share one RFC 9728 document. |
 | [INVENTORY.md](./INVENTORY.md) | Concept keep vs implementation delete |
 | [EXECUTION-PLAN.md](./EXECUTION-PLAN.md) | **Complete.** Catalog + hosts + tools. Do not implement from it. |
+| [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md) | AspNetCore tool calls invoke this process’s pipeline; `McpHttpContextAccessor` Start/End; inner body is the tool payload |
+| [CLIENT-SECRETS.md](./CLIENT-SECRETS.md) | Global `ODATA_MCP_CLIENT_SECRET` cannot serve six MCP servers; per-service store is deferred |
 
 ---
 

@@ -1,0 +1,209 @@
+---
+title: ODataMcpPipelineStartupFilter
+description: "Captures the application `RequestDelegate` when MCP is on so tool calls can invoke routing in-process instead of looping back through the server."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpPipelineStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipelineStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object', 'Microsoft.AspNetCore.Hosting.IStartupFilter']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipelineStartupFilter
+```
+
+## Summary
+
+Captures the application `RequestDelegate` when MCP is on so tool calls can invoke
+routing in-process instead of looping back through the server.
+
+## Remarks
+
+Registered by `AddODataMcp` because [IStartupFilter](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.hosting.istartupfilter) must be in DI before
+`Build()`. Capture always runs so it can wrap the app's `Configure` (including
+`UseODataMcp`). Execution still requires [ODataMcpPipeline.IsEnabled](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipeline#isenabled).
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Initializes a new instance of the [ODataMcpPipelineStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipelineStartupFilter) class.
+
+#### Syntax
+
+```csharp
+public ODataMcpPipelineStartupFilter(Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipeline pipeline)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `pipeline` | `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipeline` | Host-lifetime pipeline capture. |
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *pipeline* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Configure
+
+#### Syntax
+
+```csharp
+public System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `next` | `System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>` | - |
+
+#### Returns
+
+Type: `System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+## Related APIs
+
+- Microsoft.AspNetCore.Hosting.IStartupFilter
+

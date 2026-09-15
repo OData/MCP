@@ -54,6 +54,16 @@ namespace Microsoft.OData.Mcp.Tests.Shared
         #region Public Methods
 
         /// <inheritdoc />
+        /// <summary>
+        /// Forgets recorded requests so a shared host can serve the next test method.
+        /// </summary>
+        public void Clear()
+        {
+            Last = null;
+            Requests.Clear();
+        }
+
+        /// <inheritdoc />
         public Task<ODataExecuteResult> ExecuteAsync(ODataExecuteRequest request, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(request);

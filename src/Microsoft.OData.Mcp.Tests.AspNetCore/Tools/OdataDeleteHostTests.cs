@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,6 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit;
 using Microsoft.OData.Mcp.Tests.Shared;
@@ -31,6 +31,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
+
 
     /// <summary>
     /// AspNetCore × OData 8 <c>odata_delete</c> against the convention rich host.
@@ -616,20 +617,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
-        /// Creates a capturing runtime and stamps Authorization on the current HTTP context.
-        /// </summary>
-        /// <returns>
-        /// Runtime and capture.
-        /// </returns>
-        internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) AuthorizedCapture()
-        {
-            var pair = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-
-            return pair;
-        }
-
-        /// <summary>
         /// Reads a customer key from an OData JSON payload.
         /// </summary>
         /// <param name="json">The payload.</param>
@@ -648,244 +635,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             }
 
             throw new InvalidOperationException(json);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// DELETE that requires Authorization, isolated from <see cref="CustomersController"/>.
-    /// </summary>
-    [TestClass]
-    public class OdataDeleteAuthFixtureHostTests : AspNetCoreBreakdanceTestBase
-    {
-
-        #region Test Lifecycle
-
-        /// <summary>
-        /// Builds a host whose delete action requires Authorization.
-        /// </summary>
-        [TestInitialize]
-        public void Setup()
-        {
-            TestHostBuilder.ConfigureServices((_, services) =>
-            {
-                var builder = new ODataConventionModelBuilder();
-                builder.EntitySet<Customer>("AuthDeletes");
-                services
-                    .AddControllers()
-                    .AddApplicationPart(typeof(AuthDeletesController).Assembly)
-                    .AddOData(options =>
-                    {
-                        options.EnableQueryFeatures();
-                        options.AddRouteComponents("odata", builder.GetEdmModel());
-                    });
-                services.AddODataMcp();
-            });
-            AddMinimalMvc();
-            TestHostBuilder.ConfigureWebHost(web =>
-            {
-                web.Configure(app =>
-                {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => endpoints.MapControllers());
-                    app.UseODataMcp();
-                });
-            });
-            TestSetup();
-        }
-
-        /// <summary>
-        /// Tears down the host.
-        /// </summary>
-        [TestCleanup]
-        public void TearDown()
-        {
-            TestTearDown();
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Unauthenticated delete is 401; forwarding Authorization succeeds.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataDelete_Unauthorized_401()
-        {
-            var runtime = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Runtime;
-            var denied = await runtime.InvokeAsync(
-                "odata_delete",
-                ToolArguments.Of("entitySet", "AuthDeletes", "key", "1"),
-                CancellationToken.None);
-            denied.IsError.Should().BeTrue();
-            denied.Text.Should().Contain("status 401");
-
-            var accessor = TestServer.Services.GetRequiredService<IHttpContextAccessor>();
-            accessor.HttpContext = new DefaultHttpContext { RequestServices = TestServer.Services };
-            accessor.HttpContext.Request.Scheme = "http";
-            accessor.HttpContext.Request.Host = new HostString("localhost");
-            accessor.HttpContext.Request.Headers.Authorization = "Bearer test";
-            var allowed = await runtime.InvokeAsync(
-                "odata_delete",
-                ToolArguments.Of("entitySet", "AuthDeletes", "key", "1"),
-                CancellationToken.None);
-            allowed.IsError.Should().BeFalse(allowed.Text);
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Creates an HTTP client for direct OData calls against the host under test.
-        /// </summary>
-        /// <returns>
-        /// The client.
-        /// </returns>
-        internal HttpClient CreateClient()
-        {
-            return TestServer.CreateClient();
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Delete tests against partitioned rate limits.
-    /// </summary>
-    [TestClass]
-    public class OdataDeleteRateLimitHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// A second MCP POST is HTTP 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataDelete_McpHttp429()
-        {
-            using var client = CreateClient();
-            using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
-            first.StatusCode.Should().NotBe((HttpStatusCode)429);
-            using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
-            second.StatusCode.Should().Be((HttpStatusCode)429);
-        }
-
-        /// <summary>
-        /// A second Customers DELETE is tool 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataDelete_SetRateLimit429()
-        {
-            var (runtime, _) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var created = await runtime.InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"RateDel1"}"""),
-                CancellationToken.None);
-            created.IsError.Should().BeFalse(created.Text);
-            var key = OdataDeleteHostTests.ReadCustomerId(created.StructuredContent!);
-            var deleted = await runtime.InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", key.ToString()), CancellationToken.None);
-            deleted.IsError.Should().BeTrue();
-            deleted.Text.Should().Contain("429");
-        }
-
-        /// <summary>
-        /// 204 responses are unaffected by a tiny max-response cap.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataDelete_MaxResponseBytesIrrelevantOn204()
-        {
-            var (runtime, capture) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var created = await runtime.InvokeAsync(
-                "odata_create",
-                ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"TinyDel"}"""),
-                CancellationToken.None);
-            if (created.IsError)
-            {
-                created.Text.Should().Match(text => text.Contains("401", StringComparison.Ordinal) || text.Contains("429", StringComparison.Ordinal));
-                return;
-            }
-
-            var key = OdataDeleteHostTests.ReadCustomerId(created.StructuredContent!);
-            capture.Requests.Clear();
-            var deleted = await runtime.InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Customers", "key", key.ToString()), CancellationToken.None);
-            deleted.Should().NotBeNull();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureApp(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseRateLimiter();
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
-            app.UseODataMcp();
-        }
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRateLimiter(options => ODataPartitionedLimiter.Apply(options, new RateLimitBudget
-            {
-                Customers = 1,
-                Function = 1,
-                Mcp = 1,
-                Products = 2
-            }));
-            base.ConfigureServices(services);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Entity set whose DELETE requires an Authorization header.
-    /// </summary>
-    public sealed class AuthDeletesController : ODataController
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Deletes when Authorization is present.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>
-        /// 401 or 204.
-        /// </returns>
-        [HttpDelete]
-        public IActionResult Delete(int key)
-        {
-            if (!Request.Headers.ContainsKey("Authorization"))
-            {
-                return Unauthorized();
-            }
-
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Returns an empty set.
-        /// </summary>
-        /// <returns>
-        /// Empty query.
-        /// </returns>
-        [EnableQuery]
-        [HttpGet]
-        public IQueryable<Customer> Get()
-        {
-            return Enumerable.Empty<Customer>().AsQueryable();
         }
 
         #endregion

@@ -2,8 +2,10 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Authentication.Outbound;
 using Microsoft.OData.Mcp.Core.Catalog;
+using Microsoft.OData.Mcp.Tests.AspNetCore;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.OData.Mcp.Tests.Shared.Authentication;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
@@ -63,6 +66,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
     public abstract class ConventionRichHost : AspNetCoreBreakdanceTestBase
     {
 
+        #region Fields
+
+        /// <summary>
+        /// One Breakdance + outbound Tools host per derived test class.
+        /// </summary>
+        internal static readonly ConcurrentDictionary<Type, OutboundConventionHostLease> HostLeases = new();
+
+        /// <summary>
+        /// A per-method host, used when the class cannot share a limiter or other process-wide budget.
+        /// </summary>
+        internal OutboundConventionHostLease? _ephemeralLease;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -74,6 +91,37 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         /// Gets the Tools host fixture that owns the outbound session, or <see langword="null"/> before setup.
         /// </summary>
         internal OutboundToolsHostFixture? Outbound { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this class can keep one outbound host for every method.
+        /// </summary>
+        /// <remarks>
+        /// Rate-limit suites spend a partition budget; sharing the host makes the second method start already 429.
+        /// Linked tests are not edited to say so — the class name is the signal.
+        /// </remarks>
+        internal bool ReusesHostPerClass
+        {
+            get
+            {
+                return GetType().Name.IndexOf("RateLimit", StringComparison.OrdinalIgnoreCase) < 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Breakdance <c>TestServer</c> the class host owns, even when this instance did not build it.
+        /// </summary>
+        internal Microsoft.AspNetCore.TestHost.TestServer SharedTestServer
+        {
+            get
+            {
+                if (_ephemeralLease is not null)
+                {
+                    return _ephemeralLease.Owner.TestServer;
+                }
+
+                return HostLeases.TryGetValue(GetType(), out var lease) ? lease.Owner.TestServer : TestServer;
+            }
+        }
 
         #endregion
 
@@ -92,42 +140,65 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         [TestInitialize]
         public void Setup()
         {
-            AuthorizationServer = new LocalAuthorizationServer(CreateAuthorizationServerOptions());
-            TestHostBuilder.ConfigureServices((_, services) =>
-            {
-                services.AddSecuredResource(AuthorizationServer);
-                ConfigureServices(services);
-                services.AddMvcCore().AddApplicationPart(typeof(MetadataController).Assembly);
-            });
-            AddMinimalMvc();
-            TestHostBuilder.ConfigureWebHost(web =>
-            {
-                web.Configure(app =>
-                {
-                    ConfigureApp(app);
-                });
-            });
-            TestSetup();
-
-            Outbound = new OutboundToolsHostFixture(AuthorizationServer, TestServer, new Uri("http://localhost/odata/"));
-            Outbound.Options = CreateOutboundOptions();
-            Outbound.CreateSessionAsync(HostCatalogOptions(), CancellationToken.None).GetAwaiter().GetResult();
+            var lease = ReusesHostPerClass
+                ? HostLeases.GetOrAdd(GetType(), _ => CreateHostLease())
+                : _ephemeralLease = CreateHostLease();
+            AuthorizationServer = lease.AuthorizationServer;
+            Outbound = lease.Outbound;
+            lease.ResetStores();
+            lease.Outbound.Capture.Clear();
         }
 
         /// <summary>
-        /// Tears down the outbound host, the secured host, and the authorization server.
+        /// Disposes a per-method host. Class-scoped hosts live until <see cref="DisposeHostLeases"/>.
         /// </summary>
         [TestCleanup]
         public void TearDown()
         {
-            Outbound?.Dispose();
-            TestTearDown();
-            AuthorizationServer?.Dispose();
+            _ephemeralLease?.Dispose();
+            _ephemeralLease = null;
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Marks the outer MCP context as authenticated so in-process CUD copies <see cref="HttpContext.User"/>.
+        /// </summary>
+        /// <remarks>
+        /// Linked in-process tests call this. Outbound already sends a bearer token; this still seeds
+        /// <see cref="IHttpContextAccessor"/> so those tests can stamp headers on <c>HttpContext</c>.
+        /// </remarks>
+        internal void Authenticate()
+        {
+            var accessor = SharedTestServer.Services.GetRequiredService<IHttpContextAccessor>();
+            if (accessor.HttpContext is null)
+            {
+                accessor.HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = SharedTestServer.Services
+                };
+                accessor.HttpContext.Request.Scheme = "http";
+                accessor.HttpContext.Request.Host = new HostString("localhost");
+            }
+
+            accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity("test"));
+        }
+
+        /// <summary>
+        /// Creates a capturing runtime and stamps an authenticated user on the current HTTP context.
+        /// </summary>
+        /// <returns>
+        /// Runtime and capture.
+        /// </returns>
+        internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) AuthorizedCapture()
+        {
+            var pair = CreateCapturingRuntime();
+            Authenticate();
+
+            return pair;
+        }
 
         /// <summary>
         /// Configures the application pipeline. Override to insert rate limiting.
@@ -179,12 +250,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         /// </remarks>
         internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) CreateCapturingRuntime()
         {
-            var accessor = TestServer.Services.GetRequiredService<IHttpContextAccessor>();
+            var accessor = SharedTestServer.Services.GetRequiredService<IHttpContextAccessor>();
             if (accessor.HttpContext is null)
             {
                 accessor.HttpContext = new DefaultHttpContext
                 {
-                    RequestServices = TestServer.Services
+                    RequestServices = SharedTestServer.Services
                 };
                 accessor.HttpContext.Request.Scheme = "http";
                 accessor.HttpContext.Request.Host = new HostString("localhost");
@@ -218,6 +289,38 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         }
 
         /// <summary>
+        /// Builds the secured convention host and the outbound Tools session for this derived class.
+        /// </summary>
+        /// <returns>
+        /// The lease the rest of the class shares.
+        /// </returns>
+        internal OutboundConventionHostLease CreateHostLease()
+        {
+            AuthorizationServer = new LocalAuthorizationServer(CreateAuthorizationServerOptions());
+            TestHostBuilder.ConfigureServices((_, services) =>
+            {
+                services.AddSecuredResource(AuthorizationServer);
+                ConfigureServices(services);
+                services.AddMvcCore().AddApplicationPart(typeof(MetadataController).Assembly);
+            });
+            AddMinimalMvc();
+            TestHostBuilder.ConfigureWebHost(web =>
+            {
+                web.Configure(app =>
+                {
+                    ConfigureApp(app);
+                });
+            });
+            TestSetup();
+
+            Outbound = new OutboundToolsHostFixture(AuthorizationServer, TestServer, new Uri("http://localhost/odata/"));
+            Outbound.Options = CreateOutboundOptions();
+            Outbound.CreateSessionAsync(HostCatalogOptions(), CancellationToken.None).GetAwaiter().GetResult();
+
+            return new OutboundConventionHostLease(this, AuthorizationServer, Outbound);
+        }
+
+        /// <summary>
         /// Builds the outbound authentication settings the Tools host signs in with. Override to pin a grant,
         /// paste an explicit token, or change the client identifier.
         /// </summary>
@@ -236,6 +339,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         }
 
         /// <summary>
+        /// Disposes every shared convention + outbound host this assembly still holds.
+        /// </summary>
+        internal static void DisposeHostLeases()
+        {
+            foreach (var type in HostLeases.Keys)
+            {
+                if (HostLeases.TryRemove(type, out var lease))
+                {
+                    lease.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the catalog options the embedding host was configured with, which the outbound session's
         /// catalog is built from.
         /// </summary>
@@ -244,7 +361,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         /// </returns>
         internal ODataMcpCatalogOptions HostCatalogOptions()
         {
-            return TestServer.Services.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value.Catalog;
+            return SharedTestServer.Services.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value.Catalog;
         }
 
         /// <summary>
@@ -261,6 +378,14 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         }
 
         /// <summary>
+        /// Restores in-memory stores so write tests cannot leak into the next method.
+        /// </summary>
+        internal void ResetStores()
+        {
+            SharedTestServer.Services.GetService<CustomerStore>()?.Reset();
+        }
+
+        /// <summary>
         /// Gets the outbound MCP session.
         /// </summary>
         /// <returns>
@@ -269,6 +394,78 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         internal ODataMcpSession Session()
         {
             return Outbound!.Session;
+        }
+
+        #endregion
+
+    }
+
+    /// <summary>
+    /// The Breakdance convention host and outbound Tools session one derived test class shares.
+    /// </summary>
+    internal sealed class OutboundConventionHostLease : IDisposable
+    {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the authorization server protecting the host.
+        /// </summary>
+        internal LocalAuthorizationServer AuthorizationServer { get; }
+
+        /// <summary>
+        /// Gets the outbound Tools fixture.
+        /// </summary>
+        internal OutboundToolsHostFixture Outbound { get; }
+
+        /// <summary>
+        /// Gets the Breakdance instance that owns the <c>TestServer</c>.
+        /// </summary>
+        internal ConventionRichHost Owner { get; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OutboundConventionHostLease"/> class.
+        /// </summary>
+        /// <param name="owner">The Breakdance instance whose <c>TestSetup</c> built the host.</param>
+        /// <param name="authorizationServer">The authorization server protecting the host.</param>
+        /// <param name="outbound">The outbound Tools fixture.</param>
+        internal OutboundConventionHostLease(ConventionRichHost owner, LocalAuthorizationServer authorizationServer, OutboundToolsHostFixture outbound)
+        {
+            ArgumentNullException.ThrowIfNull(owner);
+            ArgumentNullException.ThrowIfNull(authorizationServer);
+            ArgumentNullException.ThrowIfNull(outbound);
+
+            Owner = owner;
+            AuthorizationServer = authorizationServer;
+            Outbound = outbound;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Outbound.Dispose();
+            Owner.TestTearDown();
+            AuthorizationServer.Dispose();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Restores in-memory stores so write tests cannot leak into the next method.
+        /// </summary>
+        internal void ResetStores()
+        {
+            Owner.ResetStores();
         }
 
         #endregion

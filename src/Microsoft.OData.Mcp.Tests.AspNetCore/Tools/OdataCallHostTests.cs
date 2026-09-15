@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
 
+
     /// <summary>
     /// Convention OData 8 host tests for <c>odata_call</c>.
     /// </summary>
@@ -489,127 +490,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of(pairs), CancellationToken.None);
 
             return (result, capture);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// <c>odata_call</c> on the operations-only model.
-    /// </summary>
-    [TestClass]
-    public class OdataCallOperationsOnlyHostTests : OperationsOnlyToolHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Operations-only hosts support MostValuable, GetStatus, and Reset.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_OData8_OperationsOnly_SameThreeCalls()
-        {
-            var most = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            most.IsError.Should().BeFalse(most.Text);
-            most.StructuredContent.Should().Contain("42");
-            var status = await InvokeAsync("odata_call", ToolArguments.Of("name", "GetStatus", "parameters", new { code = "open" }));
-            status.IsError.Should().BeFalse(status.Text);
-            var reset = await InvokeAsync("odata_call", ToolArguments.Of("name", "Reset"));
-            reset.IsError.Should().BeFalse(reset.Text);
-        }
-
-        /// <summary>
-        /// Operations-only hosts can call MostValuable with no entity sets.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_OperationsOnly_CallWhenNoSets()
-        {
-            Session().Catalog.Tools.Where(tool => tool.EntitySetName is not null).Should().BeEmpty();
-            var result = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            result.IsError.Should().BeFalse(result.Text);
-            result.StructuredContent.Should().Contain("42");
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// <c>odata_call</c> cases that require the partitioned rate limiter.
-    /// </summary>
-    [TestClass]
-    public class OdataCallRateLimitedHostTests : RateLimitedRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// The second MostValuable call is tool <c>IsError</c> 429 while Customers query still works.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_429FunctionBudget_MostValuableSecondCall()
-        {
-            var first = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            first.IsError.Should().BeFalse(first.Text);
-            var second = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            second.IsError.Should().BeTrue(second.Text);
-            second.Text.Should().Contain("status 429");
-            var customers = await InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers"));
-            customers.IsError.Should().BeFalse(customers.Text);
-            customers.StructuredContent.Should().Contain("Contoso");
-        }
-
-        /// <summary>
-        /// Concurrent MostValuable calls eventually 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_ConcurrentMostValuable_Until429()
-        {
-            var tasks = Enumerable.Range(0, 5).Select(_ => InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"))).ToArray();
-            var results = await Task.WhenAll(tasks);
-            results.Should().Contain(result => result.IsError && result.Text.Contains("429", StringComparison.Ordinal));
-        }
-
-        /// <summary>
-        /// MCP HTTP 429 and function-budget 429 are different layers.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_McpHttp429VsFunction429_AreDifferentLayers()
-        {
-            var first = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            first.IsError.Should().BeFalse(first.Text);
-            var second = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            second.IsError.Should().BeTrue(second.Text);
-            second.Text.Should().Contain("status 429");
-            using var client = CreateClient();
-            using var mcpFirst = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
-            using var mcpSecond = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
-            mcpFirst.StatusCode.Should().NotBe(HttpStatusCode.NotFound);
-            mcpSecond.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// <c>odata_call</c> with a tiny response cap.
-    /// </summary>
-    [TestClass]
-    public class OdataCallTinyResponseHostTests : TinyResponseRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// An oversized function payload is <c>IsError</c>.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataCall_MaxResponseBytesTiny()
-        {
-            var result = await InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"));
-            result.IsError.Should().BeTrue(result.Text);
         }
 
         #endregion

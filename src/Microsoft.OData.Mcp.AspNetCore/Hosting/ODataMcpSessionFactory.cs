@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
@@ -28,9 +28,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
 
         internal readonly IOptions<ODataMcpHostOptions> _hostOptions;
 
-        internal readonly IHttpContextAccessor _httpContextAccessor;
+        internal readonly McpHttpContextAccessor _httpContextAccessor;
 
-        internal readonly IHttpClientFactory _httpClientFactory;
+        internal readonly ODataMcpPipeline _pipeline;
 
         internal readonly IServiceProvider _services;
 
@@ -67,22 +67,22 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         /// <param name="services">The application service provider used to read <c>EndpointDataSource</c>.</param>
         /// <param name="hostOptions">Host catalog, include/exclude, and explicit routes.</param>
-        /// <param name="httpClientFactory">The in-process HTTP client factory.</param>
-        /// <param name="httpContextAccessor">The current HTTP context.</param>
+        /// <param name="pipeline">The captured application pipeline.</param>
+        /// <param name="httpContextAccessor">The wrapping accessor that can Start/End the inner context.</param>
         public ODataMcpSessionFactory(
             IServiceProvider services,
             IOptions<ODataMcpHostOptions> hostOptions,
-            IHttpClientFactory httpClientFactory,
-            IHttpContextAccessor httpContextAccessor)
+            ODataMcpPipeline pipeline,
+            McpHttpContextAccessor httpContextAccessor)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(hostOptions);
-            ArgumentNullException.ThrowIfNull(httpClientFactory);
+            ArgumentNullException.ThrowIfNull(pipeline);
             ArgumentNullException.ThrowIfNull(httpContextAccessor);
 
             _services = services;
             _hostOptions = hostOptions;
-            _httpClientFactory = httpClientFactory;
+            _pipeline = pipeline;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -103,7 +103,11 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                 {
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
-                    var executor = new InProcessODataExecutor(_httpClientFactory, _httpContextAccessor, binding.Prefix);
+                    var executor = new InProcessODataExecutor(
+                        _pipeline,
+                        _httpContextAccessor,
+                        _services.GetRequiredService<IServiceScopeFactory>(),
+                        binding.Prefix);
                     sessions[binding.Prefix] = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
                 }
 
