@@ -44,17 +44,20 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         /// <param name="services">The application service provider.</param>
         /// <param name="options">Host include/exclude and explicit routes.</param>
+        /// <param name="additionalSources">
+        /// Extra data sources (typically <c>WebApplication.DataSources</c>) that may not be in DI yet.
+        /// </param>
         /// <returns>
         /// Bindings after include/exclude filters. Duplicate prefixes keep the last discovered model.
         /// </returns>
-        public static IReadOnlyList<ODataMcpRouteBinding> Discover(IServiceProvider services, ODataMcpHostOptions options)
+        public static IReadOnlyList<ODataMcpRouteBinding> Discover(IServiceProvider services, ODataMcpHostOptions options, IEnumerable<EndpointDataSource>? additionalSources = null)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(options);
 
             var routes = new Dictionary<string, IEdmModel>(StringComparer.OrdinalIgnoreCase);
             TryAddFromExplicit(options, routes);
-            TryAddFromEndpointDataSources(services, routes);
+            TryAddFromEndpointDataSources(services, routes, additionalSources);
             TryAddFromRouteComponents(services, routes);
 
             return FilterRoutes(routes, options);
@@ -63,6 +66,60 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Walks one data source for OData 8 metadata and OData 7/Restier catch-alls.
+        /// </summary>
+        /// <param name="source">The data source.</param>
+        /// <param name="services">The application services.</param>
+        /// <param name="routes">The accumulating prefix map.</param>
+        internal static void AddFromSource(EndpointDataSource source, IServiceProvider services, Dictionary<string, IEdmModel> routes)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(routes);
+
+            if (source.Endpoints.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var endpoint in source.Endpoints)
+            {
+                TryAddFromMetadata(endpoint, routes);
+                TryAddFromCatchAll(endpoint, services, routes);
+            }
+        }
+
+        /// <summary>
+        /// Collects <see cref="EndpointDataSource"/> instances from an <see cref="IEndpointRouteBuilder"/>
+        /// (the <c>WebApplication</c> data sources) and from DI, without duplicates.
+        /// </summary>
+        /// <param name="services">The application services.</param>
+        /// <param name="routes">The application route builder, or <see langword="null"/> when the app is not one.</param>
+        /// <returns>
+        /// Sources in application-then-DI order.
+        /// </returns>
+        internal static IReadOnlyList<EndpointDataSource> CollectEndpointDataSources(IServiceProvider services, IEndpointRouteBuilder? routes)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            var sources = new List<EndpointDataSource>();
+            if (routes is not null)
+            {
+                sources.AddRange(routes.DataSources);
+            }
+
+            foreach (var source in services.GetServices<EndpointDataSource>())
+            {
+                if (!sources.Contains(source))
+                {
+                    sources.Add(source);
+                }
+            }
+
+            return sources;
+        }
 
         /// <summary>
         /// Applies <see cref="ODataMcpHostOptions.IncludePrefixes"/> then <see cref="ODataMcpHostOptions.ExcludeRoutes"/>.
@@ -257,17 +314,29 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         /// <param name="services">The application services.</param>
         /// <param name="routes">The accumulating prefix map.</param>
-        internal static void TryAddFromEndpointDataSources(IServiceProvider services, Dictionary<string, IEdmModel> routes)
+        /// <param name="additionalSources">Sources from the <c>WebApplication</c> that may not be in DI yet.</param>
+        internal static void TryAddFromEndpointDataSources(IServiceProvider services, Dictionary<string, IEdmModel> routes, IEnumerable<EndpointDataSource>? additionalSources = null)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(routes);
 
+            var seen = new HashSet<EndpointDataSource>();
+            if (additionalSources is not null)
+            {
+                foreach (var source in additionalSources)
+                {
+                    if (seen.Add(source))
+                    {
+                        AddFromSource(source, services, routes);
+                    }
+                }
+            }
+
             foreach (var source in services.GetServices<EndpointDataSource>())
             {
-                foreach (var endpoint in source.Endpoints)
+                if (seen.Add(source))
                 {
-                    TryAddFromMetadata(endpoint, routes);
-                    TryAddFromCatchAll(endpoint, services, routes);
+                    AddFromSource(source, services, routes);
                 }
             }
         }

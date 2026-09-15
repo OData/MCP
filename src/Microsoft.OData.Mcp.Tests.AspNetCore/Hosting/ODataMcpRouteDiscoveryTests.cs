@@ -185,6 +185,51 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Application data sources are collected before DI and are not duplicated.
+        /// </summary>
+        [TestMethod]
+        public void CollectEndpointDataSources_AppThenDi_Dedupes()
+        {
+            var shared = new StaticEndpointDataSource();
+            var appOnly = new StaticEndpointDataSource();
+            var diOnly = new StaticEndpointDataSource();
+            var services = new ServiceCollection();
+            services.AddSingleton<EndpointDataSource>(shared);
+            services.AddSingleton<EndpointDataSource>(diOnly);
+            using var provider = services.BuildServiceProvider();
+            var routes = new RecordingEndpointRouteBuilder
+            {
+                DataSources = { appOnly, shared }
+            };
+
+            var collected = ODataMcpRouteDiscovery.CollectEndpointDataSources(provider, routes);
+
+            collected.Should().Equal(appOnly, shared, diOnly);
+        }
+
+        /// <summary>
+        /// Sources on the <c>WebApplication</c> are discovered even when they are not in DI.
+        /// </summary>
+        [TestMethod]
+        public void Discover_FromAdditionalSources_WithoutDiRegistration()
+        {
+            var model = TestModels.GetSimpleModel();
+            var endpoint = CreateEndpoint("odata/{**odataPath}", new FakeODataRoutingMetadata
+            {
+                Model = model,
+                Prefix = "odata"
+            });
+            using var provider = new ServiceCollection().BuildServiceProvider();
+            var extra = new StaticEndpointDataSource(endpoint);
+
+            var bindings = ODataMcpRouteDiscovery.Discover(provider, new ODataMcpHostOptions(), [extra]);
+
+            bindings.Should().ContainSingle();
+            bindings[0].Prefix.Should().Be("odata");
+            bindings[0].Model.Should().BeSameAs(model);
+        }
+
+        /// <summary>
         /// Catch-all endpoints without a per-route container do not invent a model.
         /// </summary>
         [TestMethod]
