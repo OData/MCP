@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +22,6 @@ using Microsoft.OData.Mcp.AspNetCore.Execution;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Execution;
-using Microsoft.OData.Mcp.Tests.AspNetCore.Execution;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -405,10 +406,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
-        /// Authorization is forwarded from HTTP context onto the in-process request.
+        /// The authenticated outer user is copied onto the in-process request.
         /// </summary>
         [TestMethod]
-        public async Task ExecuteAsync_ForwardsAuthorizationHeader()
+        public async Task ExecuteAsync_ForwardsAuthenticatedUser()
         {
             var result = await ExecutorWithAuthorization().ExecuteAsync(
                 new ODataExecuteRequest
@@ -419,7 +420,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
                 CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Body.Should().Contain("Contoso");
+            result.BodyStream.Should().NotBeNull();
+            result.BodyStream!.Position = 0;
+            using var reader = new StreamReader(result.BodyStream, leaveOpen: true);
+            reader.ReadToEnd().Should().Contain("Contoso");
         }
 
         #endregion
@@ -427,39 +431,40 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         #region Internal Methods
 
         /// <summary>
-        /// Builds an in-process executor that talks to the TestServer without a base address.
+        /// Builds an in-process executor against the captured pipeline.
         /// </summary>
-        /// <param name="authorization">Optional Authorization header on the current HTTP context.</param>
+        /// <param name="authenticated">When <see langword="true"/>, copies an authenticated user onto the inner context.</param>
         /// <returns>
         /// The executor.
         /// </returns>
-        internal InProcessODataExecutor Executor(string? authorization = null)
+        internal InProcessODataExecutor Executor(bool authenticated = false)
         {
-            var handler = InProcessODataExecutor.TryCreateServerHandler(TestServer);
-            handler.Should().NotBeNull();
-            var accessor = new HttpContextAccessor
+            var accessor = TestServer.Services.GetRequiredService<McpHttpContextAccessor>();
+            accessor.HttpContext = new DefaultHttpContext
             {
-                HttpContext = new DefaultHttpContext()
+                RequestServices = TestServer.Services
             };
-            accessor.HttpContext.Request.Scheme = "http";
-            accessor.HttpContext.Request.Host = new HostString("localhost");
-            if (!string.IsNullOrWhiteSpace(authorization))
+            if (authenticated)
             {
-                accessor.HttpContext.Request.Headers.Authorization = authorization;
+                accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity("test"));
             }
 
-            return new InProcessODataExecutor(new TestServerHandlerFactory(handler!), accessor, "odata");
+            return new InProcessODataExecutor(
+                TestServer.Services.GetRequiredService<ODataMcpPipeline>(),
+                accessor,
+                TestServer.Services.GetRequiredService<IServiceScopeFactory>(),
+                "odata");
         }
 
         /// <summary>
-        /// Builds an executor that forwards a bearer token.
+        /// Builds an executor that copies an authenticated user from the outer context.
         /// </summary>
         /// <returns>
         /// The executor.
         /// </returns>
         internal InProcessODataExecutor ExecutorWithAuthorization()
         {
-            return Executor("Bearer test-token");
+            return Executor(authenticated: true);
         }
 
         /// <summary>

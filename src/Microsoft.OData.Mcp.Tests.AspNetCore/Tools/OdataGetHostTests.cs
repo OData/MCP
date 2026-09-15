@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.Core.Catalog;
@@ -25,75 +24,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
 
-    /// <summary>
-    /// Rich convention host with partitioned OData and MCP rate limits.
-    /// </summary>
-    public abstract class RateLimitedRichHost : ConventionRichHost
-    {
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureApp(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseRateLimiter();
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
-            app.UseODataMcp();
-        }
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRateLimiter(options => ODataPartitionedLimiter.Apply(options, new RateLimitBudget
-            {
-                Customers = 1,
-                Function = 1,
-                Mcp = 1
-            }));
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetRichModel());
-                });
-            services.AddODataMcp();
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Rich convention host whose catalog rejects OData payloads larger than eight bytes.
-    /// </summary>
-    public abstract class TinyResponseRichHost : ConventionRichHost
-    {
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetRichModel());
-                });
-            services.AddODataMcp(options =>
-            {
-                options.Catalog.MaxResponseBytes = 8;
-            });
-        }
-
-        #endregion
-
-    }
 
     /// <summary>
     /// Convention OData 8 host tests for <c>odata_get</c>.
@@ -134,7 +64,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task OdataGet_AfterCreate_SeesNewEntity()
         {
             var (runtime, _) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test-token";
+            Authenticate();
             var created = await runtime.InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"CompanyName":"Fabrikam"}"""), CancellationToken.None);
             created.IsError.Should().BeFalse(created.Text);
             var key = ReadCustomerId(created.StructuredContent!) ?? "2";
@@ -163,7 +93,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task OdataGet_AfterUpdate_SeesPatch()
         {
             var (runtime, _) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test-token";
+            Authenticate();
             var updated = await runtime.InvokeAsync("odata_update", ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"Updated"}"""), CancellationToken.None);
             updated.IsError.Should().BeFalse(updated.Text);
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"), CancellationToken.None);
@@ -682,70 +612,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             }
 
             return null;
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// <c>odata_get</c> cases that require the partitioned rate limiter.
-    /// </summary>
-    [TestClass]
-    public class OdataGetRateLimitedHostTests : RateLimitedRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// The second get of Customers spends the set budget and is tool <c>IsError</c> 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataGet_429OnSet_RetryAfter()
-        {
-            var first = await InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"));
-            first.IsError.Should().BeFalse(first.Text);
-            var second = await InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"));
-            second.IsError.Should().BeTrue(second.Text);
-            second.Text.Should().Contain("status 429");
-        }
-
-        /// <summary>
-        /// A second POST to <c>/odata/mcp</c> is HTTP 429, not a tool result.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataGet_McpHttp429()
-        {
-            using var client = CreateClient();
-            using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
-            using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content("{}"));
-            first.StatusCode.Should().NotBe(HttpStatusCode.NotFound);
-            second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// <c>odata_get</c> cases that require a tiny <c>MaxResponseBytes</c>.
-    /// </summary>
-    [TestClass]
-    public class OdataGetTinyResponseHostTests : TinyResponseRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// An oversized get payload is <c>IsError</c> suggesting select and top.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataGet_MaxResponseBytesTiny_IsError()
-        {
-            var result = await InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"));
-            result.IsError.Should().BeTrue(result.Text);
-            result.Text.Should().Contain("select");
-            result.Text.Should().Contain("top");
         }
 
         #endregion

@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Execution;
 using Microsoft.OData.Mcp.Core.Models;
 using static Microsoft.OData.Mcp.Core.Constants.ODataMcpCatalogConstants;
@@ -133,6 +134,55 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 StructuredContent = json,
                 Text = fallbackText
             };
+        }
+
+        /// <summary>
+        /// Builds a JSON result from the OData output stream. Does not parse the JSON here.
+        /// </summary>
+        /// <param name="stream">The OData JSON stream as written.</param>
+        /// <param name="fallbackText">Short text when the JSON is omitted.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal ODataToolInvocationResult Complete(Stream stream, string fallbackText)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+
+            if (stream.CanSeek && stream.Length > _maxResponseBytes)
+            {
+                return new ODataToolInvocationResult
+                {
+                    IsError = true,
+                    Text = "The OData response exceeded the size limit. Add select and top to reduce the payload."
+                };
+            }
+
+            return new ODataToolInvocationResult
+            {
+                StructuredStream = stream,
+                Text = fallbackText
+            };
+        }
+
+        /// <summary>
+        /// Reads a stream as UTF-8. Used only for error text.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns>
+        /// The text.
+        /// </returns>
+        internal static string ReadUtf8(Stream stream)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+
+            if (stream.CanSeek)
+            {
+                stream.Position = 0;
+            }
+
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
+
+            return reader.ReadToEnd();
         }
 
         /// <summary>
@@ -465,6 +515,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 };
             }
 
+            if (result.BodyStream is not null && result.BodyStream.CanSeek && result.BodyStream.Length > 0)
+            {
+                return Complete(result.BodyStream, $"OData {method} {relativePath} returned {result.StatusCode}.");
+            }
+
             if (string.IsNullOrWhiteSpace(result.Body))
             {
                 return new ODataToolInvocationResult
@@ -493,9 +548,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 text = $"{text} Retry-After: {result.RetryAfter}.";
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Body))
+            var body = result.Body;
+            if (string.IsNullOrWhiteSpace(body) && result.BodyStream is not null)
             {
-                text = $"{text} {result.Body}";
+                body = ReadUtf8(result.BodyStream);
+            }
+
+            if (!string.IsNullOrWhiteSpace(body))
+            {
+                text = $"{text} {body}";
             }
 
             return text;

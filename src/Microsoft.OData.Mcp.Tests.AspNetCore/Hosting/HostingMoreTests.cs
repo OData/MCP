@@ -72,7 +72,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         [TestMethod]
         public void InProcessExecutor_BuildRelativeUri_PrefixesQuery()
         {
-            var executor = new InProcessODataExecutor(new UnusedHttpClientFactory(), new HttpContextAccessor(), "odata");
+            var executor = CreateUriExecutor("odata");
             var uri = executor.BuildRelativeUri(new ODataExecuteRequest
             {
                 RelativePath = "Customers",
@@ -95,7 +95,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         [TestMethod]
         public void InProcessExecutor_EmptyPrefix_OmitsPrefix()
         {
-            var executor = new InProcessODataExecutor(new UnusedHttpClientFactory(), new HttpContextAccessor(), "");
+            var executor = CreateUriExecutor("");
             executor.BuildRelativeUri(new ODataExecuteRequest
             {
                 RelativePath = "Customers"
@@ -108,7 +108,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         [TestMethod]
         public void InProcessExecutor_BuildRelativeUri_DoesNotDoubleDollar()
         {
-            var executor = new InProcessODataExecutor(new UnusedHttpClientFactory(), new HttpContextAccessor(), "odata");
+            var executor = CreateUriExecutor("odata");
             var uri = executor.BuildRelativeUri(new ODataExecuteRequest
             {
                 QueryOptions = { ["$top"] = "1" },
@@ -117,15 +117,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
 
             uri.Should().Contain("$top=1");
             uri.Should().NotContain("$$");
-        }
-
-        /// <summary>
-        /// Null servers do not produce a TestServer handler.
-        /// </summary>
-        [TestMethod]
-        public void TryCreateServerHandler_Null_ReturnsNull()
-        {
-            InProcessODataExecutor.TryCreateServerHandler(null).Should().BeNull();
         }
 
         /// <summary>
@@ -214,33 +205,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// In-process constructor rejects null dependencies.
-        /// </summary>
-        [TestMethod]
-        public void InProcessExecutor_NullDependencies_Throw()
-        {
-            var factory = new UnusedHttpClientFactory();
-            var accessor = new HttpContextAccessor();
-
-            var nullFactory = () => new InProcessODataExecutor(null!, accessor, "odata");
-            var nullAccessor = () => new InProcessODataExecutor(factory, null!, "odata");
-            var nullPrefix = () => new InProcessODataExecutor(factory, accessor, null!);
-
-            nullFactory.Should().Throw<ArgumentNullException>();
-            nullAccessor.Should().Throw<ArgumentNullException>();
-            nullPrefix.Should().Throw<ArgumentNullException>();
-        }
-
-        /// <summary>
-        /// Servers without CreateHandler do not produce a handler.
-        /// </summary>
-        [TestMethod]
-        public void TryCreateServerHandler_NoCreateHandler_ReturnsNull()
-        {
-            InProcessODataExecutor.TryCreateServerHandler(new NoHandlerServer()).Should().BeNull();
-        }
-
-        /// <summary>
         /// <c>UseODataMcp</c> rejects a null application builder.
         /// </summary>
         [TestMethod]
@@ -275,17 +239,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         {
             var services = new ServiceCollection().BuildServiceProvider();
             var options = Options.Create(new ODataMcpHostOptions());
-            var http = new UnusedHttpClientFactory();
-            var accessor = new HttpContextAccessor();
+            var pipeline = new ODataMcpPipeline();
+            var accessor = new McpHttpContextAccessor();
 
-            var nullServices = () => new ODataMcpSessionFactory(null!, options, http, accessor);
-            var nullOptions = () => new ODataMcpSessionFactory(services, null!, http, accessor);
-            var nullHttp = () => new ODataMcpSessionFactory(services, options, null!, accessor);
-            var nullAccessor = () => new ODataMcpSessionFactory(services, options, http, null!);
+            var nullServices = () => new ODataMcpSessionFactory(null!, options, pipeline, accessor);
+            var nullOptions = () => new ODataMcpSessionFactory(services, null!, pipeline, accessor);
+            var nullPipeline = () => new ODataMcpSessionFactory(services, options, null!, accessor);
+            var nullAccessor = () => new ODataMcpSessionFactory(services, options, pipeline, null!);
 
             nullServices.Should().Throw<ArgumentNullException>();
             nullOptions.Should().Throw<ArgumentNullException>();
-            nullHttp.Should().Throw<ArgumentNullException>();
+            nullPipeline.Should().Throw<ArgumentNullException>();
             nullAccessor.Should().Throw<ArgumentNullException>();
         }
 
@@ -331,8 +295,24 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             return new ODataMcpSessionFactory(
                 provider,
                 Options.Create(host),
-                new UnusedHttpClientFactory(),
-                new HttpContextAccessor());
+                new ODataMcpPipeline(),
+                new McpHttpContextAccessor());
+        }
+
+        /// <summary>
+        /// Builds an executor used only for URI composition.
+        /// </summary>
+        /// <param name="prefix">The OData route prefix.</param>
+        /// <returns>
+        /// The executor.
+        /// </returns>
+        internal static InProcessODataExecutor CreateUriExecutor(string prefix)
+        {
+            return new InProcessODataExecutor(
+                new ODataMcpPipeline(),
+                new McpHttpContextAccessor(),
+                new ServiceCollection().BuildServiceProvider().GetRequiredService<IServiceScopeFactory>(),
+                prefix);
         }
 
         #endregion

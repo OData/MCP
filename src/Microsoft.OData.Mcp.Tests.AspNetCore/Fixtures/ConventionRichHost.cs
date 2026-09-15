@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +67,37 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         #region Internal Methods
 
         /// <summary>
+        /// Marks the outer MCP context as authenticated so in-process CUD copies <see cref="HttpContext.User"/>.
+        /// </summary>
+        internal void Authenticate()
+        {
+            var accessor = TestServer.Services.GetRequiredService<McpHttpContextAccessor>();
+            if (accessor.HttpContext is null)
+            {
+                accessor.HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = TestServer.Services
+                };
+            }
+
+            accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity("test"));
+        }
+
+        /// <summary>
+        /// Creates a capturing runtime and stamps an authenticated user on the current HTTP context.
+        /// </summary>
+        /// <returns>
+        /// Runtime and capture.
+        /// </returns>
+        internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) AuthorizedCapture()
+        {
+            var pair = CreateCapturingRuntime();
+            Authenticate();
+
+            return pair;
+        }
+
+        /// <summary>
         /// Configures the application pipeline. Override to insert rate limiting.
         /// </summary>
         /// <param name="app">The application builder.</param>
@@ -104,20 +136,19 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) CreateCapturingRuntime()
         {
             var session = Session();
-            var accessor = TestServer.Services.GetRequiredService<IHttpContextAccessor>();
+            var accessor = TestServer.Services.GetRequiredService<McpHttpContextAccessor>();
             if (accessor.HttpContext is null)
             {
                 accessor.HttpContext = new DefaultHttpContext
                 {
                     RequestServices = TestServer.Services
                 };
-                accessor.HttpContext.Request.Scheme = "http";
-                accessor.HttpContext.Request.Host = new HostString("localhost");
             }
 
             var inner = new InProcessODataExecutor(
-                TestServer.Services.GetRequiredService<IHttpClientFactory>(),
+                TestServer.Services.GetRequiredService<ODataMcpPipeline>(),
                 accessor,
+                TestServer.Services.GetRequiredService<IServiceScopeFactory>(),
                 "odata");
             var capture = new CapturingODataExecutor(inner);
 

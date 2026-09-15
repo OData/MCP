@@ -46,6 +46,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             ArgumentNullException.ThrowIfNull(app);
 
+            var pipeline = app.ApplicationServices.GetRequiredService<ODataMcpPipeline>();
+            pipeline.IsEnabled = true;
+
             var factory = app.ApplicationServices.GetRequiredService<ODataMcpSessionFactory>();
             factory.Rebuild();
             var options = app.ApplicationServices.GetRequiredService<IOptions<ODataMcpHostOptions>>().Value;

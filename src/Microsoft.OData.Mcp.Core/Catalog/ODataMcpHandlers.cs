@@ -91,9 +91,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             {
                 Content = [new TextContentBlock { Text = result.Text }],
                 IsError = result.IsError,
-                StructuredContent = string.IsNullOrWhiteSpace(result.StructuredContent)
-                    ? null
-                    : ParseElement(result.StructuredContent)
+                StructuredContent = result.ToStructuredContent()
             };
         }
 

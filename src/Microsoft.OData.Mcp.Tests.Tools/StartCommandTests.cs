@@ -434,30 +434,6 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         }
 
         /// <summary>
-        /// An unset <c>--client-secret</c> falls back to the <c>ODATA_MCP_CLIENT_SECRET</c> environment variable.
-        /// </summary>
-        [TestMethod]
-        public void StartCommand_ClientSecretFromEnvironment_Binds()
-        {
-            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "env-secret");
-            try
-            {
-                var command = new StartCommand
-                {
-                    Url = LiveOData.Northwind
-                };
-
-                var options = command.BuildOptions();
-
-                options.ClientSecret.Should().Be("env-secret");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, null);
-            }
-        }
-
-        /// <summary>
         /// With no outbound OAuth flags set, options fall back to their documented defaults.
         /// </summary>
         [TestMethod]

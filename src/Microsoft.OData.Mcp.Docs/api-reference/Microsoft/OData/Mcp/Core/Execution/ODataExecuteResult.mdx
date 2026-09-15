@@ -60,6 +60,24 @@ public string Body { get; set; }
 
 Type: `string`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BodyStream
+
+Gets or sets the response body stream when the executor kept the OData output as written.
+
+#### Syntax
+
+```csharp
+public System.IO.Stream BodyStream { get; set; }
+```
+
+#### Property Value
+
+Type: `System.IO.Stream?`
+
+#### Remarks
+
+Prefer this over [ODataExecuteResult.Body](/api-reference/Microsoft/OData/Mcp/Core/Execution/ODataExecuteResult#body) for in-process success. Do not dispose it; the executor owns it.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsSuccess
 
 Gets or sets a value indicating whether the status code is success.

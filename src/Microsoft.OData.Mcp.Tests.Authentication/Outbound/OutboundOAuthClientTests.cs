@@ -127,7 +127,7 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
         }
 
         /// <summary>
-        /// A daemon with <c>--grant client_credentials</c> and a secret from the environment authenticates as
+        /// A daemon with <c>--grant client_credentials</c> and an explicit client secret authenticates as
         /// itself: no presenter runs, no device code is started, and the container keeps everything a silent
         /// re-acquisition needs.
         /// </summary>
@@ -136,34 +136,23 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
         {
             using var server = new LocalAuthorizationServer(new LocalAuthorizationServerOptions());
             var presenter = new AutoApproveConsentPresenter(server);
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
+            var options = CreateOptions();
+            options.ClientId = "daemon";
+            options.ClientSecret = "daemon-secret";
+            options.ConsentPresenter = presenter.PresentAsync;
+            options.Grant = OutboundGrantKind.ClientCredentials;
+            var client = CreateClient(server, options, CreateCache());
 
-            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "daemon-secret");
+            var token = await client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
 
-            try
-            {
-                var options = CreateOptions();
-                options.ClientId = "daemon";
-                options.ConsentPresenter = presenter.PresentAsync;
-                options.Grant = OutboundGrantKind.ClientCredentials;
-                OutboundOAuthOptions.FromEnvironment(options);
-                var client = CreateClient(server, options, CreateCache());
-
-                var token = await client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
-
-                token.AccessToken.Should().NotBeNullOrWhiteSpace();
-                token.RefreshToken.Should().BeNull();
-                token.ClientId.Should().Be("daemon");
-                token.ClientSecret.Should().Be("daemon-secret");
-                token.TokenEndpointAuthMethod.Should().Be(TokenEndpointClient.AuthMethodClientSecretPost);
-                presenter.Presentations.Should().Be(0);
-                server.HitCount("devicecode").Should().Be(0);
-                server.HitCount($"token:{ODataMcpAuthConstants.GrantTypeClientCredentials}").Should().Be(1);
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
-            }
+            token.AccessToken.Should().NotBeNullOrWhiteSpace();
+            token.RefreshToken.Should().BeNull();
+            token.ClientId.Should().Be("daemon");
+            token.ClientSecret.Should().Be("daemon-secret");
+            token.TokenEndpointAuthMethod.Should().Be(TokenEndpointClient.AuthMethodClientSecretPost);
+            presenter.Presentations.Should().Be(0);
+            server.HitCount("devicecode").Should().Be(0);
+            server.HitCount($"token:{ODataMcpAuthConstants.GrantTypeClientCredentials}").Should().Be(1);
         }
 
         /// <summary>
@@ -197,35 +186,24 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
         }
 
         /// <summary>
-        /// A wrong <c>ODATA_MCP_CLIENT_SECRET</c> surfaces as the authorization server's own
-        /// <c>invalid_client</c>, so an operator knows to fix the secret rather than the discovery settings.
+        /// A wrong client secret surfaces as the authorization server's own <c>invalid_client</c>, so an
+        /// operator knows to fix the secret rather than the discovery settings.
         /// </summary>
         [TestMethod]
         public async Task AcquireAsync_ClientCredentialsWrongSecret_ThrowsInvalidClient()
         {
             using var server = new LocalAuthorizationServer(new LocalAuthorizationServerOptions());
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
+            var options = CreateOptions();
+            options.ClientId = "daemon";
+            options.ClientSecret = "not-the-secret";
+            options.Grant = OutboundGrantKind.ClientCredentials;
+            var client = CreateClient(server, options, CreateCache());
 
-            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "not-the-secret");
+            Func<Task> act = () => client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
 
-            try
-            {
-                var options = CreateOptions();
-                options.ClientId = "daemon";
-                options.Grant = OutboundGrantKind.ClientCredentials;
-                OutboundOAuthOptions.FromEnvironment(options);
-                var client = CreateClient(server, options, CreateCache());
+            var assertion = await act.Should().ThrowAsync<OAuthTokenException>();
 
-                Func<Task> act = () => client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
-
-                var assertion = await act.Should().ThrowAsync<OAuthTokenException>();
-
-                assertion.Which.Error.Should().Be("invalid_client");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
-            }
+            assertion.Which.Error.Should().Be("invalid_client");
         }
 
         /// <summary>
@@ -652,47 +630,36 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Outbound
         {
             using var server = new LocalAuthorizationServer(new LocalAuthorizationServerOptions());
             var presenter = new AutoApproveConsentPresenter(server);
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
+            var options = CreateOptions();
+            options.ClientId = "daemon";
+            options.ClientSecret = "daemon-secret";
+            options.ConsentPresenter = presenter.PresentAsync;
+            options.Grant = OutboundGrantKind.ClientCredentials;
+            var cache = CreateCache();
+            var client = CreateClient(server, options, cache);
+            var original = await client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
 
-            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "daemon-secret");
-
-            try
+            await cache.StoreTokensAsync(new SdkAuth.TokenContainer
             {
-                var options = CreateOptions();
-                options.ClientId = "daemon";
-                options.ConsentPresenter = presenter.PresentAsync;
-                options.Grant = OutboundGrantKind.ClientCredentials;
-                OutboundOAuthOptions.FromEnvironment(options);
-                var cache = CreateCache();
-                var client = CreateClient(server, options, cache);
-                var original = await client.AcquireAsync(Challenge(server), 401, interactiveAllowed: false, CancellationToken.None);
+                AccessToken = original.AccessToken,
+                AuthorizationServer = original.AuthorizationServer,
+                ClientId = original.ClientId,
+                ClientSecret = original.ClientSecret,
+                ExpiresIn = 3600,
+                ObtainedAt = DateTimeOffset.UtcNow.AddHours(-2),
+                Scope = original.Scope,
+                TokenEndpointAuthMethod = original.TokenEndpointAuthMethod,
+                TokenType = original.TokenType
+            }, CancellationToken.None);
 
-                await cache.StoreTokensAsync(new SdkAuth.TokenContainer
-                {
-                    AccessToken = original.AccessToken,
-                    AuthorizationServer = original.AuthorizationServer,
-                    ClientId = original.ClientId,
-                    ClientSecret = original.ClientSecret,
-                    ExpiresIn = 3600,
-                    ObtainedAt = DateTimeOffset.UtcNow.AddHours(-2),
-                    Scope = original.Scope,
-                    TokenEndpointAuthMethod = original.TokenEndpointAuthMethod,
-                    TokenType = original.TokenType
-                }, CancellationToken.None);
+            var token = await client.GetValidTokenAsync(CancellationToken.None);
 
-                var token = await client.GetValidTokenAsync(CancellationToken.None);
-
-                token.Should().NotBeNull();
-                token!.AccessToken.Should().NotBe(original.AccessToken);
-                token.ClientId.Should().Be("daemon");
-                presenter.Presentations.Should().Be(0);
-                server.HitCount("devicecode").Should().Be(0);
-                server.HitCount($"token:{ODataMcpAuthConstants.GrantTypeClientCredentials}").Should().Be(2);
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
-            }
+            token.Should().NotBeNull();
+            token!.AccessToken.Should().NotBe(original.AccessToken);
+            token.ClientId.Should().Be("daemon");
+            presenter.Presentations.Should().Be(0);
+            server.HitCount("devicecode").Should().Be(0);
+            server.HitCount($"token:{ODataMcpAuthConstants.GrantTypeClientCredentials}").Should().Be(2);
         }
 
         /// <summary>

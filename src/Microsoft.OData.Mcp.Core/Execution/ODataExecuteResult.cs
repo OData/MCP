@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 
@@ -21,6 +22,14 @@ namespace Microsoft.OData.Mcp.Core.Execution
         /// Gets or sets the response body.
         /// </summary>
         public string Body { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the response body stream when the executor kept the OData output as written.
+        /// </summary>
+        /// <remarks>
+        /// Prefer this over <see cref="Body"/> for in-process success. Do not dispose it; the executor owns it.
+        /// </remarks>
+        public Stream? BodyStream { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the status code is success.

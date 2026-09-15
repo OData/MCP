@@ -12,10 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures;
 using Microsoft.OData.Mcp.Tests.AspNetCore.RateLimit;
 using Microsoft.OData.Mcp.Tests.Shared;
@@ -758,20 +756,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Internal Methods
 
         /// <summary>
-        /// Creates a capturing runtime and stamps Authorization on the current HTTP context.
-        /// </summary>
-        /// <returns>
-        /// Runtime and capture.
-        /// </returns>
-        internal (ODataToolRuntime Runtime, CapturingODataExecutor Capture) AuthorizedCapture()
-        {
-            var pair = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-
-            return pair;
-        }
-
-        /// <summary>
         /// Reads a customer key from an OData JSON payload.
         /// </summary>
         /// <param name="json">The payload.</param>
@@ -790,189 +774,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             }
 
             throw new InvalidOperationException(json);
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Update tests that require a small request-body guard.
-    /// </summary>
-    [TestClass]
-    public class OdataUpdateBodyGuardHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// Oversized PATCH bodies fail without an OData round-trip.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_MaxRequestBodyBytesExceeded_NoHttp()
-        {
-            var (runtime, capture) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var result = await runtime.InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", new string('x', 65)),
-                CancellationToken.None);
-
-            result.IsError.Should().BeTrue();
-            result.Text.Should().Contain("request body exceeds the maximum size");
-            capture.Requests.Should().BeEmpty();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<CustomerStore>();
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetRichModel());
-                });
-            services.AddODataMcp(options =>
-            {
-                options.Catalog.MaxRequestBodyBytes = 64;
-            });
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Update tests that require a tiny response-size guard.
-    /// </summary>
-    [TestClass]
-    public class OdataUpdateTinyResponseHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// An oversized 200 payload is tool <c>IsError</c> after OData succeeds.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_MaxResponseBytesTiny()
-        {
-            var (runtime, capture) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var result = await runtime.InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"TinyUp"}"""),
-                CancellationToken.None);
-
-            capture.Requests.Should().NotBeEmpty();
-            if (result.IsError)
-            {
-                result.Text.Should().Contain("select");
-            }
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<CustomerStore>();
-            services
-                .AddControllers()
-                .AddApplicationPart(typeof(CustomersController).Assembly)
-                .AddOData(options =>
-                {
-                    options.EnableQueryFeatures();
-                    options.AddRouteComponents("odata", TestModels.GetRichModel());
-                });
-            services.AddODataMcp(options =>
-            {
-                options.Catalog.MaxResponseBytes = 8;
-            });
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Update tests against partitioned MCP and Customers rate limits.
-    /// </summary>
-    [TestClass]
-    public class OdataUpdateRateLimitHostTests : ConventionRichHost
-    {
-
-        #region Public Methods
-
-        /// <summary>
-        /// A second PATCH of Customers is tool 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_429RetryAfter()
-        {
-            var (runtime, _) = CreateCapturingRuntime();
-            TestServer.Services.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request.Headers.Authorization = "Bearer test";
-            var first = await runtime.InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"RatePatch1"}"""),
-                CancellationToken.None);
-            first.IsError.Should().BeFalse(first.Text);
-
-            var second = await runtime.InvokeAsync(
-                "odata_update",
-                ToolArguments.Of("entitySet", "Customers", "key", "1", "body", """{"CompanyName":"RatePatch2"}"""),
-                CancellationToken.None);
-            second.IsError.Should().BeTrue();
-            second.Text.Should().Contain("429");
-        }
-
-        /// <summary>
-        /// A second MCP POST is HTTP 429.
-        /// </summary>
-        [TestMethod]
-        public async Task OdataUpdate_McpHttp429()
-        {
-            using var client = CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
-            using var first = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
-            first.StatusCode.Should().NotBe((HttpStatusCode)429);
-            using var second = await client.PostAsync("/odata/mcp", McpJsonRpc.Content(McpJsonRpc.InitializePayload()));
-            second.StatusCode.Should().Be((HttpStatusCode)429);
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <inheritdoc />
-        internal override void ConfigureApp(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseRateLimiter();
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
-            app.UseODataMcp();
-        }
-
-        /// <inheritdoc />
-        internal override void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRateLimiter(options => ODataPartitionedLimiter.Apply(options, new RateLimitBudget
-            {
-                Customers = 1,
-                Function = 1,
-                Mcp = 1,
-                Products = 2
-            }));
-            base.ConfigureServices(services);
         }
 
         #endregion

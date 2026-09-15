@@ -62,7 +62,7 @@ Type: `bool`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StructuredContent
 
-Gets or sets structured JSON content, when the result is JSON.
+Gets or sets structured JSON content, when the result is JSON produced in-process as text.
 
 #### Syntax
 
@@ -73,6 +73,20 @@ public string StructuredContent { get; set; }
 #### Property Value
 
 Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StructuredStream
+
+Gets or sets the OData JSON stream as written, when the executor kept it.
+
+#### Syntax
+
+```csharp
+public System.IO.Stream StructuredStream { get; set; }
+```
+
+#### Property Value
+
+Type: `System.IO.Stream?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Text
 
@@ -207,4 +221,20 @@ public virtual string ToString()
 #### Returns
 
 Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToStructuredContent
+
+Returns structured JSON for `CallToolResult.StructuredContent`. Prefers the OData stream
+(UTF-8 parse, no string copy). Falls back to [ODataToolInvocationResult.StructuredContent](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataToolInvocationResult#structuredcontent).
+
+#### Syntax
+
+```csharp
+public System.Nullable<System.Text.Json.JsonElement> ToStructuredContent()
+```
+
+#### Returns
+
+Type: `System.Nullable<System.Text.Json.JsonElement?>?`
+The JSON element, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when there is no structured payload.
 

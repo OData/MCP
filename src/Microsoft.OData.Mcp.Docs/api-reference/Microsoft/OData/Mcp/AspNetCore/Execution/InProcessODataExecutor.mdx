@@ -1,6 +1,6 @@
 ---
 title: InProcessODataExecutor
-description: "Executes OData requests against the same ASP.NET Core app that hosts MCP."
+description: "Executes OData requests by invoking the same ASP.NET Core pipeline that hosts MCP."
 icon: lock
 tag: "SEALED"
 keywords: ['InProcessODataExecutor', 'Microsoft.OData.Mcp.AspNetCore.Execution.InProcessODataExecutor', 'Microsoft.OData.Mcp.AspNetCore.Execution', 'class', 'System.Object', 'Microsoft.OData.Mcp.Core.Execution.IODataExecutor']
@@ -22,7 +22,7 @@ Microsoft.OData.Mcp.AspNetCore.Execution.InProcessODataExecutor
 
 ## Summary
 
-Executes OData requests against the same ASP.NET Core app that hosts MCP.
+Executes OData requests by invoking the same ASP.NET Core pipeline that hosts MCP.
 
 ## Constructors
 
@@ -33,15 +33,16 @@ Initializes a new instance of the [InProcessODataExecutor](/api-reference/Micros
 #### Syntax
 
 ```csharp
-public InProcessODataExecutor(System.Net.Http.IHttpClientFactory httpClientFactory, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, string routePrefix)
+public InProcessODataExecutor(Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipeline pipeline, Microsoft.OData.Mcp.AspNetCore.Hosting.McpHttpContextAccessor httpContextAccessor, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory scopeFactory, string routePrefix)
 ```
 
 #### Parameters
 
 | Name | Type | Description |
 |------|------|-------------|
-| `httpClientFactory` | `System.Net.Http.IHttpClientFactory` | The HTTP client factory. |
-| `httpContextAccessor` | `Microsoft.AspNetCore.Http.IHttpContextAccessor` | The current HTTP context. |
+| `pipeline` | `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpPipeline` | The captured application pipeline. |
+| `httpContextAccessor` | `Microsoft.OData.Mcp.AspNetCore.Hosting.McpHttpContextAccessor` | The wrapping accessor that can Start/End the inner context. |
+| `scopeFactory` | `Microsoft.Extensions.DependencyInjection.IServiceScopeFactory` | Creates a request scope for the inner OData call. |
 | `routePrefix` | `string` | The OData route prefix, for example `odata`. |
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>

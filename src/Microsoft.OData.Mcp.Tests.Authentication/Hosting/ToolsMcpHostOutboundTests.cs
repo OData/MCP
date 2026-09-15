@@ -91,16 +91,13 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
             using var resource = new SecuredStaticResourceServer(authorizationServer, SecuredStaticResourceServer.DefaultCsdl);
             var presenter = new AutoApproveConsentPresenter(authorizationServer);
             var directory = CreateTemporaryDirectory();
-            var previous = Environment.GetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable);
-
-            Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, "daemon-secret");
 
             try
             {
                 var options = CreateOptions(presenter, directory);
                 options.ClientId = "daemon";
+                options.ClientSecret = "daemon-secret";
                 options.Grant = OutboundGrantKind.ClientCredentials;
-                OutboundOAuthOptions.FromEnvironment(options);
 
                 using var host = await ToolsMcpHost.CreateAsync(
                     resource.ServiceRoot.ToString(),
@@ -118,7 +115,6 @@ namespace Microsoft.OData.Mcp.Tests.Authentication.Hosting
             }
             finally
             {
-                Environment.SetEnvironmentVariable(ODataMcpAuthConstants.ClientSecretEnvironmentVariable, previous);
                 Directory.Delete(directory, recursive: true);
             }
         }
