@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
@@ -91,15 +92,18 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         #region Public Methods
 
         /// <summary>
-        /// Discovers routes from the current endpoint data source and rebuilds sessions.
-        /// Called by the startup filter after routing is built so Restier/OData catch-alls are visible.
+        /// Discovers routes from DI and optional application data sources, then rebuilds sessions.
         /// </summary>
-        public void Rebuild()
+        /// <param name="additionalSources">
+        /// <c>WebApplication</c> data sources that may not be exported to DI yet. Pass <see langword="null"/>
+        /// to use DI only.
+        /// </param>
+        public void Rebuild(IEnumerable<EndpointDataSource>? additionalSources = null)
         {
             lock (_gate)
             {
                 var sessions = new Dictionary<string, ODataMcpSession>(StringComparer.OrdinalIgnoreCase);
-                foreach (var binding in ODataMcpRouteDiscovery.Discover(_services, _hostOptions.Value))
+                foreach (var binding in ODataMcpRouteDiscovery.Discover(_services, _hostOptions.Value, additionalSources))
                 {
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
