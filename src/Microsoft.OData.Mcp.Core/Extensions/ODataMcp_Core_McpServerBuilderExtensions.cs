@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
             ArgumentNullException.ThrowIfNull(resolveSession);
 
             return builder
-                .WithListToolsHandler((request, cancellationToken) => ODataMcpHandlers.ListToolsAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, listExtraTools, cancellationToken))
+                .WithListToolsHandler((request, cancellationToken) => ODataMcpHandlers.ListToolsAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, listExtraTools, request.Params?.Cursor, cancellationToken))
                 .WithCallToolHandler((request, cancellationToken) => ODataMcpHandlers.CallToolAsync(request, resolveSession, tryHandleExtra, tryHandleCallException, cancellationToken))
                 .WithListResourcesHandler((request, cancellationToken) => ODataMcpHandlers.ListResourcesAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, cancellationToken))
                 .WithReadResourceHandler((request, cancellationToken) => ODataMcpHandlers.ReadResourceAsync(request, resolveSession, cancellationToken))

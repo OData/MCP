@@ -261,9 +261,7 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
         /// </example>
         /// <remarks>
         /// The catalog is rebuilt here rather than reused from <see cref="ToolsMcpHost.Catalog"/> because the
-        /// CLI has no way to know what a subclass configured — a linked test that sets
-        /// <see cref="ODataMcpCatalogOptions.MaxNamedTools"/> on the embedding host expects the outbound
-        /// catalog to honor it. The runtime underneath is still the host's own
+        /// CLI has no way to know what a subclass configured on the embedding host. The runtime underneath is still the host's own
         /// <see cref="RemoteODataExecutor"/> on the authenticating <c>"OData"</c> client, so every tool call
         /// goes out over the outbound path.
         /// <para>
@@ -371,12 +369,12 @@ namespace Microsoft.OData.Mcp.Tests.Shared.Authentication
                 MaxCompletionValues = source.MaxCompletionValues,
                 MaxExpandLength = source.MaxExpandLength,
                 MaxFilterLength = source.MaxFilterLength,
-                MaxNamedTools = source.MaxNamedTools,
                 MaxRequestBodyBytes = source.MaxRequestBodyBytes,
                 MaxResources = source.MaxResources,
                 MaxResponseBytes = source.MaxResponseBytes,
                 MaxSelectLength = source.MaxSelectLength,
-                RouteName = routeName
+                RouteName = routeName,
+                ToolsPageSize = source.ToolsPageSize
             };
         }
 

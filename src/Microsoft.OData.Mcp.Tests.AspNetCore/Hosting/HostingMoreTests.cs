@@ -36,18 +36,16 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             var copy = ODataMcpSessionFactory.CopyCatalogOptions(
                 new ODataMcpCatalogOptions
                 {
-                    MaxNamedTools = 20,
                     IncludeCreate = false
                 },
                 "odata");
 
             copy.RouteName.Should().Be("odata");
-            copy.MaxNamedTools.Should().Be(20);
             copy.IncludeCreate.Should().BeFalse();
         }
 
         /// <summary>
-        /// Catalog option copies carry the shape options: enum wire format, preface, and dynamic model.
+        /// Catalog option copies carry the shape options: enum wire format, preface, dynamic model, and tools page size.
         /// </summary>
         [TestMethod]
         public void CopyCatalogOptions_CopiesShapeOptions()
@@ -57,13 +55,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
                 {
                     EnumJsonFormat = ODataEnumJsonFormat.Integer,
                     InstructionsPreface = "Contoso.",
-                    IsDynamicModel = true
+                    IsDynamicModel = true,
+                    ToolsPageSize = 25
                 },
                 "odata");
 
             copy.EnumJsonFormat.Should().Be(ODataEnumJsonFormat.Integer);
             copy.InstructionsPreface.Should().Be("Contoso.");
             copy.IsDynamicModel.Should().BeTrue();
+            copy.ToolsPageSize.Should().Be(25);
         }
 
         /// <summary>

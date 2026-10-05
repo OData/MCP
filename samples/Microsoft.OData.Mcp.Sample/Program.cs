@@ -57,7 +57,6 @@ public class Program
         {
             options.Catalog.IncludeEntitySets.Add("Customers");
             options.Catalog.IncludeEntitySets.Add("Products");
-            options.Catalog.MaxNamedTools = 80;
         });
 
         builder.Services.AddEndpointsApiExplorer();

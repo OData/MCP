@@ -69,4 +69,6 @@ app.UseODataMcp();
 
 `AddODataMcp` registers services only. This method turns MCP on. Do not call
 the MCP SDK `MapMcp` yourself; this method invokes it per enabled prefix.
+Discovery reads the `WebApplication` data sources, then DI, each source once.
+An empty `UseEndpoints` flush runs only when those collections are empty.
 

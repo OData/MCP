@@ -222,7 +222,7 @@ Keep typed `create_*` and `update_*` schemas. Do not collapse create to `body: s
 
 - `create_*`: property map + `"required"` per §3. Enum `enum` array. `description` only when CSDL has it. `maxLength` only when ≤ 16.
 - `update_*`: `key` + the same map; `"required": ["key"]` only.
-- `MaxNamedTools` stays 150 (searchable ceiling, not a context-dump cap). `IncludeEntitySets` still wins ordering.
+- Every included entity set gets a named family. `tools/list` pages the full list. `IncludeEntitySets` still wins ordering.
 - Generics eager, named deferred. Do not wait on a future MCP revision.
 
 `odata_create` / `odata_update` stay generic (`entitySet` + `body` string) with the create/update sentences on the description.

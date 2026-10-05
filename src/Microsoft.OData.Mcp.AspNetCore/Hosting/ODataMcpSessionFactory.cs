@@ -178,12 +178,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                 MaxCompletionValues = source.MaxCompletionValues,
                 MaxExpandLength = source.MaxExpandLength,
                 MaxFilterLength = source.MaxFilterLength,
-                MaxNamedTools = source.MaxNamedTools,
                 MaxRequestBodyBytes = source.MaxRequestBodyBytes,
                 MaxResources = source.MaxResources,
                 MaxResponseBytes = source.MaxResponseBytes,
                 MaxSelectLength = source.MaxSelectLength,
-                RouteName = string.IsNullOrWhiteSpace(prefix) ? "odata" : prefix.Trim('/')
+                RouteName = string.IsNullOrWhiteSpace(prefix) ? "odata" : prefix.Trim('/'),
+                ToolsPageSize = source.ToolsPageSize
             };
         }
 

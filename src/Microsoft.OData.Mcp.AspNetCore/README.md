@@ -79,12 +79,13 @@ Several OData prefixes become several MCP endpoints (`/odata/mcp`, `/reporting/m
 builder.Services.AddODataMcp(options =>
 {
     options.IncludePrefixes.Add("odata");
-    options.Catalog.MaxNamedTools = 80;
     options.Catalog.InstructionsPreface = "Contoso ERP. Monetary amounts are USD.";
 });
 ```
 
 `InstructionsPreface` is prepended to the shared assistant instructions. It cannot replace them.
+
+`Catalog.ToolsPageSize` is how many tools a full `tools/list` page returns. The default is 100. The last page can be shorter, and clients must not assume the size.
 
 Explicit model when routing cannot see `IEdmModel`:
 

@@ -14,7 +14,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 {
 
     /// <summary>
-    /// Named tool cap and CSDL documentation tests.
+    /// Named-family completeness and CSDL documentation tests.
     /// </summary>
     [TestClass]
     public class NamedToolCapTests
@@ -23,30 +23,23 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         #region Public Methods
 
         /// <summary>
-        /// Named tools never emit a partial CRUD family.
+        /// Every declared entity set gets a complete named family.
         /// </summary>
         [TestMethod]
-        public async Task Catalog_MaxNamedTools_DoesNotSplitCrudFamily()
+        public async Task Catalog_NamedTools_CompleteFamilyForEverySet()
         {
-            var catalog = new ODataMcpCatalog(
-                await LiveMetadata.LoadNorthwindModelAsync(),
-                new ODataMcpCatalogOptions
-                {
-                    MaxNamedTools = 16
-                });
-            var named = catalog.Tools.Where(tool => !tool.Name.StartsWith("odata_", StringComparison.Ordinal)).ToList();
+            var catalog = new ODataMcpCatalog(await LiveMetadata.LoadNorthwindModelAsync(), new ODataMcpCatalogOptions());
+            var setNames = catalog._model.EntityContainer!.EntitySets.Select(set => set.Name).ToList();
+            setNames.Should().NotBeEmpty();
 
-            named.Should().NotBeEmpty();
-            catalog.Tools.Count.Should().BeLessThanOrEqualTo(16);
-
-            foreach (var group in named.GroupBy(tool => tool.EntitySetName))
+            foreach (var setName in setNames)
             {
-                var ops = group.Select(tool => tool.Name).ToList();
-
-                if (ops.Any(name => name.StartsWith("list_", StringComparison.Ordinal)))
-                {
-                    ops.Should().Contain(name => name.StartsWith("get_", StringComparison.Ordinal));
-                }
+                var family = catalog.Tools.Where(tool => tool.EntitySetName == setName).Select(tool => tool.Name).ToList();
+                family.Should().Contain(name => name.StartsWith("list_", StringComparison.Ordinal));
+                family.Should().Contain(name => name.StartsWith("get_", StringComparison.Ordinal));
+                family.Should().Contain(name => name.StartsWith("create_", StringComparison.Ordinal));
+                family.Should().Contain(name => name.StartsWith("update_", StringComparison.Ordinal));
+                family.Should().Contain(name => name.StartsWith("delete_", StringComparison.Ordinal));
             }
         }
 

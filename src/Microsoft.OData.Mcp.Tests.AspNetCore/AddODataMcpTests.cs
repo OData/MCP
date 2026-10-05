@@ -86,10 +86,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
-        /// Catalog configuration is applied to every route.
+        /// IncludeEntitySets orders a set first and still advertises the other sets.
         /// </summary>
         [TestMethod]
-        public void AddODataMcp_ConfigureCatalog_LimitsNamedTools()
+        public void AddODataMcp_ConfigureCatalog_OrdersIncludeEntitySetsFirst()
         {
             var services = new ServiceCollection();
             services.AddLogging();
@@ -102,14 +102,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
                 });
             services.AddODataMcp(options =>
             {
-                options.Catalog.MaxNamedTools = 10;
                 options.Catalog.IncludeEntitySets.Add("Customers");
             });
 
             using var provider = services.BuildServiceProvider();
             var factory = provider.GetRequiredService<ODataMcpSessionFactory>();
+            var names = factory.Sessions["odata"].Catalog.Tools.Select(tool => tool.Name).ToList();
 
-            factory.Sessions["odata"].Catalog.Tools.Should().OnlyContain(tool => tool.Name.StartsWith("odata_", StringComparison.Ordinal));
+            names.First(name => name.StartsWith("list_", StringComparison.Ordinal)).Should().Be("list_customers");
+            names.Should().Contain("list_orders");
         }
 
         /// <summary>

@@ -90,19 +90,20 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Two hundred entity sets do not explode named tools, resources, or completions.
+        /// Two hundred entity sets each get a named family. Resources and completions stay capped.
         /// </summary>
         [TestMethod]
-        public void Catalog_TwoHundredSets_RespectsCaps()
+        public void Catalog_TwoHundredSets_EmitsEveryNamedFamily_ResourcesStayCapped()
         {
             var catalog = new ODataMcpCatalog(CreateWideModel(200), new ODataMcpCatalogOptions
             {
                 MaxCompletionValues = 50,
-                MaxNamedTools = 150,
                 MaxResources = 50
             });
 
-            catalog.Tools.Count.Should().BeLessThanOrEqualTo(150);
+            catalog.Tools.Count.Should().Be(1_011);
+            catalog.Tools.Select(tool => tool.Name).Should().Contain("list_rows000");
+            catalog.Tools.Select(tool => tool.Name).Should().Contain("list_rows199");
             catalog.Resources.Count.Should().BeLessThanOrEqualTo(50);
             catalog.Resources.Select(resource => resource.Name).Should().Contain("$metadata");
             catalog.CompleteEntitySetNames(string.Empty).Count.Should().Be(50);

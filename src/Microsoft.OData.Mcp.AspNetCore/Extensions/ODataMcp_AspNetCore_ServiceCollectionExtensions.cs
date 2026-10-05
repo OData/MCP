@@ -81,7 +81,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// builder.Services.AddODataMcp(options =>
         /// {
         ///     options.IncludePrefixes.Add("odata");
-        ///     options.Catalog.MaxNamedTools = 80;
         ///     options.RateLimitingPolicyName = "mcp";
         /// });
         ///

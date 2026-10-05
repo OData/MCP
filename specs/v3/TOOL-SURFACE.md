@@ -50,9 +50,9 @@ Per entity set, snake_case:
 
 Navigation is generic `odata_navigate` plus navigations on the type shape. Do not register `list_{set}_{nav}`.
 
-Default `MaxNamedTools` = 150 including generics. Fill `IncludeEntitySets` first, then remaining sets alphabetically. Never emit a partial CRUD family for a set (if `list_products` is in, `get_product` is in for the enabled verbs).
+Every included entity set gets a named family for the enabled verbs. `IncludeEntitySets` is ordered first, then the rest alphabetically. A family is never partial: if `list_products` is in, `get_product` is in for the enabled verbs.
 
-Sets that do not get named tools remain fully usable via resources + generic tools.
+`tools/list` returns that full list in pages. The server chooses the page size with `ODataMcpCatalogOptions.ToolsPageSize` (default 100). Clients must not assume it. Generics and resources stay available for the same sets.
 
 ---
 

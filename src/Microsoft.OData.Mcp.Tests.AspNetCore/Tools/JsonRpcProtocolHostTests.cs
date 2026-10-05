@@ -609,15 +609,18 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// nextCursor is absent/null when unpaged.
+        /// A catalog that fits in one page omits nextCursor and still carries cache hints.
         /// </summary>
         [TestMethod]
-        public async Task ToolsList_PaginationCursor_IfSdkSupports_NextCursorNullWhenUnpaged()
+        public async Task ToolsList_SinglePage_OmitsNextCursor_IncludesCacheHints()
         {
             using var client = TestServer.CreateClient();
             using var response = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp");
             var body = await McpJsonRpc.ReadBodyAsync(response);
             body.Should().NotContain("\"nextCursor\":\"");
+            body.Should().Contain("\"ttlMs\":300000");
+            body.Should().Contain("\"cacheScope\":\"public\"");
+            body.Should().Contain("\"resultType\":\"complete\"");
         }
 
         /// <summary>

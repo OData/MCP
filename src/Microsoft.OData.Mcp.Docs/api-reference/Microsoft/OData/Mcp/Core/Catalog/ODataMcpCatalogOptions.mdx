@@ -235,20 +235,6 @@ public int MaxFilterLength { get; set; }
 
 Type: `int`
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxNamedTools
-
-Gets or sets the maximum number of tools including generics.
-
-#### Syntax
-
-```csharp
-public int MaxNamedTools { get; set; }
-```
-
-#### Property Value
-
-Type: `int`
-
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxRequestBodyBytes
 
 Gets or sets the maximum JSON body size in bytes for create, update, and operation calls.
@@ -318,6 +304,27 @@ public string RouteName { get; set; }
 #### Property Value
 
 Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToolsPageSize
+
+Gets or sets how many tools a full `tools/list` page returns.
+
+#### Syntax
+
+```csharp
+public int ToolsPageSize { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+#### Remarks
+
+Defaults to 100. The final page may be shorter. Clients must not assume this size.
+The value must be greater than zero. Set it before the catalog is built. A cursor issued
+for one size is rejected if the size later changes, because each cursor is an offset on
+that size.
 
 ## Methods
 

@@ -92,11 +92,6 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public int MaxFilterLength { get; set; } = 2_048;
 
         /// <summary>
-        /// Gets or sets the maximum number of tools including generics.
-        /// </summary>
-        public int MaxNamedTools { get; set; } = 150;
-
-        /// <summary>
         /// Gets or sets the maximum JSON body size in bytes for create, update, and operation calls.
         /// </summary>
         public int MaxRequestBodyBytes { get; set; } = 262_144;
@@ -120,6 +115,17 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets the MCP resource route name (for example, "remote" or "odata").
         /// </summary>
         public string RouteName { get; set; } = "remote";
+
+        /// <summary>
+        /// Gets or sets how many tools a full <c>tools/list</c> page returns.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 100. The final page may be shorter. Clients must not assume this size.
+        /// The value must be greater than zero. Set it before the catalog is built. A cursor issued
+        /// for one size is rejected if the size later changes, because each cursor is an offset on
+        /// that size.
+        /// </remarks>
+        public int ToolsPageSize { get; set; } = 100;
 
         #endregion
 

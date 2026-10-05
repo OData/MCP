@@ -95,24 +95,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Two hundred sets do not emit a thousand tools.
+        /// Two hundred sets each get a named family, and generics stay in the list.
         /// </summary>
         [TestMethod]
-        public void Cap_TwoHundredSets_DoesNotEmitThousandTools()
-        {
-            var catalog = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Catalog;
-            catalog.Tools.Count.Should().BeLessThanOrEqualTo(150);
-        }
-
-        /// <summary>
-        /// Default 150 includes generics.
-        /// </summary>
-        [TestMethod]
-        public void Cap_Default150_IncludesGenerics()
+        public void WideCatalog_EmitsNamedFamilyForEverySet()
         {
             var names = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Catalog.Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("odata_query");
-            names.Count.Should().BeLessThanOrEqualTo(150);
+            names.Should().Contain("list_rows000");
+            names.Should().Contain("list_rows199");
+            names.Count(name => name.StartsWith("list_", StringComparison.Ordinal)).Should().Be(200);
+            names.Count.Should().Be(1_011);
         }
 
         #endregion

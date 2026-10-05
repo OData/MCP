@@ -62,7 +62,8 @@ Type: `bool`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StructuredContent
 
-Gets or sets structured JSON content, when the result is JSON produced in-process as text.
+Gets or sets structured JSON. Catalog tools set this as text. OData success keeps
+[ODataToolInvocationResult.StructuredStream](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataToolInvocationResult#structuredstream) and materializes this string on first read.
 
 #### Syntax
 

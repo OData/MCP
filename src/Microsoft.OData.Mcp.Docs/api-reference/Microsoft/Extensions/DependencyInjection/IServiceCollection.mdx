@@ -116,7 +116,6 @@ The service collection.
 builder.Services.AddODataMcp(options =&gt;
 {
     options.IncludePrefixes.Add("odata");
-    options.Catalog.MaxNamedTools = 80;
     options.RateLimitingPolicyName = "mcp";
 });
 

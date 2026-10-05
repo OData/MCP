@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System.Linq;
 using CloudNimble.Breakdance.AspNetCore;
 using FluentAssertions;
 using Microsoft.AspNetCore.OData;
@@ -55,14 +56,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.CatalogShapes
         #region Public Methods
 
         /// <summary>
-        /// Named tools, resources, and completions stay within the configured caps.
+        /// Every entity set gets a named family. Resources and completions stay capped.
         /// </summary>
         [TestMethod]
-        public void LargeCatalog_DoesNotDumpTwoHundredFamilies()
+        public void LargeCatalog_EmitsEveryNamedFamily_ResourcesStayCapped()
         {
             var catalog = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Catalog;
 
-            catalog.Tools.Count.Should().BeLessThanOrEqualTo(150);
+            catalog.Tools.Count.Should().Be(1_011);
+            catalog.Tools.Select(tool => tool.Name).Should().Contain("list_rows199");
             catalog.Resources.Count.Should().BeLessThanOrEqualTo(50);
             catalog.CompleteEntitySetNames(string.Empty).Count.Should().BeLessThanOrEqualTo(50);
         }

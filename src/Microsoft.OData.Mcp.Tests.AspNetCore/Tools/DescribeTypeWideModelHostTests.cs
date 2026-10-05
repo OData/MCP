@@ -56,7 +56,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 });
             services.AddODataMcp(options =>
             {
-                options.Catalog.MaxNamedTools = 150;
                 options.Catalog.MaxResources = 50;
             });
         }

@@ -39,6 +39,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 new ServiceCollection().BuildServiceProvider(),
                 _ => session,
                 _ => [new Tool { Name = "shutdown_server" }],
+                null,
                 CancellationToken.None);
 
             result.Tools.Select(tool => tool.Name).Should().Contain("odata_query");

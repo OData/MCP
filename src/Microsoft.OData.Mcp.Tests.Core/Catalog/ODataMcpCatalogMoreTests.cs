@@ -158,22 +158,6 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// A cap equal to the generic count omits named families.
-        /// </summary>
-        [TestMethod]
-        public void Catalog_MaxNamedToolsEqualsGenericCount_OmitsNamed()
-        {
-            var catalog = new ODataMcpCatalog(
-                new CsdlParser().ParseFromString(CsdlParserDocumentationTests.DocumentedCsdl),
-                new ODataMcpCatalogOptions
-                {
-                    MaxNamedTools = 10
-                });
-
-            catalog.Tools.Should().OnlyContain(tool => tool.Name.StartsWith("odata_", StringComparison.Ordinal));
-        }
-
-        /// <summary>
         /// Include lists are ordered first.
         /// </summary>
         [TestMethod]

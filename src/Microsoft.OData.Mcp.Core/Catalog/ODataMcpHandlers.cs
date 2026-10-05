@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.OData.Mcp.Core.Constants;
+using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
@@ -161,19 +162,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Lists catalog tools plus optional extra tools.
+        /// Lists one page of catalog tools plus optional extra tools.
         /// </summary>
         /// <param name="services">Request services.</param>
         /// <param name="resolveSession">Session resolver.</param>
-        /// <param name="listExtraTools">Optional extra tools.</param>
+        /// <param name="listExtraTools">Optional extra tools, appended after the catalog in a stable order.</param>
+        /// <param name="cursor">The opaque <c>tools/list</c> cursor, or <see langword="null"/> to start.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>
-        /// Tool list.
+        /// One page of the tool list. The catalog itself is the list built when the session was created.
         /// </returns>
+        /// <exception cref="McpProtocolException">Thrown with <see cref="McpErrorCode.InvalidParams"/> when <paramref name="cursor"/> is not a cursor this catalog issued.</exception>
         internal static ValueTask<ListToolsResult> ListToolsAsync(
             IServiceProvider services,
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<IServiceProvider, IReadOnlyList<Tool>>? listExtraTools,
+            string? cursor,
             CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -181,16 +185,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tools = resolveSession(services).Catalog.Tools.Select(ToTool).ToList();
-            if (listExtraTools is not null)
-            {
-                tools.AddRange(listExtraTools(services));
-            }
+            var extras = listExtraTools is null ? [] : listExtraTools(services);
+            ArgumentNullException.ThrowIfNull(extras);
 
-            return ValueTask.FromResult(new ListToolsResult
-            {
-                Tools = tools
-            });
+            return ValueTask.FromResult(ODataMcpToolPages.Page(resolveSession(services).Catalog, extras, cursor));
         }
 
         /// <summary>

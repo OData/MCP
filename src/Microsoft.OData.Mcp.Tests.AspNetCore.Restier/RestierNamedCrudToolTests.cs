@@ -1530,108 +1530,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
     }
 
     /// <summary>
-    /// Named tools are omitted when <c>MaxNamedTools</c> leaves no room for a full family.
-    /// </summary>
-    [TestClass]
-    public class RestierNamedCrudCapTests : RestierToolTestBase
-    {
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RestierNamedCrudCapTests"/> class using endpoint routing.
-        /// </summary>
-        public RestierNamedCrudCapTests()
-            : base("RestierNamedCap")
-        {
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Remaining 0 after 10 generics means no named tools at all.
-        /// </summary>
-        [TestMethod]
-        public void ListCustomers_AbsentWhenCapTooSmallForFamily()
-        {
-            var names = Catalog().Tools.Select(tool => tool.Name).ToList();
-            names.Should().HaveCount(11);
-            names.Should().NotContain("list_customers");
-            names.Should().NotContain("get_mcp_customer");
-            names.Should().Contain("odata_query");
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Sets <see cref="ODataMcpCatalogOptions.MaxNamedTools"/> equal to the generic tool count.
-        /// </summary>
-        /// <param name="options">The host options to configure.</param>
-        internal override void ConfigureODataMcp(ODataMcpHostOptions options)
-        {
-            options.Catalog.MaxNamedTools = 11;
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// Remaining 4 cannot fit a family of 5; no partial list_customers.
-    /// </summary>
-    [TestClass]
-    public class RestierNamedCrudFamilyCapTests : RestierToolTestBase
-    {
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RestierNamedCrudFamilyCapTests"/> class using endpoint routing.
-        /// </summary>
-        public RestierNamedCrudFamilyCapTests()
-            : base("RestierNamedFamilyCap")
-        {
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Remaining 4 cannot fit family 5; no partial named tools.
-        /// </summary>
-        [TestMethod]
-        public void ListCustomers_AbsentWhenRemaining4AndFamily5()
-        {
-            var names = Catalog().Tools.Select(tool => tool.Name).ToList();
-            names.Should().NotContain("list_customers");
-            names.Should().NotContain("get_mcp_customer");
-            names.Should().Contain("odata_create");
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Sets <see cref="ODataMcpCatalogOptions.MaxNamedTools"/> to leave 4 remaining slots after generics.
-        /// </summary>
-        /// <param name="options">The host options to configure.</param>
-        internal override void ConfigureODataMcp(ODataMcpHostOptions options)
-        {
-            options.Catalog.MaxNamedTools = 15;
-        }
-
-        #endregion
-
-    }
-
-    /// <summary>
-    /// IncludeCreate=false reduces the family to 4, which fits remaining 4.
+    /// IncludeCreate=false omits named create. Generic create still works.
     /// </summary>
     [TestClass]
     public class RestierNamedCrudIncludeCreateFalseTests : RestierToolTestBase
@@ -1652,7 +1551,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         #region Public Methods
 
         /// <summary>
-        /// Family size 4 fits remaining 4; create_* is omitted; generic create still works.
+        /// Named create is omitted; generic create still works.
         /// </summary>
         [TestMethod]
         public async Task CreateCustomer_OmittedWhenIncludeCreateFalse_UnknownTool_GenericCreateStillWorks()
@@ -1672,7 +1571,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// list/get/update/delete are present when include-create false reduces the family to fit.
+        /// list, get, update, and delete stay when named create is omitted.
         /// </summary>
         [TestMethod]
         public void ListCustomers_PresentWhenIncludeCreateFalseReducesFamilyToFit()
@@ -1696,7 +1595,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         internal override void ConfigureODataMcp(ODataMcpHostOptions options)
         {
             options.Catalog.IncludeCreate = false;
-            options.Catalog.MaxNamedTools = 15;
         }
 
         #endregion

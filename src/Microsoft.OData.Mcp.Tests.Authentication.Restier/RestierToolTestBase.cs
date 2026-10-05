@@ -176,7 +176,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
 
         /// <summary>
         /// Applies test-specific <see cref="ODataMcpHostOptions"/>. The base implementation is a no-op; override
-        /// to set options such as <see cref="ODataMcpCatalogOptions.MaxNamedTools"/>.
+        /// to set options such as <see cref="ODataMcpCatalogOptions.IncludeCreate"/>.
         /// </summary>
         /// <param name="options">The host options to configure.</param>
         internal virtual void ConfigureODataMcp(ODataMcpHostOptions options)

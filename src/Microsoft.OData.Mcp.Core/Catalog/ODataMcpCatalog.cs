@@ -64,6 +64,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </summary>
         public IReadOnlyList<ODataToolDescriptor> Tools { get; }
 
+        /// <summary>
+        /// Gets the identity stamped into <c>tools/list</c> cursors for this catalog instance.
+        /// </summary>
+        internal string ToolListStamp { get; }
+
         #endregion
 
         #region Constructors
@@ -73,14 +78,19 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </summary>
         /// <param name="model">The Core EDM.</param>
         /// <param name="options">Catalog options.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="options"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <see cref="ODataMcpCatalogOptions.RouteName"/> is null, empty, or whitespace.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <see cref="ODataMcpCatalogOptions.ToolsPageSize"/> is not greater than zero.</exception>
         public ODataMcpCatalog(EdmModel model, ODataMcpCatalogOptions options)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(options);
             ArgumentException.ThrowIfNullOrWhiteSpace(options.RouteName);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(options.ToolsPageSize, nameof(options.ToolsPageSize));
 
             _model = model;
             _options = options;
+            ToolListStamp = Guid.NewGuid().ToString("N");
 
             var includedSets = ResolveIncludedSets();
             if (!options.IsDynamicModel)
@@ -520,32 +530,24 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Builds generic and capped named tools.
+        /// Builds generic tools, then a complete named family for every included entity set.
         /// </summary>
         /// <param name="sets">The included entity sets.</param>
         /// <returns>
-        /// Tool descriptors.
+        /// Tool descriptors. Generic tools come first, then named families in include-list order and then alphabetical.
         /// </returns>
         internal IReadOnlyList<ODataToolDescriptor> BuildTools(IReadOnlyList<EdmEntitySet> sets)
         {
             var tools = new List<ODataToolDescriptor>(BuildGenericTools());
-            var remaining = Math.Max(0, _options.MaxNamedTools - tools.Count);
-            if (remaining == 0)
-            {
-                return tools;
-            }
-
-            var ordered = OrderSetsForNamedTools(sets);
-            foreach (var set in ordered)
+            foreach (var set in OrderSetsForNamedTools(sets))
             {
                 var family = BuildNamedFamily(set);
-                if (family.Count == 0 || family.Count > remaining)
+                if (family.Count == 0)
                 {
-                    break;
+                    continue;
                 }
 
                 tools.AddRange(family);
-                remaining -= family.Count;
             }
 
             return tools;

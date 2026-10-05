@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
@@ -93,7 +94,21 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
         /// <returns>
         /// The tools/list response.
         /// </returns>
-        public static async Task<HttpResponseMessage> ListToolsAsync(HttpClient client, string path)
+        public static Task<HttpResponseMessage> ListToolsAsync(HttpClient client, string path)
+        {
+            return ListToolsAsync(client, path, cursor: null);
+        }
+
+        /// <summary>
+        /// Posts a JSON-RPC <c>tools/list</c> after initialize, optionally continuing from <paramref name="cursor"/>.
+        /// </summary>
+        /// <param name="client">The HTTP client.</param>
+        /// <param name="path">The MCP path.</param>
+        /// <param name="cursor">The opaque cursor. <see langword="null"/> starts at the first page. An empty string is sent as a cursor.</param>
+        /// <returns>
+        /// The tools/list response.
+        /// </returns>
+        public static async Task<HttpResponseMessage> ListToolsAsync(HttpClient client, string path, string? cursor)
         {
             ArgumentNullException.ThrowIfNull(client);
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -105,7 +120,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Fixtures
                 ? string.Join(",", values)
                 : null;
 
-            using var list = Content("""{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}""");
+            var payload = cursor is null
+                ? """{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}"""
+                : "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"tools/list\",\"params\":{\"cursor\":" + JsonSerializer.Serialize(cursor) + "}}";
+            using var list = Content(payload);
             using var request = new HttpRequestMessage(HttpMethod.Post, path)
             {
                 Content = list

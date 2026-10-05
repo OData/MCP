@@ -22,7 +22,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
 
     /// <summary>
-    /// Generic create remains available when named families do not fit the cap.
+    /// Generic create remains available alongside named create tools.
     /// </summary>
     [TestClass]
     public class OdataCreateWideHostTests : AspNetCoreBreakdanceTestBase
@@ -31,7 +31,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Test Lifecycle
 
         /// <summary>
-        /// Builds a 200-set host with a small named-tool cap.
+        /// Builds a 200-set host.
         /// </summary>
         [TestInitialize]
         public void Setup()
@@ -44,10 +44,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                     {
                         options.AddRouteComponents("odata", TestModels.GetWideModel(200));
                     });
-                services.AddODataMcp(options =>
-                {
-                    options.Catalog.MaxNamedTools = 10;
-                });
+                services.AddODataMcp();
             });
             AddMinimalMvc();
             TestHostBuilder.ConfigureWebHost(web =>
@@ -76,14 +73,14 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Public Methods
 
         /// <summary>
-        /// Generic <c>odata_create</c> is advertised and can target an unnamed set.
+        /// Generic <c>odata_create</c> is advertised beside named create tools and can target a set.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_WideModel_CreateOnUnnamedSetViaGenericStillWorks()
+        public async Task OdataCreate_WideModel_GenericCreateStillWorks()
         {
             var session = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"];
             session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("odata_create");
-            session.Catalog.Tools.Should().NotContain(tool => tool.Name.StartsWith("create_", StringComparison.Ordinal));
+            session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("create_row000");
 
             var result = await session.Runtime.InvokeAsync(
                 "odata_create",

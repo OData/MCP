@@ -35,7 +35,7 @@ catch-all routes, and (when present) an already-loaded OData options dictionary.
 #### Syntax
 
 ```csharp
-public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding> Discover(System.IServiceProvider services, Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions options)
+public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRouteBinding> Discover(System.IServiceProvider services, Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions options, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.EndpointDataSource> additionalSources = null)
 ```
 
 #### Parameters
@@ -44,6 +44,7 @@ public static System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.AspNe
 |------|------|-------------|
 | `services` | `System.IServiceProvider` | The application service provider. |
 | `options` | `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions` | Host include/exclude and explicit routes. |
+| `additionalSources` | `System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.EndpointDataSource>?` | Extra data sources (typically `WebApplication.DataSources`) that may not be in DI yet. |
 
 #### Returns
 

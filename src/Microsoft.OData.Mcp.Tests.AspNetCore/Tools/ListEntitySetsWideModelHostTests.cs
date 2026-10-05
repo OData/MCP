@@ -13,7 +13,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 {
 
     /// <summary>
-    /// Lists all 200 sets of a wide model even when named tools and resources are capped.
+    /// Lists all 200 sets of a wide model. Named tools cover every set. Resources stay capped.
     /// </summary>
     [TestClass]
     public class ListEntitySetsWideModelHostTests : ConventionRichHost
@@ -34,7 +34,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             names.Should().Contain("Rows000");
             names.Should().Contain("Rows199");
             result.Text.Should().Be("Declared entity sets: 200.");
-            Session().Catalog.Tools.Count.Should().BeLessThanOrEqualTo(150);
+            Session().Catalog.Tools.Count.Should().Be(1_011);
             Session().Catalog.Resources.Count.Should().BeLessThanOrEqualTo(50);
         }
 
@@ -53,7 +53,6 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
                 });
             services.AddODataMcp(options =>
             {
-                options.Catalog.MaxNamedTools = 150;
                 options.Catalog.MaxResources = 50;
             });
         }
