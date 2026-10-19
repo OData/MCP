@@ -56,7 +56,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Generic get builds a keyed path.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataGet_BuildsKeyPath()
+        public async Task InvokeAsync_ODataGet_BuildsKeyPath()
         {
             var executor = new RecordingODataExecutor { Result = Success("""{"UserName":"russellwhyte"}""") };
             var runtime = CreateRuntime(executor);
@@ -96,7 +96,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create posts a JSON body.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataCreate_PostsBody()
+        public async Task InvokeAsync_ODataCreate_PostsBody()
         {
             var executor = new RecordingODataExecutor { Result = Success("{}", 201) };
             var runtime = CreateRuntime(executor);
@@ -119,7 +119,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Update uses PATCH.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataUpdate_Patches()
+        public async Task InvokeAsync_ODataUpdate_Patches()
         {
             var executor = new RecordingODataExecutor { Result = Success(string.Empty, 204) };
             var runtime = CreateRuntime(executor);
@@ -142,7 +142,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Delete uses DELETE.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataDelete_Deletes()
+        public async Task InvokeAsync_ODataDelete_Deletes()
         {
             var executor = new RecordingODataExecutor { Result = Success(string.Empty, 204) };
             var runtime = CreateRuntime(executor);
@@ -163,7 +163,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Navigate follows a navigation property.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataNavigate_FollowsNavigation()
+        public async Task InvokeAsync_ODataNavigate_FollowsNavigation()
         {
             var executor = new RecordingODataExecutor { Result = Success("""{"value":[]}""") };
             var runtime = CreateRuntime(executor);

@@ -93,7 +93,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// GET /shop/Products 200; POST /shop/mcp 404.
         /// </summary>
         [TestMethod]
-        public async Task Prefix_IncludePrefixesOdataOnly_ShopHasNoMcp_ShopODataStillWorks()
+        public async Task Prefix_IncludePrefixesODataOnly_ShopHasNoMcp_ShopODataStillWorks()
         {
             using var client = TestServer.CreateClient();
             McpJsonRpc.AcceptMcp(client);

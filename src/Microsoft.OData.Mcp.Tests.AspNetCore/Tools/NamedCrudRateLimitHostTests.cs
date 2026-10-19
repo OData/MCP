@@ -46,7 +46,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Named list_customers spends the same Customers budget as odata_query.
         /// </summary>
         [TestMethod]
-        public async Task Rate_NamedListCustomers_SameBudgetAsOdataQueryCustomers()
+        public async Task Rate_NamedListCustomers_SameBudgetAsODataQueryCustomers()
         {
             var runtime = Session().Runtime;
             var first = await runtime.InvokeAsync("list_customers", null, CancellationToken.None);

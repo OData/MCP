@@ -153,7 +153,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// GET odata/mcp is not 404 (may be 405).
         /// </summary>
         [TestMethod]
-        public async Task GetOdataMcp_Not404()
+        public async Task GetODataMcp_Not404()
         {
             using var client = CreateClient();
             var response = await client.GetAsync("odata/mcp");
@@ -201,7 +201,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// POST odata/mcp tools/call query is a real call, not empty {}.
         /// </summary>
         [TestMethod]
-        public async Task PostOdataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest()
+        public async Task PostODataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest()
         {
             using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_query", """{"entitySet":"Customers"}""");
@@ -277,7 +277,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Resources list metadata first then sets under odata://odata/.
         /// </summary>
         [TestMethod]
-        public void ResourcesList_OData8_MetadataFirstThenSets_OdataScheme()
+        public void ResourcesList_OData8_MetadataFirstThenSets_ODataScheme()
         {
             var resources = Catalog().Resources;
             resources[0].Uri.Should().Be("odata://odata/$metadata");
@@ -425,7 +425,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Unknown URI is empty or error, not an OData query.
         /// </summary>
         [TestMethod]
-        public async Task ResourcesRead_UnknownUri_EmptyOrError_NotOdataQuery()
+        public async Task ResourcesRead_UnknownUri_EmptyOrError_NotODataQuery()
         {
             using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.ReadResourceAsync(client, "odata/mcp", "odata://odata/DoesNotExist");
@@ -695,7 +695,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Open-world hint is true on OData tools.
         /// </summary>
         [TestMethod]
-        public void ToolsList_OpenWorldHintTrueOnOdataTools_FalseOnShutdown()
+        public void ToolsList_OpenWorldHintTrueOnODataTools_FalseOnShutdown()
         {
             var query = Catalog().Tools.First(tool => tool.Name == "odata_query");
             query.OpenWorldHint.Should().BeTrue();
@@ -822,7 +822,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             services.AddRateLimiter(options => RestierPartitionedLimiter.Apply(options, new RestierRateLimitBudget
             {
                 Customers = 0,
-                OdataMcp = 1,
+                ODataMcp = 1,
                 Products = 0,
                 ShopMcp = 0
             }));

@@ -85,7 +85,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// <c>odata_describe_type</c> describes Northwind Customer through the tools host runtime.
         /// </summary>
         [TestMethod]
-        public async Task ToolsMcpHost_Northwind_OdataDescribeType_Customer()
+        public async Task ToolsMcpHost_Northwind_ODataDescribeType_Customer()
         {
             using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(
@@ -106,7 +106,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// <c>odata_get</c> returns Northwind customer ALFKI through the tools host runtime.
         /// </summary>
         [TestMethod]
-        public async Task ToolsMcpHost_Northwind_OdataGet_Alfki()
+        public async Task ToolsMcpHost_Northwind_ODataGet_Alfki()
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
@@ -133,7 +133,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// <c>odata_list_entity_sets</c> lists Northwind sets through the tools host runtime.
         /// </summary>
         [TestMethod]
-        public async Task ToolsMcpHost_Northwind_OdataListEntitySets()
+        public async Task ToolsMcpHost_Northwind_ODataListEntitySets()
         {
             using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync("odata_list_entity_sets", null, CancellationToken.None);
@@ -149,7 +149,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// <c>odata_navigate</c> follows Products(1)/Category through the tools host runtime.
         /// </summary>
         [TestMethod]
-        public async Task ToolsMcpHost_Northwind_OdataNavigate_ProductCategory()
+        public async Task ToolsMcpHost_Northwind_ODataNavigate_ProductCategory()
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
@@ -176,7 +176,7 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         /// <c>odata_query</c> against live Northwind Products returns a product through the tools host runtime.
         /// </summary>
         [TestMethod]
-        public async Task ToolsMcpHost_Northwind_OdataQuery_Products()
+        public async Task ToolsMcpHost_Northwind_ODataQuery_Products()
         {
             using var host = await ToolsMcpHost.CreateAsync(LiveOData.Northwind, new OutboundOAuthOptions(), includeStdioMcp: false, verbose: false, lifetime: null, CancellationToken.None);
             var result = await host.Session.Runtime.InvokeAsync(

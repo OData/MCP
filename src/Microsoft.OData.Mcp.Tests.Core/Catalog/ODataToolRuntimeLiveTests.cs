@@ -32,7 +32,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Generic query against live Northwind Products returns a product.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataQueryProductsTop1_ReturnsProduct()
+        public async Task InvokeAsync_ODataQueryProductsTop1_ReturnsProduct()
         {
             var runtime = await CreateNorthwindRuntimeAsync();
             var result = await runtime.InvokeAsync(
@@ -53,7 +53,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Live Northwind $skip+$top and MCP skip+top return the same product page.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataQueryProducts_SkipAndTop_MatchHttp()
+        public async Task InvokeAsync_ODataQueryProducts_SkipAndTop_MatchHttp()
         {
             using var http = new HttpClient();
             http.DefaultRequestHeaders.Accept.ParseAdd("application/json");
@@ -81,7 +81,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Live Northwind skip=0 and skip=1 pages are different.
         /// </summary>
         [TestMethod]
-        public async Task InvokeAsync_OdataQueryProducts_SkipPagesDiffer()
+        public async Task InvokeAsync_ODataQueryProducts_SkipPagesDiffer()
         {
             var runtime = await CreateNorthwindRuntimeAsync();
             var first = await runtime.InvokeAsync(

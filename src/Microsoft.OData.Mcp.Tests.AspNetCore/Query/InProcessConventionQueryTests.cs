@@ -88,7 +88,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Query
         /// Direct OData GET and MCP odata_query return the same seeded company.
         /// </summary>
         [TestMethod]
-        public async Task Convention_OdataQuery_Customers_ReturnsSeededName()
+        public async Task Convention_ODataQuery_Customers_ReturnsSeededName()
         {
             using var probe = TestServer.CreateClient();
             var direct = await probe.GetAsync("/odata/Customers");

@@ -33,7 +33,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unauthenticated create is tool <c>IsError</c> with status 401.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_OData8_WithoutAuthorization_IsError401()
+        public async Task ODataCreate_OData8_WithoutAuthorization_IsError401()
         {
             using var client = CreateClient();
             using var twinContent = new StringContent("""{"CompanyName":"NoAuth"}""", Encoding.UTF8, "application/json");
@@ -55,7 +55,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unauthenticated create 401s; authenticated create then succeeds.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_UnauthenticatedThenAuthenticated_OData8()
+        public async Task ODataCreate_UnauthenticatedThenAuthenticated_OData8()
         {
             var (runtime, capture) = CreateCapturingRuntime();
             var denied = await runtime.InvokeAsync(
@@ -78,7 +78,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unauthenticated create is 401.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_WithoutAuthorization_IsError401()
+        public async Task ODataCreate_WithoutAuthorization_IsError401()
         {
             var created = await InvokeAsync(
                 "odata_create",
@@ -92,7 +92,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unauthenticated PATCH is 401.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_OData8_WithoutAuthorization_401()
+        public async Task ODataUpdate_OData8_WithoutAuthorization_401()
         {
             using var client = CreateClient();
             using var twinContent = new StringContent("""{"CompanyName":"Updated"}""", Encoding.UTF8, "application/json");
@@ -113,7 +113,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Update without auth is 401.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_WithoutAuthorization_IsError401()
+        public async Task ODataUpdate_WithoutAuthorization_IsError401()
         {
             var updated = await InvokeAsync(
                 "odata_update",

@@ -98,7 +98,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Resource mapping uses odata URIs.
         /// </summary>
         [TestMethod]
-        public void ToResource_UsesOdataUri()
+        public void ToResource_UsesODataUri()
         {
             var catalog = Catalog();
             var people = catalog.Resources.Single(resource => resource.Name == "People");

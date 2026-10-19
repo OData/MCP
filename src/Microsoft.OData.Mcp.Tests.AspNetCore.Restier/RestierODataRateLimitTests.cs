@@ -87,7 +87,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
                 services.AddRateLimiter(options => RestierPartitionedLimiter.Apply(options, new RestierRateLimitBudget
                 {
                     Customers = 1,
-                    OdataMcp = 1,
+                    ODataMcp = 1,
                     Products = 2,
                     ShopMcp = 0
                 }));
@@ -136,7 +136,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// /odata/mcp can 429 while /shop/mcp and Products remain available.
         /// </summary>
         [TestMethod]
-        public async Task Combination_OdataMcp429_ShopMcpAndProductsStillOk()
+        public async Task Combination_ODataMcp429_ShopMcpAndProductsStillOk()
         {
             using var client = TestServer.CreateClient();
             (await client.PostAsync("odata/mcp", RestierJsonContent.Json("{}"))).StatusCode.Should().NotBe(HttpStatusCode.TooManyRequests);

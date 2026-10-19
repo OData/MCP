@@ -33,7 +33,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().Be("Declared entity sets: 0.");
-            OdataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent).Should().BeEmpty();
+            ODataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent).Should().BeEmpty();
             capture.Requests.Should().BeEmpty();
         }
 

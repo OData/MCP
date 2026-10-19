@@ -21,7 +21,7 @@ Agents run real OData operations through MCP 2.
 | In-process OData query engine | Forward to OData |
 | `Microsoft.OData.Core` | Not on our path; not AOT-friendly |
 | EdmLib in Core or Tools | AOT + historical perf |
-| Third schema type (`IOdataSchema`) | Core model is the projection |
+| Third schema type (`IODataSchema`) | Core model is the projection |
 | DotNetDocs scraper | Consume annotations only |
 | Redis / feature flags / IP allowlists | No engine, no type |
 | `shutdown_server` on AspNetCore | Local Tools only |
@@ -200,4 +200,4 @@ Breakdance for DI. Official Northwind (read) and TripPin (read/write). **OData 7
 
 ## 9. Forbidden public names
 
-`AddODataMcpServer`, `/mcp/tools/execute`, `Microsoft.OData.Mcp.Sidecar`, `IOdataSchema` as a shipped type, `queryCustomers`.
+`AddODataMcpServer`, `/mcp/tools/execute`, `Microsoft.OData.Mcp.Sidecar`, `IODataSchema` as a shipped type, `queryCustomers`.

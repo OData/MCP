@@ -29,7 +29,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             using var client = CreateClient();
             using var firstResponse = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp");
             var firstBody = await McpJsonRpc.ReadBodyAsync(firstResponse);
-            using var first = JsonDocument.Parse(OdataListEntitySetsHostTests.ReadJsonRpcPayload(firstBody));
+            using var first = JsonDocument.Parse(ODataListEntitySetsHostTests.ReadJsonRpcPayload(firstBody));
             var firstResult = first.RootElement.GetProperty("result");
             var firstNames = ReadNames(firstResult);
             var cursor = firstResult.GetProperty("nextCursor").GetString();
@@ -44,7 +44,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             using var secondResponse = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp", cursor);
             var secondBody = await McpJsonRpc.ReadBodyAsync(secondResponse);
-            using var second = JsonDocument.Parse(OdataListEntitySetsHostTests.ReadJsonRpcPayload(secondBody));
+            using var second = JsonDocument.Parse(ODataListEntitySetsHostTests.ReadJsonRpcPayload(secondBody));
             var secondResult = second.RootElement.GetProperty("result");
             var secondNames = ReadNames(secondResult);
 
@@ -64,12 +64,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             using var client = CreateClient();
             using var empty = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp", "");
             var emptyBody = await McpJsonRpc.ReadBodyAsync(empty);
-            using var emptyDocument = JsonDocument.Parse(OdataListEntitySetsHostTests.ReadJsonRpcPayload(emptyBody));
+            using var emptyDocument = JsonDocument.Parse(ODataListEntitySetsHostTests.ReadJsonRpcPayload(emptyBody));
             emptyDocument.RootElement.GetProperty("error").GetProperty("code").GetInt32().Should().Be(-32602);
 
             using var garbage = await McpJsonRpc.ListToolsAsync(client, "/odata/mcp", "not-a-cursor");
             var garbageBody = await McpJsonRpc.ReadBodyAsync(garbage);
-            using var garbageDocument = JsonDocument.Parse(OdataListEntitySetsHostTests.ReadJsonRpcPayload(garbageBody));
+            using var garbageDocument = JsonDocument.Parse(ODataListEntitySetsHostTests.ReadJsonRpcPayload(garbageBody));
             garbageDocument.RootElement.GetProperty("error").GetProperty("code").GetInt32().Should().Be(-32602);
         }
 

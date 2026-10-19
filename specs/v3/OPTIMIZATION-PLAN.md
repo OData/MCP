@@ -43,7 +43,7 @@ src/Microsoft.OData.Mcp.Core/
   Catalog/ODataToolDescriptor.cs                   # OutputSchema
   Catalog/ODataToolRuntime.cs                      # describe text/json, describe_model, call, validate
   Catalog/EdmTypeShape.cs                          # NEW — cached shape
-  Constants/ODataMcpCatalogConstants.cs            # OdataDescribeModel, Format, Detail, Computed, …
+  Constants/ODataMcpCatalogConstants.cs            # ODataDescribeModel, Format, Detail, Computed, …
 
 src/Microsoft.OData.Mcp.AspNetCore/
   Adaptation/EdmModelAdapter.cs                    # enums + Computed
@@ -168,7 +168,7 @@ Do not change product code in this task.
 - Modify: `ODataMcpCatalog.BuildGenericTools` — describe `InputSchema` adds optional `format` enum `text`|`json`
 - Modify: `ODataToolRuntime.DescribeType` — default `text` per [TYPE-SHAPES.md](./TYPE-SHAPES.md) §1.1; `format=json` §1.2; bound operations; enums; omit null docs; drop `entityTypeDescription`
 - Modify: `BuildTypeCard` — compact JSON, same bound ops/enums, omit-null
-- Modify: existing describe tests (`OdataDescribeTypeHostTests`, live Northwind/TripPin describe tests) so they assert the **new** shape, not `"nullable":false` blobs
+- Modify: existing describe tests (`ODataDescribeTypeHostTests`, live Northwind/TripPin describe tests) so they assert the **new** shape, not `"nullable":false` blobs
 - Modify: [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md) describe section
 - Regenerator: Task 1 generator now writes text + json describe files; tests lock `Current/`
 
@@ -185,7 +185,7 @@ Do not change product code in this task.
 ### Task 5: `odata_describe_model`
 
 **Files:**
-- Modify: constants — `OdataDescribeModel = "odata_describe_model"`, `Detail`, `Summary`, `Complete`, `Mermaid`, `Sets`
+- Modify: constants — `ODataDescribeModel = "odata_describe_model"`, `Detail`, `Summary`, `Complete`, `Mermaid`, `Sets`
 - Modify: `BuildGenericTools` — 11th generic **after** `odata_describe_type`, before `odata_query` (keep documented order; update `Catalog_GenericTools_HaveExpectedNames` to insert it there)
 - Modify: `ODataToolRuntime.InvokeAsync` switch + `DescribeModel`
 - [TYPE-SHAPES.md](./TYPE-SHAPES.md) §6.2
@@ -257,7 +257,7 @@ odata_call
 - Modify: `BuildGenericTools` `odata_call` InputSchema
 - Modify: `CallOperationAsync` — read `parameters` object; no `body`; no extra top-level args; collection-bound: `entitySet` no `key`; validate then HTTP
 - Modify: `CreateAsync` / named create path — validate required-on-create and types before HTTP
-- Modify: `OdataCallHostTests` and live TripPin call tests
+- Modify: `ODataCallHostTests` and live TripPin call tests
 - TOOL-TEST-MANIFEST §15
 
 Validation table is [OPTIMIZATION.md](./OPTIMIZATION.md) §4. Int64/Decimal accept number or string. Int32 number only.

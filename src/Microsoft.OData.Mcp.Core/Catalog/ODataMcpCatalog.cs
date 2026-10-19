@@ -616,7 +616,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Names, types, and keys of declared entity sets.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
-                    Name = OdataListEntitySets,
+                    Name = ODataListEntitySets,
                     OutputSchema = """{"type":"object","properties":{"entitySets":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"entityType":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}},"description":{"type":"string"}},"required":["name","entityType","keys"]}}},"required":["entitySets"]}""",
                     ReadOnlyHint = true,
                     IdempotentHint = true,
@@ -626,7 +626,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Declared properties, keys, navigations, bound operations, and enums for a set or an entity, complex, or enum type. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.",
                     InputSchema = """{"type":"object","properties":{"name":{"type":"string","description":"Entity set or type name declared in the model."},"format":{"type":"string","enum":["text","json"]}},"required":["name"]}""",
-                    Name = OdataDescribeType,
+                    Name = ODataDescribeType,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "Describe type"
@@ -635,7 +635,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "summary (default): sets, keys, navigations, then unbound operations. complete: every type with properties, enums, and bound operations, then unbound operations. Prefer complete instead of calling odata_describe_type once per type. Pass sets to scope a large model. format=text (default), json, or mermaid. Do not read $metadata to explore.",
                     InputSchema = """{"type":"object","properties":{"detail":{"type":"string","enum":["summary","complete"]},"format":{"type":"string","enum":["text","json","mermaid"]},"sets":{"type":"array","items":{"type":"string"},"description":"Entity set names to include. Omit for every included set."}}}""",
-                    Name = OdataDescribeModel,
+                    Name = ODataDescribeModel,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "Describe model"
@@ -644,7 +644,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Queries an entity set. Parameter names do not include $; the executor adds $filter, $select, $orderby, $expand, $top, $skip, and $count.",
                     InputSchema = querySchema,
-                    Name = OdataQuery,
+                    Name = ODataQuery,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "Query entity set"
@@ -653,7 +653,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Gets an entity by key. Optional select and expand shape the result.",
                     InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"select":{"type":"string"},"expand":{"type":"string"}},"required":["entitySet","key"]}""",
-                    Name = OdataGet,
+                    Name = ODataGet,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "Get entity"
@@ -662,7 +662,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "JSON object in body. Include every property the type lists as required on create (odata_describe_type). Client-assigned keys are required; omit store-generated keys.",
                     InputSchema = """{"type":"object","properties":{"entitySet":{"type":"string"},"body":{"type":"object","description":"The entity as a JSON object, not a string."}},"required":["entitySet","body"]}""",
-                    Name = OdataCreate,
+                    Name = ODataCreate,
                     Title = "Create entity"
                 },
                 new ODataToolDescriptor
@@ -670,7 +670,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     Description = "PATCH object in body. Send only fields to change. Omitted fields keep their values. JSON null clears an optional property; never send it for a required one.",
                     IdempotentHint = true,
                     InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"body":{"type":"object","description":"Changed properties as a JSON object, not a string."}},"required":["entitySet","key","body"]}""",
-                    Name = OdataUpdate,
+                    Name = ODataUpdate,
                     Title = "Update entity"
                 },
                 new ODataToolDescriptor
@@ -679,14 +679,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     DestructiveHint = true,
                     IdempotentHint = true,
                     InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}}},"required":["entitySet","key"]}""",
-                    Name = OdataDelete,
+                    Name = ODataDelete,
                     Title = "Delete entity"
                 },
                 new ODataToolDescriptor
                 {
                     Description = "Follows a navigation property from a key. Accepts the same query options as odata_query.",
                     InputSchema = $$$"""{"type":"object","properties":{"entitySet":{"type":"string"},"key":{{{KeySchema}}},"navigation":{"type":"string"},"filter":{"type":"string"},"select":{"type":"string"},"orderby":{"type":"string"},"expand":{"type":"string"},"top":{"type":"number"},"skip":{"type":"number"},"count":{"type":"boolean"}},"required":["entitySet","key","navigation"]}""",
-                    Name = OdataNavigate,
+                    Name = ODataNavigate,
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = "Navigate"
@@ -695,7 +695,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Unbound operations on the service.",
                     InputSchema = """{"type":"object","properties":{},"additionalProperties":false}""",
-                    Name = OdataListOperations,
+                    Name = ODataListOperations,
                     OutputSchema = """{"type":"object","properties":{"operations":{"type":"object","additionalProperties":{"type":"string"}}}}""",
                     ReadOnlyHint = true,
                     IdempotentHint = true,
@@ -705,7 +705,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 {
                     Description = "Call a declared operation by name as listed on odata_describe_type (bound) or odata_list_operations (unbound). Put every argument in parameters using the declared parameter names; do not stringify; do not add extra top-level fields; do not wrap under the operation name. Instance-bound (the default for bound): also entitySet and key. Collection-bound (// collection on the listing): entitySet only. Unbound: neither. The server sends GET or POST as declared — do not pass a method. // writes means it mutates. If arguments are wrong the tool errors with the signature; do not guess a different payload shape.",
                     InputSchema = $$$"""{"type":"object","properties":{"name":{"type":"string"},"parameters":{"type":"object","description":"Operation arguments keyed by the declared parameter names. Omit when the operation takes none."},"entitySet":{"type":"string"},"key":{{{KeySchema}}}},"required":["name"],"additionalProperties":false}""",
-                    Name = OdataCall,
+                    Name = ODataCall,
                     Title = "Call operation"
                 }
             ];

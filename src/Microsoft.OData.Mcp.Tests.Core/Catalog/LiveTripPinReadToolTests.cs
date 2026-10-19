@@ -171,7 +171,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Bound ShareTrip without entitySet is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet()
+        public async Task ODataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -188,7 +188,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Bound ShareTrip without key is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_BoundWithoutKey_IsErrorMissingKey()
+        public async Task ODataCall_BoundWithoutKey_IsErrorMissingKey()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -205,7 +205,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// GetFavoriteAirline is called when declared.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline()
+        public async Task ODataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var described = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "People"), CancellationToken.None);
@@ -232,7 +232,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// GetNearestAirport with lat/lon matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_TripPin_GetNearestAirport_LatLon_MatchHttp()
+        public async Task ODataCall_TripPin_GetNearestAirport_LatLon_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -252,7 +252,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Case-insensitive operation names resolve.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_CaseInsensitiveName_mostvaluable()
+        public async Task ODataCall_CaseInsensitiveName_mostvaluable()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -268,7 +268,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// An unknown parameter is an error before HTTP; nothing is scraped into the path.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp()
+        public async Task ODataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -285,7 +285,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// String function parameters are quoted as OData literals.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings()
+        public async Task ODataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -305,7 +305,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unbound functions reject entitySet and key instead of silently dropping them.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UnboundWithEntitySetAndKey_IsError()
+        public async Task ODataCall_UnboundWithEntitySetAndKey_IsError()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -322,7 +322,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Call does not use an entity-set query path.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_DoesNotUseOdataQueryPath()
+        public async Task ODataCall_DoesNotUseODataQueryPath()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -339,7 +339,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A missing non-nullable function parameter fails before HTTP with the signature.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_MissingFunctionParam_FailsBeforeHttp()
+        public async Task ODataCall_MissingFunctionParam_FailsBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -356,7 +356,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Deep expand Friends($expand=Friends) is forwarded.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_DeepExpand_TripPinFriends()
+        public async Task ODataGet_DeepExpand_TripPinFriends()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -375,7 +375,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get russellwhyte quotes the string key.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_TripPin_PersonRussellwhyte()
+        public async Task ODataGet_TripPin_PersonRussellwhyte()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -392,7 +392,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown person keys 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_UnknownKey999_IsError404()
+        public async Task ODataGet_UnknownKey999_IsError404()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -408,7 +408,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Concurrent Friends and Trips navigations succeed.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_ConcurrentFriendsAndTrips()
+        public async Task ODataNavigate_ConcurrentFriendsAndTrips()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var friends = runtime.InvokeAsync(
@@ -428,7 +428,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Deep expand on Friends is forwarded.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_DeepExpandFriendsFriends()
+        public async Task ODataNavigate_DeepExpandFriendsFriends()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -447,7 +447,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// To-many Friends does not inject default top.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_DoesNotAddDefaultTopOnToMany()
+        public async Task ODataNavigate_DoesNotAddDefaultTopOnToMany()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -463,7 +463,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Friends count=true is forwarded.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_Friends_CountTrue()
+        public async Task ODataNavigate_TripPin_Friends_CountTrue()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -480,7 +480,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Omitting top on Friends does not inject top.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_Friends_OmitTop_DoesNotInjectTop_ServerMayPage()
+        public async Task ODataNavigate_TripPin_Friends_OmitTop_DoesNotInjectTop_ServerMayPage()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -496,7 +496,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Friends skip/top/filter/orderby/select match HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_Friends_SkipTopFilterOrderbySelect_MatchHttp()
+        public async Task ODataNavigate_TripPin_Friends_SkipTopFilterOrderbySelect_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -530,7 +530,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Russell Whyte Friends matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_RussellwhyteFriends_ToMany_MatchHttp()
+        public async Task ODataNavigate_TripPin_RussellwhyteFriends_ToMany_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -550,7 +550,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Russell Whyte Trips matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_RussellwhyteTrips_ToMany_MatchHttp()
+        public async Task ODataNavigate_TripPin_RussellwhyteTrips_ToMany_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -568,7 +568,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Navigate after query uses the UserName key.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_AfterQueryPeople_UsesUserNameKey()
+        public async Task ODataNavigate_AfterQueryPeople_UsesUserNameKey()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var queried = await runtime.InvokeAsync(
@@ -589,7 +589,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Deep expand Friends($expand=Friends) on query.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DeepExpandIfServerAllows_TripPinFriendsFriends()
+        public async Task ODataQuery_DeepExpandIfServerAllows_TripPinFriendsFriends()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -608,7 +608,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Filter UserName eq russellwhyte.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_FilterUserNameEqRussellwhyte()
+        public async Task ODataQuery_TripPin_FilterUserNameEqRussellwhyte()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -625,7 +625,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Expand Friends matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_ExpandFriends_MatchHttp()
+        public async Task ODataQuery_TripPin_ExpandFriends_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -644,7 +644,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Orderby UserName skip/top/count.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_OrderbyUserNameSkipTopCount()
+        public async Task ODataQuery_TripPin_OrderbyUserNameSkipTopCount()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -665,7 +665,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// People top 2 matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_PeopleTop2_MatchHttp()
+        public async Task ODataQuery_TripPin_PeopleTop2_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -687,7 +687,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown TripPin sets 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_UnknownSet_404()
+        public async Task ODataQuery_TripPin_UnknownSet_404()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "DoesNotExist"), CancellationToken.None);

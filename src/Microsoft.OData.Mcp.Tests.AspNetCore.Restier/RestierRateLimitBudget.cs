@@ -20,7 +20,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// <summary>
         /// Gets permits for <c>/odata/mcp</c>.
         /// </summary>
-        public int OdataMcp { get; init; }
+        public int ODataMcp { get; init; }
 
         /// <summary>
         /// Gets permits for <c>/shop/Products</c>.

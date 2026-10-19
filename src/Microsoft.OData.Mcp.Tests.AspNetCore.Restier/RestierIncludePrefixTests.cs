@@ -111,7 +111,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Only the included prefix has an MCP session.
         /// </summary>
         [TestMethod]
-        public void IncludePrefixes_OnlyOdataSession()
+        public void IncludePrefixes_OnlyODataSession()
         {
             var factory = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>();
 
@@ -141,7 +141,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// MCP is mapped on odata and not on shop.
         /// </summary>
         [TestMethod]
-        public async Task IncludePrefixes_McpOnlyOnOdata()
+        public async Task IncludePrefixes_McpOnlyOnOData()
         {
             using var client = TestServer.CreateClient();
             var enabled = await client.PostAsync("odata/mcp", RestierJsonContent.Json("{}"));

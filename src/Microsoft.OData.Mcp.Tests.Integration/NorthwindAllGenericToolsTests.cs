@@ -105,7 +105,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Unknown operations are not declared.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_Northwind_AnyNameNotInModel_NotDeclared()
+        public async Task ODataCall_Northwind_AnyNameNotInModel_NotDeclared()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Ghost"), CancellationToken.None);
@@ -119,7 +119,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Creating Products on read-only Northwind fails.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_Northwind_Products_IsError4xxOr405()
+        public async Task ODataCreate_Northwind_Products_IsError4xxOr405()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -136,7 +136,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Deleting Products on read-only Northwind fails.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_Northwind_405Or4xx()
+        public async Task ODataDelete_Northwind_405Or4xx()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -150,7 +150,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Get ALFKI quotes the string key.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_CustomerALFKI_StringKeyQuoted()
+        public async Task ODataGet_Northwind_CustomerALFKI_StringKeyQuoted()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "ALFKI"), CancellationToken.None);
@@ -164,7 +164,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Already-quoted ALFKI is not double-quoted.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted()
+        public async Task ODataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "'ALFKI'"), CancellationToken.None);
@@ -178,7 +178,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Composite Order_Details keys must be unquoted on the wire.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_OrderDetails_CompositeKey()
+        public async Task ODataGet_Northwind_OrderDetails_CompositeKey()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var preview = await runtime.InvokeAsync(
@@ -200,7 +200,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Get Products(1) matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_Product1_MatchHttp()
+        public async Task ODataGet_Northwind_Product1_MatchHttp()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -217,7 +217,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Navigate Customer ALFKI Orders.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp()
+        public async Task ODataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -233,7 +233,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Navigate Product 1 Category.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_Product1Category_ToOne_MatchHttp()
+        public async Task ODataNavigate_Northwind_Product1Category_ToOne_MatchHttp()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -250,7 +250,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Navigate Product 1 Order_Details.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_Product1OrderDetails_ToMany_Page()
+        public async Task ODataNavigate_Northwind_Product1OrderDetails_ToMany_Page()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -266,7 +266,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// $filter on query is ignored.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
+        public async Task ODataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -283,7 +283,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Omit top does not add top on the wire.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_OmitTop_DoesNotAddTopOnWire()
+        public async Task ODataQuery_Northwind_OmitTop_DoesNotAddTopOnWire()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Categories"), CancellationToken.None);
@@ -295,7 +295,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Skip+top matches the HTTP twin via <see cref="ODataFeedReader"/>.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp()
+        public async Task ODataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp()
         {
             var (runtime, _) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -316,7 +316,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Updating Products on read-only Northwind fails.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_Northwind_IsError4xxOr405()
+        public async Task ODataUpdate_Northwind_IsError4xxOr405()
         {
             var (runtime, capture) = await CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(

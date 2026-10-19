@@ -132,7 +132,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// odata_get Products spends the Products budget.
         /// </summary>
         [TestMethod]
-        public async Task Rate_OdataGetProducts_ConsumesProductsBudget()
+        public async Task Rate_ODataGetProducts_ConsumesProductsBudget()
         {
             var runtime = Session().Runtime;
             (await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None)).IsError.Should().BeFalse();
@@ -146,7 +146,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// odata_call does not consume Customers.
         /// </summary>
         [TestMethod]
-        public async Task Rate_OdataCallFunction_DoesNotConsumeCustomers()
+        public async Task Rate_ODataCallFunction_DoesNotConsumeCustomers()
         {
             var runtime = Session().Runtime;
             (await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "MostValuable"), CancellationToken.None)).IsError.Should().BeFalse();

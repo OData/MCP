@@ -142,7 +142,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// GET /odata/mcp is not 404.
         /// </summary>
         [TestMethod]
-        public async Task GetOdataMcp_Not404()
+        public async Task GetODataMcp_Not404()
         {
             using var client = TestServer.CreateClient();
             using var response = await client.GetAsync("/odata/mcp");
@@ -177,7 +177,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// POST /odata/mcp with a real tools/call is not an empty-object smoke test.
         /// </summary>
         [TestMethod]
-        public async Task PostOdataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest()
+        public async Task PostODataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest()
         {
             using var client = TestServer.CreateClient();
             using var response = await McpJsonRpc.CallToolAsync(client, "/odata/mcp", "odata_query", """{"entitySet":"Customers"}""");
@@ -245,7 +245,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// resources/list: metadata first, then sets, odata scheme.
         /// </summary>
         [TestMethod]
-        public void ResourcesList_OData8_MetadataFirstThenSets_OdataScheme()
+        public void ResourcesList_OData8_MetadataFirstThenSets_ODataScheme()
         {
             var resources = Session().Catalog.Resources;
             resources[0].Name.Should().Be("$metadata");
@@ -342,7 +342,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Unknown URI is empty, not an OData query.
         /// </summary>
         [TestMethod]
-        public async Task ResourcesRead_UnknownUri_EmptyOrError_NotOdataQuery()
+        public async Task ResourcesRead_UnknownUri_EmptyOrError_NotODataQuery()
         {
             using var client = TestServer.CreateClient();
             using var response = await PostRpcAsync(
@@ -627,7 +627,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Open-world hint is true on OData tools.
         /// </summary>
         [TestMethod]
-        public void ToolsList_OpenWorldHintTrueOnOdataTools_FalseOnShutdown()
+        public void ToolsList_OpenWorldHintTrueOnODataTools_FalseOnShutdown()
         {
             Session().Catalog.Tools.Should().OnlyContain(tool => tool.OpenWorldHint);
         }
@@ -636,7 +636,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Operations-only catalogs are covered by OperationsOnlyHostTests; rich model has odata_call.
         /// </summary>
         [TestMethod]
-        public void ToolsList_OperationsOnly_NoNamedCrud_HasOdataCall()
+        public void ToolsList_OperationsOnly_NoNamedCrud_HasODataCall()
         {
             Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("odata_call");
         }

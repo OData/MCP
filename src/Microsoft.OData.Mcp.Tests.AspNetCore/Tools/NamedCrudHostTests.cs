@@ -92,7 +92,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Named create equals generic create.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_EqualsGenericOdataCreate()
+        public async Task CreateCustomer_EqualsGenericODataCreate()
         {
             var (runtime, _) = AuthorizedCapture();
             var named = await runtime.InvokeAsync("create_customer", ToolArguments.Of("CompanyName", "EqNamed"), CancellationToken.None);
@@ -244,7 +244,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Named get of key 1 matches generic get and HTTP.
         /// </summary>
         [TestMethod]
-        public async Task GetCustomer_OData8_Key1_MatchesOdataGetAndHttp()
+        public async Task GetCustomer_OData8_Key1_MatchesODataGetAndHttp()
         {
             using var client = CreateClient();
             var http = await client.GetStringAsync("/odata/Customers(1)");
@@ -374,7 +374,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Named list matches generic query with no injected top.
         /// </summary>
         [TestMethod]
-        public async Task ListCustomers_OData8_MatchesOdataQueryCustomers_NoTopInjected()
+        public async Task ListCustomers_OData8_MatchesODataQueryCustomers_NoTopInjected()
         {
             var (runtime, capture) = CreateCapturingRuntime();
             var named = await runtime.InvokeAsync("list_customers", null, CancellationToken.None);

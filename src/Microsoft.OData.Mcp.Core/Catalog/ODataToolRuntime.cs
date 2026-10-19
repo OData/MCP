@@ -84,17 +84,17 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             {
                 var task = name switch
                 {
-                    OdataListEntitySets => Task.FromResult(ListEntitySets()),
-                    OdataDescribeType => Task.FromResult(DescribeType(args)),
-                    OdataDescribeModel => Task.FromResult(DescribeModel(args)),
-                    OdataQuery => QueryAsync(args, cancellationToken),
-                    OdataGet => GetAsync(args, cancellationToken),
-                    OdataCreate => CreateAsync(args, cancellationToken),
-                    OdataUpdate => UpdateAsync(args, cancellationToken),
-                    OdataDelete => DeleteAsync(args, cancellationToken),
-                    OdataNavigate => NavigateAsync(args, cancellationToken),
-                    OdataListOperations => Task.FromResult(ListOperations()),
-                    OdataCall => CallOperationAsync(args, cancellationToken),
+                    ODataListEntitySets => Task.FromResult(ListEntitySets()),
+                    ODataDescribeType => Task.FromResult(DescribeType(args)),
+                    ODataDescribeModel => Task.FromResult(DescribeModel(args)),
+                    ODataQuery => QueryAsync(args, cancellationToken),
+                    ODataGet => GetAsync(args, cancellationToken),
+                    ODataCreate => CreateAsync(args, cancellationToken),
+                    ODataUpdate => UpdateAsync(args, cancellationToken),
+                    ODataDelete => DeleteAsync(args, cancellationToken),
+                    ODataNavigate => NavigateAsync(args, cancellationToken),
+                    ODataListOperations => Task.FromResult(ListOperations()),
+                    ODataCall => CallOperationAsync(args, cancellationToken),
                     _ => InvokeNamedAsync(name, args, cancellationToken)
                 };
 
@@ -399,6 +399,24 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Describes a complex type, with the enum filter hint only when an entity property holds the type.
+        /// </summary>
+        /// <param name="complexType">The complex type.</param>
+        /// <param name="format"><c>text</c> or <c>json</c>.</param>
+        /// <returns>
+        /// The same text or JSON body the complete model renders for the type.
+        /// </returns>
+        internal ODataToolInvocationResult DescribeComplexType(EdmComplexType complexType, string format)
+        {
+            var model = _catalog._model;
+            var filterable = EdmModelShape.FilterableComplexTypes(model).Contains(complexType);
+
+            return format == JsonFormat
+                ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, complexType.Namespace, complexType.Name), EdmModelShape.RenderComplexTypeJson(model, complexType, filterable)), complexType.Name)
+                : CompleteText(EdmModelShape.RenderComplexTypeText(model, complexType, filterable));
+        }
+
+        /// <summary>
         /// Describes an entity type, paired with the set it was reached through when there is one.
         /// </summary>
         /// <param name="type">The entity type, or <c>null</c> when the name or set's type is not declared.</param>
@@ -512,11 +530,9 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             return matches.FirstOrDefault() switch
             {
                 EdmEntityType entityType => DescribeEntityType(entityType, null, name, format),
-                EdmComplexType complexType => format == JsonFormat
-                    ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, complexType.Namespace, complexType.Name), EdmModelShape.RenderComplexTypeJson(model, complexType)), complexType.Name)
-                    : CompleteText(EdmModelShape.RenderComplexTypeText(model, complexType)),
+                EdmComplexType complexType => DescribeComplexType(complexType, format),
                 EdmEnumType enumType => format == JsonFormat
-                    ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, enumType.Namespace, enumType.Name), EdmModelShape.RenderEnumTypeJson(enumType)), enumType.Name)
+                    ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, enumType.Namespace, enumType.Name), EdmModelShape.RenderEnumTypeJson(model, enumType)), enumType.Name)
                     : CompleteText(EdmModelShape.RenderEnumTypeText(model, enumType)),
                 _ => DescribeEntityType(null, null, name, format)
             };

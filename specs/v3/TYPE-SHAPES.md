@@ -184,13 +184,26 @@ A complex type renders like the `complete` dump: `Type  (complex)` header, then 
 
 ```
 ConnectionAuthorizationStatus  (enum)
+  // returned by IntegrationConnection[].Statuses
   // filter enums as NS.ConnectionAuthorizationStatus'{value}'
   Started = 0
   Succeeded = 1
   Failed = 2
 ```
 
-The header is `(enum, flags)` for a flags enumeration. `format=json` is `{ "Type": { "description"?, "longDescription"?, "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Started": 0 } } }`.
+Complex and enum types that an operation returns (directly or as a collection) carry `// returned by Binding.Name, Name` after their docs: `Binding.Name` for bound operations, `Binding[].Name` when collection-bound, bare `Name` for unbound. No signature; that stays on the binding type's `operations` block and in `odata_list_operations`. JSON: `"returnedBy": ["IntegrationConnection.Authorize"]`, omitted when empty. Entity types do not carry it.
+
+The `// filter enums as` hint (JSON `enumFilterLiterals`) appears on a complex type **only** when an entity property holds it, directly or through another complex type. A complex type that is only an operation parameter or result cannot be reached by `$filter`, so the hint would be noise. Enum types always keep it.
+
+```
+ConnectionAuthorizationTicket  (complex)
+  // returned by IntegrationConnection.Authorize
+  ConnectUri?: string
+  ExpiresIn?: int
+  Status: enum(Started|Succeeded|Failed)
+```
+
+The header is `(enum, flags)` for a flags enumeration. `format=json` is `{ "Type": { "description"?, "longDescription"?, "returnedBy"?: [...], "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Started": 0 } } }`.
 
 ### 6.2 `odata_describe_model`
 

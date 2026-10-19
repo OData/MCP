@@ -55,7 +55,7 @@ Grounded in:
 
 Each case name is a proposed `[TestMethod]`. Implementers copy the name, put it in the project named in **Project**, and assert the **Expect** column against a real OData HTTP twin when one is listed.
 
-A case that lists multiple hosts or surfaces is **N implementations**, not one parameterized skip. Example: `OdataQuery_OmitTop_DoesNotInjectDefaultTop` on AspNetCore×OData8, AspNetCore×Restier, Tools×Northwind, and Tools×TripPin is four methods (or one theory that still runs all four cells and fails per cell).
+A case that lists multiple hosts or surfaces is **N implementations**, not one parameterized skip. Example: `ODataQuery_OmitTop_DoesNotInjectDefaultTop` on AspNetCore×OData8, AspNetCore×Restier, Tools×Northwind, and Tools×TripPin is four methods (or one theory that still runs all four cells and fails per cell).
 
 **Never** collapse “the other tools work the same.” Named CRUD, `odata_navigate`, `odata_update`, `odata_delete`, `odata_call`, and JSON-RPC `tools/call` are first-class. `odata_query` coverage does not satisfy them.
 
@@ -533,157 +533,157 @@ Queries an entity set. Parameter names do not include `$`; the executor adds `$f
 
 ### Happy path
 
-70. **OdataQuery_OData8_Customers_MatchesGetOdataCustomers**  
+70. **ODataQuery_OData8_Customers_MatchesGetODataCustomers**  
     - **Call:** `{ "entitySet": "Customers" }` no top.  
     - **Twin:** GET `/odata/Customers`.  
     - **Expect:** same company names. Wire URI has **no** `$top`.
 
-71. **OdataQuery_OData8_Top1OrderbyCustomerId_Matches**  
+71. **ODataQuery_OData8_Top1OrderbyCustomerId_Matches**  
     - **Call:** `top=1`, `orderby=CustomerId`.  
     - **Twin:** GET `/odata/Customers?$orderby=CustomerId&$top=1`.  
     - **Expect:** Contoso only. Wire has `$top=1` and `$orderby=CustomerId`, not `top=`.
 
-72. **OdataQuery_OData8_FilterCompanyNameEqContoso_Matches**  
+72. **ODataQuery_OData8_FilterCompanyNameEqContoso_Matches**  
     - **Call:** `filter=CompanyName eq 'Contoso'`.  
     - **Twin:** `$filter=CompanyName eq 'Contoso'`.
 
-73. **OdataQuery_OData8_SelectCompanyName_Matches**  
+73. **ODataQuery_OData8_SelectCompanyName_Matches**  
     - **Call:** `select=CompanyName`.  
     - **Expect:** payload has CompanyName; twin `$select=CompanyName`.
 
-74. **OdataQuery_OData8_ExpandOrders_Matches**  
+74. **ODataQuery_OData8_ExpandOrders_Matches**  
     - **Call:** `expand=Orders`.  
     - **Twin:** `$expand=Orders`.  
     - **Expect:** same expand presence (empty collection ok).
 
-75. **OdataQuery_OData8_SkipWithoutTop_Passthrough**  
+75. **ODataQuery_OData8_SkipWithoutTop_Passthrough**  
     - **Call:** `orderby=CustomerId`, `skip=0` without top.  
     - **Twin:** `$skip=0` without `$top`.  
     - **Expect:** wire has `$skip` and no `$top`.
 
-76. **OdataQuery_OData8_CountTrue_ReturnsOdataCount**  
+76. **ODataQuery_OData8_CountTrue_ReturnsODataCount**  
     - **Call:** `count=true`.  
     - **Twin:** `$count=true`.
 
-77. **OdataQuery_PagingClient_FilterSkipTopOrderbySelect_MatchTwin**  
+77. **ODataQuery_PagingClient_FilterSkipTopOrderbySelect_MatchTwin**  
     - **Setup:** ClientCustomers five rows.  
     - **Call:** filter `CustomerId gt 1`, orderby `CustomerId`, skip 1, top 2, select `CompanyName`, count true.  
     - **Twin:** the `$`-prefixed equivalent.  
     - **Expect:** identical names and count.
 
-78. **OdataQuery_PagingServer_OmitTop_ReturnsPageSizeAndNextLink**  
+78. **ODataQuery_PagingServer_OmitTop_ReturnsPageSizeAndNextLink**  
     - **Setup:** ServerCustomers PageSize=2.  
     - **Call:** entitySet `ServerCustomers`, orderby only.  
     - **Twin:** GET without `$top`.  
     - **Expect:** two rows + nextLink. MCP did not inject top.
 
-79. **OdataQuery_PagingServer_SkipTop_SecondPageMatchesNextLinkPayload**  
+79. **ODataQuery_PagingServer_SkipTop_SecondPageMatchesNextLinkPayload**  
     - **Call:** skip/top matching the next page.  
     - **Twin:** follow `@odata.nextLink`.  
     - **Expect:** same keys (nextLink URL may include `$skiptoken`; skip/top is an equivalent assertion when PageSize and skip align).
 
-80. **OdataQuery_Restier_Customers_MatchesGet**  
-81. **OdataQuery_Restier_FilterFabrikam_Matches**  
-82. **OdataQuery_Restier_Top1OrderbyId_Matches**  
-83. **OdataQuery_Restier_SkipAndTop_MatchHttp**  
-84. **OdataQuery_Restier_OmitTop_ReturnsAllSeededRowsNoInjectedTop**  
-85. **OdataQuery_Northwind_ProductsTop1_ReturnsProduct**  
-86. **OdataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp**  
-87. **OdataQuery_Northwind_Skip0VsSkip1_PagesDiffer**  
-88. **OdataQuery_Northwind_FilterProductIDEq1_MatchHttp**  
-89. **OdataQuery_Northwind_SelectProductName_MatchHttp**  
-90. **OdataQuery_Northwind_ExpandCategory_MatchHttp**  
-91. **OdataQuery_Northwind_CountTrueTop0_ReturnsCount** — `top=0`, `count=true` if the service allows; else `top=1`+count.  
-92. **OdataQuery_Northwind_CustomersStringFilter_ALFKI** — `filter=CustomerID eq 'ALFKI'`.  
-93. **OdataQuery_Northwind_OmitTop_DoesNotAddTopOnWire** — capture Remote executor URI; no `$top` unless Northwind itself redirects with one (assert request, not response).  
-94. **OdataQuery_TripPin_PeopleTop2_MatchHttp**  
-95. **OdataQuery_TripPin_FilterUserNameEqRussellwhyte**  
-96. **OdataQuery_TripPin_ExpandFriends_MatchHttp**  
-97. **OdataQuery_TripPin_OrderbyUserNameSkipTopCount**  
-98. **OdataQuery_JsonRpcToolsCall_OData8_Customers**  
-99. **OdataQuery_JsonRpcToolsCall_Restier_Customers**  
-100. **OdataQuery_NamedListCustomers_SamePageAsGeneric** — see also §16; this generic case asserts generic payload equals `list_customers` for skip=1 top=2.
+80. **ODataQuery_Restier_Customers_MatchesGet**  
+81. **ODataQuery_Restier_FilterFabrikam_Matches**  
+82. **ODataQuery_Restier_Top1OrderbyId_Matches**  
+83. **ODataQuery_Restier_SkipAndTop_MatchHttp**  
+84. **ODataQuery_Restier_OmitTop_ReturnsAllSeededRowsNoInjectedTop**  
+85. **ODataQuery_Northwind_ProductsTop1_ReturnsProduct**  
+86. **ODataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp**  
+87. **ODataQuery_Northwind_Skip0VsSkip1_PagesDiffer**  
+88. **ODataQuery_Northwind_FilterProductIDEq1_MatchHttp**  
+89. **ODataQuery_Northwind_SelectProductName_MatchHttp**  
+90. **ODataQuery_Northwind_ExpandCategory_MatchHttp**  
+91. **ODataQuery_Northwind_CountTrueTop0_ReturnsCount** — `top=0`, `count=true` if the service allows; else `top=1`+count.  
+92. **ODataQuery_Northwind_CustomersStringFilter_ALFKI** — `filter=CustomerID eq 'ALFKI'`.  
+93. **ODataQuery_Northwind_OmitTop_DoesNotAddTopOnWire** — capture Remote executor URI; no `$top` unless Northwind itself redirects with one (assert request, not response).  
+94. **ODataQuery_TripPin_PeopleTop2_MatchHttp**  
+95. **ODataQuery_TripPin_FilterUserNameEqRussellwhyte**  
+96. **ODataQuery_TripPin_ExpandFriends_MatchHttp**  
+97. **ODataQuery_TripPin_OrderbyUserNameSkipTopCount**  
+98. **ODataQuery_JsonRpcToolsCall_OData8_Customers**  
+99. **ODataQuery_JsonRpcToolsCall_Restier_Customers**  
+100. **ODataQuery_NamedListCustomers_SamePageAsGeneric** — see also §16; this generic case asserts generic payload equals `list_customers` for skip=1 top=2.
 
 ### Misunderstood parameters
 
-101. **OdataQuery_MissingEntitySet_IsErrorContainsEntitySet**  
-102. **OdataQuery_WhitespaceEntitySet_IsError**  
-103. **OdataQuery_NullEntitySet_IsError**  
-104. **OdataQuery_EntityInsteadOfEntitySet_IsErrorMissingEntitySet** — `{ "entity": "Customers" }`.  
-105. **OdataQuery_SetInsteadOfEntitySet_IsError** — `{ "set": "Customers" }`.  
-106. **OdataQuery_DollarFilter_IsIgnoredSoUnfilteredResult** — `{ "entitySet": "Customers", "$filter": "CompanyName eq 'NoSuch'" }`. Twin unfiltered GET. Expect Contoso still present (filter not applied). Wire has no `$filter`.  
-107. **OdataQuery_DollarTop_IsIgnoredNotInjectedAsTop** — `{ "entitySet":"Customers", "$top": 1 }` returns full set on ClientCustomers (5 rows), not 1.  
-108. **OdataQuery_FilterWithDollarInValue_IsFine** — `filter=CompanyName eq '$top'`.  
-109. **OdataQuery_UsingGetArgs_KeyWithoutBeingGet_KeyIgnored** — `{ "entitySet":"Customers", "key":"1" }` still lists, does not GET by key.  
-110. **OdataQuery_SwappedKeyAndEntitySet_EntitySetIs1_IsError404FromOData** — `{ "entitySet":"1", "key":"Customers" }`.  
-111. **OdataQuery_TopAsString_1_Succeeds** — `"top": "1"`.  
-112. **OdataQuery_TopAsBoolTrue_OData400_IsErrorStatus400**  
-113. **OdataQuery_TopAsArray_OData400_IsError**  
-114. **OdataQuery_TopAsObject_OData400_IsError**  
-115. **OdataQuery_SkipAsString**  
-116. **OdataQuery_SkipAsBool_OData400**  
-117. **OdataQuery_CountAsStringTrue**  
-118. **OdataQuery_CountAsNumber1_ForwardedRaw_ODataMay400OrTreatTruthy** — assert twin `$count=1` if that is what is sent; document OData’s response.  
-119. **OdataQuery_CountAsStringYes_OData400**  
-120. **OdataQuery_FilterAsNumber_ForwardedRaw**  
-121. **OdataQuery_FilterAsArray_OData400**  
-122. **OdataQuery_UnknownPropertyFoo_Ignored** — still queries.  
-123. **OdataQuery_BodyProperty_IgnoredOnQuery**  
-124. **OdataQuery_NavigationProperty_IgnoredOnQuery**  
-125. **OdataQuery_SelectAsArrayOfStrings_RawTextArray_OData400**
+101. **ODataQuery_MissingEntitySet_IsErrorContainsEntitySet**  
+102. **ODataQuery_WhitespaceEntitySet_IsError**  
+103. **ODataQuery_NullEntitySet_IsError**  
+104. **ODataQuery_EntityInsteadOfEntitySet_IsErrorMissingEntitySet** — `{ "entity": "Customers" }`.  
+105. **ODataQuery_SetInsteadOfEntitySet_IsError** — `{ "set": "Customers" }`.  
+106. **ODataQuery_DollarFilter_IsIgnoredSoUnfilteredResult** — `{ "entitySet": "Customers", "$filter": "CompanyName eq 'NoSuch'" }`. Twin unfiltered GET. Expect Contoso still present (filter not applied). Wire has no `$filter`.  
+107. **ODataQuery_DollarTop_IsIgnoredNotInjectedAsTop** — `{ "entitySet":"Customers", "$top": 1 }` returns full set on ClientCustomers (5 rows), not 1.  
+108. **ODataQuery_FilterWithDollarInValue_IsFine** — `filter=CompanyName eq '$top'`.  
+109. **ODataQuery_UsingGetArgs_KeyWithoutBeingGet_KeyIgnored** — `{ "entitySet":"Customers", "key":"1" }` still lists, does not GET by key.  
+110. **ODataQuery_SwappedKeyAndEntitySet_EntitySetIs1_IsError404FromOData** — `{ "entitySet":"1", "key":"Customers" }`.  
+111. **ODataQuery_TopAsString_1_Succeeds** — `"top": "1"`.  
+112. **ODataQuery_TopAsBoolTrue_OData400_IsErrorStatus400**  
+113. **ODataQuery_TopAsArray_OData400_IsError**  
+114. **ODataQuery_TopAsObject_OData400_IsError**  
+115. **ODataQuery_SkipAsString**  
+116. **ODataQuery_SkipAsBool_OData400**  
+117. **ODataQuery_CountAsStringTrue**  
+118. **ODataQuery_CountAsNumber1_ForwardedRaw_ODataMay400OrTreatTruthy** — assert twin `$count=1` if that is what is sent; document OData’s response.  
+119. **ODataQuery_CountAsStringYes_OData400**  
+120. **ODataQuery_FilterAsNumber_ForwardedRaw**  
+121. **ODataQuery_FilterAsArray_OData400**  
+122. **ODataQuery_UnknownPropertyFoo_Ignored** — still queries.  
+123. **ODataQuery_BodyProperty_IgnoredOnQuery**  
+124. **ODataQuery_NavigationProperty_IgnoredOnQuery**  
+125. **ODataQuery_SelectAsArrayOfStrings_RawTextArray_OData400**
 
 ### Malformed payloads
 
-126. **OdataQuery_EmptyFilterString_ForwardsEmptyDollarFilter** — may 400; `IsError` if OData 400.  
-127. **OdataQuery_FilterUnicodeEmoji_CompanyNameEq** — `filter=CompanyName eq 'Contoso😀'` → empty or 400, not 500.  
-128. **OdataQuery_FilterInjectionOr1Eq1_StillValidODataOr400** — `filter=1 eq 1`. If allowed, returns all rows (OData boolean), **not** a SQL injection. Twin the same string.  
-129. **OdataQuery_FilterSqlDropTable_IsOData400OrEmptyNot500** — `filter=CompanyName eq 'x'; DROP TABLE Customers;--`.  
-130. **OdataQuery_FilterUnclosedQuote_OData400**  
-131. **OdataQuery_ExpandInjection_OData400** — `expand=Orders/$ref,NotANav`.  
-132. **OdataQuery_EntitySetEmptyString_IsErrorRequired**  
-133. **OdataQuery_EntitySetJsonNull_IsError**  
-134. **OdataQuery_JsonRpc_ArgumentsNull_MissingEntitySet**  
-135. **OdataQuery_JsonRpc_MalformedJson**  
-136. **OdataQuery_JsonRpc_WrongContentTypeXml**  
-137. **OdataQuery_JsonRpc_HugeArguments_McpOrGuard**
+126. **ODataQuery_EmptyFilterString_ForwardsEmptyDollarFilter** — may 400; `IsError` if OData 400.  
+127. **ODataQuery_FilterUnicodeEmoji_CompanyNameEq** — `filter=CompanyName eq 'Contoso😀'` → empty or 400, not 500.  
+128. **ODataQuery_FilterInjectionOr1Eq1_StillValidODataOr400** — `filter=1 eq 1`. If allowed, returns all rows (OData boolean), **not** a SQL injection. Twin the same string.  
+129. **ODataQuery_FilterSqlDropTable_IsOData400OrEmptyNot500** — `filter=CompanyName eq 'x'; DROP TABLE Customers;--`.  
+130. **ODataQuery_FilterUnclosedQuote_OData400**  
+131. **ODataQuery_ExpandInjection_OData400** — `expand=Orders/$ref,NotANav`.  
+132. **ODataQuery_EntitySetEmptyString_IsErrorRequired**  
+133. **ODataQuery_EntitySetJsonNull_IsError**  
+134. **ODataQuery_JsonRpc_ArgumentsNull_MissingEntitySet**  
+135. **ODataQuery_JsonRpc_MalformedJson**  
+136. **ODataQuery_JsonRpc_WrongContentTypeXml**  
+137. **ODataQuery_JsonRpc_HugeArguments_McpOrGuard**
 
 ### Server failures
 
-138. **OdataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess** — `DoesNotExist`. Twin GET 404. Text contains the status.  
-139. **OdataQuery_OData8_401IfQueryRequiresAuth** — if a set is `[Authorize]`; otherwise skip this cell only when the fixture has no authorized GET, and implement on an authorized-GET controller.  
-140. **OdataQuery_OData8_403ForbiddenSet** — fixture. Status in text.  
-141. **OdataQuery_405OnWrongMethodIsNotThisTool** — N/A for GET query; covered by create.  
-142. **OdataQuery_OData429OnCustomers_IsErrorStatus429RetryAfter** — A8 partitioned limiter Customers=1; first query ok; second `IsError` contains `429` and `Retry-After` when the limiter sets it.  
-143. **OdataQuery_OData500_IsErrorStatus500** — error controller.  
-144. **OdataQuery_OData503_IsErrorStatus503RetryAfter**  
-145. **OdataQuery_InvalidFilterSyntax_OData400** — `filter=this is not filter`.  
-146. **OdataQuery_Northwind_WriteVerbNotUsed** — GET only.  
-147. **OdataQuery_TripPin_UnknownSet_404**
+138. **ODataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess** — `DoesNotExist`. Twin GET 404. Text contains the status.  
+139. **ODataQuery_OData8_401IfQueryRequiresAuth** — if a set is `[Authorize]`; otherwise skip this cell only when the fixture has no authorized GET, and implement on an authorized-GET controller.  
+140. **ODataQuery_OData8_403ForbiddenSet** — fixture. Status in text.  
+141. **ODataQuery_405OnWrongMethodIsNotThisTool** — N/A for GET query; covered by create.  
+142. **ODataQuery_OData429OnCustomers_IsErrorStatus429RetryAfter** — A8 partitioned limiter Customers=1; first query ok; second `IsError` contains `429` and `Retry-After` when the limiter sets it.  
+143. **ODataQuery_OData500_IsErrorStatus500** — error controller.  
+144. **ODataQuery_OData503_IsErrorStatus503RetryAfter**  
+145. **ODataQuery_InvalidFilterSyntax_OData400** — `filter=this is not filter`.  
+146. **ODataQuery_Northwind_WriteVerbNotUsed** — GET only.  
+147. **ODataQuery_TripPin_UnknownSet_404**
 
 ### Overwhelm / rate limit / size
 
-148. **OdataQuery_MaxFilterLengthExceeded_IsErrorNoHttp** — filter of 2049 chars. Text contains `filter exceeds the maximum length`. Wire: no request.  
-149. **OdataQuery_MaxFilterLengthExact2048_IsAllowedAndSent**  
-150. **OdataQuery_MaxExpandLengthExceeded_IsErrorNoHttp** — 513 chars.  
-151. **OdataQuery_MaxSelectLengthExceeded_IsErrorNoHttp** — 1025 chars.  
-152. **OdataQuery_MaxResponseBytesExceeded_IsErrorSuggestSelectTop** — tiny max vs Northwind Products unpaged.  
-153. **OdataQuery_DoesNotClampTopToMaxTop** — `top=50` on a 5-row set returns 5, not a hidden 10. `top=1000` on Northwind is forwarded as `$top=1000` (service may cap; MCP must not rewrite to a smaller number).  
-154. **OdataQuery_DeepExpandIfServerAllows_TripPinFriendsFriends** — `expand=Friends($expand=Friends)` if TripPin allows; else OData 400 `IsError`.  
-155. **OdataQuery_WideExpandSelectOnNorthwind_WithinGuards**  
-156. **OdataQuery_McpTransport429_JsonRpcSecondCall** — HTTP 429, not tool status 429.  
-157. **OdataQuery_CustomersLimited_ProductsUnlimited_Independent** — spend Customers; Products query still works.  
-158. **OdataQuery_FunctionLimited_QueryStillWorks** — spend `MostValuable`; Customers query works.  
-159. **OdataQuery_SecondPrefixMcpLimited_FirstPrefixQueryWorks** — combinatorial.  
-160. **OdataQuery_ConcurrentTenQueries_NorthwindProductsTop1**  
-161. **OdataQuery_OperationsOnlyModel_QueryCustomers_404OrMissingSetError**
+148. **ODataQuery_MaxFilterLengthExceeded_IsErrorNoHttp** — filter of 2049 chars. Text contains `filter exceeds the maximum length`. Wire: no request.  
+149. **ODataQuery_MaxFilterLengthExact2048_IsAllowedAndSent**  
+150. **ODataQuery_MaxExpandLengthExceeded_IsErrorNoHttp** — 513 chars.  
+151. **ODataQuery_MaxSelectLengthExceeded_IsErrorNoHttp** — 1025 chars.  
+152. **ODataQuery_MaxResponseBytesExceeded_IsErrorSuggestSelectTop** — tiny max vs Northwind Products unpaged.  
+153. **ODataQuery_DoesNotClampTopToMaxTop** — `top=50` on a 5-row set returns 5, not a hidden 10. `top=1000` on Northwind is forwarded as `$top=1000` (service may cap; MCP must not rewrite to a smaller number).  
+154. **ODataQuery_DeepExpandIfServerAllows_TripPinFriendsFriends** — `expand=Friends($expand=Friends)` if TripPin allows; else OData 400 `IsError`.  
+155. **ODataQuery_WideExpandSelectOnNorthwind_WithinGuards**  
+156. **ODataQuery_McpTransport429_JsonRpcSecondCall** — HTTP 429, not tool status 429.  
+157. **ODataQuery_CustomersLimited_ProductsUnlimited_Independent** — spend Customers; Products query still works.  
+158. **ODataQuery_FunctionLimited_QueryStillWorks** — spend `MostValuable`; Customers query works.  
+159. **ODataQuery_SecondPrefixMcpLimited_FirstPrefixQueryWorks** — combinatorial.  
+160. **ODataQuery_ConcurrentTenQueries_NorthwindProductsTop1**  
+161. **ODataQuery_OperationsOnlyModel_QueryCustomers_404OrMissingSetError**
 
 ### Cross-tool interactions
 
-162. **OdataQuery_ThenGetFirstKey_OData8**  
-163. **OdataQuery_ThenNavigateOrders_OData8OrTripPinFriends**  
-164. **OdataQuery_ThenCreateThenQueryFilter_SeesNewRow** — Restier/TripPin/OData8-with-auth.  
-165. **OdataQuery_EqualsListCustomers_SameSkipTop**  
-166. **OdataQuery_DoesNotEqualResourceRead** — `resources/read` type card is not the collection.
+162. **ODataQuery_ThenGetFirstKey_OData8**  
+163. **ODataQuery_ThenNavigateOrders_OData8OrTripPinFriends**  
+164. **ODataQuery_ThenCreateThenQueryFilter_SeesNewRow** — Restier/TripPin/OData8-with-auth.  
+165. **ODataQuery_EqualsListCustomers_SameSkipTop**  
+166. **ODataQuery_DoesNotEqualResourceRead** — `resources/read` type card is not the collection.
 
 ---
 
@@ -702,72 +702,72 @@ Gets an entity by key. Required `entitySet` + `key`. Path `{entitySet}({FormatKe
 
 ### Happy path
 
-167. **OdataGet_OData8_Customer1_MatchesGetCustomers1** — key `"1"` unquoted on wire `Customers(1)`. Twin GET `/odata/Customers(1)` Contoso.  
-168. **OdataGet_OData8_SelectCompanyName** — `select=CompanyName`. Twin `$select`.  
-169. **OdataGet_OData8_ExpandOrders**  
-170. **OdataGet_Restier_Customer1_Contoso** — key `"1"`, path `Customers(1)`.  
-171. **OdataGet_Northwind_Product1_MatchHttp** — key `"1"` → `Products(1)`.  
-172. **OdataGet_Northwind_CustomerALFKI_StringKeyQuoted** — key `ALFKI` → wire `Customers('ALFKI')`. Twin GET `Customers('ALFKI')`.  
-173. **OdataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted** — key `'ALFKI'` → `Customers('ALFKI')` not `Customers('''ALFKI''')`.  
-174. **OdataGet_Northwind_OrderDetails_CompositeKey** — key `OrderID=10248,ProductID=11` (use a real pair from a prior query). Twin GET `Order_Details(OrderID=10248,ProductID=11)`. **Expect wire path unquoted composite.** Fail if `FormatKey` wraps the whole key in quotes.  
-175. **OdataGet_TripPin_PersonRussellwhyte** — key `russellwhyte` → `People('russellwhyte')`.  
-176. **OdataGet_GuidKey_Unquoted** — Widgets fixture.  
-177. **OdataGet_JsonRpcToolsCall_OData8_Customer1**  
-178. **OdataGet_EqualsGetCustomerNamedTool** — same payload as `get_customer` key 1.
+167. **ODataGet_OData8_Customer1_MatchesGetCustomers1** — key `"1"` unquoted on wire `Customers(1)`. Twin GET `/odata/Customers(1)` Contoso.  
+168. **ODataGet_OData8_SelectCompanyName** — `select=CompanyName`. Twin `$select`.  
+169. **ODataGet_OData8_ExpandOrders**  
+170. **ODataGet_Restier_Customer1_Contoso** — key `"1"`, path `Customers(1)`.  
+171. **ODataGet_Northwind_Product1_MatchHttp** — key `"1"` → `Products(1)`.  
+172. **ODataGet_Northwind_CustomerALFKI_StringKeyQuoted** — key `ALFKI` → wire `Customers('ALFKI')`. Twin GET `Customers('ALFKI')`.  
+173. **ODataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted** — key `'ALFKI'` → `Customers('ALFKI')` not `Customers('''ALFKI''')`.  
+174. **ODataGet_Northwind_OrderDetails_CompositeKey** — key `OrderID=10248,ProductID=11` (use a real pair from a prior query). Twin GET `Order_Details(OrderID=10248,ProductID=11)`. **Expect wire path unquoted composite.** Fail if `FormatKey` wraps the whole key in quotes.  
+175. **ODataGet_TripPin_PersonRussellwhyte** — key `russellwhyte` → `People('russellwhyte')`.  
+176. **ODataGet_GuidKey_Unquoted** — Widgets fixture.  
+177. **ODataGet_JsonRpcToolsCall_OData8_Customer1**  
+178. **ODataGet_EqualsGetCustomerNamedTool** — same payload as `get_customer` key 1.
 
 ### Misunderstood parameters
 
-179. **OdataGet_MissingKey_IsErrorContainsKey**  
-180. **OdataGet_MissingEntitySet_IsError**  
-181. **OdataGet_WhitespaceKey_IsError**  
-182. **OdataGet_IdInsteadOfKey_IsErrorMissingKey** — `{ "entitySet":"Customers", "id":"1" }`.  
-183. **OdataGet_EntityInsteadOfEntitySet_IsError**  
-184. **OdataGet_Swapped_EntitySetIsKey_KeyIsSetName** — `{ "entitySet":"1", "key":"Customers" }`.  
-185. **OdataGet_UsingQueryArgsWithoutKey_IsError** — `{ "entitySet":"Customers", "filter":"..." }`.  
-186. **OdataGet_DollarKey_IgnoredMissingKey** — `{ "entitySet":"Customers", "$key":"1" }`.  
-187. **OdataGet_KeyAsNumber_1_SucceedsNumeric** — JSON number `1` → `GetRawText()` `"1"` → unquoted.  
-188. **OdataGet_KeyAsBool_true_UnquotedPath** — may 404.  
-189. **OdataGet_KeyAsArray_IsErrorOr404**  
-190. **OdataGet_KeyAsObject_CompositeAttempt** — `{ "key": { "OrderID": 10248, "ProductID": 11 } }` → raw JSON object string, quoted as a whole → wrong path → 404 `IsError`. Documents that composite must be a string until structured keys exist.  
-191. **OdataGet_ExtraUnknownProps_Ignored**  
-192. **OdataGet_FilterOnGet_IsForwardedAsQueryOption** — `{ entitySet, key, filter }` **does** copy `filter` onto GET by key. Twin `Customers(1)?$filter=...`. Assert that; do not strip it in tests.
+179. **ODataGet_MissingKey_IsErrorContainsKey**  
+180. **ODataGet_MissingEntitySet_IsError**  
+181. **ODataGet_WhitespaceKey_IsError**  
+182. **ODataGet_IdInsteadOfKey_IsErrorMissingKey** — `{ "entitySet":"Customers", "id":"1" }`.  
+183. **ODataGet_EntityInsteadOfEntitySet_IsError**  
+184. **ODataGet_Swapped_EntitySetIsKey_KeyIsSetName** — `{ "entitySet":"1", "key":"Customers" }`.  
+185. **ODataGet_UsingQueryArgsWithoutKey_IsError** — `{ "entitySet":"Customers", "filter":"..." }`.  
+186. **ODataGet_DollarKey_IgnoredMissingKey** — `{ "entitySet":"Customers", "$key":"1" }`.  
+187. **ODataGet_KeyAsNumber_1_SucceedsNumeric** — JSON number `1` → `GetRawText()` `"1"` → unquoted.  
+188. **ODataGet_KeyAsBool_true_UnquotedPath** — may 404.  
+189. **ODataGet_KeyAsArray_IsErrorOr404**  
+190. **ODataGet_KeyAsObject_CompositeAttempt** — `{ "key": { "OrderID": 10248, "ProductID": 11 } }` → raw JSON object string, quoted as a whole → wrong path → 404 `IsError`. Documents that composite must be a string until structured keys exist.  
+191. **ODataGet_ExtraUnknownProps_Ignored**  
+192. **ODataGet_FilterOnGet_IsForwardedAsQueryOption** — `{ entitySet, key, filter }` **does** copy `filter` onto GET by key. Twin `Customers(1)?$filter=...`. Assert that; do not strip it in tests.
 
 ### Malformed payloads
 
-193. **OdataGet_EmptyKeyString_IsError**  
-194. **OdataGet_KeyWithEmoji_QuotedSent_404Or400**  
-195. **OdataGet_KeyOBrienApostrophe_Doubled** — `O'Brien` → `'O''Brien'`.  
-196. **OdataGet_JsonRpc_Malformed**  
-197. **OdataGet_JsonRpc_WrongContentType**  
-198. **OdataGet_KeyNull_IsError**
+193. **ODataGet_EmptyKeyString_IsError**  
+194. **ODataGet_KeyWithEmoji_QuotedSent_404Or400**  
+195. **ODataGet_KeyOBrienApostrophe_Doubled** — `O'Brien` → `'O''Brien'`.  
+196. **ODataGet_JsonRpc_Malformed**  
+197. **ODataGet_JsonRpc_WrongContentType**  
+198. **ODataGet_KeyNull_IsError**
 
 ### Server failures
 
-199. **OdataGet_UnknownKey999_IsError404** — OData8, Restier, Northwind Products(99999), TripPin People('no-such'). Twin 404. Text contains `404`.  
-200. **OdataGet_UnknownSet_404**  
-201. **OdataGet_UnauthorizedGet_401** — authorized-GET fixture; without header `IsError` 401. With forwarded Authorization succeeds.  
-202. **OdataGet_Forbidden_403**  
-203. **OdataGet_MethodNotAllowed_405** — if GET entity disabled.  
-204. **OdataGet_429OnSet_RetryAfter**  
-205. **OdataGet_500_StatusInText**  
-206. **OdataGet_Northwind_DoesNotCreate**
+199. **ODataGet_UnknownKey999_IsError404** — OData8, Restier, Northwind Products(99999), TripPin People('no-such'). Twin 404. Text contains `404`.  
+200. **ODataGet_UnknownSet_404**  
+201. **ODataGet_UnauthorizedGet_401** — authorized-GET fixture; without header `IsError` 401. With forwarded Authorization succeeds.  
+202. **ODataGet_Forbidden_403**  
+203. **ODataGet_MethodNotAllowed_405** — if GET entity disabled.  
+204. **ODataGet_429OnSet_RetryAfter**  
+205. **ODataGet_500_StatusInText**  
+206. **ODataGet_Northwind_DoesNotCreate**
 
 ### Overwhelm / rate limit / size
 
-207. **OdataGet_MaxExpandLengthExceeded_NoHttp**  
-208. **OdataGet_MaxSelectLengthExceeded_NoHttp**  
-209. **OdataGet_MaxResponseBytesTiny_IsError** — expand large TripPin person graph.  
-210. **OdataGet_McpHttp429**  
-211. **OdataGet_ConcurrentGets_NorthwindProducts1Through10**  
-212. **OdataGet_DeepExpand_TripPinFriends**
+207. **ODataGet_MaxExpandLengthExceeded_NoHttp**  
+208. **ODataGet_MaxSelectLengthExceeded_NoHttp**  
+209. **ODataGet_MaxResponseBytesTiny_IsError** — expand large TripPin person graph.  
+210. **ODataGet_McpHttp429**  
+211. **ODataGet_ConcurrentGets_NorthwindProducts1Through10**  
+212. **ODataGet_DeepExpand_TripPinFriends**
 
 ### Cross-tool interactions
 
-213. **OdataGet_AfterCreate_SeesNewEntity** — Restier/TripPin/OData8-auth.  
-214. **OdataGet_AfterUpdate_SeesPatch**  
-215. **OdataGet_AfterDelete_404**  
-216. **OdataGet_ThenNavigate**  
-217. **OdataGet_DoesNotEqualQueryTop1WithoutFilter** — get-by-key is not a list.
+213. **ODataGet_AfterCreate_SeesNewEntity** — Restier/TripPin/OData8-auth.  
+214. **ODataGet_AfterUpdate_SeesPatch**  
+215. **ODataGet_AfterDelete_404**  
+216. **ODataGet_ThenNavigate**  
+217. **ODataGet_DoesNotEqualQueryTop1WithoutFilter** — get-by-key is not a list.
 
 ---
 
@@ -788,89 +788,89 @@ Northwind cells are **failure** happy-paths (read-only service): `IsError` with 
 
 ### Happy path
 
-218. **OdataCreate_OData8_WithAuthorization_Returns201AndVisibleToGet**  
+218. **ODataCreate_OData8_WithAuthorization_Returns201AndVisibleToGet**  
     - **Setup:** in-process with `Authorization` on the MCP HTTP context (or executor-with-auth).  
     - **Call:** `{ entitySet: Customers, body: "{\"CompanyName\":\"Fabrikam\"}" }`.  
     - **Twin:** POST `/odata/Customers` same JSON with Authorization.  
     - **Expect:** success 201/200; GET/query shows Fabrikam.
 
-219. **OdataCreate_OData8_ObjectBodyNotString_SameAsString** — `body` as JSON object `{ "CompanyName": "ObjectCo" }`.
+219. **ODataCreate_OData8_ObjectBodyNotString_SameAsString** — `body` as JSON object `{ "CompanyName": "ObjectCo" }`.
 
-220. **OdataCreate_OData8_LeftoverPropertiesWithoutBody_PostsThem** — `{ entitySet, CompanyName: "Loose" }` no `body`.
+220. **ODataCreate_OData8_LeftoverPropertiesWithoutBody_PostsThem** — `{ entitySet, CompanyName: "Loose" }` no `body`.
 
-221. **OdataCreate_Restier_CustomerNorthwind_VisibleToHttpFilter**  
+221. **ODataCreate_Restier_CustomerNorthwind_VisibleToHttpFilter**  
     - **Call:** body `{ "Id": 3, "CompanyName": "Northwind" }` (or next id).  
     - **Twin:** POST `odata/Customers`.  
     - **Expect:** HTTP GET filter sees it (already partially covered; keep as create-tool-first).
 
-222. **OdataCreate_TripPin_PersonUniqueUserName_ThenGetThenDelete**  
+222. **ODataCreate_TripPin_PersonUniqueUserName_ThenGetThenDelete**  
     - **Call:** POST People with unique `UserName`, `FirstName`, `LastName`, required TripPin fields (`Emails`, `AddressInfo` as the service requires).  
     - **Twin:** POST live People.  
     - **Expect:** get by key succeeds; delete cleans up.
 
-223. **OdataCreate_JsonRpcToolsCall_Restier**  
-224. **OdataCreate_EqualsCreateCustomerNamed_Restier** — named `create_customer` with property args vs generic body.
+223. **ODataCreate_JsonRpcToolsCall_Restier**  
+224. **ODataCreate_EqualsCreateCustomerNamed_Restier** — named `create_customer` with property args vs generic body.
 
 ### Misunderstood parameters
 
-225. **OdataCreate_MissingEntitySet_IsError**  
-226. **OdataCreate_EntityInsteadOfEntitySet_IsError**  
-227. **OdataCreate_IdInsteadOfEntitySet_IsError**  
-228. **OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_PostsEmptyOrFilterAsProperty** — `{ entitySet: Customers, filter: "x", top: 1 }` without body: leftover serialization **includes `filter` and `top` in JSON body**. Expect OData 400 or ignored properties, **not** a query. Assert posted body contains those keys unless runtime later excludes query names on generic create (today `ReadBody` only strips `entitySet`/`key`). Lock current behavior: query names **are** posted on generic create without `body`.  
-229. **OdataCreate_UsingGetArgs_KeyInCreate_KeyStrippedFromBody** — `{ entitySet, key, CompanyName }` without body: `key` excluded from JSON; CompanyName posted.  
-230. **OdataCreate_BodyAsNumber_RawTextPosted** — likely 400.  
-231. **OdataCreate_BodyAsArray_PostedArray_400**  
-232. **OdataCreate_BodyAsBool_400**  
-233. **OdataCreate_DollarBody_IgnoredMissingBodySynthesizedFromRest**  
-234. **OdataCreate_SwappedBodyAndEntitySet** — entitySet is JSON, body is `"Customers"` → 404/400.
+225. **ODataCreate_MissingEntitySet_IsError**  
+226. **ODataCreate_EntityInsteadOfEntitySet_IsError**  
+227. **ODataCreate_IdInsteadOfEntitySet_IsError**  
+228. **ODataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_PostsEmptyOrFilterAsProperty** — `{ entitySet: Customers, filter: "x", top: 1 }` without body: leftover serialization **includes `filter` and `top` in JSON body**. Expect OData 400 or ignored properties, **not** a query. Assert posted body contains those keys unless runtime later excludes query names on generic create (today `ReadBody` only strips `entitySet`/`key`). Lock current behavior: query names **are** posted on generic create without `body`.  
+229. **ODataCreate_UsingGetArgs_KeyInCreate_KeyStrippedFromBody** — `{ entitySet, key, CompanyName }` without body: `key` excluded from JSON; CompanyName posted.  
+230. **ODataCreate_BodyAsNumber_RawTextPosted** — likely 400.  
+231. **ODataCreate_BodyAsArray_PostedArray_400**  
+232. **ODataCreate_BodyAsBool_400**  
+233. **ODataCreate_DollarBody_IgnoredMissingBodySynthesizedFromRest**  
+234. **ODataCreate_SwappedBodyAndEntitySet** — entitySet is JSON, body is `"Customers"` → 404/400.
 
 ### Malformed payloads
 
-235. **OdataCreate_EmptyBodyString_PostsEmpty_OData400Or415** — schema required but runtime posts `""`.  
-236. **OdataCreate_BodyOpenBraceOnly_MalformedJson_OData400** — `body: "{"`.  
-237. **OdataCreate_BodyNullJson_TreatedMissing_SynthesizesLeftovers**  
-238. **OdataCreate_BodyLiteralNullString**  
-239. **OdataCreate_InvalidJson_TrailingComma**  
-240. **OdataCreate_BinaryGarbageBody**  
-241. **OdataCreate_UnicodeCompanyName_SucceedsRestierAndTripPin** — `CompanyName: "北風 😀"`.  
-242. **OdataCreate_MissingRequiredCompanyName_OData8_400** — with auth, empty CompanyName. Twin 400. Status in tool text.  
-243. **OdataCreate_JsonRpc_Malformed**  
-244. **OdataCreate_JsonRpc_WrongContentTypeOnMcp** — MCP 415/400, not OData.
+235. **ODataCreate_EmptyBodyString_PostsEmpty_OData400Or415** — schema required but runtime posts `""`.  
+236. **ODataCreate_BodyOpenBraceOnly_MalformedJson_OData400** — `body: "{"`.  
+237. **ODataCreate_BodyNullJson_TreatedMissing_SynthesizesLeftovers**  
+238. **ODataCreate_BodyLiteralNullString**  
+239. **ODataCreate_InvalidJson_TrailingComma**  
+240. **ODataCreate_BinaryGarbageBody**  
+241. **ODataCreate_UnicodeCompanyName_SucceedsRestierAndTripPin** — `CompanyName: "北風 😀"`.  
+242. **ODataCreate_MissingRequiredCompanyName_OData8_400** — with auth, empty CompanyName. Twin 400. Status in tool text.  
+243. **ODataCreate_JsonRpc_Malformed**  
+244. **ODataCreate_JsonRpc_WrongContentTypeOnMcp** — MCP 415/400, not OData.
 
 ### Server failures
 
-245. **OdataCreate_OData8_WithoutAuthorization_IsError401** — tool `IsError`, text `401`. Twin POST without header 401. **In-process must forward Authorization when present** (case 246).  
-246. **OdataCreate_OData8_AuthorizationForwardedFromMcpHttpContext_Succeeds** — JSON-RPC tools/call with `Authorization` on POST `/odata/mcp`; in-process OData POST must include the same header.  
-247. **OdataCreate_OData8_Forbidden_403**  
-248. **OdataCreate_UnknownSet_404**  
-249. **OdataCreate_Northwind_Products_IsError4xxOr405** — read-only. Text has status.  
-250. **OdataCreate_405OnReadOnlyController**  
-251. **OdataCreate_409DuplicateKey_RestierOrFixture**  
-252. **OdataCreate_412Precondition** — if fixture uses If-Match on POST (rare); else 428 on missing precondition for a picky controller.  
-253. **OdataCreate_413ODataBodyTooLarge** — OData-layer limit smaller than MCP guard.  
-254. **OdataCreate_415UnsupportedMedia** — only if a path can send non-JSON; tool always JSON. Twin with `text/plain` 415.  
-255. **OdataCreate_428PreconditionRequired**  
-256. **OdataCreate_429OnSet_RetryAfter**  
-257. **OdataCreate_500**  
-258. **OdataCreate_503**  
-259. **OdataCreate_TripPin_MissingRequiredFields_400**
+245. **ODataCreate_OData8_WithoutAuthorization_IsError401** — tool `IsError`, text `401`. Twin POST without header 401. **In-process must forward Authorization when present** (case 246).  
+246. **ODataCreate_OData8_AuthorizationForwardedFromMcpHttpContext_Succeeds** — JSON-RPC tools/call with `Authorization` on POST `/odata/mcp`; in-process OData POST must include the same header.  
+247. **ODataCreate_OData8_Forbidden_403**  
+248. **ODataCreate_UnknownSet_404**  
+249. **ODataCreate_Northwind_Products_IsError4xxOr405** — read-only. Text has status.  
+250. **ODataCreate_405OnReadOnlyController**  
+251. **ODataCreate_409DuplicateKey_RestierOrFixture**  
+252. **ODataCreate_412Precondition** — if fixture uses If-Match on POST (rare); else 428 on missing precondition for a picky controller.  
+253. **ODataCreate_413ODataBodyTooLarge** — OData-layer limit smaller than MCP guard.  
+254. **ODataCreate_415UnsupportedMedia** — only if a path can send non-JSON; tool always JSON. Twin with `text/plain` 415.  
+255. **ODataCreate_428PreconditionRequired**  
+256. **ODataCreate_429OnSet_RetryAfter**  
+257. **ODataCreate_500**  
+258. **ODataCreate_503**  
+259. **ODataCreate_TripPin_MissingRequiredFields_400**
 
 ### Overwhelm / rate limit / size
 
-260. **OdataCreate_MaxRequestBodyBytesExceeded_IsErrorNoHttp** — body length > 262144 (or configured 64). Text contains `request body exceeds the maximum size`.  
-261. **OdataCreate_MaxRequestBodyBytesExact_Allowed**  
-262. **OdataCreate_MaxResponseBytesTinyOn201Payload_IsErrorAfterODataSucceeds** — entity was created; tool still `IsError` on oversized response. Follow-up GET should see the row (side effect). Document this.  
-263. **OdataCreate_McpHttp429**  
-264. **OdataCreate_ConcurrentCreates_RestierUniqueIds**  
-265. **OdataCreate_WideModel_CreateOnUnnamedSetViaGenericStillWorks** — set without named family.
+260. **ODataCreate_MaxRequestBodyBytesExceeded_IsErrorNoHttp** — body length > 262144 (or configured 64). Text contains `request body exceeds the maximum size`.  
+261. **ODataCreate_MaxRequestBodyBytesExact_Allowed**  
+262. **ODataCreate_MaxResponseBytesTinyOn201Payload_IsErrorAfterODataSucceeds** — entity was created; tool still `IsError` on oversized response. Follow-up GET should see the row (side effect). Document this.  
+263. **ODataCreate_McpHttp429**  
+264. **ODataCreate_ConcurrentCreates_RestierUniqueIds**  
+265. **ODataCreate_WideModel_CreateOnUnnamedSetViaGenericStillWorks** — set without named family.
 
 ### Cross-tool interactions
 
-266. **OdataCreate_ThenGet_ThenUpdate_ThenDelete_Restier**  
-267. **OdataCreate_ThenQueryFilter_SeesRow**  
-268. **OdataCreate_ThenNamedGet**  
-269. **OdataCreate_UnauthenticatedThenAuthenticated_OData8**  
-270. **OdataCreate_DoesNotCallQuery** — wire is POST not GET.
+266. **ODataCreate_ThenGet_ThenUpdate_ThenDelete_Restier**  
+267. **ODataCreate_ThenQueryFilter_SeesRow**  
+268. **ODataCreate_ThenNamedGet**  
+269. **ODataCreate_UnauthenticatedThenAuthenticated_OData8**  
+270. **ODataCreate_DoesNotCallQuery** — wire is POST not GET.
 
 ---
 
@@ -889,75 +889,75 @@ Updates an entity with PATCH `{entitySet}({key})`. Required `entitySet`, `key`, 
 
 ### Happy path
 
-271. **OdataUpdate_OData8_WithAuthorization_PatchesCompanyName_MatchesTwin**  
+271. **ODataUpdate_OData8_WithAuthorization_PatchesCompanyName_MatchesTwin**  
     - **Call:** key `1`, body `{ "CompanyName": "Updated" }`.  
     - **Twin:** PATCH `/odata/Customers(1)` with Authorization.  
     - **Expect:** success; GET shows Updated.
 
-272. **OdataUpdate_OData8_ObjectBody**  
-273. **OdataUpdate_OData8_LeftoverPropertiesWithoutBodyKey** — `{ entitySet, key, CompanyName: "LoosePatch" }` — `ReadBody` serializes leftovers including nothing stripped except entitySet/key.  
-274. **OdataUpdate_Restier_PatchCompanyName_VisibleToHttpGet**  
-275. **OdataUpdate_TripPin_PatchFirstName_ThenGet** — People('russellwhyte') is shared; prefer a person created in-test.  
-276. **OdataUpdate_JsonRpcToolsCall_OData8WithAuth**  
-277. **OdataUpdate_EqualsUpdateCustomerNamed**  
-278. **OdataUpdate_EmptySuccess204_TextContains204** — if service returns no body.
+272. **ODataUpdate_OData8_ObjectBody**  
+273. **ODataUpdate_OData8_LeftoverPropertiesWithoutBodyKey** — `{ entitySet, key, CompanyName: "LoosePatch" }` — `ReadBody` serializes leftovers including nothing stripped except entitySet/key.  
+274. **ODataUpdate_Restier_PatchCompanyName_VisibleToHttpGet**  
+275. **ODataUpdate_TripPin_PatchFirstName_ThenGet** — People('russellwhyte') is shared; prefer a person created in-test.  
+276. **ODataUpdate_JsonRpcToolsCall_OData8WithAuth**  
+277. **ODataUpdate_EqualsUpdateCustomerNamed**  
+278. **ODataUpdate_EmptySuccess204_TextContains204** — if service returns no body.
 
 ### Misunderstood parameters
 
-279. **OdataUpdate_MissingKey_IsError**  
-280. **OdataUpdate_MissingEntitySet_IsError**  
-281. **OdataUpdate_MissingBodyAndNoLeftovers_PostsEmptyObjectOrEmpty** — `{ entitySet, key }` only: leftover dict empty `{}`. May 400.  
-282. **OdataUpdate_IdInsteadOfKey_IsErrorMissingKey**  
-283. **OdataUpdate_EntityInsteadOfEntitySet**  
-284. **OdataUpdate_DollarFilterAsBody_IgnoredAsQueryNotSentOnPatch** — update does **not** pass query options (`UpdateAsync` queryOptions null). `$filter` leftover may land in body JSON.  
-285. **OdataUpdate_UsingQueryArgs_TopOnUpdate_GoesIntoBodyIfNoBody**  
-286. **OdataUpdate_UsingGetArgsOnly_NoBody**  
-287. **OdataUpdate_SwappedKeyAndEntitySet**  
-288. **OdataUpdate_KeyAsNumber**  
-289. **OdataUpdate_BodyAsArray_400**  
-290. **OdataUpdate_PutVsPatch_ToolAlwaysPatch** — wire method PATCH, never PUT.
+279. **ODataUpdate_MissingKey_IsError**  
+280. **ODataUpdate_MissingEntitySet_IsError**  
+281. **ODataUpdate_MissingBodyAndNoLeftovers_PostsEmptyObjectOrEmpty** — `{ entitySet, key }` only: leftover dict empty `{}`. May 400.  
+282. **ODataUpdate_IdInsteadOfKey_IsErrorMissingKey**  
+283. **ODataUpdate_EntityInsteadOfEntitySet**  
+284. **ODataUpdate_DollarFilterAsBody_IgnoredAsQueryNotSentOnPatch** — update does **not** pass query options (`UpdateAsync` queryOptions null). `$filter` leftover may land in body JSON.  
+285. **ODataUpdate_UsingQueryArgs_TopOnUpdate_GoesIntoBodyIfNoBody**  
+286. **ODataUpdate_UsingGetArgsOnly_NoBody**  
+287. **ODataUpdate_SwappedKeyAndEntitySet**  
+288. **ODataUpdate_KeyAsNumber**  
+289. **ODataUpdate_BodyAsArray_400**  
+290. **ODataUpdate_PutVsPatch_ToolAlwaysPatch** — wire method PATCH, never PUT.
 
 ### Malformed payloads
 
-291. **OdataUpdate_EmptyBodyString**  
-292. **OdataUpdate_MalformedJsonBrace**  
-293. **OdataUpdate_NullBody**  
-294. **OdataUpdate_UnicodePatch**  
-295. **OdataUpdate_JsonRpc_Malformed**  
-296. **OdataUpdate_JsonRpc_WrongContentType**
+291. **ODataUpdate_EmptyBodyString**  
+292. **ODataUpdate_MalformedJsonBrace**  
+293. **ODataUpdate_NullBody**  
+294. **ODataUpdate_UnicodePatch**  
+295. **ODataUpdate_JsonRpc_Malformed**  
+296. **ODataUpdate_JsonRpc_WrongContentType**
 
 ### Server failures
 
-297. **OdataUpdate_OData8_WithoutAuthorization_401**  
-298. **OdataUpdate_OData8_AuthorizationForwarded_Succeeds**  
-299. **OdataUpdate_UnknownKey_404**  
-300. **OdataUpdate_UnknownSet_404**  
-301. **OdataUpdate_Northwind_IsError4xxOr405**  
-302. **OdataUpdate_403**  
-303. **OdataUpdate_405IfPatchDisabled**  
-304. **OdataUpdate_409**  
-305. **OdataUpdate_412IfMatchFailure** — fixture If-Match.  
-306. **OdataUpdate_413**  
-307. **OdataUpdate_415**  
-308. **OdataUpdate_428**  
-309. **OdataUpdate_429RetryAfter**  
-310. **OdataUpdate_500**  
-311. **OdataUpdate_503**  
-312. **OdataUpdate_TripPin_PatchImmutableKey_400**
+297. **ODataUpdate_OData8_WithoutAuthorization_401**  
+298. **ODataUpdate_OData8_AuthorizationForwarded_Succeeds**  
+299. **ODataUpdate_UnknownKey_404**  
+300. **ODataUpdate_UnknownSet_404**  
+301. **ODataUpdate_Northwind_IsError4xxOr405**  
+302. **ODataUpdate_403**  
+303. **ODataUpdate_405IfPatchDisabled**  
+304. **ODataUpdate_409**  
+305. **ODataUpdate_412IfMatchFailure** — fixture If-Match.  
+306. **ODataUpdate_413**  
+307. **ODataUpdate_415**  
+308. **ODataUpdate_428**  
+309. **ODataUpdate_429RetryAfter**  
+310. **ODataUpdate_500**  
+311. **ODataUpdate_503**  
+312. **ODataUpdate_TripPin_PatchImmutableKey_400**
 
 ### Overwhelm / rate limit / size
 
-313. **OdataUpdate_MaxRequestBodyBytesExceeded_NoHttp**  
-314. **OdataUpdate_MaxResponseBytesTiny**  
-315. **OdataUpdate_McpHttp429**  
-316. **OdataUpdate_ConcurrentPatches_LastWriteWinsOr409** — Restier two patches same key.
+313. **ODataUpdate_MaxRequestBodyBytesExceeded_NoHttp**  
+314. **ODataUpdate_MaxResponseBytesTiny**  
+315. **ODataUpdate_McpHttp429**  
+316. **ODataUpdate_ConcurrentPatches_LastWriteWinsOr409** — Restier two patches same key.
 
 ### Cross-tool interactions
 
-317. **OdataUpdate_AfterCreate_BeforeDelete**  
-318. **OdataUpdate_ThenQueryFilterNewName**  
-319. **OdataUpdate_IdempotentSecondPatchSameBody_Succeeds**  
-320. **OdataUpdate_DoesNotDelete**
+317. **ODataUpdate_AfterCreate_BeforeDelete**  
+318. **ODataUpdate_ThenQueryFilterNewName**  
+319. **ODataUpdate_IdempotentSecondPatchSameBody_Succeeds**  
+320. **ODataUpdate_DoesNotDelete**
 
 ---
 
@@ -978,64 +978,64 @@ Note: convention `CustomersController.Delete` does **not** currently require Aut
 
 ### Happy path
 
-321. **OdataDelete_OData8_ExistingKey_204ThenGet404** — create-or-seed extra row if deleting Contoso would break other tests; prefer create-then-delete. Twin DELETE.  
-322. **OdataDelete_Restier_CreatedRow_ThenGet404**  
-323. **OdataDelete_TripPin_CreatedPerson_ThenGet404**  
-324. **OdataDelete_EmptyBody204_TextContainsStatus**  
-325. **OdataDelete_JsonRpcToolsCall_Restier**  
-326. **OdataDelete_EqualsDeleteCustomerNamed**  
-327. **OdataDelete_IdempotentSecondDelete_404IsError** — first success; second `IsError` 404. (Hint says idempotent; OData still 404s. Assert 404, do not fake success.)
+321. **ODataDelete_OData8_ExistingKey_204ThenGet404** — create-or-seed extra row if deleting Contoso would break other tests; prefer create-then-delete. Twin DELETE.  
+322. **ODataDelete_Restier_CreatedRow_ThenGet404**  
+323. **ODataDelete_TripPin_CreatedPerson_ThenGet404**  
+324. **ODataDelete_EmptyBody204_TextContainsStatus**  
+325. **ODataDelete_JsonRpcToolsCall_Restier**  
+326. **ODataDelete_EqualsDeleteCustomerNamed**  
+327. **ODataDelete_IdempotentSecondDelete_404IsError** — first success; second `IsError` 404. (Hint says idempotent; OData still 404s. Assert 404, do not fake success.)
 
 ### Misunderstood parameters
 
-328. **OdataDelete_MissingKey_IsError**  
-329. **OdataDelete_MissingEntitySet_IsError**  
-330. **OdataDelete_IdInsteadOfKey**  
-331. **OdataDelete_EntityInsteadOfEntitySet**  
-332. **OdataDelete_Swapped**  
-333. **OdataDelete_UsingQueryArgs_FilterIgnoredNotAQuery** — DELETE still issued to `Customers('filter')` if filter used as key mistakenly; with both entitySet+key, filter is **not** forwarded (DeleteAsync queryOptions null).  
-334. **OdataDelete_UsingGetArgs_OkIfEntitySetAndKeyPresent**  
-335. **OdataDelete_BodyOnDelete_Ignored**  
-336. **OdataDelete_KeyAsNumber**  
-337. **OdataDelete_DollarKey_MissingKeyError**
+328. **ODataDelete_MissingKey_IsError**  
+329. **ODataDelete_MissingEntitySet_IsError**  
+330. **ODataDelete_IdInsteadOfKey**  
+331. **ODataDelete_EntityInsteadOfEntitySet**  
+332. **ODataDelete_Swapped**  
+333. **ODataDelete_UsingQueryArgs_FilterIgnoredNotAQuery** — DELETE still issued to `Customers('filter')` if filter used as key mistakenly; with both entitySet+key, filter is **not** forwarded (DeleteAsync queryOptions null).  
+334. **ODataDelete_UsingGetArgs_OkIfEntitySetAndKeyPresent**  
+335. **ODataDelete_BodyOnDelete_Ignored**  
+336. **ODataDelete_KeyAsNumber**  
+337. **ODataDelete_DollarKey_MissingKeyError**
 
 ### Malformed payloads
 
-338. **OdataDelete_EmptyKey**  
-339. **OdataDelete_EmojiKey_404**  
-340. **OdataDelete_JsonRpc_Malformed**  
-341. **OdataDelete_JsonRpc_WrongContentType**  
-342. **OdataDelete_ApostropheKey_FormatKeyDoubled**
+338. **ODataDelete_EmptyKey**  
+339. **ODataDelete_EmojiKey_404**  
+340. **ODataDelete_JsonRpc_Malformed**  
+341. **ODataDelete_JsonRpc_WrongContentType**  
+342. **ODataDelete_ApostropheKey_FormatKeyDoubled**
 
 ### Server failures
 
-343. **OdataDelete_UnknownKey999_404** — OData8, Restier, Northwind, TripPin.  
-344. **OdataDelete_UnknownSet_404**  
-345. **OdataDelete_Northwind_405Or4xx**  
-346. **OdataDelete_Unauthorized_401** — auth-delete fixture.  
-347. **OdataDelete_Forbidden_403**  
-348. **OdataDelete_405**  
-349. **OdataDelete_409ConflictIfConstrained** — delete customer with orders if the service rejects.  
-350. **OdataDelete_412**  
-351. **OdataDelete_428**  
-352. **OdataDelete_429**  
-353. **OdataDelete_500**  
-354. **OdataDelete_503**  
-355. **OdataDelete_413NotApplicableNoBody** — confirm no body guard.
+343. **ODataDelete_UnknownKey999_404** — OData8, Restier, Northwind, TripPin.  
+344. **ODataDelete_UnknownSet_404**  
+345. **ODataDelete_Northwind_405Or4xx**  
+346. **ODataDelete_Unauthorized_401** — auth-delete fixture.  
+347. **ODataDelete_Forbidden_403**  
+348. **ODataDelete_405**  
+349. **ODataDelete_409ConflictIfConstrained** — delete customer with orders if the service rejects.  
+350. **ODataDelete_412**  
+351. **ODataDelete_428**  
+352. **ODataDelete_429**  
+353. **ODataDelete_500**  
+354. **ODataDelete_503**  
+355. **ODataDelete_413NotApplicableNoBody** — confirm no body guard.
 
 ### Overwhelm / rate limit / size
 
-356. **OdataDelete_McpHttp429**  
-357. **OdataDelete_SetRateLimit429**  
-358. **OdataDelete_ConcurrentDeletesSameKey_OneSuccessOne404**  
-359. **OdataDelete_MaxResponseBytesIrrelevantOn204**
+356. **ODataDelete_McpHttp429**  
+357. **ODataDelete_SetRateLimit429**  
+358. **ODataDelete_ConcurrentDeletesSameKey_OneSuccessOne404**  
+359. **ODataDelete_MaxResponseBytesIrrelevantOn204**
 
 ### Cross-tool interactions
 
-360. **OdataDelete_AfterCreateGet**  
-361. **OdataDelete_ThenQueryDoesNotList**  
-362. **OdataDelete_ThenNavigate_404**  
-363. **OdataDelete_DoesNotPatch**
+360. **ODataDelete_AfterCreateGet**  
+361. **ODataDelete_ThenQueryDoesNotList**  
+362. **ODataDelete_ThenNavigate_404**  
+363. **ODataDelete_DoesNotPatch**
 
 ---
 
@@ -1058,89 +1058,89 @@ Restier `McpCustomer` has **no** navigations. Restier cases are missing-nav fail
 
 ### Happy path
 
-364. **OdataNavigate_OData8_Customer1Orders_MatchesGetCustomers1Orders**  
+364. **ODataNavigate_OData8_Customer1Orders_MatchesGetCustomers1Orders**  
     - **Twin:** GET `/odata/Customers(1)/Orders`.  
     - **Expect:** same payload (possibly empty array).
 
-365. **OdataNavigate_OData8_OrdersToCustomer_ToOne** — if Orders seeded with CustomerId; else Northwind/TripPin.
+365. **ODataNavigate_OData8_OrdersToCustomer_ToOne** — if Orders seeded with CustomerId; else Northwind/TripPin.
 
-366. **OdataNavigate_Northwind_Product1Category_ToOne_MatchHttp** — GET `Products(1)/Category`.
+366. **ODataNavigate_Northwind_Product1Category_ToOne_MatchHttp** — GET `Products(1)/Category`.
 
-367. **OdataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp**
+367. **ODataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp**
 
-368. **OdataNavigate_Northwind_Product1OrderDetails_ToMany_Page**
+368. **ODataNavigate_Northwind_Product1OrderDetails_ToMany_Page**
 
-369. **OdataNavigate_TripPin_RussellwhyteFriends_ToMany_MatchHttp**
+369. **ODataNavigate_TripPin_RussellwhyteFriends_ToMany_MatchHttp**
 
-370. **OdataNavigate_TripPin_RussellwhyteTrips_ToMany_MatchHttp**
+370. **ODataNavigate_TripPin_RussellwhyteTrips_ToMany_MatchHttp**
 
-371. **OdataNavigate_TripPin_Friends_OmitTop_DoesNotInjectTop_ServerMayPage** — wire no `$top`.
+371. **ODataNavigate_TripPin_Friends_OmitTop_DoesNotInjectTop_ServerMayPage** — wire no `$top`.
 
-372. **OdataNavigate_TripPin_Friends_SkipTopFilterOrderbySelect_MatchHttp** — `$`-prefixed twin on `People('russellwhyte')/Friends`.
+372. **ODataNavigate_TripPin_Friends_SkipTopFilterOrderbySelect_MatchHttp** — `$`-prefixed twin on `People('russellwhyte')/Friends`.
 
-373. **OdataNavigate_TripPin_Friends_CountTrue**
+373. **ODataNavigate_TripPin_Friends_CountTrue**
 
-374. **OdataNavigate_PagingNavCollection_NextLinkWhenPageSizeSet** — convention fixture `Customers(1)/Orders` with PageSize.
+374. **ODataNavigate_PagingNavCollection_NextLinkWhenPageSizeSet** — convention fixture `Customers(1)/Orders` with PageSize.
 
-375. **OdataNavigate_JsonRpcToolsCall_NorthwindCategory**
+375. **ODataNavigate_JsonRpcToolsCall_NorthwindCategory**
 
-376. **OdataNavigate_ExpandOnNavigation_IfAllowed**
+376. **ODataNavigate_ExpandOnNavigation_IfAllowed**
 
 ### Misunderstood parameters
 
-377. **OdataNavigate_MissingNavigation_IsErrorContainsNavigation**  
-378. **OdataNavigate_MissingKey_IsError**  
-379. **OdataNavigate_MissingEntitySet_IsError**  
-380. **OdataNavigate_NavInsteadOfNavigation_IsErrorMissingNavigation** — `{ ..., "nav": "Orders" }`.  
-381. **OdataNavigate_NameInsteadOfNavigation** — `{ "name": "Orders" }`.  
-382. **OdataNavigate_PropertyInsteadOfNavigation** — `{ "property": "Orders" }`.  
-383. **OdataNavigate_UsingQueryArgsWithoutNavigation**  
-384. **OdataNavigate_UsingGetArgsWithoutNavigation**  
-385. **OdataNavigate_SwappedNavigationAndKey** — key `Orders`, navigation `1`.  
-386. **OdataNavigate_DollarExpandAsNavigationName_404** — `navigation: "$expand"`.  
-387. **OdataNavigate_FilterAsNavigation_404**  
-388. **OdataNavigate_NavigationAsNumber**  
-389. **OdataNavigate_EntityInsteadOfEntitySet**
+377. **ODataNavigate_MissingNavigation_IsErrorContainsNavigation**  
+378. **ODataNavigate_MissingKey_IsError**  
+379. **ODataNavigate_MissingEntitySet_IsError**  
+380. **ODataNavigate_NavInsteadOfNavigation_IsErrorMissingNavigation** — `{ ..., "nav": "Orders" }`.  
+381. **ODataNavigate_NameInsteadOfNavigation** — `{ "name": "Orders" }`.  
+382. **ODataNavigate_PropertyInsteadOfNavigation** — `{ "property": "Orders" }`.  
+383. **ODataNavigate_UsingQueryArgsWithoutNavigation**  
+384. **ODataNavigate_UsingGetArgsWithoutNavigation**  
+385. **ODataNavigate_SwappedNavigationAndKey** — key `Orders`, navigation `1`.  
+386. **ODataNavigate_DollarExpandAsNavigationName_404** — `navigation: "$expand"`.  
+387. **ODataNavigate_FilterAsNavigation_404**  
+388. **ODataNavigate_NavigationAsNumber**  
+389. **ODataNavigate_EntityInsteadOfEntitySet**
 
 ### Malformed payloads
 
-390. **OdataNavigate_EmptyNavigation**  
-391. **OdataNavigate_WhitespaceNavigation**  
-392. **OdataNavigate_EmojiNavigation_404**  
-393. **OdataNavigate_InjectionNavigation_OrdersCommaHack_404Or400** — `navigation: "Orders/$count"`. Twin same path.  
-394. **OdataNavigate_JsonRpc_Malformed**  
-395. **OdataNavigate_UnicodeNavNotDeclared**
+390. **ODataNavigate_EmptyNavigation**  
+391. **ODataNavigate_WhitespaceNavigation**  
+392. **ODataNavigate_EmojiNavigation_404**  
+393. **ODataNavigate_InjectionNavigation_OrdersCommaHack_404Or400** — `navigation: "Orders/$count"`. Twin same path.  
+394. **ODataNavigate_JsonRpc_Malformed**  
+395. **ODataNavigate_UnicodeNavNotDeclared**
 
 ### Server failures
 
-396. **OdataNavigate_WrongNameNotANav_IsError404or400** — OData8 `NotANav`; Restier `Orders` (undeclared); Northwind `Nope`. Twin same. Status in text.  
-397. **OdataNavigate_KeyNotFound_404** — `Customers(999)/Orders`.  
-398. **OdataNavigate_UnknownSet_404**  
-399. **OdataNavigate_Restier_AnyNavigation_404or400** — no navs on McpCustomer.  
-400. **OdataNavigate_401** — authorized nav fixture.  
-401. **OdataNavigate_403**  
-402. **OdataNavigate_405**  
-403. **OdataNavigate_429OnCustomersPath**  
-404. **OdataNavigate_500**  
-405. **OdataNavigate_ToOneMissingRelated_204OrNullOr404** — assert twin parity.
+396. **ODataNavigate_WrongNameNotANav_IsError404or400** — OData8 `NotANav`; Restier `Orders` (undeclared); Northwind `Nope`. Twin same. Status in text.  
+397. **ODataNavigate_KeyNotFound_404** — `Customers(999)/Orders`.  
+398. **ODataNavigate_UnknownSet_404**  
+399. **ODataNavigate_Restier_AnyNavigation_404or400** — no navs on McpCustomer.  
+400. **ODataNavigate_401** — authorized nav fixture.  
+401. **ODataNavigate_403**  
+402. **ODataNavigate_405**  
+403. **ODataNavigate_429OnCustomersPath**  
+404. **ODataNavigate_500**  
+405. **ODataNavigate_ToOneMissingRelated_204OrNullOr404** — assert twin parity.
 
 ### Overwhelm / rate limit / size
 
-406. **OdataNavigate_MaxFilterLengthExceeded_NoHttp**  
-407. **OdataNavigate_MaxExpandLengthExceeded_NoHttp**  
-408. **OdataNavigate_MaxSelectLengthExceeded_NoHttp**  
-409. **OdataNavigate_MaxResponseBytesTiny_Friends**  
-410. **OdataNavigate_DeepExpandFriendsFriends**  
-411. **OdataNavigate_McpHttp429**  
-412. **OdataNavigate_ConcurrentFriendsAndTrips**  
-413. **OdataNavigate_DoesNotAddDefaultTopOnToMany**
+406. **ODataNavigate_MaxFilterLengthExceeded_NoHttp**  
+407. **ODataNavigate_MaxExpandLengthExceeded_NoHttp**  
+408. **ODataNavigate_MaxSelectLengthExceeded_NoHttp**  
+409. **ODataNavigate_MaxResponseBytesTiny_Friends**  
+410. **ODataNavigate_DeepExpandFriendsFriends**  
+411. **ODataNavigate_McpHttp429**  
+412. **ODataNavigate_ConcurrentFriendsAndTrips**  
+413. **ODataNavigate_DoesNotAddDefaultTopOnToMany**
 
 ### Cross-tool interactions
 
-414. **OdataNavigate_AfterQueryPeople_UsesUserNameKey**  
-415. **OdataNavigate_ThenQueryIsNotTheSame** — navigate path ≠ entity set query.  
-416. **OdataNavigate_PageNavSet_SkipTopEqualsTwin**  
-417. **OdataNavigate_AfterCreateOrderForCustomer** — if writable.
+414. **ODataNavigate_AfterQueryPeople_UsesUserNameKey**  
+415. **ODataNavigate_ThenQueryIsNotTheSame** — navigate path ≠ entity set query.  
+416. **ODataNavigate_PageNavSet_SkipTopEqualsTwin**  
+417. **ODataNavigate_AfterCreateOrderForCustomer** — if writable.
 
 ---
 
@@ -1222,101 +1222,101 @@ Calls a declared function (GET) or action (POST) by `name`, with every argument 
 
 ### Happy path
 
-446. **OdataCall_OData8_UnboundFunctionMostValuable_GetMatchesHttp**  
+446. **ODataCall_OData8_UnboundFunctionMostValuable_GetMatchesHttp**  
     - **Call:** `{ "name": "MostValuable" }`.  
     - **Twin:** GET `/odata/MostValuable` (or `MostValuable()`).  
     - **Expect:** same int payload. Wire GET, no body.
 
-447. **OdataCall_OData8_UnboundFunctionGetStatusWithCode_PathContainsCode**  
+447. **ODataCall_OData8_UnboundFunctionGetStatusWithCode_PathContainsCode**  
     - **Call:** `{ name: GetStatus, code: "open" }`.  
     - **Twin:** GET `GetStatus(code='open')` (string FormatKey).  
     - **Expect:** parity.
 
-448. **OdataCall_OData8_UnboundActionReset_Post**  
+448. **ODataCall_OData8_UnboundActionReset_Post**  
     - **Call:** `{ name: Reset, body: "{}" }`.  
     - **Twin:** POST `/odata/Reset`.  
     - **Expect:** wire POST JSON.
 
-449. **OdataCall_OData8_OperationsOnly_SameThreeCalls**
+449. **ODataCall_OData8_OperationsOnly_SameThreeCalls**
 
-450. **OdataCall_TripPin_GetNearestAirport_LatLon_MatchHttp**  
+450. **ODataCall_TripPin_GetNearestAirport_LatLon_MatchHttp**  
     - **Call:** `{ name: GetNearestAirport, parameters: { lat: 33, lon: -118 } }`.  
     - **Twin:** GET `GetNearestAirport(lat=...,lon=...)`.  
     - **Expect:** airport payload.
 
-451. **OdataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError** — mutating live service; prefer a dedicated session URL. If the service forbids, `IsError` with status — still a real call.
+451. **ODataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError** — mutating live service; prefer a dedicated session URL. If the service forbids, `IsError` with status — still a real call.
 
-452. **OdataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey** — `{ name: ShareTrip, entitySet: People, key: russellwhyte, parameters: { userName: "scottketchum", tripId: N } }`. Twin POST `People('russellwhyte')/ShareTrip` with body `{"userName":"scottketchum","tripId":N}`.
+452. **ODataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey** — `{ name: ShareTrip, entitySet: People, key: russellwhyte, parameters: { userName: "scottketchum", tripId: N } }`. Twin POST `People('russellwhyte')/ShareTrip` with body `{"userName":"scottketchum","tripId":N}`.
 
-453. **OdataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline** — listed on `odata_describe_type` `People` (bound); call with `entitySet`+`key` and no `parameters`. GET `People('russellwhyte')/GetFavoriteAirline`.
+453. **ODataCall_TripPin_BoundFunctionIfDeclared_GetFavoriteAirline** — listed on `odata_describe_type` `People` (bound); call with `entitySet`+`key` and no `parameters`. GET `People('russellwhyte')/GetFavoriteAirline`.
 
-454. **OdataCall_JsonRpcToolsCall_MostValuable**
+454. **ODataCall_JsonRpcToolsCall_MostValuable**
 
-455. **OdataCall_CaseInsensitiveName_mostvaluable**
+455. **ODataCall_CaseInsensitiveName_mostvaluable**
 
 ### Misunderstood parameters
 
-456. **OdataCall_MissingName_IsError**  
-457. **OdataCall_OperationInsteadOfName_IsErrorMissingName**  
-458. **OdataCall_FunctionInsteadOfName**  
-459. **OdataCall_IdInsteadOfName**  
-460. **OdataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet** — ShareTrip without entitySet → `ShareTrip is bound to Person. Pass entitySet and key. Signature: ShareTrip(userName: string, tripId: int) // writes`; no HTTP.  
-461. **OdataCall_BoundWithoutKey_IsErrorMissingKey** — same message; no HTTP.  
-462. **OdataCall_UnboundWithEntitySetAndKey_IsError** — `MostValuable is unbound. Omit entitySet and key.`; no HTTP.  
-463. **OdataCall_UsingQueryArgs_FilterTopLevel_IsError** — top-level `filter` → `Unexpected argument 'filter'. Put operation arguments in parameters as a JSON object.`; no HTTP.  
-464. **OdataCall_UsingGetArgs_OnUnbound_IsError** — `entitySet`/`key` on an unbound call is the unbound error above.  
-465. **OdataCall_DollarName_MissingName**  
-466. **OdataCall_NameAsNumber**  
-467. **OdataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp** — `parameters: { foo: 1 }` → `Unknown parameter 'foo'. Declared: lat, lon.` (or `Declared: none.`); no HTTP.  
-468. **OdataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings** — `parameters: { code: "open" }` → path `GetStatus(code='open')`.  
-469. **OdataCall_ActionParametersObjectNotString** — `parameters: "{}"` (string) → `parameters must be a JSON object, not a string.`; `parameters: {}` → POST `{}`.  
+456. **ODataCall_MissingName_IsError**  
+457. **ODataCall_OperationInsteadOfName_IsErrorMissingName**  
+458. **ODataCall_FunctionInsteadOfName**  
+459. **ODataCall_IdInsteadOfName**  
+460. **ODataCall_BoundWithoutEntitySet_IsErrorMissingEntitySet** — ShareTrip without entitySet → `ShareTrip is bound to Person. Pass entitySet and key. Signature: ShareTrip(userName: string, tripId: int) // writes`; no HTTP.  
+461. **ODataCall_BoundWithoutKey_IsErrorMissingKey** — same message; no HTTP.  
+462. **ODataCall_UnboundWithEntitySetAndKey_IsError** — `MostValuable is unbound. Omit entitySet and key.`; no HTTP.  
+463. **ODataCall_UsingQueryArgs_FilterTopLevel_IsError** — top-level `filter` → `Unexpected argument 'filter'. Put operation arguments in parameters as a JSON object.`; no HTTP.  
+464. **ODataCall_UsingGetArgs_OnUnbound_IsError** — `entitySet`/`key` on an unbound call is the unbound error above.  
+465. **ODataCall_DollarName_MissingName**  
+466. **ODataCall_NameAsNumber**  
+467. **ODataCall_ExtraUnknownParamOnFunction_IsErrorNoHttp** — `parameters: { foo: 1 }` → `Unknown parameter 'foo'. Declared: lat, lon.` (or `Declared: none.`); no HTTP.  
+468. **ODataCall_StringParamUnquotedVsQuoted_FormatKeyQuotesStrings** — `parameters: { code: "open" }` → path `GetStatus(code='open')`.  
+469. **ODataCall_ActionParametersObjectNotString** — `parameters: "{}"` (string) → `parameters must be a JSON object, not a string.`; `parameters: {}` → POST `{}`.  
 469.1. **Call_InstanceBound_RequiresEntitySetAndKey** / **Call_CollectionBound_EntitySetOnly** — fixture: passing the binding parameter is `Unknown parameter 'person'. Declared: lastName.`; collection-bound `Top` with a `key` or without `entitySet` is `Top is collection-bound. Pass entitySet; omit key. Signature: …`; the valid call is GET `People/Top(count=2)`.  
 469.2. **Call_ParameterValidation_FailsBeforeHttp** — missing non-nullable → `Missing parameter 'lat'. Signature: GetNearestAirport(lat: number) -> string`; wrong kind → `Parameter 'lat' must be a JSON number. Signature: …`; top-level argument → `Unexpected argument 'lat'. …`; `body` → `Unexpected argument 'body'. …`.  
 469.3. **Call_LiteralForms_EnumDurationAndAlias** — enum number `1` → `NS.Color'Green'` on the URL and `"Green"` in an action body; `Edm.Duration` → `duration'PT5S'`; GUID raw; complex argument → `at=@at` with `?@at=<escaped json>` in the path; unknown member → `Parameter 'color' must be one of Red, Green; 'Blue' is not a member.`
 
 ### Malformed payloads
 
-470. **OdataCall_EmptyName**  
-471. **OdataCall_ParametersMalformedString_IsError** — `parameters: "{"` → `parameters must be a JSON object, not a string.`  
-472. **OdataCall_BodyArgument_IsErrorNoHttp** — any `body` argument → `Unexpected argument 'body'. …`; nothing sent.  
-473. **OdataCall_JsonRpc_Malformed**  
-474. **OdataCall_UnicodeOperationName_NotDeclaredError**  
-475. **OdataCall_EmojiName_NotDeclared**
+470. **ODataCall_EmptyName**  
+471. **ODataCall_ParametersMalformedString_IsError** — `parameters: "{"` → `parameters must be a JSON object, not a string.`  
+472. **ODataCall_BodyArgument_IsErrorNoHttp** — any `body` argument → `Unexpected argument 'body'. …`; nothing sent.  
+473. **ODataCall_JsonRpc_Malformed**  
+474. **ODataCall_UnicodeOperationName_NotDeclaredError**  
+475. **ODataCall_EmojiName_NotDeclared**
 
 ### Server failures
 
-476. **OdataCall_UnknownOperationGhost_IsErrorNotDeclared_NoHttp** — text `Operation 'Ghost' is not declared in the model.`  
-477. **OdataCall_Northwind_AnyNameNotInModel_NotDeclared**  
-478. **OdataCall_DeclaredButOData404** — typo path if binding wrong.  
-479. **OdataCall_MissingFunctionParam_OData400** — GetStatus without `code`: `code` is **nullable** in the convention model, so it is omitted from the path and the service answers (twin GET `GetStatus`). **OdataCall_MissingFunctionParam_FailsBeforeHttp** — TripPin `GetNearestAirport` without `lon` (non-nullable) → `Missing parameter 'lon'. Signature: GetNearestAirport(lat: number, lon: number) -> Airport`; no HTTP.  
-480. **OdataCall_401**  
-481. **OdataCall_403**  
-482. **OdataCall_405PostOnFunctionOrGetOnAction** — if someone used wrong verb internally, runtime picks GET vs POST from kind; assert function never POST.  
-483. **OdataCall_409**  
-484. **OdataCall_412**  
-485. **OdataCall_413Body**  
-486. **OdataCall_415**  
-487. **OdataCall_428**  
-488. **OdataCall_429FunctionBudget_MostValuableSecondCall** — function limiter 1; second call `IsError` 429 Retry-After. Customers query still works.  
-489. **OdataCall_500**  
-490. **OdataCall_503**  
-491. **OdataCall_RestierCustomerApi_UnknownOp_NotDeclared**
+476. **ODataCall_UnknownOperationGhost_IsErrorNotDeclared_NoHttp** — text `Operation 'Ghost' is not declared in the model.`  
+477. **ODataCall_Northwind_AnyNameNotInModel_NotDeclared**  
+478. **ODataCall_DeclaredButOData404** — typo path if binding wrong.  
+479. **ODataCall_MissingFunctionParam_OData400** — GetStatus without `code`: `code` is **nullable** in the convention model, so it is omitted from the path and the service answers (twin GET `GetStatus`). **ODataCall_MissingFunctionParam_FailsBeforeHttp** — TripPin `GetNearestAirport` without `lon` (non-nullable) → `Missing parameter 'lon'. Signature: GetNearestAirport(lat: number, lon: number) -> Airport`; no HTTP.  
+480. **ODataCall_401**  
+481. **ODataCall_403**  
+482. **ODataCall_405PostOnFunctionOrGetOnAction** — if someone used wrong verb internally, runtime picks GET vs POST from kind; assert function never POST.  
+483. **ODataCall_409**  
+484. **ODataCall_412**  
+485. **ODataCall_413Body**  
+486. **ODataCall_415**  
+487. **ODataCall_428**  
+488. **ODataCall_429FunctionBudget_MostValuableSecondCall** — function limiter 1; second call `IsError` 429 Retry-After. Customers query still works.  
+489. **ODataCall_500**  
+490. **ODataCall_503**  
+491. **ODataCall_RestierCustomerApi_UnknownOp_NotDeclared**
 
 ### Overwhelm / rate limit / size
 
-492. **OdataCall_HugeUnknownParameterOnAction_NoHttp** — a 262,145-byte value under an undeclared name is `Unknown parameter 'payload'. Declared: none.` with no HTTP; `MaxRequestBodyBytes` still guards the serialized `parameters` of declared actions.  
-493. **OdataCall_MaxResponseBytesTiny**  
-494. **OdataCall_McpHttp429VsFunction429_AreDifferentLayers** — MCP permit 1 vs function permit 1. First layer HTTP 429 on `/mcp`; function layer is tool `IsError` 429.  
-495. **OdataCall_ConcurrentMostValuable_Until429**  
-496. **OdataCall_OperationsOnly_CallWhenNoSets**  
-497. **OdataCall_WideModel_NoOps_Ghost**
+492. **ODataCall_HugeUnknownParameterOnAction_NoHttp** — a 262,145-byte value under an undeclared name is `Unknown parameter 'payload'. Declared: none.` with no HTTP; `MaxRequestBodyBytes` still guards the serialized `parameters` of declared actions.  
+493. **ODataCall_MaxResponseBytesTiny**  
+494. **ODataCall_McpHttp429VsFunction429_AreDifferentLayers** — MCP permit 1 vs function permit 1. First layer HTTP 429 on `/mcp`; function layer is tool `IsError` 429.  
+495. **ODataCall_ConcurrentMostValuable_Until429**  
+496. **ODataCall_OperationsOnly_CallWhenNoSets**  
+497. **ODataCall_WideModel_NoOps_Ghost**
 
 ### Cross-tool interactions
 
-498. **OdataCall_AfterListOperations_EveryUnboundFunctionOnce_OData8OpsOnly**  
-499. **OdataCall_ShareTrip_ThenGetPerson**  
-500. **OdataCall_Reset_ThenQueryPeopleStillWorks_TripPin** — careful with live reset; isolate session.  
-501. **OdataCall_DoesNotUseOdataQueryPath** — wire path is operation, not entity set.
+498. **ODataCall_AfterListOperations_EveryUnboundFunctionOnce_OData8OpsOnly**  
+499. **ODataCall_ShareTrip_ThenGetPerson**  
+500. **ODataCall_Reset_ThenQueryPeopleStillWorks_TripPin** — careful with live reset; isolate session.  
+501. **ODataCall_DoesNotUseODataQueryPath** — wire path is operation, not entity set.
 
 ---
 
@@ -1337,11 +1337,11 @@ When `MaxNamedTools` is too small for a family, **no** `list_*` for that set; us
 
 ### Happy path
 
-502. **ListCustomers_OData8_MatchesOdataQueryCustomers_NoTopInjected**  
+502. **ListCustomers_OData8_MatchesODataQueryCustomers_NoTopInjected**  
 503. **ListCustomers_OData8_SkipTopOrderby_MatchesGenericAndHttp**  
 504. **ListCustomers_OData8_FilterSelectExpandCount**  
 505. **ListCustomers_Restier_MatchesGenericAndHttp**  
-506. **ListCustomers_Restier_Skip1Top2_EqualsOdataQuery** — already sketched in RestierPagingTests; keep as named-first.  
+506. **ListCustomers_Restier_Skip1Top2_EqualsODataQuery** — already sketched in RestierPagingTests; keep as named-first.  
 507. **ListClientCustomers_Paging_OmitTop_AllFive**  
 508. **ListServerCustomers_Paging_NextLinkWithoutInjectedTop**  
 509. **ListProducts_Northwind_Top1_MatchHttpAndGeneric**  
@@ -1394,7 +1394,7 @@ When `MaxNamedTools` is too small for a family, **no** `list_*` for that set; us
 ### Cross-tool interactions
 
 543. **ListCustomers_ThenGetCustomer_SameRow**  
-544. **ListCustomers_ThenOdataNavigate**  
+544. **ListCustomers_ThenODataNavigate**  
 545. **ListCustomers_FamilyComplete_GetCreateUpdateDeletePresentWhenFlagsTrue**  
 546. **ListCustomers_AbsentWhenCapTooSmallForFamily** — `MaxNamedTools = 10` (generics already 10) → remaining 0 → **no** named tools at all.  
 547. **ListCustomers_AbsentWhenRemaining4AndFamily5** — remaining 4 cannot fit 5; **no** partial `list_customers` without get/create/update/delete.  
@@ -1415,8 +1415,8 @@ Same cells as §16. Restier type `McpCustomer` → `get_mcp_customer` (**not** `
 
 ### Happy path
 
-550. **GetCustomer_OData8_Key1_MatchesOdataGetAndHttp**  
-551. **GetMcpCustomer_Restier_Key1_MatchesOdataGet** — name from catalog (`get_mcp_customer`).  
+550. **GetCustomer_OData8_Key1_MatchesODataGetAndHttp**  
+551. **GetMcpCustomer_Restier_Key1_MatchesODataGet** — name from catalog (`get_mcp_customer`).  
 552. **GetProduct_Northwind_Key1_Matches**  
 553. **GetPerson_TripPin_Russellwhyte_Matches**  
 554. **GetCustomer_SelectExpand_Forwarded**  
@@ -1494,7 +1494,7 @@ Restier name: `create_mcp_customer`. Convention: `create_customer`. TripPin: `cr
 592. **CreatePerson_TripPin_RequiredFields_ThenDelete**  
 593. **CreateCustomer_JsonRpcToolsCall_Restier**  
 594. **CreateCustomer_SchemaContainsCompanyName_NotDollarFilter_NotInternalSecret_NotBinary**  
-595. **CreateCustomer_EqualsGenericOdataCreate**
+595. **CreateCustomer_EqualsGenericODataCreate**
 
 ### Misunderstood parameters
 
@@ -1540,7 +1540,7 @@ Restier name: `create_mcp_customer`. Convention: `create_customer`. TripPin: `cr
 
 624. **CreateCustomer_ThenGetCustomer_ThenDeleteCustomer**  
 625. **CreateCustomer_ThenListCustomersFilter**  
-626. **CreateCustomer_ThenOdataQuery**  
+626. **CreateCustomer_ThenODataQuery**  
 627. **CreateCustomer_FamilyCapInteraction_See547**
 
 ---
@@ -1560,7 +1560,7 @@ Names: `update_customer`, `update_mcp_customer`, `update_person`, `update_produc
 630. **UpdatePerson_TripPin_PatchFirstName_OnCreatedPerson**  
 631. **UpdateCustomer_JsonRpcToolsCall**  
 632. **UpdateCustomer_ObjectBody**  
-633. **UpdateCustomer_EqualsOdataUpdate**  
+633. **UpdateCustomer_EqualsODataUpdate**  
 634. **UpdateCustomer_204EmptyBodyText**
 
 ### Misunderstood parameters
@@ -1629,7 +1629,7 @@ Names: `delete_customer`, `delete_mcp_customer`, `delete_person`, `delete_produc
 671. **DeleteMcpCustomer_Restier_CreatedRow**  
 672. **DeletePerson_TripPin_CreatedPerson**  
 673. **DeleteCustomer_JsonRpcToolsCall**  
-674. **DeleteCustomer_EqualsOdataDelete**  
+674. **DeleteCustomer_EqualsODataDelete**  
 675. **DeleteCustomer_TextContainsStatusOn204**
 
 ### Misunderstood parameters
@@ -1710,7 +1710,7 @@ Local-only control-plane tool. Acknowledges shutdown and cancels host lifetime a
 716. **ShutdownServer_Delay_secondsSnakeVsCamel** — schema is `delay_seconds`. `delaySeconds` is unknown; default 2.  
 717. **ShutdownServer_ReasonAsNumber_Stringified**  
 718. **ShutdownServer_ExtraEntitySet_Ignored**  
-719. **ShutdownServer_UsingOdataQueryArgs_Ignored**
+719. **ShutdownServer_UsingODataQueryArgs_Ignored**
 
 ### Malformed payloads
 
@@ -1739,7 +1739,7 @@ Local-only control-plane tool. Acknowledges shutdown and cancels host lifetime a
 
 ### Cross-tool interactions
 
-736. **ShutdownServer_AfterOdataQuery_StillAcksThenDies** — query first, then shutdown.  
+736. **ShutdownServer_AfterODataQuery_StillAcksThenDies** — query first, then shutdown.  
 737. **ShutdownServer_DoesNotRemoveCatalogToolsMidCall**  
 738. **ShutdownServer_TryCommandNorthwind_DoesNotRequireShutdown** — `odata-mcp try` exit 0 without calling shutdown.
 
@@ -1759,10 +1759,10 @@ Short section so these are not forgotten. Primary focus remains tools; every gen
 744. **ToolsList_IncludeUpdateDeleteFalse_NoThoseNames**  
 745. **ToolsList_ExcludeEntitySetsPeople_NoListPeople**  
 746. **ToolsList_IncludeEntitySetsProductsFirst_NamedProductsFamilyBeforeAlphabetical**  
-747. **ToolsList_OperationsOnly_NoNamedCrud_HasOdataCall**  
+747. **ToolsList_OperationsOnly_NoNamedCrud_HasODataCall**  
 748. **ToolsList_JsonRpc_StreamableHttp_OData8** — method `tools/list`, not `{}`.  
 749. **ToolsList_PaginationCursor_IfSdkSupports_NextCursorNullWhenUnpaged** — current handler returns full list, no cursor. Assert `nextCursor` absent/null. If SDK later pages, add a follow-up case; do not invent pagination in the product to pass a guess.  
-750. **ToolsList_OpenWorldHintTrueOnOdataTools_FalseOnShutdown**  
+750. **ToolsList_OpenWorldHintTrueOnODataTools_FalseOnShutdown**  
 751. **ToolsList_TwoPrefixes_DifferentNamedSets**
 
 ### 22.2 `tools/call` protocol
@@ -1780,7 +1780,7 @@ Short section so these are not forgotten. Primary focus remains tools; every gen
 
 ### 22.3 `resources/list`
 
-762. **ResourcesList_OData8_MetadataFirstThenSets_OdataScheme** — URIs `odata://odata/$metadata`, `odata://odata/Customers`. Mime XML vs JSON.  
+762. **ResourcesList_OData8_MetadataFirstThenSets_ODataScheme** — URIs `odata://odata/$metadata`, `odata://odata/Customers`. Mime XML vs JSON.  
 763. **ResourcesList_ToolsHost_RouteRemote** — `odata://remote/$metadata`.  
 764. **ResourcesList_MaxResources50_Wide200_CountLeq50IncludingMetadata**  
 765. **ResourcesList_ExcludeEntitySets_Omits**  
@@ -1792,7 +1792,7 @@ Short section so these are not forgotten. Primary focus remains tools; every gen
 
 769. **ResourcesRead_Metadata_ReturnsCsdlXml** — mime `application/xml`; contains EntityContainer. Twin GET `$metadata` (content may differ in whitespace; assert entity set names).  
 770. **ResourcesRead_EntitySet_ReturnsTypeCardNotFeed** — `odata://odata/Customers` JSON has `keys`/`properties`/`navigations`, **not** `@odata.context` feed of Contoso. **Forbidden:** returning the collection.  
-771. **ResourcesRead_UnknownUri_EmptyOrError_NotOdataQuery**  
+771. **ResourcesRead_UnknownUri_EmptyOrError_NotODataQuery**  
 772. **ResourcesRead_HttpUrlRejectedOrEmpty** — `https://…/Customers` is not fetched (PROTOCOL: clients must not be told to fetch https for in-app routes).  
 773. **ResourcesRead_EmptyUri_EmptyContents**  
 774. **ResourcesRead_JsonRpc**  
@@ -1821,8 +1821,8 @@ Short section so these are not forgotten. Primary focus remains tools; every gen
 ### 22.7 Transport / MapMcp
 
 790. **MapMcp_IsInternal_PostPrefixMcpWorksWithoutAppCallingMapMcp**  
-791. **PostOdataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest**  
-792. **GetOdataMcp_Not404** — may be 405; not missing.  
+791. **PostODataMcp_ToolsCallQuery_NotEmptyObjectAsOnlyHttpTest**  
+792. **GetODataMcp_Not404** — may be 405; not missing.  
 793. **PostWrongPrefixMcp_404** — `/nope/mcp`.  
 794. **OpenMcp_WithoutToken_Not401**  
 795. **RequireAuthorization_WithoutToken_401OnMcpHttp**  
@@ -1851,13 +1851,13 @@ Budgets (example): MCP `/odata/mcp` = 1, Customers = 1, Products = 2, `MostValua
 807. **Rate_McpAndCustomersBoth1_JsonRpcQueryCustomers_MayHitEitherLayer** — assert: first call succeeds; second is **either** HTTP 429 on `/mcp` **or** tool 429; never a silent 200 with empty body. Prefer separate tests 803 vs 802 so layers stay distinguishable.  
 808. **Rate_RetryAfterPresentOnOData429_InToolText**  
 809. **Rate_RetryAfterPresentOnMcpHttp429_HeaderOnHttpResponse** — not inside a tool result.  
-810. **Rate_SecondPrefixShopMcp_IndependentOfOdataMcp** — exhaust `/odata/mcp`; `/shop/mcp` tools/call still works.  
-811. **Rate_SecondPrefixODataShopProducts_IndependentOfOdataCustomers**  
+810. **Rate_SecondPrefixShopMcp_IndependentOfODataMcp** — exhaust `/odata/mcp`; `/shop/mcp` tools/call still works.  
+811. **Rate_SecondPrefixODataShopProducts_IndependentOfODataCustomers**  
 812. **Rate_Restier_SameIndependence_CustomersVsProductsPrefixes**  
-813. **Rate_NamedListCustomers_SameBudgetAsOdataQueryCustomers**  
-814. **Rate_OdataNavigateOnCustomersPath_ConsumesCustomersBudget**  
-815. **Rate_OdataGetProducts_ConsumesProductsBudget**  
-816. **Rate_OdataCallFunction_DoesNotConsumeCustomers**  
+813. **Rate_NamedListCustomers_SameBudgetAsODataQueryCustomers**  
+814. **Rate_ODataNavigateOnCustomersPath_ConsumesCustomersBudget**  
+815. **Rate_ODataGetProducts_ConsumesProductsBudget**  
+816. **Rate_ODataCallFunction_DoesNotConsumeCustomers**  
 817. **Rate_ListEntitySets_ConsumesNeitherSetBudget**  
 818. **Rate_DescribeType_ConsumesNeither**  
 819. **Rate_ListOperations_ConsumesNeither**  
@@ -1866,11 +1866,11 @@ Budgets (example): MCP `/odata/mcp` = 1, Customers = 1, Products = 2, `MostValua
 ### 23.2 Prefix include / exclude
 
 821. **Prefix_AddODataMcp_AllDiscoveredPrefixesGetMcp** — `odata` and `internal`/`shop`.  
-822. **Prefix_IncludePrefixesOdataOnly_ShopHasNoMcp_ShopODataStillWorks** — GET `/shop/Products` 200; POST `/shop/mcp` 404.  
+822. **Prefix_IncludePrefixesODataOnly_ShopHasNoMcp_ShopODataStillWorks** — GET `/shop/Products` 200; POST `/shop/mcp` 404.  
 823. **Prefix_ExcludeRoutesInternal_NoInternalMcp**  
 824. **Prefix_IncludeAndExclude_ExcludeWinsAfterInclude**  
 825. **Prefix_EmptyIncludeMeansAll**  
-826. **Prefix_Restier_IncludeOdataOnly**  
+826. **Prefix_Restier_IncludeODataOnly**  
 827. **Prefix_JsonRpcOnIncluded_ToolsCallQuery**  
 828. **Prefix_AddRouteExplicit_WhenDiscoveryBlind**  
 829. **Prefix_DiscoveryWinsOverExplicitSamePrefix**  
@@ -1904,12 +1904,12 @@ Budgets (example): MCP `/odata/mcp` = 1, Customers = 1, Products = 2, `MostValua
 
 ### 23.5 Two prefixes isolated catalogs
 
-851. **Iso_OdataQueryCustomersOnOdataPrefix_CannotSeeShopProductsInCatalog**  
-852. **Iso_OdataQueryProductsOnOdataPrefix_404** — Products only on shop.  
+851. **Iso_ODataQueryCustomersOnODataPrefix_CannotSeeShopProductsInCatalog**  
+852. **Iso_ODataQueryProductsOnODataPrefix_404** — Products only on shop.  
 853. **Iso_ShopQueryProducts_200_ShopQueryCustomers_404**  
 854. **Iso_DescribeType_DoesNotLeakOtherPrefixTypes**  
 855. **Iso_ResourcesUrisUseOwnPrefix** — `odata://odata/…` vs `odata://shop/…`  
-856. **Iso_Completions_OdataPrefixDoesNotCompleteShopOnlySets**  
+856. **Iso_Completions_ODataPrefixDoesNotCompleteShopOnlySets**  
 857. **Iso_NamedToolsSameNameDifferentSessions** — both may have `list_customers` only if both models have Customers; shop products host has `list_products` not `list_customers`.  
 858. **Iso_RateLimitOnePrefix_DoesNotStarveTheOther**  
 859. **Iso_RestierMultiPrefix_JsonRpcEachMcp**  
@@ -2034,7 +2034,7 @@ Current suites over-use `odata_query` and catalog-name assertions. The following
 - Process isolation Restier vs OData 8 controller types.  
 - MCP transport 401/429 vs OData 429 (as HTTP, not as full tools/call).
 
-Implementers should add **new test classes per tool** (`OdataNavigateHostTests`, `NamedCrudRestierTests`, `NamedCrudConventionTests`, `TripPinMutationTests`, `JsonRpcToolsCallTests`, `OdataCallHostTests`) rather than stuffing more `odata_query` methods into paging classes.
+Implementers should add **new test classes per tool** (`ODataNavigateHostTests`, `NamedCrudRestierTests`, `NamedCrudConventionTests`, `TripPinMutationTests`, `JsonRpcToolsCallTests`, `ODataCallHostTests`) rather than stuffing more `odata_query` methods into paging classes.
 
 ---
 

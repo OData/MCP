@@ -35,8 +35,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             odata.IsError.Should().BeFalse(odata.Text);
             shop.IsError.Should().BeFalse(shop.Text);
-            var odataNames = OdataListEntitySetsHostTests.ReadEntitySetNames(odata.StructuredContent);
-            var shopNames = OdataListEntitySetsHostTests.ReadEntitySetNames(shop.StructuredContent);
+            var odataNames = ODataListEntitySetsHostTests.ReadEntitySetNames(odata.StructuredContent);
+            var shopNames = ODataListEntitySetsHostTests.ReadEntitySetNames(shop.StructuredContent);
             odataNames.Should().Contain("Customers");
             odataNames.Should().NotContain("Products");
             shopNames.Should().Contain("Products");

@@ -101,7 +101,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Shop catalog is Products-only.
         /// </summary>
         [TestMethod]
-        public async Task Iso_OdataQueryCustomersOnOdataPrefix_CannotSeeShopProductsInCatalog()
+        public async Task Iso_ODataQueryCustomersOnODataPrefix_CannotSeeShopProductsInCatalog()
         {
             var factory = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>();
             factory.Sessions["shop"].Catalog.Tools.Select(tool => tool.Name).Should().Contain("list_products");
@@ -144,7 +144,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         /// Completions on odata include Customers.
         /// </summary>
         [TestMethod]
-        public void Iso_Completions_OdataPrefixDoesNotCompleteShopOnlySets()
+        public void Iso_Completions_ODataPrefixDoesNotCompleteShopOnlySets()
         {
             var factory = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>();
             factory.Sessions["shop"].Catalog.CompleteEntitySetNames(string.Empty).Should().Equal("Products");

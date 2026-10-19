@@ -56,7 +56,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Get customer 1 is Contoso.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Restier_Customer1_Contoso()
+        public async Task ODataGet_Restier_Customer1_Contoso()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers(1)");
@@ -103,7 +103,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Navigate Customers(1)/Orders matches Restier HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Restier_Customer1Orders()
+        public async Task ODataNavigate_Restier_Customer1Orders()
         {
             using var client = CreateClient();
             var odata = await client.GetAsync("odata/Customers(1)/Orders");
@@ -124,7 +124,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Query Customers matches GET.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_Customers_MatchesGet()
+        public async Task ODataQuery_Restier_Customers_MatchesGet()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers");
@@ -140,7 +140,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Filter Fabrikam matches.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_FilterFabrikam_Matches()
+        public async Task ODataQuery_Restier_FilterFabrikam_Matches()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$filter=CompanyName eq 'Fabrikam'");
@@ -159,7 +159,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Omit top does not inject a default top.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_OmitTop_ReturnsAllSeededRowsNoInjectedTop()
+        public async Task ODataQuery_Restier_OmitTop_ReturnsAllSeededRowsNoInjectedTop()
         {
             var result = await Runtime().InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers"), CancellationToken.None);
 
@@ -172,7 +172,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Top 1 orderby Id matches.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_Top1OrderbyId_Matches()
+        public async Task ODataQuery_Restier_Top1OrderbyId_Matches()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$top=1&$orderby=Id");
@@ -189,7 +189,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// JSON-RPC query Customers.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_JsonRpcToolsCall_Restier_Customers()
+        public async Task ODataQuery_JsonRpcToolsCall_Restier_Customers()
         {
             using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_query", "{\"entitySet\":\"Customers\"}");
@@ -288,7 +288,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Skip and top match the HTTP twin.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_SkipAndTop_MatchHttp()
+        public async Task ODataQuery_Restier_SkipAndTop_MatchHttp()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$orderby=Id&$skip=1&$top=1");
@@ -301,7 +301,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Expand Orders matches GET $expand.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Restier_ExpandOrders_Matches()
+        public async Task ODataQuery_Restier_ExpandOrders_Matches()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$expand=Orders");
@@ -315,7 +315,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// <c>$filter</c> is ignored so Contoso remains.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
+        public async Task ODataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
         {
             var result = await Runtime().InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers", "$filter", "CompanyName eq 'NoSuch'"), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
@@ -326,7 +326,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Missing entitySet is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MissingEntitySet_IsErrorContainsEntitySet()
+        public async Task ODataQuery_MissingEntitySet_IsErrorContainsEntitySet()
         {
             var result = await Runtime().InvokeAsync("odata_query", ToolArguments.Of(), CancellationToken.None);
             result.IsError.Should().BeTrue();
@@ -337,7 +337,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Unknown set is not success.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess()
+        public async Task ODataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess()
         {
             using var client = CreateClient();
             var missing = await client.GetAsync("odata/DoesNotExist");
@@ -351,7 +351,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Filter longer than 2048 is rejected without HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MaxFilterLengthExceeded_IsErrorNoHttp()
+        public async Task ODataQuery_MaxFilterLengthExceeded_IsErrorNoHttp()
         {
             var result = await Runtime().InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers", "filter", new string('A', 2049)), CancellationToken.None);
             result.IsError.Should().BeTrue();
@@ -362,7 +362,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Generic query skip/top equals named list_customers.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_NamedListCustomers_SamePageAsGeneric()
+        public async Task ODataQuery_NamedListCustomers_SamePageAsGeneric()
         {
             var generic = await Runtime().InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers", "orderby", "Id", "skip", 1, "top", 2), CancellationToken.None);
             var named = await Runtime().InvokeAsync("list_customers", ToolArguments.Of("orderby", "Id", "skip", 1, "top", 2), CancellationToken.None);
@@ -373,7 +373,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Unknown key 999 is 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_UnknownKey999_IsError404()
+        public async Task ODataGet_UnknownKey999_IsError404()
         {
             using var client = CreateClient();
             var missing = await client.GetAsync("odata/Customers(999)");
@@ -387,7 +387,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Missing key is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_MissingKey_IsErrorContainsKey()
+        public async Task ODataGet_MissingKey_IsErrorContainsKey()
         {
             var result = await Runtime().InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers"), CancellationToken.None);
             result.IsError.Should().BeTrue();
@@ -398,7 +398,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Numeric key succeeds as Customers(1).
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_KeyAsNumber_1_SucceedsNumeric()
+        public async Task ODataGet_KeyAsNumber_1_SucceedsNumeric()
         {
             var result = await Runtime().InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", 1), CancellationToken.None);
             result.IsError.Should().BeFalse(result.Text);
@@ -409,7 +409,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// JSON-RPC get of customer 1.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_JsonRpcToolsCall_Restier_Customer1()
+        public async Task ODataGet_JsonRpcToolsCall_Restier_Customer1()
         {
             using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_get", """{"entitySet":"Customers","key":"1"}""");
@@ -422,7 +422,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Equals named get_mcp_customer.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_EqualsGetCustomerNamedTool()
+        public async Task ODataGet_EqualsGetCustomerNamedTool()
         {
             Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("get_mcp_customer");
             Session().Catalog.Tools.Select(tool => tool.Name).Should().NotContain("get_customer");
@@ -436,7 +436,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// To-one Orders(1)/Customer matches GET.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_OrdersToCustomer_ToOne()
+        public async Task ODataNavigate_OrdersToCustomer_ToOne()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Orders(1)/Customer");
@@ -450,7 +450,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Wrong navigation name 404/400s.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_WrongNameNotANav_IsError404or400()
+        public async Task ODataNavigate_WrongNameNotANav_IsError404or400()
         {
             using var client = CreateClient();
             var twin = await client.GetAsync("odata/Customers(1)/Nope");
@@ -464,7 +464,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Missing navigation is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_MissingNavigation_IsErrorContainsNavigation()
+        public async Task ODataNavigate_MissingNavigation_IsErrorContainsNavigation()
         {
             var result = await Runtime().InvokeAsync("odata_navigate", ToolArguments.Of("entitySet", "Customers", "key", "1"), CancellationToken.None);
             result.IsError.Should().BeTrue();
@@ -475,7 +475,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// JSON-RPC navigate Orders.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_JsonRpcToolsCall_RestierOrders()
+        public async Task ODataNavigate_JsonRpcToolsCall_RestierOrders()
         {
             using var client = CreateClient();
             using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "odata_navigate", """{"entitySet":"Customers","key":"1","navigation":"Orders"}""");
@@ -488,7 +488,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Create then query filter sees the new row.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_ThenCreateThenQueryFilter_SeesNewRow()
+        public async Task ODataQuery_ThenCreateThenQueryFilter_SeesNewRow()
         {
             var created = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":13,"CompanyName":"QueryAfterCreate"}"""), CancellationToken.None);
             created.IsError.Should().BeFalse(created.Text);

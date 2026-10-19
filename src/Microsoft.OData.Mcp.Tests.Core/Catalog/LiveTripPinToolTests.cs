@@ -56,7 +56,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create a unique person then delete them.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_TripPin_UniquePerson_ThenDelete()
+        public async Task ODataCreate_TripPin_UniquePerson_ThenDelete()
         {
             var userName = "mcp" + Guid.NewGuid().ToString("N")[..8];
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
@@ -77,7 +77,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get russellwhyte.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_TripPin_PersonRussellwhyte()
+        public async Task ODataGet_TripPin_PersonRussellwhyte()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -94,7 +94,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Navigate Friends.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_TripPin_RussellwhyteFriends()
+        public async Task ODataNavigate_TripPin_RussellwhyteFriends()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -110,7 +110,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Call GetNearestAirport.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_TripPin_GetNearestAirport()
+        public async Task ODataCall_TripPin_GetNearestAirport()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -125,7 +125,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Query People top 2 matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_PeopleTop2_MatchHttp()
+        public async Task ODataQuery_TripPin_PeopleTop2_MatchHttp()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             using var http = new HttpClient();
@@ -145,7 +145,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown TripPin set is 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TripPin_UnknownSet_404()
+        public async Task ODataQuery_TripPin_UnknownSet_404()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "DoesNotExist"), CancellationToken.None);

@@ -50,7 +50,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Resource list uses odata URIs.
         /// </summary>
         [TestMethod]
-        public async Task ListResourcesAsync_ReturnsOdataUris()
+        public async Task ListResourcesAsync_ReturnsODataUris()
         {
             var result = await ODataMcpHandlers.ListResourcesAsync(
                 new ServiceCollection().BuildServiceProvider(),

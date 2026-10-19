@@ -57,7 +57,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
             var result = await InvokeAsync("odata_list_entity_sets");
             result.IsError.Should().BeFalse(result.Text);
-            OdataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent).Should().Contain("Customers");
+            ODataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent).Should().Contain("Customers");
         }
 
         #endregion

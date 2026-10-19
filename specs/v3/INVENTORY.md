@@ -166,4 +166,4 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 
 ## Do not port
 
-Custom REST protocol, dual tool registration, `shutdown_server` on HTTP MCP, `IOdataSchema`, EdmLib in Core, floating `0.*-*`, config empires, 501 conventions, Legacy generators, `queryCustomers`.
+Custom REST protocol, dual tool registration, `shutdown_server` on HTTP MCP, `IODataSchema`, EdmLib in Core, floating `0.*-*`, config empires, 501 conventions, Legacy generators, `queryCustomers`.

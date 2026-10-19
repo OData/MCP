@@ -638,7 +638,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Northwind has no GetNearestAirport operation.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_Northwind_AnyNameNotInModel_NotDeclared()
+        public async Task ODataCall_Northwind_AnyNameNotInModel_NotDeclared()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "GetNearestAirport"), CancellationToken.None);
@@ -652,7 +652,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown operations error without HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_UnknownOperationGhost_IsErrorNotDeclared_NoHttp()
+        public async Task ODataCall_UnknownOperationGhost_IsErrorNotDeclared_NoHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "Ghost"), CancellationToken.None);
@@ -666,7 +666,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Generic create leftovers that are only query option names fail before HTTP: the required keys are missing.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_FailsBeforeHttp()
+        public async Task ODataCreate_UsingQueryArgs_FilterTop_AsOnlyExtras_FailsBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -683,7 +683,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Creating Products on read-only Northwind is a 4xx/405 error once the payload is complete.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_Northwind_Products_IsError4xxOr405()
+        public async Task ODataCreate_Northwind_Products_IsError4xxOr405()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -700,7 +700,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Oversized create bodies are rejected without HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_MaxRequestBodyBytesExceeded_IsErrorNoHttp()
+        public async Task ODataCreate_MaxRequestBodyBytesExceeded_IsErrorNoHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync(options => options.MaxRequestBodyBytes = 64);
             var result = await runtime.InvokeAsync(
@@ -717,7 +717,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Deleting Northwind Products is a 4xx/405 error.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_Northwind_405Or4xx()
+        public async Task ODataDelete_Northwind_405Or4xx()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_delete", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -731,7 +731,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Apostrophes in delete keys are doubled.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_ApostropheKey_FormatKeyDoubled()
+        public async Task ODataDelete_ApostropheKey_FormatKeyDoubled()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -747,7 +747,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Filter on delete is not forwarded.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_UsingQueryArgs_FilterIgnoredNotAQuery()
+        public async Task ODataDelete_UsingQueryArgs_FilterIgnoredNotAQuery()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -764,7 +764,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Concurrent gets of Products(1) through Products(10) succeed.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_ConcurrentGets_NorthwindProducts1Through10()
+        public async Task ODataGet_ConcurrentGets_NorthwindProducts1Through10()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var results = await Task.WhenAll(Enumerable.Range(1, 10).Select(id => runtime.InvokeAsync(
@@ -779,7 +779,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Generic get equals named get_product for key 1.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_EqualsGetCustomerNamedTool()
+        public async Task ODataGet_EqualsGetCustomerNamedTool()
         {
             var (runtime, _) = await NamedNorthwindAsync();
             var generic = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -793,7 +793,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Filter on get is forwarded as a query option.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_FilterOnGet_IsForwardedAsQueryOption()
+        public async Task ODataGet_FilterOnGet_IsForwardedAsQueryOption()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             await runtime.InvokeAsync(
@@ -808,7 +808,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Numeric JSON keys are unquoted.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_KeyAsNumber_1_SucceedsNumeric()
+        public async Task ODataGet_KeyAsNumber_1_SucceedsNumeric()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", 1), CancellationToken.None);
@@ -821,7 +821,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Object keys are quoted as a whole.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_KeyAsObject_CompositeAttempt()
+        public async Task ODataGet_KeyAsObject_CompositeAttempt()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -837,7 +837,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// String key ALFKI is quoted once.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_CustomerALFKI_StringKeyQuoted()
+        public async Task ODataGet_Northwind_CustomerALFKI_StringKeyQuoted()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "ALFKI"), CancellationToken.None);
@@ -853,7 +853,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Already-quoted ALFKI is not double-quoted.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted()
+        public async Task ODataGet_Northwind_CustomerAlreadyQuoted_NotDoubleQuoted()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "'ALFKI'"), CancellationToken.None);
@@ -867,7 +867,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get does not create entities.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_DoesNotCreate()
+        public async Task ODataGet_Northwind_DoesNotCreate()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -881,7 +881,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Composite Order_Details keys must be unquoted on the wire.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_OrderDetails_CompositeKey()
+        public async Task ODataGet_Northwind_OrderDetails_CompositeKey()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var preview = await runtime.InvokeAsync(
@@ -907,7 +907,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Product 1 matches the HTTP twin.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_Northwind_Product1_MatchHttp()
+        public async Task ODataGet_Northwind_Product1_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "1"), CancellationToken.None);
@@ -923,7 +923,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown product keys 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_UnknownKey999_IsError404()
+        public async Task ODataGet_UnknownKey999_IsError404()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Products", "key", "99999"), CancellationToken.None);
@@ -936,7 +936,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// To-many navigate does not inject default top.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_DoesNotAddDefaultTopOnToMany()
+        public async Task ODataNavigate_DoesNotAddDefaultTopOnToMany()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -952,7 +952,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Customer ALFKI Orders matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp()
+        public async Task ODataNavigate_Northwind_CustomerALFKIOrders_ToMany_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -970,7 +970,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Product 1 Category matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_Product1Category_ToOne_MatchHttp()
+        public async Task ODataNavigate_Northwind_Product1Category_ToOne_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -989,7 +989,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Product 1 Order_Details is a to-many page.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_Northwind_Product1OrderDetails_ToMany_Page()
+        public async Task ODataNavigate_Northwind_Product1OrderDetails_ToMany_Page()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1006,7 +1006,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Skip/top on a navigation matches the HTTP twin.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_PageNavSet_SkipTopEqualsTwin()
+        public async Task ODataNavigate_PageNavSet_SkipTopEqualsTwin()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1024,7 +1024,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A non-navigation name 404s or 400s.
         /// </summary>
         [TestMethod]
-        public async Task OdataNavigate_WrongNameNotANav_IsError404or400()
+        public async Task ODataNavigate_WrongNameNotANav_IsError404or400()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1041,7 +1041,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Ten concurrent Products top-1 queries succeed.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_ConcurrentTenQueries_NorthwindProductsTop1()
+        public async Task ODataQuery_ConcurrentTenQueries_NorthwindProductsTop1()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var results = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => runtime.InvokeAsync(
@@ -1056,7 +1056,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// MCP does not clamp top to a hidden max.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DoesNotClampTopToMaxTop()
+        public async Task ODataQuery_DoesNotClampTopToMaxTop()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", 1000), CancellationToken.None);
@@ -1069,7 +1069,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// $filter is ignored so the result is unfiltered.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
+        public async Task ODataQuery_DollarFilter_IsIgnoredSoUnfilteredResult()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1086,7 +1086,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// $top is ignored and not injected as top.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_DollarTop_IsIgnoredNotInjectedAsTop()
+        public async Task ODataQuery_DollarTop_IsIgnoredNotInjectedAsTop()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Categories", "$top", 1), CancellationToken.None);
@@ -1100,7 +1100,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Generic query equals named list for the same skip/top.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_EqualsListCustomers_SameSkipTop()
+        public async Task ODataQuery_EqualsListCustomers_SameSkipTop()
         {
             var (runtime, _) = await NamedNorthwindAsync();
             var generic = await runtime.InvokeAsync(
@@ -1122,7 +1122,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Invalid filter syntax is OData 400.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_InvalidFilterSyntax_OData400()
+        public async Task ODataQuery_InvalidFilterSyntax_OData400()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1138,7 +1138,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A 2049-character filter is rejected without HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MaxFilterLengthExceeded_IsErrorNoHttp()
+        public async Task ODataQuery_MaxFilterLengthExceeded_IsErrorNoHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1155,7 +1155,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A 2048-character filter is allowed and sent.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MaxFilterLengthExact2048_IsAllowedAndSent()
+        public async Task ODataQuery_MaxFilterLengthExact2048_IsAllowedAndSent()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             await runtime.InvokeAsync(
@@ -1171,7 +1171,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Tiny max response bytes fail a query.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MaxResponseBytesExceeded_IsErrorSuggestSelectTop()
+        public async Task ODataQuery_MaxResponseBytesExceeded_IsErrorSuggestSelectTop()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync(options => options.MaxResponseBytes = 64);
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", 1), CancellationToken.None);
@@ -1184,7 +1184,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Query requires entitySet.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_MissingEntitySet_IsErrorContainsEntitySet()
+        public async Task ODataQuery_MissingEntitySet_IsErrorContainsEntitySet()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("top", 1), CancellationToken.None);
@@ -1196,7 +1196,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Count with top 0 returns a count when the service allows it.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_CountTrueTop0_ReturnsCount()
+        public async Task ODataQuery_Northwind_CountTrueTop0_ReturnsCount()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1219,7 +1219,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// String filter ALFKI matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_CustomersStringFilter_ALFKI()
+        public async Task ODataQuery_Northwind_CustomersStringFilter_ALFKI()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1241,7 +1241,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Expand Category matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_ExpandCategory_MatchHttp()
+        public async Task ODataQuery_Northwind_ExpandCategory_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1260,7 +1260,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Filter ProductID eq 1 matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_FilterProductIDEq1_MatchHttp()
+        public async Task ODataQuery_Northwind_FilterProductIDEq1_MatchHttp()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1279,7 +1279,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Omitting top does not add top on the wire.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_OmitTop_DoesNotAddTopOnWire()
+        public async Task ODataQuery_Northwind_OmitTop_DoesNotAddTopOnWire()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Categories"), CancellationToken.None);
@@ -1293,7 +1293,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Skip 1 top 1 orderby ProductID matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp()
+        public async Task ODataQuery_Northwind_ProductsSkip1Top1OrderbyProductID_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1315,7 +1315,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Products top 1 returns a product.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_ProductsTop1_ReturnsProduct()
+        public async Task ODataQuery_Northwind_ProductsTop1_ReturnsProduct()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", 1), CancellationToken.None);
@@ -1329,7 +1329,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Select ProductName matches HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_SelectProductName_MatchHttp()
+        public async Task ODataQuery_Northwind_SelectProductName_MatchHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1349,7 +1349,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Skip 0 and skip 1 pages differ.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_Skip0VsSkip1_PagesDiffer()
+        public async Task ODataQuery_Northwind_Skip0VsSkip1_PagesDiffer()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var first = await runtime.InvokeAsync(
@@ -1372,7 +1372,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Query uses GET only.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_Northwind_WriteVerbNotUsed()
+        public async Task ODataQuery_Northwind_WriteVerbNotUsed()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", 1), CancellationToken.None);
@@ -1385,7 +1385,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Top as string 1 succeeds.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TopAsString_1_Succeeds()
+        public async Task ODataQuery_TopAsString_1_Succeeds()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", "1"), CancellationToken.None);
@@ -1398,7 +1398,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Boolean top is forwarded and OData 400s.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_TopAsBoolTrue_OData400_IsErrorStatus400()
+        public async Task ODataQuery_TopAsBoolTrue_OData400_IsErrorStatus400()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Products", "top", true), CancellationToken.None);
@@ -1412,7 +1412,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unknown entity sets 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess()
+        public async Task ODataQuery_UnknownEntitySet_IsErrorStatus404OrNotSuccess()
         {
             var (runtime, _) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync("odata_query", ToolArguments.Of("entitySet", "DoesNotExist"), CancellationToken.None);
@@ -1425,7 +1425,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A key on query is ignored so the result is a list.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_UsingGetArgs_KeyWithoutBeingGet_KeyIgnored()
+        public async Task ODataQuery_UsingGetArgs_KeyWithoutBeingGet_KeyIgnored()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1442,7 +1442,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Wide expand/select within guards succeeds.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_WideExpandSelectOnNorthwind_WithinGuards()
+        public async Task ODataQuery_WideExpandSelectOnNorthwind_WithinGuards()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1458,7 +1458,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Updating Northwind Products is a 4xx/405 error.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_Northwind_IsError4xxOr405()
+        public async Task ODataUpdate_Northwind_IsError4xxOr405()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1475,7 +1475,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// The tool always PATCHes, never PUTs.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_PutVsPatch_ToolAlwaysPatch()
+        public async Task ODataUpdate_PutVsPatch_ToolAlwaysPatch()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(
@@ -1491,7 +1491,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Query option leftovers on update are unknown properties on the closed Product type and fail before HTTP.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_UsingQueryArgs_TopOnUpdate_IsUnknownPropertyBeforeHttp()
+        public async Task ODataUpdate_UsingQueryArgs_TopOnUpdate_IsUnknownPropertyBeforeHttp()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateNorthwindAsync();
             var result = await runtime.InvokeAsync(

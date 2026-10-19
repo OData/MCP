@@ -111,7 +111,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Named create equals generic odata_create.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_EqualsGenericOdataCreate()
+        public async Task CreateCustomer_EqualsGenericODataCreate()
         {
             var named = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 103, "CompanyName", "EqNamed"));
             var generic = await InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":104,"CompanyName":"EqGeneric"}"""));
@@ -215,7 +215,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Then odata_query.
         /// </summary>
         [TestMethod]
-        public async Task CreateCustomer_ThenOdataQuery()
+        public async Task CreateCustomer_ThenODataQuery()
         {
             await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 120, "CompanyName", "Q"));
             var query = await InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers", "filter", "Id eq 120"));
@@ -384,7 +384,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Named delete equals generic odata_delete.
         /// </summary>
         [TestMethod]
-        public async Task DeleteCustomer_EqualsOdataDelete()
+        public async Task DeleteCustomer_EqualsODataDelete()
         {
             await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 133, "CompanyName", "EqDel"));
             var named = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "133"));
@@ -875,7 +875,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Restier get_mcp_customer key 1 matches odata_get.
         /// </summary>
         [TestMethod]
-        public async Task GetMcpCustomer_Restier_Key1_MatchesOdataGet()
+        public async Task GetMcpCustomer_Restier_Key1_MatchesODataGet()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers(1)");
@@ -1126,7 +1126,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Restier skip 1 top 2 equals odata_query.
         /// </summary>
         [TestMethod]
-        public async Task ListCustomers_Restier_Skip1Top2_EqualsOdataQuery()
+        public async Task ListCustomers_Restier_Skip1Top2_EqualsODataQuery()
         {
             using var client = CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$orderby=Id&$skip=1&$top=2");
@@ -1153,7 +1153,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Then navigate Orders.
         /// </summary>
         [TestMethod]
-        public async Task ListCustomers_ThenOdataNavigate()
+        public async Task ListCustomers_ThenODataNavigate()
         {
             var listed = await InvokeAsync("list_customers", ToolArguments.Of("filter", "Id eq 1"));
             listed.IsError.Should().BeFalse(listed.Text);
@@ -1261,7 +1261,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Named update equals generic odata_update.
         /// </summary>
         [TestMethod]
-        public async Task UpdateCustomer_EqualsOdataUpdate()
+        public async Task UpdateCustomer_EqualsODataUpdate()
         {
             var named = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"NamedUp"}"""));
             named.IsError.Should().BeFalse(named.Text);

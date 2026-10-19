@@ -38,7 +38,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
             var result = await InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Rows000", "format", "json"));
 
             result.IsError.Should().BeFalse(result.Text);
-            OdataDescribeTypeHostTests.ReadKeys(result.StructuredContent).Should().Contain("Id");
+            ODataDescribeTypeHostTests.ReadKeys(result.StructuredContent).Should().Contain("Id");
         }
 
         #endregion

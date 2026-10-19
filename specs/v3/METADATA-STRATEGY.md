@@ -1,6 +1,6 @@
 # Metadata Strategy
 
-**Lock:** Core ships a **custom EDM** in `Microsoft.OData.Mcp.Core.Models` and a **self-contained CSDL parser**. Official EdmLib is not a Core dependency. AspNetCore **adapts** the app’s `IEdmModel` into **those same types** — do not invent a parallel `Edm/` folder or `IOdataSchema`.
+**Lock:** Core ships a **custom EDM** in `Microsoft.OData.Mcp.Core.Models` and a **self-contained CSDL parser**. Official EdmLib is not a Core dependency. AspNetCore **adapts** the app’s `IEdmModel` into **those same types** — do not invent a parallel `Edm/` folder or `IODataSchema`.
 
 The types may be edited in place. They must stay **isomorphic with `IEdmModel`**: if a property, navigation, set, or operation is not on the EDM, it does not exist for MCP.
 
@@ -104,7 +104,7 @@ DotNetDocs enrichment (XmlDoc → EDM) is a **separate product**. When that plug
 
 | First draft | Now |
 |-------------|-----|
-| Invent `IOdataSchema` | Core model is the projection |
+| Invent `IODataSchema` | Core model is the projection |
 | Delete custom EDM *or* keep it (contradiction) | Keep `Core/Models`; evolve in place |
 | ODL benchmark gate as a live decision | Not a roadmap item |
 | Docs as a future DotNetDocs-only story | Parse CSDL docs **now**; DotNetDocs still consume-only |

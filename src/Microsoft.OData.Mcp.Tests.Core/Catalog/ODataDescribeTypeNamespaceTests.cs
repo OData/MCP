@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Microsoft.OData.Mcp.Tests.Core.Catalog.OdataDescribeTypeTests;
+using static Microsoft.OData.Mcp.Tests.Core.Catalog.ODataDescribeTypeTests;
 
 namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 {
@@ -32,6 +32,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                 <Schema Namespace="Core" xmlns="http://docs.oasis-open.org/odata/ns/edm">
                   <ComplexType Name="Address">
                     <Property Name="Street" Type="Edm.String" />
+                    <Property Name="Kind" Type="Business.Address" />
                   </ComplexType>
                   <EntityType Name="Site">
                     <Key>
@@ -55,8 +56,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             """;
 
         /// <summary>
-        /// Entities in <c>PodOverlord.Core</c>; a bound action returns a complex type declared in <c>PodOverlord.Business</c>,
-        /// which uses an enumeration from the same second namespace.
+        /// Entities in <c>PodOverlord.Core</c>; a bound and an unbound action return a complex type declared in
+        /// <c>PodOverlord.Business</c>, which uses an enumeration a collection-bound function also returns.
         /// </summary>
         internal const string TwoNamespaceCsdl = """
             <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -79,6 +80,13 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                     <Parameter Name="bindingParameter" Type="PodOverlord.Core.IntegrationConnection" />
                     <ReturnType Type="PodOverlord.Business.ConnectionAuthorizationTicket" />
                   </Action>
+                  <Action Name="Reauthorize">
+                    <ReturnType Type="PodOverlord.Business.ConnectionAuthorizationTicket" />
+                  </Action>
+                  <Function Name="Statuses" IsBound="true">
+                    <Parameter Name="bindingParameter" Type="Collection(PodOverlord.Core.IntegrationConnection)" />
+                    <ReturnType Type="Collection(PodOverlord.Business.ConnectionAuthorizationStatus)" />
+                  </Function>
                   <ComplexType Name="ConnectionAuthorizationTicket">
                     <Property Name="ConnectUri" Type="Edm.String" />
                     <Property Name="ExpiresIn" Type="Edm.Int32" />
@@ -123,7 +131,33 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// A complex type from the second namespace resolves by short name, full name, and any casing.
+        /// A complex type an entity property holds is filterable, so it keeps the enum literal hint, and no operation returns it.
+        /// </summary>
+        [TestMethod]
+        public async Task DescribeType_ComplexTypeHeldByEntity_KeepsFilterHint()
+        {
+            var runtime = Runtime(CollidingCsdl);
+            var text = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Core.Address"), CancellationToken.None);
+            var json = await runtime.InvokeAsync("odata_describe_type", ToolArguments.Of("name", "Core.Address", "format", "json"), CancellationToken.None);
+
+            text.IsError.Should().BeFalse(text.Text);
+            text.Text.Should().Be(Lf("""
+                Core.Address  (complex)
+                  // filter enums as Business.Address'{value}'
+                  Street?: string
+                  Kind?: enum(Home|Work)
+                """));
+
+            json.IsError.Should().BeFalse(json.Text);
+            using var document = JsonDocument.Parse(json.StructuredContent!);
+            var address = document.RootElement.GetProperty("Core.Address");
+            address.GetProperty("enumFilterLiterals").EnumerateArray().Select(item => item.GetString()).Should().Equal("Business.Address'{value}'");
+            address.TryGetProperty("returnedBy", out _).Should().BeFalse("no operation returns the type");
+        }
+
+        /// <summary>
+        /// A complex type from the second namespace resolves by short name, full name, and any casing. Only operations
+        /// return it, so it names them and carries no filter hint.
         /// </summary>
         [TestMethod]
         public async Task DescribeType_SecondNamespaceComplexType_ResolvesByShortAndFullName()
@@ -131,7 +165,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var runtime = Runtime(TwoNamespaceCsdl);
             var expected = Lf("""
                 PodOverlord.Business.ConnectionAuthorizationTicket  (complex)
-                  // filter enums as PodOverlord.Business.ConnectionAuthorizationStatus'{value}'
+                  // returned by IntegrationConnection.Authorize, Reauthorize
                   ConnectUri?: string
                   ExpiresIn?: int
                   Message?: string
@@ -166,12 +200,14 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             document.RootElement.EnumerateObject().Should().ContainSingle();
             ticket.GetProperty("props").GetProperty("Status").GetString().Should().Be("enum(Started|Succeeded|Failed)!");
             ticket.GetProperty("props").GetProperty("ExpiresIn").GetString().Should().Be("int");
-            ticket.GetProperty("enumFilterLiterals").EnumerateArray().Select(item => item.GetString()).Should().Equal("PodOverlord.Business.ConnectionAuthorizationStatus'{value}'");
+            ticket.GetProperty("returnedBy").EnumerateArray().Select(item => item.GetString()).Should().Equal("IntegrationConnection.Authorize", "Reauthorize");
+            ticket.TryGetProperty("enumFilterLiterals", out _).Should().BeFalse("no entity holds the type, so it cannot be filtered");
             ticket.GetRawText().Should().Be(modelDocument.RootElement.GetProperty("complexTypes").GetProperty("PodOverlord.Business.ConnectionAuthorizationTicket").GetRawText());
         }
 
         /// <summary>
-        /// An enumeration from the second namespace renders its members, values, and filter literal.
+        /// An enumeration from the second namespace renders the operations that return it, its filter literal (an enum
+        /// value is always filterable wherever a property holds it), and its members and values.
         /// </summary>
         [TestMethod]
         public async Task DescribeType_SecondNamespaceEnumType_RendersMembers()
@@ -183,6 +219,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             text.IsError.Should().BeFalse(text.Text);
             text.Text.Should().Be(Lf("""
                 PodOverlord.Business.ConnectionAuthorizationStatus  (enum)
+                  // returned by IntegrationConnection[].Statuses
                   // filter enums as PodOverlord.Business.ConnectionAuthorizationStatus'{value}'
                   Started = 0
                   Succeeded = 1
@@ -193,6 +230,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             using var document = JsonDocument.Parse(json.StructuredContent!);
             var status = document.RootElement.GetProperty("PodOverlord.Business.ConnectionAuthorizationStatus");
             status.GetProperty("members").GetProperty("Succeeded").GetInt64().Should().Be(1);
+            status.GetProperty("returnedBy").EnumerateArray().Select(item => item.GetString()).Should().Equal("IntegrationConnection[].Statuses");
             status.GetProperty("enumFilterLiterals").EnumerateArray().Select(item => item.GetString()).Should().Equal("PodOverlord.Business.ConnectionAuthorizationStatus'{value}'");
             status.TryGetProperty("flags", out _).Should().BeFalse("the enumeration is not a flags type");
         }

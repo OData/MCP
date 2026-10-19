@@ -294,57 +294,57 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// <summary>
         /// <c>odata_call</c>.
         /// </summary>
-        public const string OdataCall = "odata_call";
+        public const string ODataCall = "odata_call";
 
         /// <summary>
         /// <c>odata_create</c>.
         /// </summary>
-        public const string OdataCreate = "odata_create";
+        public const string ODataCreate = "odata_create";
 
         /// <summary>
         /// <c>odata_delete</c>.
         /// </summary>
-        public const string OdataDelete = "odata_delete";
+        public const string ODataDelete = "odata_delete";
 
         /// <summary>
         /// <c>odata_describe_model</c>.
         /// </summary>
-        public const string OdataDescribeModel = "odata_describe_model";
+        public const string ODataDescribeModel = "odata_describe_model";
 
         /// <summary>
         /// <c>odata_describe_type</c>.
         /// </summary>
-        public const string OdataDescribeType = "odata_describe_type";
+        public const string ODataDescribeType = "odata_describe_type";
 
         /// <summary>
         /// <c>odata_get</c>.
         /// </summary>
-        public const string OdataGet = "odata_get";
+        public const string ODataGet = "odata_get";
 
         /// <summary>
         /// <c>odata_list_entity_sets</c>.
         /// </summary>
-        public const string OdataListEntitySets = "odata_list_entity_sets";
+        public const string ODataListEntitySets = "odata_list_entity_sets";
 
         /// <summary>
         /// <c>odata_list_operations</c>.
         /// </summary>
-        public const string OdataListOperations = "odata_list_operations";
+        public const string ODataListOperations = "odata_list_operations";
 
         /// <summary>
         /// <c>odata_navigate</c>.
         /// </summary>
-        public const string OdataNavigate = "odata_navigate";
+        public const string ODataNavigate = "odata_navigate";
 
         /// <summary>
         /// <c>odata_query</c>.
         /// </summary>
-        public const string OdataQuery = "odata_query";
+        public const string ODataQuery = "odata_query";
 
         /// <summary>
         /// <c>odata_update</c>.
         /// </summary>
-        public const string OdataUpdate = "odata_update";
+        public const string ODataUpdate = "odata_update";
 
         /// <summary>
         /// Declared functions and actions.
@@ -380,6 +380,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// JSON Schema <c>required</c> keyword.
         /// </summary>
         public const string Required = "required";
+
+        /// <summary>
+        /// Type-shape key listing the operations that return a complex or enumeration type.
+        /// </summary>
+        public const string ReturnedBy = "returnedBy";
 
         /// <summary>
         /// OData <c>$select</c> argument.

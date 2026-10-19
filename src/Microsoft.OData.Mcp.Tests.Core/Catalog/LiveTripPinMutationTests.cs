@@ -62,7 +62,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// A stringified parameters value is rejected before HTTP; the object form POSTs ShareTrip.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ActionParametersObjectNotString()
+        public async Task ODataCall_ActionParametersObjectNotString()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var tripId = await FirstTripIdAsync(runtime);
@@ -93,7 +93,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Bound ShareTrip posts to People('russellwhyte')/ShareTrip.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey()
+        public async Task ODataCall_TripPin_BoundActionShareTrip_EntitySetPeopleKey()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var tripId = await FirstTripIdAsync(runtime);
@@ -114,7 +114,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// ResetDataSource is a real POST; success or documented OData error.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError()
+        public async Task ODataCall_TripPin_ResetDataSource_Post_IsSuccessOrDocumentedError()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource"), CancellationToken.None);
@@ -132,7 +132,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Reset then query People still works on the same session.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_Reset_ThenQueryPeopleStillWorks_TripPin()
+        public async Task ODataCall_Reset_ThenQueryPeopleStillWorks_TripPin()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             await runtime.InvokeAsync("odata_call", ToolArguments.Of("name", "ResetDataSource"), CancellationToken.None);
@@ -149,7 +149,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// ShareTrip then get the person still succeeds.
         /// </summary>
         [TestMethod]
-        public async Task OdataCall_ShareTrip_ThenGetPerson()
+        public async Task ODataCall_ShareTrip_ThenGetPerson()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var tripId = await FirstTripIdAsync(runtime);
@@ -170,7 +170,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create a unique person then get then delete.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_TripPin_PersonUniqueUserName_ThenGetThenDelete()
+        public async Task ODataCreate_TripPin_PersonUniqueUserName_ThenGetThenDelete()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -189,7 +189,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Missing required fields 4xx on create.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_TripPin_MissingRequiredFields_400()
+        public async Task ODataCreate_TripPin_MissingRequiredFields_400()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var result = await runtime.InvokeAsync(
@@ -206,7 +206,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Unicode FirstName succeeds on TripPin.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_UnicodeCompanyName_SucceedsRestierAndTripPin()
+        public async Task ODataCreate_UnicodeCompanyName_SucceedsRestierAndTripPin()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -223,7 +223,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create then get then update then delete.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_ThenGet_ThenUpdate_ThenDelete_Restier()
+        public async Task ODataCreate_ThenGet_ThenUpdate_ThenDelete_Restier()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -246,7 +246,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create then query filter sees the row.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_ThenQueryFilter_SeesRow()
+        public async Task ODataCreate_ThenQueryFilter_SeesRow()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -265,7 +265,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Create then named get.
         /// </summary>
         [TestMethod]
-        public async Task OdataCreate_ThenNamedGet()
+        public async Task ODataCreate_ThenNamedGet()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -281,7 +281,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Delete a created person then get 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_TripPin_CreatedPerson_ThenGet404()
+        public async Task ODataDelete_TripPin_CreatedPerson_ThenGet404()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -299,7 +299,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Second delete of the same key is an error.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_IdempotentSecondDelete_404IsError()
+        public async Task ODataDelete_IdempotentSecondDelete_404IsError()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -317,7 +317,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// After delete, query does not list the person.
         /// </summary>
         [TestMethod]
-        public async Task OdataDelete_ThenQueryDoesNotList()
+        public async Task ODataDelete_ThenQueryDoesNotList()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -337,7 +337,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get after create sees the new entity.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_AfterCreate_SeesNewEntity()
+        public async Task ODataGet_AfterCreate_SeesNewEntity()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -353,7 +353,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get after update sees the patch.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_AfterUpdate_SeesPatch()
+        public async Task ODataGet_AfterUpdate_SeesPatch()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -373,7 +373,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Get after delete is 404.
         /// </summary>
         [TestMethod]
-        public async Task OdataGet_AfterDelete_404()
+        public async Task ODataGet_AfterDelete_404()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -390,7 +390,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Query then create then filter sees the new row.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_ThenCreateThenQueryFilter_SeesNewRow()
+        public async Task ODataQuery_ThenCreateThenQueryFilter_SeesNewRow()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -414,7 +414,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Patch FirstName on a person created in-test.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_TripPin_PatchFirstName_ThenGet()
+        public async Task ODataUpdate_TripPin_PatchFirstName_ThenGet()
         {
             var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -435,7 +435,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Patching UserName either 4xxs or relocates the entity under the new key.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_TripPin_PatchImmutableKey_400()
+        public async Task ODataUpdate_TripPin_PatchImmutableKey_400()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();
@@ -467,7 +467,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         /// Second identical patch succeeds.
         /// </summary>
         [TestMethod]
-        public async Task OdataUpdate_IdempotentSecondPatchSameBody_Succeeds()
+        public async Task ODataUpdate_IdempotentSecondPatchSameBody_Succeeds()
         {
             var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
             var userName = UniqueUserName();

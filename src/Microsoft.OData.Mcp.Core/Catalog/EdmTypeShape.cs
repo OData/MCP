@@ -738,7 +738,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </returns>
         internal IReadOnlyList<string> RenderPropertyLines()
         {
-            return RenderPropertyLines(_model, ExposedProperties, EntityType.Key);
+            return RenderPropertyLines(_model, ExposedProperties, EntityType.Key, filterable: true);
         }
 
         /// <summary>
@@ -747,13 +747,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="model">The Core EDM.</param>
         /// <param name="properties">The exposed properties.</param>
         /// <param name="key">The key property names, or empty.</param>
+        /// <param name="filterable">Whether a <c>$filter</c> can reach these properties, which is what makes the enum literal hint useful.</param>
         /// <returns>
-        /// The enum filter-literal hint (when any property is an enum), then one line per property with an optional long-description line.
+        /// The enum filter-literal hint (when filterable and any property is an enum), then one line per property with an optional long-description line.
         /// </returns>
-        internal static IReadOnlyList<string> RenderPropertyLines(EdmModel model, IReadOnlyList<EdmProperty> properties, IReadOnlyList<string> key)
+        internal static IReadOnlyList<string> RenderPropertyLines(EdmModel model, IReadOnlyList<EdmProperty> properties, IReadOnlyList<string> key, bool filterable)
         {
             var lines = new List<string>();
-            var literals = RenderEnumFilterLiterals(model, properties);
+            var literals = filterable ? RenderEnumFilterLiterals(model, properties) : [];
             if (literals.Count > 0)
             {
                 lines.Add($"  // filter enums as {string.Join(", ", literals)}");

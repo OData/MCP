@@ -38,7 +38,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
 
                 if (path.Contains("/mcp", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Partition("odata-mcp", budget.OdataMcp);
+                    return Partition("odata-mcp", budget.ODataMcp);
                 }
 
                 if (path.Contains("Customers", StringComparison.OrdinalIgnoreCase))

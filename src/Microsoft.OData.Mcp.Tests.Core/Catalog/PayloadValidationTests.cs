@@ -29,7 +29,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task Create_MissingRequired_FailsBeforeHttp()
         {
-            var (runtime, executor) = OdataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
+            var (runtime, executor) = ODataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
             var named = await runtime.InvokeAsync("create_widget", ToolArguments.Of("Name", "W"), CancellationToken.None);
             var generic = await runtime.InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Widgets", "body", """{"Name":"W"}"""), CancellationToken.None);
 
@@ -46,7 +46,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task Create_Valid_PostsBody()
         {
-            var (runtime, executor) = OdataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
+            var (runtime, executor) = ODataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
             var result = await runtime.InvokeAsync("create_widget", ToolArguments.Of("Sequence", 1, "Name", "W", "Color", "Red", "Access", "Read,Write", "Code", "ABC"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
@@ -61,7 +61,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task Create_TypeEnumLengthAndUnknownProperty_FailBeforeHttp()
         {
-            var (runtime, executor) = OdataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
+            var (runtime, executor) = ODataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
             var kind = await runtime.InvokeAsync("create_widget", ToolArguments.Of("Sequence", "one", "Name", "W", "Color", "Red"), CancellationToken.None);
             var member = await runtime.InvokeAsync("create_widget", ToolArguments.Of("Sequence", 1, "Name", "W", "Color", "Blue"), CancellationToken.None);
             var length = await runtime.InvokeAsync("create_widget", ToolArguments.Of("Sequence", 1, "Name", "W", "Color", "Red", "Code", "TOO-LONG-CODE"), CancellationToken.None);
@@ -82,7 +82,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task Update_PartialBody_IsValid()
         {
-            var (runtime, executor) = OdataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
+            var (runtime, executor) = ODataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
             var result = await runtime.InvokeAsync("update_widget", ToolArguments.Of("key", "1", "Notes", null, "Color", 1), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
@@ -97,7 +97,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         [TestMethod]
         public async Task Create_NonObjectBodyOrUnknownSet_IsForwarded()
         {
-            var (runtime, executor) = OdataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
+            var (runtime, executor) = ODataCallTests.Runtime(CsdlParserMoreTests.EnumCsdl);
             var malformed = await runtime.InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Widgets", "body", "{"), CancellationToken.None);
             malformed.IsError.Should().BeFalse(malformed.Text);
             executor.Last!.JsonBody.Should().Be("{");
@@ -145,7 +145,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                   </edmx:DataServices>
                 </edmx:Edmx>
                 """;
-            var (runtime, executor) = OdataCallTests.Runtime(csdl);
+            var (runtime, executor) = ODataCallTests.Runtime(csdl);
             var extra = await runtime.InvokeAsync("create_bag", ToolArguments.Of("Id", "a", "Anything", new { nested = true }), CancellationToken.None);
             var declared = await runtime.InvokeAsync("create_bag", ToolArguments.Of("Id", "a", "Count", "many"), CancellationToken.None);
 

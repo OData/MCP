@@ -172,7 +172,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// Discovery found the Restier prefix from endpoint routing.
         /// </summary>
         [TestMethod]
-        public void Restier_Discovery_FindsOdataPrefix()
+        public void Restier_Discovery_FindsODataPrefix()
         {
             var factory = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>();
 
@@ -199,7 +199,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// MCP odata_query returns the same seed as GET /odata/Customers.
         /// </summary>
         [TestMethod]
-        public async Task Restier_OdataQuery_MatchesHttpGet()
+        public async Task Restier_ODataQuery_MatchesHttpGet()
         {
             using var client = TestServer.CreateClient();
             var odata = await client.GetStringAsync("odata/Customers");
@@ -223,7 +223,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// MCP filter matches Restier $filter.
         /// </summary>
         [TestMethod]
-        public async Task Restier_OdataQueryFilter_MatchesHttpFilter()
+        public async Task Restier_ODataQueryFilter_MatchesHttpFilter()
         {
             using var client = TestServer.CreateClient();
             var odata = await client.GetStringAsync("odata/Customers?$filter=CompanyName eq 'Fabrikam'");
@@ -248,7 +248,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// MCP odata_get returns the same entity as GET Customers(1).
         /// </summary>
         [TestMethod]
-        public async Task Restier_OdataGet_MatchesHttpGetByKey()
+        public async Task Restier_ODataGet_MatchesHttpGetByKey()
         {
             using var client = TestServer.CreateClient();
             var odata = await client.GetStringAsync("odata/Customers(1)");

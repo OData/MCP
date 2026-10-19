@@ -173,7 +173,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         /// Empty prefixes copy as route name odata.
         /// </summary>
         [TestMethod]
-        public void CopyCatalogOptions_EmptyPrefix_UsesOdata()
+        public void CopyCatalogOptions_EmptyPrefix_UsesOData()
         {
             var copy = ODataMcpSessionFactory.CopyCatalogOptions(new ODataMcpCatalogOptions(), "  ");
 

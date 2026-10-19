@@ -31,7 +31,7 @@ namespace Microsoft.OData.Mcp.Tests.Integration
         /// Catalog handler for odata_query entitySet=Products top=1 returns a product.
         /// </summary>
         [TestMethod]
-        public async Task OdataQuery_NorthwindProductsTop1_ReturnsProduct()
+        public async Task ODataQuery_NorthwindProductsTop1_ReturnsProduct()
         {
             using var http = new HttpClient();
             var xml = await http.GetStringAsync($"{LiveOData.Northwind.TrimEnd('/')}/$metadata");

@@ -70,7 +70,7 @@
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudPagingHostTests.cs" Link="Linked\Tools\NamedCrudPagingHostTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudRateLimitHostTests.cs" Link="Linked\Tools\NamedCrudRateLimitHostTests.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\NamedCrudRichHostTests.cs" Link="Linked\Tools\NamedCrudRichHostTests.cs" />
-        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\Odata*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
+        <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\OData*HostTests.cs" Link="Linked\Tools\%(Filename)%(Extension)" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\OperationsOnlyToolHost.cs" Link="Linked\Tools\OperationsOnlyToolHost.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\RateLimitedRichHost.cs" Link="Linked\Tools\RateLimitedRichHost.cs" />
         <Compile Include="..\Microsoft.OData.Mcp.Tests.AspNetCore\Tools\TinyResponseRichHost.cs" Link="Linked\Tools\TinyResponseRichHost.cs" />

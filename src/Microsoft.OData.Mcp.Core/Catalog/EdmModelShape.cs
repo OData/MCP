@@ -58,9 +58,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             };
 
             var complexTypes = new Dictionary<string, object?>(StringComparer.Ordinal);
+            var filterable = FilterableComplexTypes(catalog._model);
             foreach (var complexType in ResolveComplexTypes(catalog._model, ReferencedTypeNames(catalog._model, shapes)))
             {
-                complexTypes[EdmTypeShape.HeaderName(catalog._model, complexType.Namespace, complexType.Name)] = RenderComplexTypeJson(catalog._model, complexType);
+                complexTypes[EdmTypeShape.HeaderName(catalog._model, complexType.Namespace, complexType.Name)] = RenderComplexTypeJson(catalog._model, complexType, filterable.Contains(complexType));
             }
 
             if (complexTypes.Count > 0)
@@ -89,7 +90,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var shapes = ResolveShapes(catalog, sets);
             var blocks = shapes.Select(shape => shape.Text).ToList();
-            blocks.AddRange(ResolveComplexTypes(catalog._model, ReferencedTypeNames(catalog._model, shapes)).Select(complexType => RenderComplexTypeText(catalog._model, complexType)));
+            var filterable = FilterableComplexTypes(catalog._model);
+            blocks.AddRange(ResolveComplexTypes(catalog._model, ReferencedTypeNames(catalog._model, shapes)).Select(complexType => RenderComplexTypeText(catalog._model, complexType, filterable.Contains(complexType))));
 
             var operations = RenderOperationLines(catalog._model);
             if (operations.Count > 0)
@@ -293,6 +295,32 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Adds the <c>returnedBy</c> list to a type body when any operation returns the type.
+        /// </summary>
+        /// <param name="body">The type body.</param>
+        /// <param name="returnedBy">The operation references from <see cref="RenderReturnedBy"/>.</param>
+        internal static void AddReturnedByJson(Dictionary<string, object?> body, List<string> returnedBy)
+        {
+            if (returnedBy.Count > 0)
+            {
+                body[ReturnedBy] = returnedBy;
+            }
+        }
+
+        /// <summary>
+        /// Collects the complex types an entity property holds, directly or through other complex types.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <returns>
+        /// The complex types a <c>$filter</c> on some entity can reach. A complex type missing from this list is only ever
+        /// an operation parameter or result, so an enum filter hint on it would never apply.
+        /// </returns>
+        internal static IReadOnlyList<EdmComplexType> FilterableComplexTypes(EdmModel model)
+        {
+            return ResolveComplexTypes(model, model.EntityTypes.SelectMany(type => type.Properties.Where(ODataMcpCatalog.IsExposedProperty)).Select(property => property.Type));
+        }
+
+        /// <summary>
         /// Finds the entity, complex, and enumeration types a describe name refers to.
         /// </summary>
         /// <param name="model">The Core EDM.</param>
@@ -408,20 +436,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Renders a complex type as a compact JSON body with <c>props</c>, <c>docs</c>, and <c>navs</c>.
+        /// Renders a complex type as a compact JSON body with <c>returnedBy</c>, <c>props</c>, <c>docs</c>, and <c>navs</c>.
         /// </summary>
         /// <param name="model">The Core EDM.</param>
         /// <param name="complexType">The complex type.</param>
+        /// <param name="filterable">Whether an entity property holds the type, so <c>$filter</c> can reach it; see <see cref="FilterableComplexTypes"/>.</param>
         /// <returns>
-        /// The body dictionary.
+        /// The body dictionary. <c>enumFilterLiterals</c> is present only when <paramref name="filterable"/> is <c>true</c>.
         /// </returns>
-        internal static Dictionary<string, object?> RenderComplexTypeJson(EdmModel model, EdmComplexType complexType)
+        internal static Dictionary<string, object?> RenderComplexTypeJson(EdmModel model, EdmComplexType complexType, bool filterable)
         {
             var body = new Dictionary<string, object?>(StringComparer.Ordinal);
             EdmDocumentation.Add(body, Description, EdmTypeShape.Informative(complexType.Description, complexType.Name) ? complexType.Description : null);
+            AddReturnedByJson(body, RenderReturnedBy(model, complexType.FullName));
 
             var exposed = complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty).ToList();
-            var literals = EdmTypeShape.RenderEnumFilterLiterals(model, exposed);
+            var literals = filterable ? EdmTypeShape.RenderEnumFilterLiterals(model, exposed) : [];
             if (literals.Count > 0)
             {
                 body[EnumFilterLiterals] = literals;
@@ -455,10 +485,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </summary>
         /// <param name="model">The Core EDM.</param>
         /// <param name="complexType">The complex type.</param>
+        /// <param name="filterable">Whether an entity property holds the type, so <c>$filter</c> can reach it; see <see cref="FilterableComplexTypes"/>.</param>
         /// <returns>
-        /// The text block.
+        /// The text block: header, description, <c>// returned by</c> line, enum filter hint (only when filterable), then members.
         /// </returns>
-        internal static string RenderComplexTypeText(EdmModel model, EdmComplexType complexType)
+        internal static string RenderComplexTypeText(EdmModel model, EdmComplexType complexType, bool filterable)
         {
             var lines = new List<string> { $"{EdmTypeShape.HeaderName(model, complexType.Namespace, complexType.Name)}  (complex)" };
             if (EdmTypeShape.Informative(complexType.Description, complexType.Name))
@@ -466,25 +497,31 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 lines.Add($"  // {complexType.Description!.Trim()}");
             }
 
-            lines.AddRange(EdmTypeShape.RenderPropertyLines(model, [.. complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty)], []));
+            lines.AddRange(RenderReturnedByLines(model, complexType.FullName));
+            lines.AddRange(EdmTypeShape.RenderPropertyLines(model, [.. complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty)], [], filterable));
             lines.AddRange(complexType.NavigationProperties.Select(navigation => $"  {EdmTypeShape.RenderNavigation(model, navigation)}"));
 
             return string.Join("\n", lines);
         }
 
         /// <summary>
-        /// Renders an enumeration as a compact JSON body with its filter literal and member values.
+        /// Renders an enumeration as a compact JSON body with the operations that return it, its filter literal, and member values.
         /// </summary>
+        /// <param name="model">The Core EDM.</param>
         /// <param name="enumType">The enumeration type.</param>
         /// <returns>
-        /// <c>{ "description"?, "longDescription"?, "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Name": value } }</c>.
+        /// <c>{ "description"?, "longDescription"?, "returnedBy"?: [...], "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Name": value } }</c>.
         /// </returns>
-        internal static Dictionary<string, object?> RenderEnumTypeJson(EdmEnumType enumType)
+        /// <remarks>
+        /// The filter literal is always present: any property that holds an enumeration value can be filtered by it.
+        /// </remarks>
+        internal static Dictionary<string, object?> RenderEnumTypeJson(EdmModel model, EdmEnumType enumType)
         {
             var body = new Dictionary<string, object?>(StringComparer.Ordinal);
             var description = EdmTypeShape.Informative(enumType.Description, enumType.Name) ? enumType.Description!.Trim() : null;
             EdmDocumentation.Add(body, Description, description);
             EdmDocumentation.Add(body, LongDescription, EdmTypeShape.Informative(enumType.LongDescription, enumType.Name) ? enumType.LongDescription!.Trim() : null, description);
+            AddReturnedByJson(body, RenderReturnedBy(model, enumType.FullName));
 
             if (enumType.IsFlags)
             {
@@ -513,10 +550,52 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             EdmTypeShape.AddDistinct(docs, enumType.Description, enumType.Name);
             EdmTypeShape.AddDistinct(docs, enumType.LongDescription, enumType.Name);
             lines.AddRange(docs.Select(doc => $"  // {doc}"));
+            lines.AddRange(RenderReturnedByLines(model, enumType.FullName));
             lines.Add($"  // filter enums as {EdmTypeShape.RenderEnumFilterLiteral(enumType)}");
             lines.AddRange(enumType.Members.Select(member => $"  {member.Name} = {member.Value}"));
 
             return string.Join("\n", lines);
+        }
+
+        /// <summary>
+        /// Lists the operations whose return type is the given type or a collection of it, functions first, in declaration order.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="fullName">The returned type's qualified name.</param>
+        /// <returns>
+        /// <c>Binding.Name</c> for bound operations (<c>Binding[].Name</c> when collection-bound) and <c>Name</c> for unbound
+        /// ones, for example <c>IntegrationConnection.Authorize</c>. Empty when no operation returns the type.
+        /// </returns>
+        /// <remarks>
+        /// This tells the calling AI where a result-only type comes from without searching the model. The signature stays
+        /// on the binding type's <c>operations</c> block or in <c>odata_list_operations</c>.
+        /// </remarks>
+        internal static List<string> RenderReturnedBy(EdmModel model, string fullName)
+        {
+            var operations = model.Functions.Select(function => (function.Name, function.IsBound, function.BindingParameterType, function.ReturnType))
+                .Concat(model.Actions.Select(action => (action.Name, action.IsBound, action.BindingParameterType, action.ReturnType)));
+
+            return [.. operations
+                .Where(operation => operation.ReturnType is not null
+                    && (operation.ReturnType.Equals(fullName, StringComparison.Ordinal) || operation.ReturnType.Equals($"Collection({fullName})", StringComparison.Ordinal)))
+                .Select(operation => operation.IsBound && !string.IsNullOrWhiteSpace(operation.BindingParameterType)
+                    ? $"{EdmTypeShape.MapShapeType(model, operation.BindingParameterType)}.{operation.Name}"
+                    : operation.Name)];
+        }
+
+        /// <summary>
+        /// Renders the <c>// returned by</c> line for a type, or nothing when no operation returns it.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="fullName">The returned type's qualified name.</param>
+        /// <returns>
+        /// Zero or one indented comment line.
+        /// </returns>
+        internal static IReadOnlyList<string> RenderReturnedByLines(EdmModel model, string fullName)
+        {
+            var returnedBy = RenderReturnedBy(model, fullName);
+
+            return returnedBy.Count > 0 ? [$"  // returned by {string.Join(", ", returnedBy)}"] : [];
         }
 
         /// <summary>

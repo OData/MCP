@@ -29,7 +29,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var result = await InvokeAsync("odata_list_entity_sets");
             result.IsError.Should().BeFalse(result.Text);
-            var names = OdataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent);
+            var names = ODataListEntitySetsHostTests.ReadEntitySetNames(result.StructuredContent);
             names.Should().HaveCount(200);
             names.Should().Contain("Rows000");
             names.Should().Contain("Rows199");
