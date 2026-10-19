@@ -172,7 +172,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="maxLength">The declared <c>MaxLength</c>, inlined as <c>string(n)</c> only when at most 16.</param>
         /// <returns>
         /// The token: <c>string</c>, <c>string(n)</c>, <c>bool</c>, <c>int</c>, <c>int64</c>, <c>number</c>, <c>date</c>,
-        /// <c>datetime</c>, <c>time</c>, <c>duration</c>, <c>guid</c>, <c>enum(A|B)</c>, a short type name, or any of those with <c>[]</c>.
+        /// <c>datetime</c>, <c>time</c>, <c>duration</c>, <c>guid</c>, <c>enum(A|B)</c>, a type name (short unless another declared
+        /// type shares it), or any of those with <c>[]</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
         public static string MapShapeType(EdmModel model, string? edmType, int? maxLength = null)
@@ -209,7 +210,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 "Edm.Duration" => "duration",
                 "Edm.Guid" => "guid",
                 _ when edmType.StartsWith("Edm.", StringComparison.Ordinal) => edmType["Edm.".Length..],
-                _ => ShortName(edmType)
+                _ => ReferenceName(model, edmType)
             };
         }
 
@@ -605,6 +606,26 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         {
             return !string.IsNullOrWhiteSpace(text)
                 && !string.Equals(text.Trim(), memberName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the name a type reference renders with: the short name, or the qualified name when another declared
+        /// entity, complex, or enumeration type has the same short name in a different namespace.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="qualifiedName">The referenced type's qualified name.</param>
+        /// <returns>
+        /// The short name when it is unambiguous; otherwise, <paramref name="qualifiedName"/>.
+        /// </returns>
+        internal static string ReferenceName(EdmModel model, string qualifiedName)
+        {
+            var shortName = ShortName(qualifiedName);
+            var collides = model.EntityTypes.Select(type => (type.Name, type.FullName))
+                .Concat(model.ComplexTypes.Select(type => (type.Name, type.FullName)))
+                .Concat(model.EnumTypes.Select(type => (type.Name, type.FullName)))
+                .Any(type => type.Name.Equals(shortName, StringComparison.Ordinal) && !type.FullName.Equals(qualifiedName, StringComparison.Ordinal));
+
+            return collides ? qualifiedName : shortName;
         }
 
         /// <summary>

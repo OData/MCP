@@ -399,6 +399,34 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Describes an entity type, paired with the set it was reached through when there is one.
+        /// </summary>
+        /// <param name="type">The entity type, or <c>null</c> when the name or set's type is not declared.</param>
+        /// <param name="set">The entity set the name matched, or <c>null</c> for a type name.</param>
+        /// <param name="name">The requested name, for the error text.</param>
+        /// <param name="format"><c>text</c> or <c>json</c>.</param>
+        /// <returns>
+        /// The cached shape's text or JSON, or a tool error when <paramref name="type"/> is <c>null</c>.
+        /// </returns>
+        internal ODataToolInvocationResult DescribeEntityType(EdmEntityType? type, EdmEntitySet? set, string name, string format)
+        {
+            if (type is null)
+            {
+                return Error($"Type or entity set '{name}' is not declared in the model.");
+            }
+
+            var shape = _catalog.GetShape(type);
+            if (set is not null && !ReferenceEquals(shape.EntitySet, set))
+            {
+                shape = new EdmTypeShape(_catalog._model, type, set);
+            }
+
+            return format == JsonFormat
+                ? Complete(shape.Json, type.Name)
+                : CompleteText(shape.Text);
+        }
+
+        /// <summary>
         /// Describes the whole model: a summary of sets and navigations, or every in-scope type, as text, JSON, or mermaid.
         /// </summary>
         /// <param name="arguments">Tool arguments: <c>detail</c> (<c>summary</c> or <c>complete</c>), <c>format</c> (<c>text</c>, <c>json</c>, or <c>mermaid</c>), <c>sets</c> (string array).</param>
@@ -452,35 +480,46 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Describes a declared type or entity set in the compact shape grammar.
+        /// Describes a declared entity set, entity type, complex type, or enumeration type in the compact shape grammar.
         /// </summary>
         /// <param name="arguments">Tool arguments: <c>name</c> (required) and <c>format</c> (<c>text</c> or <c>json</c>).</param>
         /// <returns>
         /// The declaration text, or the compact JSON when <c>format=json</c>. One representation per call.
         /// </returns>
+        /// <remarks>
+        /// An included entity set name wins. Otherwise the name is matched against the short and full names of every
+        /// declared type in every schema namespace; a short name declared in more than one namespace is an error that
+        /// lists the full names to pass instead.
+        /// </remarks>
         internal ODataToolInvocationResult DescribeType(IReadOnlyDictionary<string, JsonElement> arguments)
         {
             var name = ReadRequired(arguments, Name);
             var format = ReadChoice(arguments, Format, [TextFormat, JsonFormat], TextFormat);
             var set = _catalog.ResolveIncludedSets().FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            var type = set is not null
-                ? _catalog.ResolveEntityType(set)
-                : _catalog._model.EntityTypes.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || item.FullName.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (type is null)
+            if (set is not null)
             {
-                return Error($"Type or entity set '{name}' is not declared in the model.");
+                return DescribeEntityType(_catalog.ResolveEntityType(set), set, name, format);
             }
 
-            var shape = _catalog.GetShape(type);
-            if (set is not null && !ReferenceEquals(shape.EntitySet, set))
+            var matches = EdmModelShape.FindDeclaredTypes(_catalog._model, name);
+            if (matches.Count > 1)
             {
-                shape = new EdmTypeShape(_catalog._model, type, set);
+                return Error($"Type name '{name}' is declared in more than one namespace. Pass one of: {string.Join(", ", matches.Select(EdmModelShape.FullNameOf))}.");
             }
 
-            return format == JsonFormat
-                ? Complete(shape.Json, type.Name)
-                : CompleteText(shape.Text);
+            var model = _catalog._model;
+
+            return matches.FirstOrDefault() switch
+            {
+                EdmEntityType entityType => DescribeEntityType(entityType, null, name, format),
+                EdmComplexType complexType => format == JsonFormat
+                    ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, complexType.Namespace, complexType.Name), EdmModelShape.RenderComplexTypeJson(model, complexType)), complexType.Name)
+                    : CompleteText(EdmModelShape.RenderComplexTypeText(model, complexType)),
+                EdmEnumType enumType => format == JsonFormat
+                    ? Complete(EdmModelShape.SerializeType(EdmTypeShape.HeaderName(model, enumType.Namespace, enumType.Name), EdmModelShape.RenderEnumTypeJson(enumType)), enumType.Name)
+                    : CompleteText(EdmModelShape.RenderEnumTypeText(model, enumType)),
+                _ => DescribeEntityType(null, null, name, format)
+            };
         }
 
         /// <summary>

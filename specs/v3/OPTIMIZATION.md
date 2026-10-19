@@ -78,7 +78,7 @@ Normative copy. CSDL summary is appended on named tools via `ComposeToolDescript
 | Tool | Description |
 |---|---|
 | `odata_list_entity_sets` | `Names, types, and keys of declared entity sets.` |
-| `odata_describe_type` | `Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.` |
+| `odata_describe_type` | `Declared properties, keys, navigations, bound operations, and enums for a set or an entity, complex, or enum type. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.` |
 | `odata_describe_model` | `summary (default): sets, keys, navigations, then unbound operations. complete: every type with properties, enums, and bound operations, then unbound operations. Prefer complete instead of calling odata_describe_type once per type. Pass sets to scope a large model. format=text (default), json, or mermaid. Do not read $metadata to explore.` |
 | `odata_query` | Keep: parameter names have no `$`; executor adds them. |
 | `odata_get` | `Gets an entity by key. Optional select and expand shape the result.` Named: `Gets a {Type} by key.` + CSDL summary if any. |

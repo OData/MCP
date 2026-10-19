@@ -58,7 +58,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             };
 
             var complexTypes = new Dictionary<string, object?>(StringComparer.Ordinal);
-            foreach (var complexType in ResolveComplexTypes(catalog._model, shapes.Select(shape => shape.EntityType)))
+            foreach (var complexType in ResolveComplexTypes(catalog._model, ReferencedTypeNames(catalog._model, shapes)))
             {
                 complexTypes[EdmTypeShape.HeaderName(catalog._model, complexType.Namespace, complexType.Name)] = RenderComplexTypeJson(catalog._model, complexType);
             }
@@ -89,7 +89,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var shapes = ResolveShapes(catalog, sets);
             var blocks = shapes.Select(shape => shape.Text).ToList();
-            blocks.AddRange(ResolveComplexTypes(catalog._model, shapes.Select(shape => shape.EntityType)).Select(complexType => RenderComplexTypeText(catalog._model, complexType)));
+            blocks.AddRange(ResolveComplexTypes(catalog._model, ReferencedTypeNames(catalog._model, shapes)).Select(complexType => RenderComplexTypeText(catalog._model, complexType)));
 
             var operations = RenderOperationLines(catalog._model);
             if (operations.Count > 0)
@@ -129,7 +129,10 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
                 foreach (var navigation in shape.EntityType.NavigationProperties)
                 {
-                    var target = MermaidName(EdmTypeShape.ShortName(navigation.TargetType));
+                    var targetType = catalog._model.GetEntityType(navigation.TargetType);
+                    var target = MermaidName(targetType is null
+                        ? EdmTypeShape.ShortName(navigation.TargetType)
+                        : EdmTypeShape.HeaderName(catalog._model, targetType.Namespace, targetType.Name));
                     var cardinality = navigation.IsCollection ? "||--o{" : "||--o|";
                     lines.Add($"  {source} {cardinality} {target} : {MermaidName(navigation.Name)}");
                 }
@@ -290,6 +293,29 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Finds the entity, complex, and enumeration types a describe name refers to.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="name">A short or namespace-qualified type name, compared case-insensitively.</param>
+        /// <returns>
+        /// The <see cref="EdmEntityType"/>, <see cref="EdmComplexType"/>, and <see cref="EdmEnumType"/> matches. A full-name
+        /// match wins over short-name matches; more than one result means the short name is declared in several namespaces.
+        /// </returns>
+        /// <remarks>
+        /// Every schema in the document contributes types, so a type declared in a second namespace resolves like any other.
+        /// </remarks>
+        internal static IReadOnlyList<object> FindDeclaredTypes(EdmModel model, string name)
+        {
+            var matches = model.EntityTypes.Where(type => MatchesTypeName(type.Name, type.FullName, name)).Cast<object>()
+                .Concat(model.ComplexTypes.Where(type => MatchesTypeName(type.Name, type.FullName, name)))
+                .Concat(model.EnumTypes.Where(type => MatchesTypeName(type.Name, type.FullName, name)))
+                .ToList();
+            var exact = matches.Where(type => FullNameOf(type).Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            return exact.Count > 0 ? exact : matches;
+        }
+
+        /// <summary>
         /// Returns the first informative documentation string for a shape: type description, then set description.
         /// </summary>
         /// <param name="shape">The shape.</param>
@@ -312,6 +338,39 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Gets the qualified name of a type returned by <see cref="FindDeclaredTypes"/>.
+        /// </summary>
+        /// <param name="type">An <see cref="EdmEntityType"/>, <see cref="EdmComplexType"/>, or <see cref="EdmEnumType"/>.</param>
+        /// <returns>
+        /// The full name.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not a declared EDM type.</exception>
+        internal static string FullNameOf(object type)
+        {
+            return type switch
+            {
+                EdmEntityType entityType => entityType.FullName,
+                EdmComplexType complexType => complexType.FullName,
+                EdmEnumType enumType => enumType.FullName,
+                _ => throw new ArgumentException($"'{type.GetType().Name}' is not a declared EDM type.", nameof(type))
+            };
+        }
+
+        /// <summary>
+        /// Determines whether a describe name equals a type's short or full name, ignoring case.
+        /// </summary>
+        /// <param name="shortName">The type's short name.</param>
+        /// <param name="fullName">The type's qualified name.</param>
+        /// <param name="name">The requested name.</param>
+        /// <returns>
+        /// <c>true</c> when either name matches.
+        /// </returns>
+        internal static bool MatchesTypeName(string shortName, string fullName, string name)
+        {
+            return shortName.Equals(name, StringComparison.OrdinalIgnoreCase) || fullName.Equals(name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Quotes a name for mermaid when it contains characters outside letters, digits, underscore, and hyphen.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -321,6 +380,31 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal static string MermaidName(string name)
         {
             return MermaidSafeName.IsMatch(name) ? name : $"\"{name.Replace("\"", "'", StringComparison.Ordinal)}\"";
+        }
+
+        /// <summary>
+        /// Collects the type names the in-scope shapes reference: every exposed property type first, then the parameter and
+        /// return types of their bound operations and of the unbound operations.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="shapes">The in-scope shapes.</param>
+        /// <returns>
+        /// Type names in first-use order, possibly wrapped in <c>Collection(...)</c>.
+        /// </returns>
+        /// <remarks>
+        /// Operation types follow property types so a complex type only an operation uses, such as an action's result,
+        /// is appended after the ones the entities themselves carry.
+        /// </remarks>
+        internal static IEnumerable<string> ReferencedTypeNames(EdmModel model, IReadOnlyList<EdmTypeShape> shapes)
+        {
+            var propertyTypes = shapes.SelectMany(shape => shape.ExposedProperties).Select(property => property.Type);
+            var operations = shapes.SelectMany(shape => shape.BoundFunctions.Select(function => (function.Parameters, function.ReturnType))
+                    .Concat(shape.BoundActions.Select(action => (action.Parameters, action.ReturnType))))
+                .Concat(model.Functions.Where(function => !function.IsBound).Select(function => (function.Parameters, function.ReturnType)))
+                .Concat(model.Actions.Where(action => !action.IsBound).Select(action => (action.Parameters, action.ReturnType)));
+            var operationTypes = operations.SelectMany(operation => operation.Parameters.Select(parameter => (string?)parameter.Type).Append(operation.ReturnType));
+
+            return propertyTypes.Concat(operationTypes.OfType<string>());
         }
 
         /// <summary>
@@ -389,29 +473,76 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Collects the complex types used, directly or transitively, by the given entity types, in first-use order.
+        /// Renders an enumeration as a compact JSON body with its filter literal and member values.
+        /// </summary>
+        /// <param name="enumType">The enumeration type.</param>
+        /// <returns>
+        /// <c>{ "description"?, "longDescription"?, "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Name": value } }</c>.
+        /// </returns>
+        internal static Dictionary<string, object?> RenderEnumTypeJson(EdmEnumType enumType)
+        {
+            var body = new Dictionary<string, object?>(StringComparer.Ordinal);
+            var description = EdmTypeShape.Informative(enumType.Description, enumType.Name) ? enumType.Description!.Trim() : null;
+            EdmDocumentation.Add(body, Description, description);
+            EdmDocumentation.Add(body, LongDescription, EdmTypeShape.Informative(enumType.LongDescription, enumType.Name) ? enumType.LongDescription!.Trim() : null, description);
+
+            if (enumType.IsFlags)
+            {
+                body[Flags] = true;
+            }
+
+            body[EnumFilterLiterals] = new List<string> { EdmTypeShape.RenderEnumFilterLiteral(enumType) };
+            body[Members] = enumType.Members.ToDictionary(member => member.Name, member => member.Value, StringComparer.Ordinal);
+
+            return body;
+        }
+
+        /// <summary>
+        /// Renders an enumeration in the declaration grammar with an <c>(enum)</c> header marker and one <c>Name = value</c> line per member.
         /// </summary>
         /// <param name="model">The Core EDM.</param>
-        /// <param name="entityTypes">The in-scope entity types.</param>
+        /// <param name="enumType">The enumeration type.</param>
         /// <returns>
-        /// The complex types declared in the model that those entities reference.
+        /// The text block. Flags enumerations are marked <c>(enum, flags)</c>; combine their members comma-separated.
         /// </returns>
-        internal static IReadOnlyList<EdmComplexType> ResolveComplexTypes(EdmModel model, IEnumerable<EdmEntityType> entityTypes)
+        internal static string RenderEnumTypeText(EdmModel model, EdmEnumType enumType)
+        {
+            var header = EdmTypeShape.HeaderName(model, enumType.Namespace, enumType.Name);
+            var lines = new List<string> { enumType.IsFlags ? $"{header}  (enum, flags)" : $"{header}  (enum)" };
+            var docs = new List<string>();
+            EdmTypeShape.AddDistinct(docs, enumType.Description, enumType.Name);
+            EdmTypeShape.AddDistinct(docs, enumType.LongDescription, enumType.Name);
+            lines.AddRange(docs.Select(doc => $"  // {doc}"));
+            lines.Add($"  // filter enums as {EdmTypeShape.RenderEnumFilterLiteral(enumType)}");
+            lines.AddRange(enumType.Members.Select(member => $"  {member.Name} = {member.Value}"));
+
+            return string.Join("\n", lines);
+        }
+
+        /// <summary>
+        /// Collects the complex types the given type names reference, directly or through other complex types, in first-use order.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="typeNames">Referenced type names, possibly wrapped in <c>Collection(...)</c>; names that are not complex types are skipped.</param>
+        /// <returns>
+        /// The complex types declared in the model that those names reach.
+        /// </returns>
+        internal static IReadOnlyList<EdmComplexType> ResolveComplexTypes(EdmModel model, IEnumerable<string> typeNames)
         {
             var found = new List<EdmComplexType>();
-            var pending = new Queue<IEnumerable<EdmProperty>>(entityTypes.Select(type => type.Properties.Where(ODataMcpCatalog.IsExposedProperty)));
+            var pending = new Queue<IEnumerable<string>>([typeNames]);
             while (pending.Count > 0)
             {
-                foreach (var property in pending.Dequeue())
+                foreach (var typeName in pending.Dequeue())
                 {
-                    var complexType = model.GetComplexType(property.IsCollection ? property.ElementType : property.Type);
+                    var complexType = model.GetComplexType(typeName.StartsWith("Collection(", StringComparison.Ordinal) && typeName.EndsWith(')') ? typeName["Collection(".Length..^1] : typeName);
                     if (complexType is null || found.Contains(complexType))
                     {
                         continue;
                     }
 
                     found.Add(complexType);
-                    pending.Enqueue(complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty));
+                    pending.Enqueue(complexType.Properties.Where(ODataMcpCatalog.IsExposedProperty).Select(property => property.Type));
                 }
             }
 
@@ -460,6 +591,19 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             }
 
             return shapes;
+        }
+
+        /// <summary>
+        /// Serializes one type body under its header name, the <c>format=json</c> envelope <c>odata_describe_type</c> returns.
+        /// </summary>
+        /// <param name="headerName">The type's display name.</param>
+        /// <param name="body">The compact JSON body.</param>
+        /// <returns>
+        /// <c>{ "Type": { ... } }</c>.
+        /// </returns>
+        internal static string SerializeType(string headerName, IReadOnlyDictionary<string, object?> body)
+        {
+            return JsonSerializer.Serialize(new Dictionary<string, object?>(StringComparer.Ordinal) { [headerName] = body }, ODataMcpCatalog.SchemaSerializerOptions);
         }
 
         #endregion

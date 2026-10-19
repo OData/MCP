@@ -102,7 +102,7 @@ Same facts, for `resources/read` type cards and `format=json`:
 | Complex / entity | short type name | |
 | `Collection(T)` | `T[]` | |
 
-Drop `Edm.` and the namespace on property types unless two types would collide.
+Drop `Edm.` and the namespace on property types unless two types would collide. A reference keeps its namespace when another declared entity, complex, or enum type in a different namespace has the same short name.
 
 ---
 
@@ -173,10 +173,24 @@ Eager generic. `name` **required** (type or set). Do not overload omitted `name`
 
 | Argument | Values | Default |
 |---|---|---|
-| `name` | set or type name | required |
+| `name` | set name, or entity, complex, or enum type name (short or full, any case) | required |
 | `format` | `text` \| `json` | `text` |
 
 Unknown `format` → tool error. One representation per call. No mermaid. Includes bound operations and enums. Unbound operations are not here.
+
+Lookup: an included set name wins, then every declared entity, complex, and enum type in **every** schema namespace. A full-name match wins over short-name matches. A short name declared in more than one namespace is a tool error listing the full names to pass instead.
+
+A complex type renders like the `complete` dump: `Type  (complex)` header, then property and navigation lines; `format=json` is `{ "Type": <the complexTypes body> }`. An enum type renders its members and values:
+
+```
+ConnectionAuthorizationStatus  (enum)
+  // filter enums as NS.ConnectionAuthorizationStatus'{value}'
+  Started = 0
+  Succeeded = 1
+  Failed = 2
+```
+
+The header is `(enum, flags)` for a flags enumeration. `format=json` is `{ "Type": { "description"?, "longDescription"?, "flags"?: true, "enumFilterLiterals": ["NS.Enum'{value}'"], "members": { "Started": 0 } } }`.
 
 ### 6.2 `odata_describe_model`
 
@@ -190,7 +204,9 @@ Eager generic (11th). Never EDMX.
 
 **`summary`:** every included set, key, navigations; no property lists; unbound operations at the end.
 
-**`complete`:** every in-scope type in §1.1 grammar (properties, enums, bound ops, docs), then unbound operations. Complex types used by those entities included.
+**`complete`:** every in-scope type in §1.1 grammar (properties, enums, bound ops, docs), then unbound operations. Complex types used by those entities included, then complex types only their bound operations or the unbound operations use (parameters and return types), so an action's result type is never missing.
+
+**`mermaid`** node names match the type headers: a navigation target is namespace-qualified exactly when its source node is.
 
 **`mermaid`:** relationship-only `erDiagram`. No attribute compartments. Even with `detail=complete`. Cardinality from collection vs single (`||--o{` / `||--o|`). Quote names that are not mermaid-safe.
 

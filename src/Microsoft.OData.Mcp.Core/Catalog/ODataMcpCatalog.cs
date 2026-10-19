@@ -624,7 +624,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 },
                 new ODataToolDescriptor
                 {
-                    Description = "Declared properties, keys, navigations, bound operations, and enums for a type or set. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.",
+                    Description = "Declared properties, keys, navigations, bound operations, and enums for a set or an entity, complex, or enum type. format=text (default) or json. No ? = required on create; Name?: = optional; -> = navigation; [] = collection. // key, store-generated = omit on create; plain // key = send it unless the service generates it.",
                     InputSchema = """{"type":"object","properties":{"name":{"type":"string","description":"Entity set or type name declared in the model."},"format":{"type":"string","enum":["text","json"]}},"required":["name"]}""",
                     Name = OdataDescribeType,
                     ReadOnlyHint = true,

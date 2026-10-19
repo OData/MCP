@@ -172,6 +172,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         public const string Filter = "filter";
 
         /// <summary>
+        /// Type-shape key that marks a flags enumeration, present only when <c>true</c>.
+        /// </summary>
+        public const string Flags = "flags";
+
+        /// <summary>
         /// Representation argument on describe tools.
         /// </summary>
         public const string Format = "format";
@@ -245,6 +250,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// JSON Schema <c>maxLength</c> keyword, emitted only when the EDM <c>MaxLength</c> is at most 16.
         /// </summary>
         public const string MaxLength = "maxLength";
+
+        /// <summary>
+        /// Type-shape key for an enumeration's member-name-to-value map.
+        /// </summary>
+        public const string Members = "members";
 
         /// <summary>
         /// <c>format</c> value that selects a relationship-only mermaid <c>erDiagram</c> on <c>odata_describe_model</c>.
