@@ -1,7 +1,7 @@
 # Tool Test Manifest — OData MCP Platform v3
 
 **Status:** Living (authoritative)  
-**Revised:** 2026-09-09  
+**Revised:** 2026-10-20  
 **Scope:** Every MCP tool this product registers, plus the non-tool MCP handlers those tools depend on.  
 **This file is a test design spec.** Do not implement product code from it. Do not invent tools that are not registered. Do not skip tools that are registered.
 
@@ -43,6 +43,7 @@ Grounded in:
 18. [Named `create_{type}`](#18-named-create_type)
 19. [Named `update_{type}`](#19-named-update_type)
 20. [Named `delete_{type}`](#20-named-delete_type)
+20.1. [Named `action_*` / `function_*`](#201-named-action_--function_)
 21. [`shutdown_server` (Tools host only)](#21-shutdown_server-tools-host-only)
 22. [MCP protocol handlers (not tools)](#22-mcp-protocol-handlers-not-tools)
 23. [Combinatorial / matrix](#23-combinatorial--matrix)
@@ -59,7 +60,7 @@ A case that lists multiple hosts or surfaces is **N implementations**, not one p
 
 **Never** collapse “the other tools work the same.” Named CRUD, `odata_navigate`, `odata_update`, `odata_delete`, `odata_call`, and JSON-RPC `tools/call` are first-class. `odata_query` coverage does not satisfy them.
 
-`TOOL-SURFACE.md` mentions a named navigate pattern `list_{set}_{nav}` and Phase-2 names `odata_call_function` / `odata_call_action`. **Those names are not registered.** Catalog named families are only `list_*` / `get_*` / `create_*` / `update_*` / `delete_*`. Operations go through `odata_list_operations` + `odata_call`. Do not write tests that expect `list_products_category` or `odata_call_function` to appear in `tools/list`.
+`TOOL-SURFACE.md` mentions a named navigate pattern `list_{set}_{nav}` and Phase-2 names `odata_call_function` / `odata_call_action`. **Those names are not registered.** Catalog named families are `list_*` / `get_*` / `create_*` / `update_*` / `delete_*` plus named `action_*` / `function_*` ([ACTIONS.md](./ACTIONS.md) §4). `odata_call` remains. Do not write tests that expect `list_products_category` or `odata_call_function` to appear in `tools/list`.
 
 ---
 
@@ -85,13 +86,24 @@ From `ODataMcpCatalog.BuildNamedFamily` (only when `MaxNamedTools - genericCount
 
 | Name | Binds | Input schema | Required |
 |------|-------|--------------|----------|
-| `list_{set_snake}` | `EntitySetName` | same query options as `odata_query` minus `entitySet`. Description ends `Query parameter names do not include $.` plus `Filter enums as NS.Enum'{value}', ...` when the type exposes enum properties | none |
-| `get_{type_snake}` | `EntitySetName` | `{ key, select?, expand? }` — `key.description` names the type's key: `CustomerID as text; strings are quoted for you.` or, for composites, `Name=value pairs: OrderID=...,ProductID=...; strings are quoted for you.` | `key` |
-| `create_{type_snake}` | `EntitySetName` | JSON object of **declared non-binary/non-stream** properties (not a `body` string). Each property: JSON type (`["type","null"]` when nullable), `enum` member names for enum types (values when `EnumJsonFormat=Integer`), `items` for collections, `object` for complex, `maxLength` only when EDM `MaxLength ≤ 16`, `description` only from CSDL | `required` = required-on-create (non-nullable, no `DefaultValue`, not `Core.Computed`); omitted when empty. Runtime POSTs serialized leftover properties |
-| `update_{type_snake}` | `EntitySetName` | `{ key }` + the same property map as create; no `body` | `key` only |
-| `delete_{type_snake}` | `EntitySetName` | `{ key }` | `key` |
+| `list_{set}` | `EntitySetName` | same query options as `odata_query` minus `entitySet`. Description ends `Query parameter names do not include $.` plus `Filter enums as NS.Enum'{value}', ...` when the type exposes enum properties. `{set}` is `ToToolName(set.Name)` (lowercase as declared) | none |
+| `get_{type}` | `EntitySetName` | `{ key, select?, expand? }` — `key.description` names the type's key: `CustomerID as text; strings are quoted for you.` or, for composites, `Name=value pairs: OrderID=...,ProductID=...; strings are quoted for you.` `{type}` is `ToToolName(type.Name)` | `key` |
+| `create_{type}` | `EntitySetName` | JSON object of **declared non-binary/non-stream** properties (not a `body` string). Each property: JSON type (`["type","null"]` when nullable), `enum` member names for enum types (values when `EnumJsonFormat=Integer`), `items` for collections, `object` for complex, `maxLength` only when EDM `MaxLength ≤ 16`, `description` only from CSDL | `required` = required-on-create (non-nullable, no `DefaultValue`, not `Core.Computed`); omitted when empty. Runtime POSTs serialized leftover properties |
+| `update_{type}` | `EntitySetName` | `{ key }` + the same property map as create; no `body` | `key` only |
+| `delete_{type}` | `EntitySetName` | `{ key }` | `key` |
 
 `create_*` / `update_*` / `delete_*` are omitted from the family when `IncludeCreate` / `IncludeUpdate` / `IncludeDelete` is `false`. The remaining members still ship as one family; the cap is checked against that reduced family size.
+
+From `ODataMcpCatalog.AddNamedOperations` / `AddBoundOperationTools` ([ACTIONS.md](./ACTIONS.md) §4). `tools/list` order: generics, unbound `function_*` then `action_*` (alphabetical), then per-set CRUD followed by instance-bound then collection-bound operations. `IncludeActions` / `IncludeFunctions` default `true`; off omits named operation tools only. `odata_call` remains.
+
+| Name | Binds | Input schema | Required |
+|------|-------|--------------|----------|
+| `function_{function}` | unbound | declared parameters, `additionalProperties: false` | non-nullable parameters |
+| `action_{action}` | unbound | same | non-nullable parameters |
+| `function_{singular}_{function}` / `action_{singular}_{action}` | `EntitySetName`; instance-bound | `key` + declared non-binding parameters | `key` + non-nullable parameters |
+| `function_{set}_{function}` / `action_{set}_{action}` | `EntitySetName`; collection-bound | declared non-binding parameters | non-nullable parameters |
+
+Two included sets of the same type use the set stem for instance-bound tools. Overloads: first declaration only. Binary/stream parameters omitted. Functions: `readOnlyHint` + `idempotentHint`. Actions: `destructiveHint`. Flattened arguments; runtime synthesizes `odata_call`.
 
 From `ToolsMcpHost` extra handler (Tools/local only, **not** in `ODataMcpCatalog.Tools`):
 
@@ -99,7 +111,7 @@ From `ToolsMcpHost` extra handler (Tools/local only, **not** in `ODataMcpCatalog
 |------|-------|-------|--------|
 | `shutdown_server` | Shut down MCP server | destructive, not readOnly, not idempotent, openWorld false | `reason` (string, optional), `delay_seconds` (int 0–10, default **2**) |
 
-`InvokeNamedAsync` dispatches by **prefix** (`list_`, `get_`, `create_`, `update_`, `delete_`) after a catalog lookup that requires `EntitySetName`. A catalog tool whose name does not start with those prefixes and is not a generic name is an error (`Unknown named tool`).
+`InvokeNamedAsync` looks up the catalog tool by exact name. Named `action_*` / `function_*` tools (`OperationKind` Action or Function) synthesize `odata_call` arguments (`name`, baked `entitySet`, `key`, remaining keys as `parameters`) and call `CallOperationAsync`; unbound tools do not require `EntitySetName`. Named CRUD tools inject `EntitySetName` and dispatch by prefix (`list_`, `get_`, `create_`, `update_`, `delete_`).
 
 Handlers that are not tools (still must be tested; see §22):
 
@@ -1324,7 +1336,7 @@ Calls a declared function (GET) or action (POST) by `name`, with every argument 
 
 ### Purpose
 
-Entity-set-bound query. Name `list_{ToSnakeCase(set.Name)}` (e.g. `list_customers`, `list_products`, `list_people`, `list_order_details`, `list_client_customers`). Binds `entitySet` from the catalog; arguments are only query options. Description reminds: query parameter names do not include `$`. Same runtime as `odata_query` after injecting `entitySet`.
+Entity-set-bound query. Name `list_{ToToolName(set.Name)}` (e.g. `list_customers`, `list_products`, `list_people`, `list_order_details`, `list_clientcustomers`). `ToToolName` lowercases the declared short name and does not insert underscores: `Order_Details` → `list_order_details`, `OrderDetails` / `ClientCustomers` → `list_orderdetails` / `list_clientcustomers`. Binds `entitySet` from the catalog; arguments are only query options. Description reminds: query parameter names do not include `$`. Same runtime as `odata_query` after injecting `entitySet`.
 
 ### Matrix
 
@@ -1346,7 +1358,7 @@ When `MaxNamedTools` is too small for a family, **no** `list_*` for that set; us
 508. **ListServerCustomers_Paging_NextLinkWithoutInjectedTop**  
 509. **ListProducts_Northwind_Top1_MatchHttpAndGeneric**  
 510. **ListPeople_TripPin_ExpandFriends_MatchGeneric**  
-511. **ListOrderDetails_Northwind_IfFamilyFitsCap** — snake `list_order_details`.  
+511. **ListOrderDetails_Northwind_IfFamilyFitsCap** — set `Order_Details` → `list_order_details`.  
 512. **ListCustomers_JsonRpcToolsCall_Restier**  
 513. **ListCustomers_ToolsListContains_WhenCapAllows**  
 514. **ListCustomers_DescriptionContainsNoDollarReminder**
@@ -1360,7 +1372,7 @@ When `MaxNamedTools` is too small for a family, **no** `list_*` for that set; us
 519. **ListCustomers_TopAsArray_400**  
 520. **ListCustomers_CountAsString**  
 521. **ListCustomers_UnknownProp_Ignored**  
-522. **ListProducts_CalledAsList_Product_UnknownTool** — wrong snake.
+522. **ListProducts_CalledAsList_Product_UnknownTool** — `list_product` is unknown (set is Products).
 
 ### Malformed payloads
 
@@ -1407,16 +1419,16 @@ When `MaxNamedTools` is too small for a family, **no** `list_*` for that set; us
 
 ### Purpose
 
-Gets a `{Type.Name}` by key. Name `get_{ToSnakeCase(type.Name)}` (`get_customer`, `get_product`, `get_person`, `get_order_detail` if type is `Order_Detail`/`OrderDetail`). Required `key` only. Runtime injects `entitySet`.
+Gets a `{Type.Name}` by key. Name `get_{ToToolName(type.Name)}` (`get_customer`, `get_product`, `get_person`, `get_order_detail` if type is `Order_Detail`, `get_orderdetail` if type is `OrderDetail`). Required `key` only. Runtime injects `entitySet`.
 
 ### Matrix
 
-Same cells as §16. Restier type `McpCustomer` → `get_mcp_customer` (**not** `get_customer`). Convention type `Customer` → `get_customer`. Northwind `Product` → `get_product`. TripPin `Person` → `get_person`. **Tests must use the actual advertised name from `tools/list`**, and also include a case that fails if someone assumes `get_customer` on Restier.
+Same cells as §16. Restier type `McpCustomer` → `get_mcpcustomer` (**not** `get_customer`). Convention type `Customer` → `get_customer`. Northwind `Product` → `get_product`. TripPin `Person` → `get_person`. **Tests must use the actual advertised name from `tools/list`**, and also include a case that fails if someone assumes `get_customer` on Restier.
 
 ### Happy path
 
 550. **GetCustomer_OData8_Key1_MatchesODataGetAndHttp**  
-551. **GetMcpCustomer_Restier_Key1_MatchesODataGet** — name from catalog (`get_mcp_customer`).  
+551. **GetMcpCustomer_Restier_Key1_MatchesODataGet** — name from catalog (`get_mcpcustomer`).  
 552. **GetProduct_Northwind_Key1_Matches**  
 553. **GetPerson_TripPin_Russellwhyte_Matches**  
 554. **GetCustomer_SelectExpand_Forwarded**  
@@ -1484,7 +1496,7 @@ Creates a `{Type}`. Schema is a JSON object of declared non-binary properties (*
 
 Writable cells: OData8 (auth), Restier, TripPin. Northwind: do not advertise success; if named create exists, calling it must `IsError`.
 
-Restier name: `create_mcp_customer`. Convention: `create_customer`. TripPin: `create_person`. Northwind: `create_product` when family emitted.
+Restier name: `create_mcpcustomer`. Convention: `create_customer`. TripPin: `create_person`. Northwind: `create_product` when family emitted.
 
 ### Happy path
 
@@ -1551,7 +1563,7 @@ Restier name: `create_mcp_customer`. Convention: `create_customer`. TripPin: `cr
 
 PATCH a `{Type}`. Schema is `key` (string, first) plus the same declared property map as `create_*`; `required: ["key"]` only; no `body`. Non-nullable types do not include `null`. Description: `PATCH a {Type}. Send only fields to change; omit to keep. Do not send JSON null for required properties.` + CSDL summary. Runtime still accepts an explicit `body` string and otherwise serializes the leftover properties (everything but `entitySet` and `key`). PATCH bound set. `IncludeUpdate=false` omits tool.
 
-Names: `update_customer`, `update_mcp_customer`, `update_person`, `update_product`.
+Names: `update_customer`, `update_mcpcustomer`, `update_person`, `update_product`.
 
 ### Happy path
 
@@ -1621,7 +1633,7 @@ Names: `update_customer`, `update_mcp_customer`, `update_person`, `update_produc
 
 Deletes a `{Type}` by key. Schema `{ key }` required. `IncludeDelete=false` omits tool. Destructive hint true.
 
-Names: `delete_customer`, `delete_mcp_customer`, `delete_person`, `delete_product`.
+Names: `delete_customer`, `delete_mcpcustomer`, `delete_person`, `delete_product`.
 
 ### Happy path
 
@@ -1678,6 +1690,68 @@ Names: `delete_customer`, `delete_mcp_customer`, `delete_person`, `delete_produc
 705. **DeleteCustomer_ThenListCustomers_Absent**  
 706. **DeleteCustomer_ThenNavigate_404**  
 707. **DeleteCustomer_DoesNotCallResetDataSource**
+
+---
+
+## 20.1 Named `action_*` / `function_*`
+
+### Purpose
+
+First-class named tools for declared OData actions and functions ([ACTIONS.md](./ACTIONS.md) §4). Names are `ToToolName` of each EDM short name (lowercase as declared; do not insert or strip underscores): `action_resetdatasource`, `function_getnearestairport`, `action_person_sharetrip`, `action_integrationconnection_authorize`. `odata_call` remains the generic fallback. Runtime synthesizes `odata_call` (`name`, baked `entitySet`, `key`, remaining keys as `parameters`). Streaming / long-running wait is [ACTIONS.md](./ACTIONS.md) §5 and is out of this section.
+
+| Binding | Pattern | Example |
+|---------|---------|---------|
+| Unbound function | `function_{function}` | `function_getnearestairport`, `function_getstatus` |
+| Unbound action | `action_{action}` | `action_resetdatasource`, `action_reset` |
+| Instance-bound function | `function_{singular}_{function}` | `function_person_getfavoriteairline` |
+| Instance-bound action | `action_{singular}_{action}` | `action_person_sharetrip`, `action_person_updatelastname` |
+| Collection-bound function | `function_{set}_{function}` | `function_people_top` |
+| Collection-bound action | `action_{set}_{action}` | `action_products_discount` |
+
+Two included sets of the same type use the set stem for instance-bound tools (`action_customers_approve` vs `action_vipcustomers_approve`). Inheritance name collisions fall back to the set stem (`function_staff_getfavoriteairline`). Overloads: first declaration only. `IncludeActions` / `IncludeFunctions` default `true`. `ExcludeEntitySets` drops that set’s CRUD and collection-bound tools; remaining sets still advertise operations bound to a base type. Unbound tools always generate.
+
+`tools/list` order: eleven generics, then unbound `function_*` then `action_*` (alphabetical within each), then per-set CRUD, instance-bound, collection-bound. Functions: `readOnlyHint` + `idempotentHint`. Actions: `destructiveHint`. `openWorldHint: true`. Flattened input schemas (`additionalProperties: false`, no `parameters` wrapper). Binary/stream parameters omitted. `outputSchema`: complex return → object properties; primitive → `{ "value": … }`; none → omit.
+
+### Matrix
+
+| Host \ Surface | OData8 | Restier | Northwind | TripPin |
+|----------------|--------|---------|-----------|---------|
+| AspNetCore | • operations-only host (`function_getstatus`, `function_mostvaluable`, `action_reset`) | • no operations in the Restier fixture; `odata_call` still present | – | – |
+| Tools / Core live | – | – | • no operations (CRUD family only) | • `function_getnearestairport`, `action_resetdatasource`, `action_person_sharetrip`, `function_person_getfavoriteairline` |
+
+### Happy path
+
+707.1. **Catalog_Unbound_UsesActionAndFunctionPrefix** — `function_getnearestairport` / `action_resetdatasource`; `EntitySetName` null; `OperationName` is the EDM short name; function hints readOnly+idempotent; action `destructiveHint`; descriptions `GET GetNearestAirport.` / `POST ResetDataSource.`; primitive `outputSchema` contains `"value"`; no-return action has no `outputSchema`.  
+707.2. **Catalog_InstanceBound_UsesTypeStem** — `action_person_updatelastname`, `function_person_getfavoriteairline`, `action_employee_promote`; People tools bake `EntitySetName=People`; Staff inheritance collision uses `function_staff_getfavoriteairline` / `action_staff_updatelastname`.  
+707.3. **Catalog_CollectionBound_UsesSetStem** — `function_people_top`, `function_staff_top`; not `function_person_top`.  
+707.4. **Catalog_TwoSetsOfSameType_UseSetStem** — `action_customers_approve` and `action_vipcustomers_approve`; not `action_customer_approve`; collection-bound `action_customers_discount` / `action_vipcustomers_discount`.  
+707.5. **Catalog_Order_UnboundBeforeBoundAndPerSetFamily** — `odata_call`, then `function_getnearestairport`, then `action_resetdatasource`, then `list_people`, then instance-bound, then collection-bound.  
+707.6. **Catalog_TripPin_NamedOperations_AreAdvertised** — live TripPin: those four names; unbound after `odata_call` and before `list_people`; `action_person_sharetrip` after `list_people`.  
+707.7. **Function_TripPin_GetNearestAirport_MatchesODataCall** — named `{ lat: 33, lon: -118 }` matches generic `odata_call` `GetNearestAirport`; GET `GetNearestAirport(lat=33,lon=-118)`.  
+707.8. **Action_TripPin_ShareTrip_MatchesODataCall** — `{ key: russellwhyte, userName, tripId }` POSTs `People('russellwhyte')/ShareTrip`.  
+707.9. **Action_TripPin_ResetDataSource_PostsWithoutEntitySet** — POST `ResetDataSource` with `{}`.  
+707.10. **Catalog_OperationsOnly_ListsAndCallsOperations** — `function_getstatus`, `action_reset`; no bound `function_ispremium` (no set); `odata_call` still works.  
+707.11. **Invoke_UnboundFunction_GetsWithParameters** — `function_getnearestairport` `{ lat: 47.6 }` → GET `GetNearestAirport(lat=47.6)`.  
+707.12. **Invoke_UnboundAction_PostsWithoutEntitySet** — `action_resetdatasource` → POST `ResetDataSource` `{}`.  
+707.13. **Invoke_InstanceBoundAction_InjectsEntitySetAndKey** — `action_person_updatelastname` `{ key, lastName }` → POST `People('russellwhyte')/UpdateLastName` body `{"lastName":"Whyte"}`.  
+707.14. **Invoke_CollectionBound_OmitsKey** — `function_people_top` `{ count: 2 }` → GET `People/Top(count=2)`.  
+707.15. **Function_MostValuable_MatchesODataCall** — operations-only OData8 host: `function_mostvaluable` matches `odata_call` `MostValuable`; JSON-RPC `tools/list` contains `function_getstatus`, `function_mostvaluable`, `action_reset`.
+
+### Flags, overloads, schemas
+
+707.16. **Catalog_IncludeActionsFalse_OmitsNamedActions** — no `action_*`; functions and `odata_call` remain.  
+707.17. **Catalog_IncludeFunctionsFalse_OmitsNamedFunctions** — no `function_*`; actions and `odata_call` remain.  
+707.18. **Catalog_ExcludeEntitySets_OmitsBoundKeepsUnbound** — exclude People: no `list_people` / `function_people_top`; unbound remain; Staff still advertises Person-bound tools and `action_employee_promote`.  
+707.19. **Catalog_Overloads_EmitsFirstDeclarationOnly** — two unbound `Reset` overloads → one `action_reset` with the first parameter (`hard`, not `reason`).  
+707.20. **Catalog_InputSchema_FlattensParametersAndSetsAdditionalPropertiesFalse** — no `parameters` / `entitySet` wrapper; instance-bound required `key` + non-nullable params; collection-bound has no `key`.  
+707.21. **Catalog_OmitsBinaryAndStreamParameters** — `action_upload` advertises `title`, omits `blob` / `photo`.  
+707.22. **Catalog_Title_UsesCsdlDescriptionWhenPresent** — CSDL `Description` becomes `title` when it fits a label; description is the operational sentence plus docs.  
+707.23. **Catalog_OutputSchema_EmitsComplexTypeProperties** — complex return type emits those properties on `outputSchema`.
+
+### Cross-tool
+
+707.24. **NamedOperation_DoesNotRemoveOdataCall** — Restier and operations-only catalogs still list `odata_call`.  
+707.25. **ODataCall_StillInvokesWhenNamedToolExists** — TripPin `odata_call` `ShareTrip` / `ResetDataSource` / `GetNearestAirport` still succeed next to the named tools.
 
 ---
 
@@ -1915,7 +1989,7 @@ Budgets (example): MCP `/odata/mcp` = 1, Customers = 1, Products = 2, `MostValua
 859. **Iso_RestierMultiPrefix_JsonRpcEachMcp**  
 860. **Iso_UseODataMcp_MapsPrefixesWithoutAppCallingMapMcp**
 
-### 23.6 Flags, ignore, documentation, snake_case
+### 23.6 Flags, ignore, documentation, tool names
 
 861. **Flags_IncludeCreateFalse_NamedCreateUnknown_GenericCreateWorks**  
 862. **Flags_IncludeUpdateFalse_NamedUpdateUnknown_GenericUpdateWorks**  
@@ -1923,7 +1997,7 @@ Budgets (example): MCP `/odata/mcp` = 1, Customers = 1, Products = 2, `MostValua
 864. **Flags_AllWriteFlagsFalse_FamilyIsListAndGetOnly_CapUses2**  
 865. **Ignore_InternalSecret_AbsentFromDescribeNamedCreateResourceCard**  
 866. **Docs_CsdlFlowsToNamedToolDescriptionAndTitleIfShort**  
-867. **Snake_OrderItems_ListOrder_items** — `list_order_items`, `get_order_item` (type `OrderItem`).  
+867. **NamedTools_OrderItems_KeepDeclaredSpelling** — `list_orderitems`, `get_orderitem` (type `OrderItem`). `Order_Details` remains `list_order_details`.  
 868. **Snake_Order_Details_ListOrder_details**
 
 ### 23.7 Host process isolation
@@ -1950,11 +2024,11 @@ Current suites over-use `odata_query` and catalog-name assertions. The following
 ### 24.2 Named CRUD
 
 - Named `list_customers` skip/top vs generic exists on **Restier paging** and is the rare named-tool runtime hit. Convention paging tests call **generic** `odata_query` only.  
-- **No** `get_customer` / `get_mcp_customer` / `get_product` / `get_person` on real OData.  
-- **No** `create_customer` / `create_mcp_customer` / `create_person` on real OData (named create schema is catalog-only in `NamedToolCapTests`).  
+- **No** `get_customer` / `get_mcpcustomer` / `get_product` / `get_person` on real OData.  
+- **No** `create_customer` / `create_mcpcustomer` / `create_person` on real OData (named create schema is catalog-only in `NamedToolCapTests`).  
 - **No** `update_*` named on real OData.  
 - **No** `delete_*` named on real OData.  
-- Restier type name `McpCustomer` ⇒ tool `get_mcp_customer` is easy to get wrong; untested.  
+- Restier type name `McpCustomer` ⇒ tool `get_mcpcustomer` is easy to get wrong; untested.  
 - `InvokeNamedAsync` entitySet overwrite (calling `list_customers` with `entitySet: Products`) untested on a real executor.  
 - Query-option stripping on **named** create vs **generic** create leftover posting untested on real POST bodies.
 
@@ -1974,12 +2048,12 @@ Current suites over-use `odata_query` and catalog-name assertions. The following
 - Live TripPin write path untested (no Core live create/update/delete).  
 - Northwind write failure via update/delete untested.
 
-### 24.5 `odata_call` / `odata_list_operations`
+### 24.5 `odata_call` / `odata_list_operations` / named `action_*` / `function_*`
 
-- Operations-only host lists names; **does not call** `MostValuable` / `GetStatus` / `Reset` on a real OData endpoint (rate-limit tests call `odata_call` MostValuable for 429, not payload twin).  
-- TripPin `GetNearestAirport`, `ShareTrip`, `ResetDataSource` untested.  
-- Bound vs unbound missing entitySet/key untested on a real bound action.  
-- Restier list-operations empty success untested.
+- Operations-only host lists names and calls `MostValuable` / `GetStatus` / `Reset` through `odata_call`; named `function_mostvaluable` / `function_getstatus` / `action_reset` are the same path.  
+- Live TripPin named `function_getnearestairport`, `action_person_sharetrip`, `action_resetdatasource` exist next to generic `odata_call`.  
+- Bound vs unbound missing entitySet/key untested on a real bound **generic** `odata_call`.  
+- Restier fixture has no operations; list-operations empty success untested. Named Restier `Authorize` needs a host that declares it.
 
 ### 24.6 `odata_create`
 
@@ -2021,12 +2095,13 @@ Current suites over-use `odata_query` and catalog-name assertions. The following
 
 ### 24.11 Catalog vs TOOL-SURFACE.md drift (do not test the drift as if it were product)
 
-- Named navigate `list_{set}_{nav}` is documented in TOOL-SURFACE.md §3 and **not implemented**. Tests must not require it.  
-- `odata_call` / `odata_list_operations` **are** implemented despite TOOL-SURFACE.md “Phase 2+” `odata_call_function` / `odata_call_action`. Tests use the implemented names.
+- Named navigate `list_{set}_{nav}` is **not implemented**. TOOL-SURFACE.md §3 forbids it. Tests must not require it.  
+- `odata_call` / `odata_list_operations` **are** implemented. Do not register `odata_call_function` / `odata_call_action`. Named `action_*` / `function_*` **are** implemented ([ACTIONS.md](./ACTIONS.md) §4).
 
 ### 24.12 What is already in good shape (do not redo blindly)
 
 - Generic name order and `$`-less `filter` schema (`ODataMcpCatalogToolTests`).  
+- Named `action_*` / `function_*` catalog names, schemas, order, flags, and one-shot invoke (`NamedOperationToolTests`, live TripPin, operations-only host).  
 - Named family cap / no split (`NamedToolCapTests`).  
 - Restier vs HTTP twin for query/filter/get/list-sets/describe/create.  
 - Convention paging passthrough for `odata_query`.  
@@ -2057,9 +2132,10 @@ Implementers should add **new test classes per tool** (`ODataNavigateHostTests`,
 | Named `create_{type}` | 589–627 | 39 |
 | Named `update_{type}` | 628–669 | 42 |
 | Named `delete_{type}` | 670–707 | 38 |
+| Named `action_*` / `function_*` | 707.1–707.25 | 25 |
 | `shutdown_server` | 708–738 | 31 |
 | Protocol handlers | 739–800 | 62 |
 | Combinatorial / matrix | 801–871 | 71 |
-| **Total named cases** | **1–871** | **871** |
+| **Total named cases** | **1–871 + 707.1–707.25** | **896** |
 
 Multi-host/multi-surface bullets inside a case are additional implementations (often 2–4 test methods per case). Expect well over a thousand `[TestMethod]`s once A8, R7, NW, and TP cells are expanded. That is the point: `odata_query` is one tenth of the surface, not the product.

@@ -1,7 +1,7 @@
 # Optimization
 
 **Status:** Living  
-**Revised:** 2026-09-09  
+**Revised:** 2026-10-20  
 **Protocol:** MCP `2026-07-28` / **ModelContextProtocol C# SDK 2.x**  
 **Companion:** [TYPE-SHAPES.md](./TYPE-SHAPES.md)  
 **Plan:** [OPTIMIZATION-PLAN.md](./OPTIMIZATION-PLAN.md)
@@ -58,6 +58,7 @@ Why this wording (from two independent no-context model reviews of the surface):
 - "Query options have no $ prefix" over-generalized: a model reading it literally would strip `$` inside `expand=Orders($top=5)`. The rule is about tool parameter names only.
 - "Do not read $metadata" read as a ban. The CSDL resource exists for the user who asks for raw EDMX; the model must not use it to *explore*.
 - The PATCH rule is not here because it lives on `odata_update` (and `update_*`), which are always in context too. Each rule appears once.
+- "Prefer named tools when listed" includes named CRUD and named `action_*` / `function_*`; `odata_call` is the generic fallback. Bound operations stay on the type shape and unbound on `odata_list_operations` so the generic remains discoverable.
 
 `ODataMcpCatalogOptions.InstructionsPreface` (`string?`, default empty):
 
@@ -91,6 +92,8 @@ Normative copy. CSDL summary is appended on named tools via `ComposeToolDescript
 | `update_{x}` | `PATCH a {Type}. Send only fields to change; omit to keep. Do not send JSON null for required properties.` + CSDL summary if any. |
 | `odata_list_operations` | `Unbound operations on the service.` |
 | `odata_call` | See §3. |
+| `function_{x}` | CSDL docs plus `GET {path}.` `readOnlyHint` and `idempotentHint`. Flattened parameters; no `parameters` wrapper. |
+| `action_{x}` | CSDL docs plus `POST {path}.` `destructiveHint`. Flattened parameters; no `parameters` wrapper. |
 
 Do not invent `"description": "CompanyName"`. Omit CSDL docs when absent ([TYPE-SHAPES.md](./TYPE-SHAPES.md) §4).
 
@@ -110,6 +113,7 @@ Each rule lives in exactly one place. The bound/unbound routing sentence is in t
 | `odata_get` / named `get_*` | `entitySet` (generic) + `key` + optional `select`, `expand`. | Omit. |
 | `odata_navigate` | `entitySet`, `key`, `navigation` + the full `odata_query` option set (`filter`, `select`, `orderby`, `expand`, `top`, `skip`, `count`). The runtime always honored them; the schema now says so. | Omit. |
 | `odata_call` | `{ name, parameters (object), entitySet, key }`, required `name`. `parameters.description` ends `Omit when the operation takes none.` **No `body`.** **No undeclared top-level args.** | Omit. |
+| Named `action_*` / `function_*` | Flattened declared parameters (`key` when instance-bound). `additionalProperties: false`. No `parameters` wrapper. Binary/stream parameters omitted. | Complex return → object properties; primitive → `{ "value": … }`; none → omit. |
 | `odata_query` / named `list_*` | Today’s query object (no `$`). | Omit. |
 
 Every `key` argument carries a description that states the literal form, because no model can infer it from `"type":"string"`:

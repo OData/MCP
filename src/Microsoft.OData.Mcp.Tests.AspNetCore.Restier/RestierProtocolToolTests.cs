@@ -686,7 +686,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             response.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)response.StatusCode, body);
             body.Should().Contain("odata_list_entity_sets");
             body.Should().Contain("list_customers");
-            body.Should().Contain("get_mcp_customer");
+            body.Should().Contain("get_mcpcustomer");
             body.Should().NotContain("shutdown_server");
             body.Should().NotContain("\"$filter\"");
         }
@@ -733,7 +733,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().Contain("odata_call");
             names.Should().NotContain("shutdown_server");
             names.Take(11).Should().Equal(
                 "odata_list_entity_sets",

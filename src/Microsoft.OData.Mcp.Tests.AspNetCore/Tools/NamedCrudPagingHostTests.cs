@@ -94,7 +94,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var runtime = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"].Runtime;
             var result = await runtime.InvokeAsync(
-                "list_client_customers",
+                "list_clientcustomers",
                 ToolArguments.Of("orderby", "CustomerId"),
                 CancellationToken.None);
 
@@ -110,7 +110,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         {
             var (runtime, capture) = PagingCapture();
             var result = await runtime.InvokeAsync(
-                "list_server_customers",
+                "list_servercustomers",
                 ToolArguments.Of("orderby", "CustomerId"),
                 CancellationToken.None);
 
@@ -127,7 +127,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         public async Task ListCustomers_DoesNotAddDefaultTop()
         {
             var (runtime, capture) = PagingCapture();
-            await runtime.InvokeAsync("list_client_customers", null, CancellationToken.None);
+            await runtime.InvokeAsync("list_clientcustomers", null, CancellationToken.None);
 
             capture.Last!.QueryOptions.Should().NotContainKey("top");
         }

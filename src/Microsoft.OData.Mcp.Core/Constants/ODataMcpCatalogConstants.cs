@@ -17,6 +17,16 @@ namespace Microsoft.OData.Mcp.Core.Constants
         #region Fields
 
         /// <summary>
+        /// Named action tool prefix.
+        /// </summary>
+        public const string ActionPrefix = "action_";
+
+        /// <summary>
+        /// JSON Schema <c>additionalProperties</c>.
+        /// </summary>
+        public const string AdditionalProperties = "additionalProperties";
+
+        /// <summary>
         /// JSON payloads.
         /// </summary>
         public const string ApplicationJson = "application/json";
@@ -180,6 +190,11 @@ namespace Microsoft.OData.Mcp.Core.Constants
         /// Representation argument on describe tools.
         /// </summary>
         public const string Format = "format";
+
+        /// <summary>
+        /// Named function tool prefix.
+        /// </summary>
+        public const string FunctionPrefix = "function_";
 
         /// <summary>
         /// Named get tool prefix.

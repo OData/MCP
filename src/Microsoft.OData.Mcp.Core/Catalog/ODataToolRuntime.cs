@@ -211,48 +211,81 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <returns>
         /// The invocation result.
         /// </returns>
-        internal async Task<ODataToolInvocationResult> CallOperationAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
+        internal Task<ODataToolInvocationResult> CallOperationAsync(IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
         {
             var name = ReadRequired(arguments, Name);
             var unexpected = arguments.Keys.FirstOrDefault(key => key is not (Name or Parameters or EntitySet or Key));
             if (unexpected is not null)
             {
-                return Error($"Unexpected argument '{unexpected}'. Put operation arguments in parameters as a JSON object.");
+                return Task.FromResult(Error($"Unexpected argument '{unexpected}'. Put operation arguments in parameters as a JSON object."));
             }
 
-            var action = _catalog._model.Actions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            var function = action is null
-                ? _catalog._model.Functions.FirstOrDefault(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                : null;
-            if (action is null && function is null)
-            {
-                return Error($"Operation '{name}' is not declared in the model.");
-            }
-
-            JsonElement? parameters = null;
+            IReadOnlyDictionary<string, JsonElement>? parameters = null;
             if (arguments.TryGetValue(Parameters, out var supplied) && supplied.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
             {
                 if (supplied.ValueKind == JsonValueKind.String)
                 {
-                    return Error("parameters must be a JSON object, not a string.");
+                    return Task.FromResult(Error("parameters must be a JSON object, not a string."));
                 }
 
                 if (supplied.ValueKind != JsonValueKind.Object)
                 {
-                    return Error("parameters must be a JSON object.");
+                    return Task.FromResult(Error("parameters must be a JSON object."));
                 }
 
-                parameters = supplied;
+                parameters = ReadJsonObject(supplied);
+            }
+
+            string? entitySet = null;
+            if (arguments.TryGetValue(EntitySet, out var entitySetValue) && entitySetValue.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(entitySetValue.GetString()))
+            {
+                entitySet = entitySetValue.GetString();
+            }
+
+            JsonElement? key = null;
+            if (arguments.TryGetValue(Key, out var keyValue) && keyValue.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+            {
+                key = keyValue;
+            }
+
+            return CallOperationAsync(name, entitySet, key, parameters, ODataOperationKind.None, bindingParameterType: null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Calls a declared function or action.
+        /// </summary>
+        /// <param name="name">The EDM short name.</param>
+        /// <param name="entitySet">The baked or supplied entity set, or <c>null</c>.</param>
+        /// <param name="key">The instance key, or <c>null</c>.</param>
+        /// <param name="parameters">The non-binding arguments, or <c>null</c> when omitted.</param>
+        /// <param name="kind">The named-tool kind, or <see cref="ODataOperationKind.None"/> for generic <c>odata_call</c>.</param>
+        /// <param name="bindingParameterType">The named-tool binding type, or <c>null</c>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        internal async Task<ODataToolInvocationResult> CallOperationAsync(
+            string name,
+            string? entitySet,
+            JsonElement? key,
+            IReadOnlyDictionary<string, JsonElement>? parameters,
+            ODataOperationKind kind,
+            string? bindingParameterType,
+            CancellationToken cancellationToken)
+        {
+            if (!TryResolveDeclaredOperation(name, bindingParameterType, kind, out var action, out var function))
+            {
+                return Error($"Operation '{name}' is not declared in the model.");
             }
 
             var declaredName = action is not null ? action.Name : function!.Name;
             var declaredParameters = action is not null ? action.Parameters : function!.Parameters;
             var isBound = action is not null ? action.IsBound : function!.IsBound;
-            var bindingParameterType = action is not null ? action.BindingParameterType : function!.BindingParameterType;
+            bindingParameterType = action is not null ? action.BindingParameterType : function!.BindingParameterType;
             var returnType = action is not null ? action.ReturnType : function!.ReturnType;
             var signature = EdmTypeShape.RenderOperation(_catalog._model, declaredName, declaredParameters, returnType, isBound, bindingParameterType, action is not null, null);
-            var hasEntitySet = arguments.TryGetValue(EntitySet, out var entitySetValue) && entitySetValue.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(entitySetValue.GetString());
-            var hasKey = arguments.TryGetValue(Key, out var keyValue) && keyValue.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+            var hasEntitySet = !string.IsNullOrWhiteSpace(entitySet);
+            var hasKey = key is JsonElement { ValueKind: not (JsonValueKind.Null or JsonValueKind.Undefined) };
 
             string path;
             if (!isBound)
@@ -271,18 +304,20 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     return Error($"{declaredName} is collection-bound. Pass entitySet; omit key. Signature: {signature}");
                 }
 
-                path = $"{entitySetValue.GetString()}/{declaredName}";
+                path = $"{entitySet}/{declaredName}";
             }
             else
             {
-                if (!hasEntitySet || !hasKey)
+                if (!hasEntitySet || key is not JsonElement instanceKey || instanceKey.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
                 {
                     var boundTo = EdmTypeShape.ShortName(bindingParameterType ?? string.Empty);
 
                     return Error($"{declaredName} is bound to {boundTo}. Pass entitySet and key. Signature: {signature}");
                 }
 
-                path = $"{entitySetValue.GetString()}({FormatKey(ReadRequired(arguments, Key))})/{declaredName}";
+                var keyText = instanceKey.ValueKind == JsonValueKind.String ? instanceKey.GetString() : instanceKey.GetRawText();
+                ArgumentException.ThrowIfNullOrWhiteSpace(keyText, Key);
+                path = $"{entitySet}({FormatKey(keyText)})/{declaredName}";
             }
 
             var failure = EdmPayloadValidator.ValidateOperationArguments(_catalog._model, _catalog._options, declaredParameters, isBound, parameters, signature, out var values);
@@ -333,6 +368,55 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             GuardRequestBody(json);
 
             return await ExecuteAsync(HttpMethod.Post, path, json, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Dispatches a named <c>action_*</c> / <c>function_*</c> tool as a declared operation call.
+        /// </summary>
+        /// <param name="descriptor">The named operation tool.</param>
+        /// <param name="arguments">Flattened tool arguments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The invocation result.
+        /// </returns>
+        /// <remarks>
+        /// Passes the baked entity set, the caller <c>key</c> when present, and the remaining flattened arguments.
+        /// </remarks>
+        internal Task<ODataToolInvocationResult> CallNamedOperationAsync(
+            ODataToolDescriptor descriptor,
+            IReadOnlyDictionary<string, JsonElement> arguments,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(descriptor);
+            ArgumentNullException.ThrowIfNull(arguments);
+            ArgumentException.ThrowIfNullOrWhiteSpace(descriptor.OperationName);
+
+            JsonElement? key = null;
+            if (arguments.TryGetValue(Key, out var keyValue) && keyValue.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+            {
+                key = keyValue;
+            }
+
+            Dictionary<string, JsonElement>? remaining = null;
+            foreach (var pair in arguments)
+            {
+                if (pair.Key is Key or EntitySet or Name or Parameters)
+                {
+                    continue;
+                }
+
+                remaining ??= new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+                remaining[pair.Key] = pair.Value;
+            }
+
+            return CallOperationAsync(
+                descriptor.OperationName,
+                descriptor.EntitySetName,
+                key,
+                remaining,
+                descriptor.OperationKind,
+                descriptor.BindingParameterType,
+                cancellationToken);
         }
 
         /// <summary>
@@ -715,7 +799,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Invokes a named CRUD tool.
+        /// Invokes a named CRUD or operation tool.
         /// </summary>
         /// <param name="name">The tool name.</param>
         /// <param name="arguments">Tool arguments.</param>
@@ -725,8 +809,17 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </returns>
         internal Task<ODataToolInvocationResult> InvokeNamedAsync(string name, IReadOnlyDictionary<string, JsonElement> arguments, CancellationToken cancellationToken)
         {
-            var descriptor = _catalog.Tools.FirstOrDefault(tool => tool.Name.Equals(name, StringComparison.Ordinal));
-            if (descriptor is null || string.IsNullOrWhiteSpace(descriptor.EntitySetName))
+            if (!_catalog.TryGetTool(name, out var descriptor) || descriptor is null)
+            {
+                return Task.FromResult(Error($"Unknown tool '{name}'."));
+            }
+
+            if (descriptor.OperationKind is ODataOperationKind.Action or ODataOperationKind.Function)
+            {
+                return CallNamedOperationAsync(descriptor, arguments, cancellationToken);
+            }
+
+            if (string.IsNullOrWhiteSpace(descriptor.EntitySetName))
             {
                 return Task.FromResult(Error($"Unknown tool '{name}'."));
             }
@@ -976,6 +1069,24 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Copies a JSON object into an ordinal dictionary.
+        /// </summary>
+        /// <param name="value">A JSON object.</param>
+        /// <returns>
+        /// The properties.
+        /// </returns>
+        internal static Dictionary<string, JsonElement> ReadJsonObject(JsonElement value)
+        {
+            var properties = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            foreach (var property in value.EnumerateObject())
+            {
+                properties[property.Name] = property.Value;
+            }
+
+            return properties;
+        }
+
+        /// <summary>
         /// Reads an optional argument that must be a JSON array of non-blank strings.
         /// </summary>
         /// <param name="arguments">Tool arguments.</param>
@@ -1084,6 +1195,78 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             formatted = string.Join(",", pairs);
 
             return true;
+        }
+
+        /// <summary>
+        /// Resolves a declared action or function.
+        /// </summary>
+        /// <param name="name">The EDM short name.</param>
+        /// <param name="bindingParameterType">The binding type when the caller is a named tool; otherwise <c>null</c>.</param>
+        /// <param name="kind">The named-tool kind, or <see cref="ODataOperationKind.None"/> for generic <c>odata_call</c>.</param>
+        /// <param name="action">The matching action.</param>
+        /// <param name="function">The matching function.</param>
+        /// <returns>
+        /// <c>true</c> when a declared operation matches.
+        /// </returns>
+        /// <remarks>
+        /// Generic <c>odata_call</c> matches the first action then function of that name, case-insensitive.
+        /// Named tools match the stored kind, short name, and binding type.
+        /// </remarks>
+        internal bool TryResolveDeclaredOperation(
+            string name,
+            string? bindingParameterType,
+            ODataOperationKind kind,
+            out EdmAction? action,
+            out EdmFunction? function)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            action = null;
+            function = null;
+            var comparison = kind == ODataOperationKind.None ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            if (kind is ODataOperationKind.Action or ODataOperationKind.None)
+            {
+                foreach (var item in _catalog._model.Actions)
+                {
+                    if (!item.Name.Equals(name, comparison))
+                    {
+                        continue;
+                    }
+
+                    if (kind == ODataOperationKind.Action
+                        && !string.Equals(item.BindingParameterType, bindingParameterType, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    action = item;
+
+                    return true;
+                }
+            }
+
+            if (kind is ODataOperationKind.Function or ODataOperationKind.None)
+            {
+                foreach (var item in _catalog._model.Functions)
+                {
+                    if (!item.Name.Equals(name, comparison))
+                    {
+                        continue;
+                    }
+
+                    if (kind == ODataOperationKind.Function
+                        && !string.Equals(item.BindingParameterType, bindingParameterType, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    function = item;
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

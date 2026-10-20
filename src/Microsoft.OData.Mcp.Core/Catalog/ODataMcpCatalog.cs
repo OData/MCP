@@ -39,6 +39,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal readonly EdmModel _model;
         internal readonly ODataMcpCatalogOptions _options;
         internal readonly ConcurrentDictionary<string, EdmTypeShape> _shapes = new(StringComparer.Ordinal);
+        internal readonly Dictionary<string, ODataToolDescriptor> _toolsByName;
 
         #endregion
 
@@ -101,6 +102,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             Resources = BuildResources(includedSets);
             ResourceTemplates = BuildTemplates();
             Tools = BuildTools(includedSets);
+            _toolsByName = new Dictionary<string, ODataToolDescriptor>(Tools.Count, StringComparer.Ordinal);
+            foreach (var tool in Tools)
+            {
+                _toolsByName[tool.Name] = tool;
+            }
         }
 
         #endregion
@@ -253,20 +259,38 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         {
             ArgumentNullException.ThrowIfNull(entityType);
 
-            if (entityType.Key.Count == 0)
+            return entityType.Key.Count == 0
+                ? KeySchema
+                : JsonSerializer.Serialize(BuildNamedKeySchemaObject(entityType), SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Builds the <c>key</c> schema object for a named tool.
+        /// </summary>
+        /// <param name="entityType">The entity type the tool binds to, or <c>null</c>.</param>
+        /// <returns>
+        /// A string schema whose description names the key properties when they are declared.
+        /// </returns>
+        internal static Dictionary<string, object?> BuildNamedKeySchemaObject(EdmEntityType? entityType)
+        {
+            if (entityType is null || entityType.Key.Count == 0)
             {
-                return KeySchema;
+                return new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = JsonString,
+                    [Description] = "Key as text: ALFKI or 10248; strings are quoted for you. Composite: OrderID=10248,ProductID=11."
+                };
             }
 
             var description = entityType.Key.Count == 1
                 ? $"{entityType.Key[0]} as text; strings are quoted for you."
                 : $"Name=value pairs: {string.Join(",", entityType.Key.Select(name => $"{name}=..."))}; strings are quoted for you.";
 
-            return JsonSerializer.Serialize(new Dictionary<string, string>(StringComparer.Ordinal)
+            return new Dictionary<string, object?>(StringComparer.Ordinal)
             {
                 [ODataMcpCatalogConstants.Type] = JsonString,
                 [Description] = description
-            }, SchemaSerializerOptions);
+            };
         }
 
         /// <summary>
@@ -383,29 +407,39 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Converts a name to snake_case.
+        /// Converts an EDM short name into a catalog tool-name segment.
         /// </summary>
-        /// <param name="value">The source name.</param>
+        /// <param name="value">The declared set, type, or operation name.</param>
         /// <returns>
-        /// The snake_case name.
+        /// <paramref name="value"/> folded to lowercase. Underscores and hyphens already in the name are kept;
+        /// none are inserted. <c>OrderDetails</c> and <c>Order_Details</c> stay distinct.
         /// </returns>
-        internal static string ToSnakeCase(string value)
+        /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is null or whitespace.</exception>
+        /// <remarks>
+        /// Named tools are <c>{prefix}{segment}</c>. The model already learned the EDM identifier from
+        /// <c>odata_describe_type</c>; inserting separators would invent a dialect and collapse names that
+        /// differ only by PascalCase versus underscores.
+        /// </remarks>
+        internal static string ToToolName(string value)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(value);
 
-            var chars = new List<char>(value.Length + 4);
-            for (var index = 0; index < value.Length; index++)
-            {
-                var current = value[index];
-                if (char.IsUpper(current) && index > 0 && value[index - 1] is not '_' and not '-')
-                {
-                    chars.Add('_');
-                }
+            return value.ToLowerInvariant();
+        }
 
-                chars.Add(char.ToLowerInvariant(current == '-' ? '_' : current));
-            }
+        /// <summary>
+        /// Finds a catalog tool by exact name.
+        /// </summary>
+        /// <param name="name">The tool name.</param>
+        /// <param name="tool">The descriptor when found.</param>
+        /// <returns>
+        /// <c>true</c> when the catalog advertises <paramref name="name"/>.
+        /// </returns>
+        internal bool TryGetTool(string name, out ODataToolDescriptor? tool)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-            return new string([.. chars]);
+            return _toolsByName.TryGetValue(name, out tool);
         }
 
         /// <summary>
@@ -419,9 +453,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         {
             ArgumentNullException.ThrowIfNull(property);
 
-            var type = property.Type ?? string.Empty;
-            return !type.Contains(EdmBinary, StringComparison.OrdinalIgnoreCase)
-                && !type.Contains(EdmStream, StringComparison.OrdinalIgnoreCase);
+            return IsExposedType(property.Type);
+        }
+
+        /// <summary>
+        /// Returns whether an EDM type should appear in generated schemas.
+        /// </summary>
+        /// <param name="type">The EDM type name.</param>
+        /// <returns>
+        /// <c>true</c> when the type is not binary or stream.
+        /// </returns>
+        internal static bool IsExposedType(string? type)
+        {
+            var value = type ?? string.Empty;
+
+            return !value.Contains(EdmBinary, StringComparison.OrdinalIgnoreCase)
+                && !value.Contains(EdmStream, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -530,24 +577,39 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
-        /// Builds generic tools, then a complete named family for every included entity set.
+        /// Builds generic tools, then unbound named operations, then a complete named family and bound operations for every included entity set.
         /// </summary>
         /// <param name="sets">The included entity sets.</param>
         /// <returns>
-        /// Tool descriptors. Generic tools come first, then named families in include-list order and then alphabetical.
+        /// Tool descriptors. Generic tools come first, then unbound <c>function_*</c> / <c>action_*</c>,
+        /// then per-set CRUD and bound operations in include-list order and then alphabetical.
         /// </returns>
         internal IReadOnlyList<ODataToolDescriptor> BuildTools(IReadOnlyList<EdmEntitySet> sets)
         {
             var tools = new List<ODataToolDescriptor>(BuildGenericTools());
-            foreach (var set in OrderSetsForNamedTools(sets))
+            var usedNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var tool in tools)
             {
-                var family = BuildNamedFamily(set);
-                if (family.Count == 0)
+                usedNames.Add(tool.Name);
+            }
+
+            var operations = IndexCatalogOperations();
+            AddNamedOperations(tools, usedNames, operations.UnboundFunctions, set: null, type: null, setsByType: null);
+            AddNamedOperations(tools, usedNames, operations.UnboundActions, set: null, type: null, setsByType: null);
+
+            var orderedSets = OrderSetsForNamedTools(sets);
+            var setsByType = CountIncludedSetsByType(orderedSets);
+            foreach (var set in orderedSets)
+            {
+                foreach (var tool in BuildNamedFamily(set))
                 {
-                    continue;
+                    if (usedNames.Add(tool.Name))
+                    {
+                        tools.Add(tool);
+                    }
                 }
 
-                tools.AddRange(family);
+                AddBoundOperationTools(tools, usedNames, set, setsByType, operations);
             }
 
             return tools;
@@ -753,8 +815,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return [];
             }
 
-            var setSnake = ToSnakeCase(set.Name);
-            var singular = ToSnakeCase(type.Name);
+            var setName = ToToolName(set.Name);
+            var singular = ToToolName(type.Name);
             var shape = GetShape(type);
             if (!ReferenceEquals(shape.EntitySet, set))
             {
@@ -769,7 +831,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                     Description = ComposeToolDescription(DescribeSet(set, type), documented, BuildListSuffix(shape)),
                     EntitySetName = set.Name,
                     InputSchema = """{"type":"object","properties":{"filter":{"type":"string"},"select":{"type":"string"},"orderby":{"type":"string"},"expand":{"type":"string"},"top":{"type":"number"},"skip":{"type":"number"},"count":{"type":"boolean"}}}""",
-                    Name = $"{ListPrefix}{setSnake}",
+                    Name = $"{ListPrefix}{setName}",
                     ReadOnlyHint = true,
                     IdempotentHint = true,
                     Title = ResolveTitle($"List {set.Name}", set.Description, type.Description)
@@ -826,6 +888,441 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             }
 
             return family;
+        }
+
+        /// <summary>
+        /// Adds instance-bound then collection-bound named operation tools for one entity set.
+        /// </summary>
+        /// <param name="tools">The catalog tools being built.</param>
+        /// <param name="usedNames">Tool names already advertised.</param>
+        /// <param name="set">The entity set.</param>
+        /// <param name="setsByType">How many included sets share each entity type full name.</param>
+        /// <param name="operations">First-overload operations grouped by binding.</param>
+        internal void AddBoundOperationTools(
+            List<ODataToolDescriptor> tools,
+            HashSet<string> usedNames,
+            EdmEntitySet set,
+            IReadOnlyDictionary<string, int> setsByType,
+            CatalogOperationIndex operations)
+        {
+            ArgumentNullException.ThrowIfNull(tools);
+            ArgumentNullException.ThrowIfNull(usedNames);
+            ArgumentNullException.ThrowIfNull(set);
+            ArgumentNullException.ThrowIfNull(setsByType);
+            ArgumentNullException.ThrowIfNull(operations);
+
+            if (operations.InstanceFunctionsByType.Count == 0
+                && operations.InstanceActionsByType.Count == 0
+                && operations.CollectionFunctionsByType.Count == 0
+                && operations.CollectionActionsByType.Count == 0)
+            {
+                return;
+            }
+
+            var type = ResolveEntityType(set);
+            if (type is null)
+            {
+                return;
+            }
+
+            var bindingTypes = EdmTypeShape.ResolveBindingTypeNames(_model, type);
+            AddNamedOperations(tools, usedNames, CollectBoundOperations(operations.InstanceFunctionsByType, bindingTypes), set, type, setsByType);
+            AddNamedOperations(tools, usedNames, CollectBoundOperations(operations.InstanceActionsByType, bindingTypes), set, type, setsByType);
+            AddNamedOperations(tools, usedNames, CollectBoundOperations(operations.CollectionFunctionsByType, bindingTypes), set, type, setsByType);
+            AddNamedOperations(tools, usedNames, CollectBoundOperations(operations.CollectionActionsByType, bindingTypes), set, type, setsByType);
+        }
+
+        /// <summary>
+        /// Names and appends operation tools, sorted alphabetically.
+        /// </summary>
+        /// <param name="tools">The catalog tools being built.</param>
+        /// <param name="usedNames">Tool names already advertised.</param>
+        /// <param name="operations">Operations to emit.</param>
+        /// <param name="set">The baked entity set for bound tools, or <c>null</c> when unbound.</param>
+        /// <param name="type">The binding entity type for instance-bound tools.</param>
+        /// <param name="setsByType">Included-set counts by entity type full name, or <c>null</c> when unbound.</param>
+        internal void AddNamedOperations(
+            List<ODataToolDescriptor> tools,
+            HashSet<string> usedNames,
+            List<CatalogOperation> operations,
+            EdmEntitySet? set,
+            EdmEntityType? type,
+            IReadOnlyDictionary<string, int>? setsByType)
+        {
+            ArgumentNullException.ThrowIfNull(tools);
+            ArgumentNullException.ThrowIfNull(usedNames);
+            ArgumentNullException.ThrowIfNull(operations);
+
+            if (operations.Count == 0)
+            {
+                return;
+            }
+
+            var batch = new List<ODataToolDescriptor>(operations.Count);
+            foreach (var operation in operations)
+            {
+                var name = set is null
+                    ? $"{(operation.IsAction ? ActionPrefix : FunctionPrefix)}{ToToolName(operation.Name)}"
+                    : BoundOperationToolName(operation, set, setsByType!, usedNames);
+                if (name is null || !usedNames.Add(name))
+                {
+                    continue;
+                }
+
+                batch.Add(BuildOperationTool(name, operation, set, type));
+            }
+
+            batch.Sort(static (left, right) => string.CompareOrdinal(left.Name, right.Name));
+            tools.AddRange(batch);
+        }
+
+        /// <summary>
+        /// Chooses a bound operation tool name: type stem when that type has one included set, otherwise the set stem.
+        /// Falls back to the set stem when the preferred name is already advertised.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
+        /// <param name="set">The entity set.</param>
+        /// <param name="setsByType">Included-set counts by entity type full name.</param>
+        /// <param name="taken">Names already claimed in this catalog.</param>
+        /// <returns>
+        /// The tool name, or <c>null</c> when both stems are taken.
+        /// </returns>
+        internal static string? BoundOperationToolName(
+            CatalogOperation operation,
+            EdmEntitySet set,
+            IReadOnlyDictionary<string, int> setsByType,
+            HashSet<string> taken)
+        {
+            ArgumentNullException.ThrowIfNull(set);
+            ArgumentNullException.ThrowIfNull(setsByType);
+            ArgumentNullException.ThrowIfNull(taken);
+
+            var prefix = operation.IsAction ? ActionPrefix : FunctionPrefix;
+            var operationStem = ToToolName(operation.Name);
+            var setName = $"{prefix}{ToToolName(set.Name)}_{operationStem}";
+            if (operation.CollectionBound || string.IsNullOrWhiteSpace(operation.BindingType))
+            {
+                return taken.Contains(setName) ? null : setName;
+            }
+
+            var preferred = setsByType.GetValueOrDefault(operation.BindingType) > 1
+                ? setName
+                : $"{prefix}{ToToolName(EdmTypeShape.ShortName(operation.BindingType))}_{operationStem}";
+            if (!taken.Contains(preferred))
+            {
+                return preferred;
+            }
+
+            return taken.Contains(setName) ? null : setName;
+        }
+
+        /// <summary>
+        /// Builds the flattened JSON Schema for a named operation tool.
+        /// </summary>
+        /// <param name="parameters">Declared parameters including the binding parameter.</param>
+        /// <param name="isBound">Whether the operation is bound.</param>
+        /// <param name="collectionBound">Whether the binding parameter is a collection.</param>
+        /// <param name="entityType">The binding entity type when instance-bound.</param>
+        /// <returns>
+        /// JSON Schema text with <c>additionalProperties: false</c>.
+        /// </returns>
+        internal string BuildOperationInputSchema(IReadOnlyList<EdmParameter> parameters, bool isBound, bool collectionBound, EdmEntityType? entityType)
+        {
+            ArgumentNullException.ThrowIfNull(parameters);
+
+            var properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+            var required = new List<string>();
+            if (isBound && !collectionBound)
+            {
+                properties[Key] = BuildNamedKeySchemaObject(entityType);
+                required.Add(Key);
+            }
+
+            for (var index = isBound ? 1 : 0; index < parameters.Count; index++)
+            {
+                var parameter = parameters[index];
+                if (!IsExposedType(parameter.Type))
+                {
+                    continue;
+                }
+
+                properties[parameter.Name] = BuildParameterJsonSchema(parameter);
+                if (!parameter.Nullable)
+                {
+                    required.Add(parameter.Name);
+                }
+            }
+
+            var schema = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [ODataMcpCatalogConstants.Type] = JsonObject,
+                [Properties] = properties,
+                [AdditionalProperties] = false
+            };
+            if (required.Count > 0)
+            {
+                schema[Required] = required;
+            }
+
+            return JsonSerializer.Serialize(schema, SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Builds <c>outputSchema</c> for a named operation return type.
+        /// </summary>
+        /// <param name="returnType">The EDM return type, or <c>null</c> when the operation returns nothing.</param>
+        /// <returns>
+        /// JSON Schema text, or <c>null</c> when there is no return type.
+        /// </returns>
+        internal string? BuildOperationOutputSchema(string? returnType)
+        {
+            if (string.IsNullOrWhiteSpace(returnType))
+            {
+                return null;
+            }
+
+            var collection = EdmTypeShape.IsCollectionBound(returnType);
+            var element = EdmTypeShape.UnwrapCollectionType(returnType)!;
+            var structured = BuildStructuredObjectSchema(element);
+            Dictionary<string, object?> schema;
+            if (structured is not null)
+            {
+                schema = collection
+                    ? new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        [ODataMcpCatalogConstants.Type] = JsonArray,
+                        [Items] = new Dictionary<string, object?>(StringComparer.Ordinal)
+                        {
+                            [ODataMcpCatalogConstants.Type] = JsonObject,
+                            [Properties] = structured
+                        }
+                    }
+                    : new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        [ODataMcpCatalogConstants.Type] = JsonObject,
+                        [Properties] = structured
+                    };
+            }
+            else
+            {
+                var item = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = MapJsonType(element)
+                };
+                var value = collection
+                    ? new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        [ODataMcpCatalogConstants.Type] = JsonArray,
+                        [Items] = item
+                    }
+                    : item;
+                schema = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    [ODataMcpCatalogConstants.Type] = JsonObject,
+                    [Properties] = new Dictionary<string, object?>(StringComparer.Ordinal)
+                    {
+                        ["value"] = value
+                    }
+                };
+            }
+
+            return JsonSerializer.Serialize(schema, SchemaSerializerOptions);
+        }
+
+        /// <summary>
+        /// Builds one named action or function tool.
+        /// </summary>
+        /// <param name="name">The catalog tool name.</param>
+        /// <param name="operation">The first-overload operation.</param>
+        /// <param name="set">The baked entity set for bound tools.</param>
+        /// <param name="type">The binding entity type for instance-bound tools.</param>
+        /// <returns>
+        /// The tool descriptor.
+        /// </returns>
+        internal ODataToolDescriptor BuildOperationTool(string name, CatalogOperation operation, EdmEntitySet? set, EdmEntityType? type)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            var verb = operation.IsAction ? "POST" : "GET";
+            string sentence;
+            if (!operation.IsBound)
+            {
+                sentence = $"{verb} {operation.Name}.";
+            }
+            else if (operation.CollectionBound)
+            {
+                sentence = $"{verb} {set!.Name}/{operation.Name}.";
+            }
+            else
+            {
+                sentence = $"{verb} {set!.Name}({{key}})/{operation.Name}.";
+            }
+
+            var documented = EdmDocumentation.First(operation.Description, operation.LongDescription);
+            var fallbackTitle = operation.IsBound && type is not null ? $"{operation.Name} a {type.Name}" : operation.Name;
+
+            return new ODataToolDescriptor
+            {
+                BindingParameterType = operation.BindingParameterType,
+                Description = ComposeToolDescription(sentence, documented),
+                DestructiveHint = operation.IsAction,
+                EntitySetName = set?.Name,
+                IdempotentHint = !operation.IsAction,
+                InputSchema = BuildOperationInputSchema(operation.Parameters, operation.IsBound, operation.CollectionBound, type),
+                Name = name,
+                OpenWorldHint = true,
+                OperationKind = operation.IsAction ? ODataOperationKind.Action : ODataOperationKind.Function,
+                OperationName = operation.Name,
+                OutputSchema = BuildOperationOutputSchema(operation.ReturnType),
+                ReadOnlyHint = !operation.IsAction,
+                Title = ResolveTitle(fallbackTitle, operation.Description)
+            };
+        }
+
+        /// <summary>
+        /// Builds JSON Schema for one non-binding operation parameter.
+        /// </summary>
+        /// <param name="parameter">The parameter.</param>
+        /// <returns>
+        /// The parameter schema. Complex and collection types name the EDM type for <c>odata_describe_type</c>.
+        /// </returns>
+        internal Dictionary<string, object?> BuildParameterJsonSchema(EdmParameter parameter)
+        {
+            ArgumentNullException.ThrowIfNull(parameter);
+
+            var property = new EdmProperty
+            {
+                Description = parameter.Description,
+                LongDescription = parameter.LongDescription,
+                MaxLength = parameter.MaxLength,
+                Name = parameter.Name,
+                Nullable = parameter.Nullable,
+                Type = parameter.Type
+            };
+            var schema = BuildPropertyJsonSchema(property);
+            var element = EdmTypeShape.UnwrapCollectionType(parameter.Type);
+            if (element is not null && (_model.GetComplexType(element) is not null || _model.GetEntityType(element) is not null))
+            {
+                schema[Description] = $"{element}. Use odata_describe_type.";
+            }
+
+            return schema;
+        }
+
+        /// <summary>
+        /// Builds the object property map for a structured return type.
+        /// </summary>
+        /// <param name="edmType">The non-collection EDM type name.</param>
+        /// <returns>
+        /// Property schemas, or <c>null</c> when the type is primitive or enum.
+        /// </returns>
+        internal Dictionary<string, object?>? BuildStructuredObjectSchema(string edmType)
+        {
+            var entity = _model.GetEntityType(edmType);
+            if (entity is not null)
+            {
+                return BuildPropertySchema(new EdmTypeShape(_model, entity, null));
+            }
+
+            var complex = _model.GetComplexType(edmType);
+            if (complex is null)
+            {
+                return null;
+            }
+
+            var properties = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var property in complex.Properties)
+            {
+                if (!IsExposedProperty(property))
+                {
+                    continue;
+                }
+
+                properties[property.Name] = BuildPropertyJsonSchema(property);
+            }
+
+            return properties;
+        }
+
+        /// <summary>
+        /// Collects first-overload bound operations for a type chain.
+        /// </summary>
+        /// <param name="byType">Operations keyed by binding type full name.</param>
+        /// <param name="bindingTypes">The set's type and its base types.</param>
+        /// <returns>
+        /// Matching operations in type-chain then declaration order.
+        /// </returns>
+        internal static List<CatalogOperation> CollectBoundOperations(
+            Dictionary<string, List<CatalogOperation>> byType,
+            IReadOnlyCollection<string> bindingTypes)
+        {
+            ArgumentNullException.ThrowIfNull(byType);
+            ArgumentNullException.ThrowIfNull(bindingTypes);
+
+            var operations = new List<CatalogOperation>();
+            foreach (var bindingType in bindingTypes)
+            {
+                if (byType.TryGetValue(bindingType, out var matches))
+                {
+                    operations.AddRange(matches);
+                }
+            }
+
+            return operations;
+        }
+
+        /// <summary>
+        /// Counts included entity sets per entity type full name.
+        /// </summary>
+        /// <param name="sets">The included sets in catalog order.</param>
+        /// <returns>
+        /// Full name to count.
+        /// </returns>
+        internal Dictionary<string, int> CountIncludedSetsByType(IReadOnlyList<EdmEntitySet> sets)
+        {
+            ArgumentNullException.ThrowIfNull(sets);
+
+            var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var set in sets)
+            {
+                var type = ResolveEntityType(set);
+                if (type is null)
+                {
+                    continue;
+                }
+
+                counts[type.FullName] = counts.GetValueOrDefault(type.FullName) + 1;
+            }
+
+            return counts;
+        }
+
+        /// <summary>
+        /// Indexes first-overload functions and actions for named-tool emission.
+        /// </summary>
+        /// <returns>
+        /// Unbound lists and bound maps keyed by binding type.
+        /// </returns>
+        internal CatalogOperationIndex IndexCatalogOperations()
+        {
+            var index = new CatalogOperationIndex();
+            if (_options.IncludeFunctions)
+            {
+                foreach (var function in _model.Functions)
+                {
+                    index.Add(new CatalogOperation(function));
+                }
+            }
+
+            if (_options.IncludeActions)
+            {
+                foreach (var action in _model.Actions)
+                {
+                    index.Add(new CatalogOperation(action));
+                }
+            }
+
+            return index;
         }
 
         /// <summary>

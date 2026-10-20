@@ -187,6 +187,7 @@
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession",
+                              "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataOperationKind",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataResourceDescriptor",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataResourceTemplateDescriptor",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataToolDescriptor",

@@ -18,7 +18,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
 {
 
     /// <summary>
-    /// Restier named CRUD family: list_customers, get_mcp_customer, create_mcp_customer, update_mcp_customer, delete_mcp_customer.
+    /// Restier named CRUD family: list_customers, get_mcpcustomer, create_mcpcustomer, update_mcpcustomer, delete_mcpcustomer.
     /// </summary>
     [TestClass]
     public class RestierNamedCrudToolTests : RestierToolTestBase
@@ -46,17 +46,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
-            names.Should().Contain("create_mcp_customer");
-            names.Should().Contain("update_mcp_customer");
-            names.Should().Contain("delete_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().Contain("create_mcpcustomer");
+            names.Should().Contain("update_mcpcustomer");
+            names.Should().Contain("delete_mcpcustomer");
             names.Should().NotContain("get_customer");
             names.Should().NotContain("create_customer");
             names.Should().NotContain("update_customer");
             names.Should().NotContain("delete_customer");
             names.Should().NotContain("list_products_category");
             names.Should().Contain("list_orders");
-            names.Should().Contain("get_mcp_order");
+            names.Should().Contain("get_mcporder");
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public void CreateCustomer_SchemaContainsCompanyName_NotDollarFilter_NotInternalSecret_NotBinary()
         {
-            var tool = Catalog().Tools.First(item => item.Name == "create_mcp_customer");
+            var tool = Catalog().Tools.First(item => item.Name == "create_mcpcustomer");
             tool.InputSchema.Should().Contain("CompanyName");
             tool.InputSchema.Should().Contain("Id");
             tool.InputSchema.Should().NotContain("$filter");
@@ -80,9 +80,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_BodyObjectVsProperties()
         {
-            var properties = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 101, "CompanyName", "Props"));
+            var properties = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 101, "CompanyName", "Props"));
             properties.IsError.Should().BeFalse(properties.Text);
-            var body = await InvokeAsync("create_mcp_customer", ToolArguments.Of("body", """{"Id":102,"CompanyName":"Body"}"""));
+            var body = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("body", """{"Id":102,"CompanyName":"Body"}"""));
             body.IsError.Should().BeFalse(body.Text);
         }
 
@@ -92,7 +92,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_ConcurrentUniqueNames()
         {
-            var tasks = Enumerable.Range(110, 4).Select(id => InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", id, "CompanyName", "U" + id)));
+            var tasks = Enumerable.Range(110, 4).Select(id => InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", id, "CompanyName", "U" + id)));
             var results = await Task.WhenAll(tasks);
             results.Should().OnlyContain(result => !result.IsError);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_EmptyArgs_PostsEmptyObject_400()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of());
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of());
             result.Should().NotBeNull();
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_EqualsGenericODataCreate()
         {
-            var named = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 103, "CompanyName", "EqNamed"));
+            var named = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 103, "CompanyName", "EqNamed"));
             var generic = await InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":104,"CompanyName":"EqGeneric"}"""));
             named.IsError.Should().BeFalse(named.Text);
             generic.IsError.Should().BeFalse(generic.Text);
@@ -125,7 +125,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_OData8_ExplicitBodyString_AlsoWorks()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("body", """{"Id":105,"CompanyName":"Explicit"}"""));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("body", """{"Id":105,"CompanyName":"Explicit"}"""));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_IdInsteadOfCompanyName_May400()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("id", "nope"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("id", "nope"));
             result.IsError.Should().BeTrue();
         }
 
@@ -146,7 +146,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task CreateCustomer_JsonRpcToolsCall_Restier()
         {
             using var client = CreateClient();
-            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "create_mcp_customer", """{"Id":106,"CompanyName":"RpcNamed"}""");
+            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "create_mcpcustomer", """{"Id":106,"CompanyName":"RpcNamed"}""");
             var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
             response.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)response.StatusCode, body);
             RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
@@ -171,7 +171,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_NullPropertyValues()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 107, "CompanyName", null));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 107, "CompanyName", null));
             result.IsError.Should().BeTrue();
         }
 
@@ -192,11 +192,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_ThenGetCustomer_ThenDeleteCustomer()
         {
-            var created = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 108, "CompanyName", "RoundTrip"));
+            var created = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 108, "CompanyName", "RoundTrip"));
             created.IsError.Should().BeFalse(created.Text);
-            var get = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "108"));
+            var get = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "108"));
             get.StructuredContent.Should().Contain("RoundTrip");
-            var deleted = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "108"));
+            var deleted = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "108"));
             deleted.IsError.Should().BeFalse(deleted.Text);
         }
 
@@ -206,7 +206,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_ThenListCustomersFilter()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 109, "CompanyName", "Listed"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 109, "CompanyName", "Listed"));
             var listed = await InvokeAsync("list_customers", ToolArguments.Of("filter", "CompanyName eq 'Listed'"));
             listed.StructuredContent.Should().Contain("Listed");
         }
@@ -217,7 +217,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_ThenODataQuery()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 120, "CompanyName", "Q"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 120, "CompanyName", "Q"));
             var query = await InvokeAsync("odata_query", ToolArguments.Of("entitySet", "Customers", "filter", "Id eq 120"));
             query.StructuredContent.Should().Contain("Q");
         }
@@ -228,7 +228,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_UnicodeName()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 121, "CompanyName", "北風"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 121, "CompanyName", "北風"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -238,7 +238,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_UnknownPropertyInArgs_IsErrorBeforeHttp()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 122, "CompanyName", "Extra", "NoSuch", "x"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 122, "CompanyName", "Extra", "NoSuch", "x"));
 
             result.IsError.Should().BeTrue();
             result.Text.Should().Be("Unknown property 'NoSuch' on McpCustomer. Declared: Id, CompanyName.");
@@ -250,7 +250,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_UsingGenericEntitySetArg_Overwritten()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("entitySet", "Orders", "Id", 123, "CompanyName", "BoundSet"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("entitySet", "Orders", "Id", 123, "CompanyName", "BoundSet"));
             result.IsError.Should().BeFalse(result.Text);
 
             using var client = CreateClient();
@@ -263,7 +263,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_UsingGetArgs_KeyExcludedFromBody()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("key", "999", "Id", 124, "CompanyName", "NoKey"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("key", "999", "Id", 124, "CompanyName", "NoKey"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -273,7 +273,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_UsingListArgs_FilterTop_ExcludedFromBody()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("filter", "x", "top", 1, "Id", 125, "CompanyName", "NoFilter"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("filter", "x", "top", 1, "Id", 125, "CompanyName", "NoFilter"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -283,7 +283,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateMcpCustomer_Restier_PropertyArgs_VisibleToHttp()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 126, "CompanyName", "NamedCo"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 126, "CompanyName", "NamedCo"));
             result.IsError.Should().BeFalse(result.Text);
 
             using var client = CreateClient();
@@ -307,7 +307,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task CreateCustomer_409Duplicate()
         {
-            var result = await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 1, "CompanyName", "Dup"));
+            var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 1, "CompanyName", "Dup"));
             result.IsError.Should().BeTrue();
         }
 
@@ -317,8 +317,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_BodyIgnored()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 130, "CompanyName", "DelBody"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "130", "body", "{}"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 130, "CompanyName", "DelBody"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "130", "body", "{}"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -328,10 +328,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_ConcurrentSameKey()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 131, "CompanyName", "Race"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 131, "CompanyName", "Race"));
             var results = await Task.WhenAll(
-                InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "131")),
-                InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "131")));
+                InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "131")),
+                InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "131")));
             results.Count(result => !result.IsError).Should().Be(1);
             results.Count(result => result.IsError).Should().Be(1);
         }
@@ -342,8 +342,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_DoesNotCallResetDataSource()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 132, "CompanyName", "NoReset"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "132"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 132, "CompanyName", "NoReset"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "132"));
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().Contain("DELETE");
             result.Text.Should().NotContain("Reset");
@@ -355,7 +355,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_DollarKey()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("$key", "1"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("$key", "1"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -366,7 +366,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_EmptyKey()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", ""));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", ""));
             result.IsError.Should().BeTrue();
         }
 
@@ -376,7 +376,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_EmojiKey_404()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "😀"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "😀"));
             result.IsError.Should().BeTrue();
         }
 
@@ -386,8 +386,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_EqualsODataDelete()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 133, "CompanyName", "EqDel"));
-            var named = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "133"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 133, "CompanyName", "EqDel"));
+            var named = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "133"));
             named.IsError.Should().BeFalse(named.Text);
         }
 
@@ -397,8 +397,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_EntitySetOverwrittenCannotDeleteProducts()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 134, "CompanyName", "BoundDel"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("entitySet", "Orders", "key", "134"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 134, "CompanyName", "BoundDel"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("entitySet", "Orders", "key", "134"));
             result.IsError.Should().BeFalse(result.Text);
 
             using var client = CreateClient();
@@ -414,10 +414,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
-            names.Should().Contain("create_mcp_customer");
-            names.Should().Contain("update_mcp_customer");
-            names.Should().Contain("delete_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().Contain("create_mcpcustomer");
+            names.Should().Contain("update_mcpcustomer");
+            names.Should().Contain("delete_mcpcustomer");
         }
 
         /// <summary>
@@ -426,7 +426,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_IdInsteadOfKey()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("id", "1"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("id", "1"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -437,9 +437,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_JsonRpcToolsCall()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 135, "CompanyName", "RpcDel"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 135, "CompanyName", "RpcDel"));
             using var client = CreateClient();
-            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "delete_mcp_customer", """{"key":"135"}""");
+            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "delete_mcpcustomer", """{"key":"135"}""");
             var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
             RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
             ((int)(await client.GetAsync("odata/Customers(135)")).StatusCode).Should().Be(404);
@@ -463,8 +463,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_KeyAsNumber()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 136, "CompanyName", "Num"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", 136));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 136, "CompanyName", "Num"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", 136));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -474,7 +474,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_MissingKey_IsError()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of());
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of());
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -485,9 +485,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_SecondCall_404()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 137, "CompanyName", "Twice"));
-            (await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "137"))).IsError.Should().BeFalse();
-            var second = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "137"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 137, "CompanyName", "Twice"));
+            (await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "137"))).IsError.Should().BeFalse();
+            var second = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "137"));
             second.IsError.Should().BeTrue();
             second.Text.Should().Contain("404");
         }
@@ -498,8 +498,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_TextContainsStatusOn204()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 138, "CompanyName", "Status"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "138"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 138, "CompanyName", "Status"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "138"));
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().MatchRegex("20[04]");
         }
@@ -510,10 +510,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_AfterCreateGetUpdate()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 139, "CompanyName", "A"));
-            await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "139"));
-            await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "139", "body", """{"CompanyName":"B"}"""));
-            var deleted = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "139"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 139, "CompanyName", "A"));
+            await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "139"));
+            await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "139", "body", """{"CompanyName":"B"}"""));
+            var deleted = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "139"));
             deleted.IsError.Should().BeFalse(deleted.Text);
         }
 
@@ -523,8 +523,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_ThenListCustomers_Absent()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 140, "CompanyName", "Abs"));
-            await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "140"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 140, "CompanyName", "Abs"));
+            await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "140"));
             var listed = await InvokeAsync("list_customers", ToolArguments.Of("filter", "CompanyName eq 'Abs'"));
             listed.StructuredContent.Should().NotContain("Abs");
         }
@@ -535,8 +535,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_ThenNavigate_404()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 141, "CompanyName", "Nav"));
-            await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "141"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 141, "CompanyName", "Nav"));
+            await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "141"));
             var nav = await InvokeAsync("odata_navigate", ToolArguments.Of("entitySet", "Customers", "key", "141", "navigation", "Orders"));
             if (!nav.IsError)
             {
@@ -550,7 +550,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_UnknownKey_404()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "999"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "999"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("404");
         }
@@ -561,7 +561,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteCustomer_UsingListArgsWithoutKey()
         {
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("filter", "true"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("filter", "true"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -583,8 +583,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task DeleteMcpCustomer_Restier_CreatedRow()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 142, "CompanyName", "NamedDelRow"));
-            var result = await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "142"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 142, "CompanyName", "NamedDelRow"));
+            var result = await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "142"));
             result.IsError.Should().BeFalse(result.Text);
 
             using var client = CreateClient();
@@ -608,8 +608,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_AfterCreateCustomer()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 150, "CompanyName", "After"));
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "150"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 150, "CompanyName", "After"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "150"));
             result.StructuredContent.Should().Contain("After");
         }
 
@@ -619,9 +619,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_AfterDelete_404()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 151, "CompanyName", "Gone"));
-            await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "151"));
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "151"));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 151, "CompanyName", "Gone"));
+            await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "151"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "151"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("404");
         }
@@ -632,8 +632,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_AfterUpdate()
         {
-            await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"GetAfter"}"""));
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "2"));
+            await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"GetAfter"}"""));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "2"));
             result.StructuredContent.Should().Contain("GetAfter");
         }
 
@@ -643,7 +643,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_Concurrent()
         {
-            var tasks = Enumerable.Range(0, 8).Select(_ => InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1")));
+            var tasks = Enumerable.Range(0, 8).Select(_ => InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1")));
             var results = await Task.WhenAll(tasks);
             results.Should().OnlyContain(result => !result.IsError);
         }
@@ -654,7 +654,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_DollarKey_MissingKey()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("$key", "1"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("$key", "1"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -665,7 +665,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_EmptyKey()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", ""));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", ""));
             result.IsError.Should().BeTrue();
         }
 
@@ -675,7 +675,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_EmojiKey_404()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "😀"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "😀"));
             result.IsError.Should().BeTrue();
         }
 
@@ -685,7 +685,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_EntitySetPassed_OverwrittenToBoundSet()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("entitySet", "Orders", "key", "1"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("entitySet", "Orders", "key", "1"));
             result.IsError.Should().BeFalse(result.Text);
             result.StructuredContent.Should().Contain("Contoso");
         }
@@ -698,7 +698,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name);
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
         }
 
         /// <summary>
@@ -707,7 +707,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_IdInsteadOfKey_IsError()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("id", "1"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("id", "1"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -719,7 +719,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task GetCustomer_JsonRpcToolsCall()
         {
             using var client = CreateClient();
-            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "get_mcp_customer", """{"key":"1"}""");
+            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "get_mcpcustomer", """{"key":"1"}""");
             var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
             RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
             body.Should().Contain("Contoso");
@@ -743,7 +743,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_KeyAsObject()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", new Dictionary<string, int> { ["Id"] = 1 }));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", new Dictionary<string, int> { ["Id"] = 1 }));
             result.IsError.Should().BeTrue();
         }
 
@@ -753,7 +753,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_MaxExpandLengthExceeded()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1", "expand", new string('A', 513)));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1", "expand", new string('A', 513)));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("expand exceeds the maximum length");
         }
@@ -764,7 +764,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_MissingKey_IsError()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of());
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of());
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -777,7 +777,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             using var client = CreateClient();
             (await client.GetStringAsync("odata/Customers(1)")).Should().Contain("Contoso");
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", 1));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", 1));
             result.IsError.Should().BeFalse(result.Text);
             result.StructuredContent.Should().Contain("Contoso");
         }
@@ -792,7 +792,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var odata = await client.GetStringAsync("odata/Customers(1)?$select=CompanyName&$expand=Orders");
             odata.Should().Contain("Contoso");
 
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1", "select", "CompanyName", "expand", "Orders"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1", "select", "CompanyName", "expand", "Orders"));
             result.IsError.Should().BeFalse(result.Text);
             result.StructuredContent.Should().Contain("Contoso");
         }
@@ -803,7 +803,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_ThenNavigate()
         {
-            var get = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1"));
+            var get = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1"));
             get.IsError.Should().BeFalse(get.Text);
             var nav = await InvokeAsync("odata_navigate", ToolArguments.Of("entitySet", "Customers", "key", "1", "navigation", "Orders"));
             nav.StructuredContent.Should().Contain("100");
@@ -815,7 +815,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_UnknownKey_404()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "999"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "999"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("404");
         }
@@ -826,7 +826,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_UsingListArgs_WithKey_FilterForwardedOnGet()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1", "filter", "CompanyName eq 'Contoso'"));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1", "filter", "CompanyName eq 'Contoso'"));
             if (result.IsError)
             {
                 result.Text.Should().Contain("status ");
@@ -843,7 +843,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task GetCustomer_UsingListArgs_FilterTop_WithoutKey_IsError()
         {
-            var result = await InvokeAsync("get_mcp_customer", ToolArguments.Of("filter", "true", "top", 1));
+            var result = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("filter", "true", "top", 1));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -872,7 +872,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// Restier get_mcp_customer key 1 matches odata_get.
+        /// Restier get_mcpcustomer key 1 matches odata_get.
         /// </summary>
         [TestMethod]
         public async Task GetMcpCustomer_Restier_Key1_MatchesODataGet()
@@ -882,7 +882,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             odata.Should().Contain("Contoso");
 
             var generic = await InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"));
-            var named = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1"));
+            var named = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1"));
             generic.IsError.Should().BeFalse(generic.Text);
             named.IsError.Should().BeFalse(named.Text);
             named.StructuredContent.Should().Contain("Contoso");
@@ -991,10 +991,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
-            names.Should().Contain("create_mcp_customer");
-            names.Should().Contain("update_mcp_customer");
-            names.Should().Contain("delete_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().Contain("create_mcpcustomer");
+            names.Should().Contain("update_mcpcustomer");
+            names.Should().Contain("delete_mcpcustomer");
         }
 
         /// <summary>
@@ -1138,14 +1138,14 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// Then get_mcp_customer of the same row.
+        /// Then get_mcpcustomer of the same row.
         /// </summary>
         [TestMethod]
         public async Task ListCustomers_ThenGetCustomer_SameRow()
         {
             var listed = await InvokeAsync("list_customers", ToolArguments.Of("filter", "Id eq 1"));
             ODataFeedReader.ReadKeys(listed.StructuredContent!).Should().Equal(1);
-            var get = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1"));
+            var get = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1"));
             get.StructuredContent.Should().Contain("Contoso");
         }
 
@@ -1203,7 +1203,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// list_product (wrong snake) is unknown.
+        /// <c>list_product</c> is unknown (set is Products).
         /// </summary>
         [TestMethod]
         public async Task ListProducts_CalledAsList_Product_UnknownTool()
@@ -1231,8 +1231,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task UpdateCustomer_Concurrent()
         {
             var results = await Task.WhenAll(
-                InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"C1"}""")),
-                InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"C2"}""")));
+                InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"C1"}""")),
+                InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"C2"}""")));
             results.Should().OnlyContain(result => !result.IsError || result.Text.Contains("409", StringComparison.Ordinal));
         }
 
@@ -1242,7 +1242,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_DollarKey()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("$key", "1", "body", "{}"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("$key", "1", "body", "{}"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -1253,7 +1253,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_EmptyBodyString()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "1", "body", ""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "1", "body", ""));
             result.IsError.Should().BeTrue();
         }
 
@@ -1263,7 +1263,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_EqualsODataUpdate()
         {
-            var named = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"NamedUp"}"""));
+            var named = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"NamedUp"}"""));
             named.IsError.Should().BeFalse(named.Text);
             var generic = await InvokeAsync("odata_update", ToolArguments.Of("entitySet", "Customers", "key", "2", "body", """{"CompanyName":"GenericUp"}"""));
             generic.IsError.Should().BeFalse(generic.Text);
@@ -1275,7 +1275,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_EntitySetOverwritten()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("entitySet", "Orders", "key", "2", "body", """{"CompanyName":"StillCustomer"}"""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("entitySet", "Orders", "key", "2", "body", """{"CompanyName":"StillCustomer"}"""));
             result.IsError.Should().BeFalse(result.Text);
 
             using var client = CreateClient();
@@ -1288,7 +1288,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_204EmptyBodyText()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"NoContent"}"""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"NoContent"}"""));
             result.IsError.Should().BeFalse(result.Text);
             result.Text.Should().MatchRegex("20[04]");
         }
@@ -1299,7 +1299,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_IdInsteadOfKey()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("id", "1", "body", "{}"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("id", "1", "body", "{}"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -1310,8 +1310,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_IdempotentRepeat()
         {
-            var first = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"Repeat"}"""));
-            var second = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"Repeat"}"""));
+            var first = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"Repeat"}"""));
+            var second = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"Repeat"}"""));
             first.IsError.Should().BeFalse(first.Text);
             second.IsError.Should().BeFalse(second.Text);
         }
@@ -1323,7 +1323,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task UpdateCustomer_JsonRpcToolsCall()
         {
             using var client = CreateClient();
-            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "update_mcp_customer", """{"key":"2","body":"{\"CompanyName\":\"RpcUp\"}"}""");
+            using var response = await RestierMcpJsonRpc.CallToolAsync(client, "odata/mcp", "update_mcpcustomer", """{"key":"2","body":"{\"CompanyName\":\"RpcUp\"}"}""");
             var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
             RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
             (await client.GetStringAsync("odata/Customers(2)")).Should().Contain("RpcUp");
@@ -1347,7 +1347,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_MalformedBody()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "1", "body", "{"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "1", "body", "{"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("400");
         }
@@ -1358,7 +1358,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_MissingBody_SynthesizesLeftoversOrEmpty()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "CompanyName", "X"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "CompanyName", "X"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -1368,7 +1368,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_MissingKey_IsError()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("body", "{}"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("body", "{}"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -1379,7 +1379,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_NullBody()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "CompanyName", "NullUp"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "CompanyName", "NullUp"));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -1389,7 +1389,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_ObjectBody()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", new Dictionary<string, string> { ["CompanyName"] = "ObjUp" }));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", new Dictionary<string, string> { ["CompanyName"] = "ObjUp" }));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -1399,20 +1399,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_AfterCreate_BeforeDelete()
         {
-            await InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 160, "CompanyName", "Up"));
-            var updated = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "160", "body", """{"CompanyName":"Up2"}"""));
+            await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 160, "CompanyName", "Up"));
+            var updated = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "160", "body", """{"CompanyName":"Up2"}"""));
             updated.IsError.Should().BeFalse(updated.Text);
-            await InvokeAsync("delete_mcp_customer", ToolArguments.Of("key", "160"));
+            await InvokeAsync("delete_mcpcustomer", ToolArguments.Of("key", "160"));
         }
 
         /// <summary>
-        /// Then get_mcp_customer.
+        /// Then get_mcpcustomer.
         /// </summary>
         [TestMethod]
         public async Task UpdateCustomer_ThenGetCustomer()
         {
-            await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"SeeGet"}"""));
-            var get = await InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "2"));
+            await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"SeeGet"}"""));
+            var get = await InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "2"));
             get.StructuredContent.Should().Contain("SeeGet");
         }
 
@@ -1422,7 +1422,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_ThenListCustomers()
         {
-            await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"SeeList"}"""));
+            await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"SeeList"}"""));
             var listed = await InvokeAsync("list_customers", ToolArguments.Of("filter", "CompanyName eq 'SeeList'"));
             listed.StructuredContent.Should().Contain("SeeList");
         }
@@ -1433,7 +1433,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_Unicode()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"北風"}"""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"北風"}"""));
             result.IsError.Should().BeFalse(result.Text);
         }
 
@@ -1443,7 +1443,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_UnknownKey_404()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "999", "body", """{"CompanyName":"Nope"}"""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "999", "body", """{"CompanyName":"Nope"}"""));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("status ");
         }
@@ -1454,7 +1454,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_UsingCreatePropertyArgsWithoutBodyOrKey()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("CompanyName", "X"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("CompanyName", "X"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -1465,7 +1465,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         [TestMethod]
         public async Task UpdateCustomer_UsingListArgsWithoutKey()
         {
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("filter", "true", "body", "{}"));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("filter", "true", "body", "{}"));
             result.IsError.Should().BeTrue();
             result.Text.Should().Contain("key");
         }
@@ -1492,7 +1492,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var twin = await client.PatchAsync("odata/Customers(2)", content);
             twin.IsSuccessStatusCode.Should().BeTrue();
 
-            var result = await InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"McpNamed"}"""));
+            var result = await InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", """{"CompanyName":"McpNamed"}"""));
             result.IsError.Should().BeFalse(result.Text);
             (await client.GetStringAsync("odata/Customers(2)")).Should().Contain("McpNamed");
         }
@@ -1558,13 +1558,13 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
-            names.Should().NotContain("create_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().NotContain("create_mcpcustomer");
             names.Should().Contain("odata_create");
 
-            var unknown = await Runtime().InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 1, "CompanyName", "X"), CancellationToken.None);
+            var unknown = await Runtime().InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 1, "CompanyName", "X"), CancellationToken.None);
             unknown.IsError.Should().BeTrue();
-            unknown.Text.Should().Be("Unknown tool 'create_mcp_customer'.");
+            unknown.Text.Should().Be("Unknown tool 'create_mcpcustomer'.");
 
             var created = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":170,"CompanyName":"GenericStill"}"""), CancellationToken.None);
             created.IsError.Should().BeFalse(created.Text);
@@ -1578,10 +1578,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
             names.Should().Contain("list_customers");
-            names.Should().Contain("get_mcp_customer");
-            names.Should().Contain("update_mcp_customer");
-            names.Should().Contain("delete_mcp_customer");
-            names.Should().NotContain("create_mcp_customer");
+            names.Should().Contain("get_mcpcustomer");
+            names.Should().Contain("update_mcpcustomer");
+            names.Should().Contain("delete_mcpcustomer");
+            names.Should().NotContain("create_mcpcustomer");
         }
 
         #endregion
@@ -1629,11 +1629,11 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task UpdateCustomer_OmittedWhenIncludeUpdateFalse_GenericUpdateStillWorks()
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
-            names.Should().NotContain("update_mcp_customer");
+            names.Should().NotContain("update_mcpcustomer");
             names.Should().Contain("odata_update");
             names.Should().Contain("list_customers");
 
-            var unknown = await Runtime().InvokeAsync("update_mcp_customer", ToolArguments.Of("key", "2", "body", "{}"), CancellationToken.None);
+            var unknown = await Runtime().InvokeAsync("update_mcpcustomer", ToolArguments.Of("key", "2", "body", "{}"), CancellationToken.None);
             unknown.IsError.Should().BeTrue();
 
             var updated = await Runtime().InvokeAsync("odata_update", ToolArguments.Of("entitySet", "Customers", "key", "2", "body", """{"CompanyName":"StillGeneric"}"""), CancellationToken.None);
@@ -1647,7 +1647,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         public async Task DeleteCustomer_OmittedWhenIncludeDeleteFalse_GenericDeleteStillWorks()
         {
             var names = Catalog().Tools.Select(tool => tool.Name).ToList();
-            names.Should().NotContain("delete_mcp_customer");
+            names.Should().NotContain("delete_mcpcustomer");
             names.Should().Contain("odata_delete");
 
             var created = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":180,"CompanyName":"DelGeneric"}"""), CancellationToken.None);

@@ -34,7 +34,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
 
 
     /// <summary>
-    /// Named family, snake_case, binary omit, and cap behavior on the rich model.
+    /// Named family, lowercase EDM names, binary omit, and cap behavior on the rich model.
     /// </summary>
     [TestClass]
     public class NamedCrudRichHostTests : ConventionRichHost
@@ -43,14 +43,16 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         #region Public Methods
 
         /// <summary>
-        /// <c>OrderItems</c> snakes to <c>list_order_items</c> / <c>get_order_item</c>.
+        /// <c>OrderItems</c> / <c>OrderItem</c> lowercased as declared: <c>list_orderitems</c> / <c>get_orderitem</c>.
         /// </summary>
         [TestMethod]
-        public void Snake_OrderItems_ListOrder_items()
+        public void NamedTools_OrderItems_KeepDeclaredSpelling()
         {
             var names = Session().Catalog.Tools.Select(tool => tool.Name).ToList();
-            names.Should().Contain("list_order_items");
-            names.Should().Contain("get_order_item");
+            names.Should().Contain("list_orderitems");
+            names.Should().Contain("get_orderitem");
+            names.Should().NotContain("list_order_items");
+            names.Should().NotContain("get_order_item");
         }
 
         /// <summary>

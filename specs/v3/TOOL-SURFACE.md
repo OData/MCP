@@ -38,21 +38,31 @@ Prefer a resource URI or `entitySet` name as the target. Executor resolves `odat
 
 ## 3. Named tools (capped)
 
-Per entity set, snake_case:
+Per entity set, the EDM short name lowercased as declared (no inserted underscores):
 
 | Operation | Pattern | Example |
 |-----------|---------|---------|
-| List/query | `list_{set}` | `list_products` |
-| Get | `get_{singular}` | `get_product` |
+| List/query | `list_{set}` | `list_products`, `list_customerdemographics`, `list_order_details` |
+| Get | `get_{singular}` | `get_product`, `get_customerdemographic`, `get_order_detail` |
 | Create | `create_{singular}` | `create_product` |
 | Update | `update_{singular}` | `update_product` |
 | Delete | `delete_{singular}` | `delete_product` |
+| Unbound function | `function_{function}` | `function_getnearestairport` |
+| Unbound action | `action_{action}` | `action_resetdatasource` |
+| Instance-bound function | `function_{singular}_{function}` | `function_person_getfavoriteairline` |
+| Instance-bound action | `action_{singular}_{action}` | `action_person_sharetrip`, `action_integrationconnection_authorize` |
+| Collection-bound function | `function_{set}_{function}` | `function_people_top` |
+| Collection-bound action | `action_{set}_{action}` | `action_products_discount` |
+
+`{set}`, `{singular}`, `{action}`, and `{function}` are `ToToolName` of the EDM short name: lowercase as declared. `CustomerDemographics` → `customerdemographics`. `Order_Details` → `order_details`. `IntegrationConnection` → `integrationconnection`. Do not insert or strip underscores. Two included sets of the same type use the set stem for instance-bound tools (`action_vipcustomers_approve`).
 
 Navigation is generic `odata_navigate` plus navigations on the type shape. Do not register `list_{set}_{nav}`.
 
 Every included entity set gets a named family for the enabled verbs. `IncludeEntitySets` is ordered first, then the rest alphabetically. A family is never partial: if `list_products` is in, `get_product` is in for the enabled verbs.
 
-`tools/list` returns that full list in pages. The server chooses the page size with `ODataMcpCatalogOptions.ToolsPageSize` (default 100). Clients must not assume it. Generics and resources stay available for the same sets.
+`tools/list` order: generic `odata_*`, then unbound `function_*` / `action_*` (alphabetical within each), then per-set CRUD followed by that set’s instance-bound then collection-bound operations. Unbound operations sit on the first page; bound tools stay next to their set.
+
+`tools/list` returns that full list in pages. The server chooses the page size with `ODataMcpCatalogOptions.ToolsPageSize` (default 100). Clients must not assume it. Generics and resources stay available for the same sets. `odata_call` remains next to the named operation tools.
 
 ---
 

@@ -57,7 +57,7 @@ These types **are** the projection. Do not create a second `Edm/` namespace. Edi
 | Type | Fate |
 |------|------|
 | `Legacy/McpTool` and `Legacy/Generators/*` | DELETE |
-| Naming-convention idea (snake_case default) | Keep snake_case only unless a host option is proven |
+| Naming-convention idea (snake_case default) | **Superseded.** Named tools lowercase the EDM short name as declared (`ToToolName`). Do not insert underscores. |
 | Property-level exclusion | REWRITE into builder (binary/stream + explicit excludes) |
 
 ---

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,6 +124,50 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             result.StructuredContent.Should().Contain("Airlines");
             result.StructuredContent.Should().Contain("Airports");
             result.StructuredContent.Should().Contain("UserName");
+        }
+
+        /// <summary>
+        /// TripPin advertises named operation tools for unbound and Person-bound operations.
+        /// </summary>
+        [TestMethod]
+        public async Task Catalog_TripPin_NamedOperations_AreAdvertised()
+        {
+            var (runtime, _) = await LiveToolRuntime.CreateTripPinAsync();
+            var names = runtime._catalog.Tools.Select(tool => tool.Name).ToList();
+            var call = names.IndexOf("odata_call");
+            var nearest = names.IndexOf("function_getnearestairport");
+            var reset = names.IndexOf("action_resetdatasource");
+            var listPeople = names.IndexOf("list_people");
+            var share = names.IndexOf("action_person_sharetrip");
+
+            names.Should().Contain("function_getnearestairport");
+            names.Should().Contain("action_resetdatasource");
+            names.Should().Contain("action_person_sharetrip");
+            names.Should().Contain("function_person_getfavoriteairline");
+            nearest.Should().BeGreaterThan(call);
+            reset.Should().BeGreaterThan(nearest);
+            listPeople.Should().BeGreaterThan(reset);
+            share.Should().BeGreaterThan(listPeople);
+        }
+
+        /// <summary>
+        /// Named GetNearestAirport matches generic odata_call on the wire.
+        /// </summary>
+        [TestMethod]
+        public async Task Function_TripPin_GetNearestAirport_MatchesODataCall()
+        {
+            var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
+            var named = await runtime.InvokeAsync("function_getnearestairport", ToolArguments.Of("lat", 33, "lon", -118), CancellationToken.None);
+            var generic = await runtime.InvokeAsync(
+                "odata_call",
+                ToolArguments.Of("name", "GetNearestAirport", "parameters", new { lat = 33, lon = -118 }),
+                CancellationToken.None);
+
+            named.IsError.Should().BeFalse(named.Text);
+            generic.IsError.Should().BeFalse(generic.Text);
+            capture.Last!.Method.Should().Be(HttpMethod.Get);
+            capture.Last.RelativePath.Should().Be("GetNearestAirport(lat=33,lon=-118)");
+            named.StructuredContent.Should().Be(generic.StructuredContent);
         }
 
         /// <summary>

@@ -34,6 +34,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Constants
             ODataMcpCatalogConstants.ODataNavigate.Should().Be("odata_navigate");
             ODataMcpCatalogConstants.ODataQuery.Should().Be("odata_query");
             ODataMcpCatalogConstants.ODataUpdate.Should().Be("odata_update");
+            ODataMcpCatalogConstants.ActionPrefix.Should().Be("action_");
+            ODataMcpCatalogConstants.FunctionPrefix.Should().Be("function_");
         }
 
         /// <summary>

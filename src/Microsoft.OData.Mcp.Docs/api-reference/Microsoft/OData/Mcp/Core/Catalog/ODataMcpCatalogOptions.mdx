@@ -99,6 +99,24 @@ public System.Collections.Generic.List<string> ExcludeEntitySets { get; set; }
 
 Type: `System.Collections.Generic.List<string>`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeActions
+
+Gets or sets a value indicating whether named `action_*` tools are generated.
+
+#### Syntax
+
+```csharp
+public bool IncludeActions { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+Defaults to `true`. Turning it off omits named action tools; `odata_call` remains.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeCreate
 
 Gets or sets a value indicating whether create tools are generated.
@@ -140,6 +158,24 @@ public System.Collections.Generic.List<string> IncludeEntitySets { get; set; }
 #### Property Value
 
 Type: `System.Collections.Generic.List<string>`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeFunctions
+
+Gets or sets a value indicating whether named `function_*` tools are generated.
+
+#### Syntax
+
+```csharp
+public bool IncludeFunctions { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+
+#### Remarks
+
+Defaults to `true`. Turning it off omits named function tools; `odata_call` remains.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IncludeUpdate
 

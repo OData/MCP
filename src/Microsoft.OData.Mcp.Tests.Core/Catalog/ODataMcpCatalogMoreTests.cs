@@ -52,6 +52,48 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
+        /// <c>OrderDetails</c> and <c>Order_Details</c> emit different named tools.
+        /// </summary>
+        [TestMethod]
+        public void Catalog_NamedTools_PreservesUnderscoreVersusPascalCase()
+        {
+            const string csdl = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="T" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <EntityType Name="OrderDetail">
+                        <Key><PropertyRef Name="Id" /></Key>
+                        <Property Name="Id" Type="Edm.Int32" Nullable="false" />
+                      </EntityType>
+                      <EntityType Name="Order_Detail">
+                        <Key><PropertyRef Name="Id" /></Key>
+                        <Property Name="Id" Type="Edm.Int32" Nullable="false" />
+                      </EntityType>
+                      <EntityContainer Name="Container">
+                        <EntitySet Name="OrderDetails" EntityType="T.OrderDetail" />
+                        <EntitySet Name="Order_Details" EntityType="T.Order_Detail" />
+                      </EntityContainer>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var catalog = new ODataMcpCatalog(new CsdlParser().ParseFromString(csdl), new ODataMcpCatalogOptions());
+            var names = catalog.Tools.Select(tool => tool.Name).ToList();
+
+            names.Should().Contain("list_orderdetails");
+            names.Should().Contain("get_orderdetail");
+            names.Should().Contain("create_orderdetail");
+            names.Should().Contain("update_orderdetail");
+            names.Should().Contain("delete_orderdetail");
+            names.Should().Contain("list_order_details");
+            names.Should().Contain("get_order_detail");
+            names.Should().Contain("create_order_detail");
+            names.Should().Contain("update_order_detail");
+            names.Should().Contain("delete_order_detail");
+        }
+
+        /// <summary>
         /// IncludeCreate false omits create tools from a family.
         /// </summary>
         [TestMethod]
@@ -69,13 +111,16 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Snake_case conversion inserts underscores before capitals.
+        /// Tool-name segments lowercase the declared EDM name and do not insert separators.
         /// </summary>
         [TestMethod]
-        public void ToSnakeCase_InsertsUnderscores()
+        public void ToToolName_LowercasesDeclaredName()
         {
-            ODataMcpCatalog.ToSnakeCase("OrderItem").Should().Be("order_item");
-            ODataMcpCatalog.ToSnakeCase("People").Should().Be("people");
+            ODataMcpCatalog.ToToolName("OrderItem").Should().Be("orderitem");
+            ODataMcpCatalog.ToToolName("People").Should().Be("people");
+            ODataMcpCatalog.ToToolName("Order_Details").Should().Be("order_details");
+            ODataMcpCatalog.ToToolName("OrderDetails").Should().Be("orderdetails");
+            ODataMcpCatalog.ToToolName("IntegrationConnection").Should().Be("integrationconnection");
         }
 
         /// <summary>
@@ -277,12 +322,12 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
-        /// Hyphens become underscores in snake_case.
+        /// Hyphens already in the declared name are kept.
         /// </summary>
         [TestMethod]
-        public void ToSnakeCase_Hyphen_BecomesUnderscore()
+        public void ToToolName_KeepsDeclaredHyphens()
         {
-            ODataMcpCatalog.ToSnakeCase("order-item").Should().Be("order_item");
+            ODataMcpCatalog.ToToolName("order-item").Should().Be("order-item");
         }
 
         /// <summary>

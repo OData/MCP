@@ -46,6 +46,20 @@ public Object()
 
 ## Properties
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BindingParameterType
+
+Gets or sets the EDM binding parameter type for a named operation tool, or `null` when the tool is unbound or not an operation.
+
+#### Syntax
+
+```csharp
+public string BindingParameterType { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
 
 Gets or sets the description.
@@ -144,6 +158,34 @@ public bool OpenWorldHint { get; set; }
 
 Type: `bool`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OperationKind
+
+Gets or sets whether this tool is a named action, a named function, or neither.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind OperationKind { get; set; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OperationName
+
+Gets or sets the EDM short name of the action or function, or `null` when the tool is not an operation.
+
+#### Syntax
+
+```csharp
+public string OperationName { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OutputSchema
 
 Gets or sets the JSON Schema for `structuredContent`, or `null` when the tool's result is not a fixed JSON shape.
@@ -160,8 +202,9 @@ Type: `string?`
 
 #### Remarks
 
-Only tools whose result is always the same JSON object declare one (the list tools). Describe tools return text or
-JSON depending on `format`, and data tools forward OData bodies, so they leave this `null`.
+List tools and named `action_*` / `function_*` tools whose EDM return type is known declare one.
+Describe tools return text or JSON depending on `format`, and CRUD data tools forward OData bodies, so they
+leave this `null`. Operations with no return type also leave it `null`.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReadOnlyHint
 

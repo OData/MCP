@@ -134,7 +134,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Paging
                 ["skip"] = JsonSerializer.SerializeToElement(1),
                 ["top"] = JsonSerializer.SerializeToElement(2)
             });
-            var named = await InvokeAsync("list_client_customers", new Dictionary<string, JsonElement>
+            var named = await InvokeAsync("list_clientcustomers", new Dictionary<string, JsonElement>
             {
                 ["orderby"] = JsonSerializer.SerializeToElement("CustomerId"),
                 ["skip"] = JsonSerializer.SerializeToElement(1),

@@ -68,9 +68,9 @@ Always advertise templates matching OData path syntax. Completions on `{entitySe
 
 ## 5. Tools
 
-Always-on **generic** set (see [TOOL-SURFACE.md](./TOOL-SURFACE.md)). Every included entity set also gets a named CRUD family. `tools/list` pages that full list with an opaque cursor. The server chooses the page size through `ODataMcpCatalogOptions.ToolsPageSize` (default 100). Clients must not assume it.
+Always-on **generic** set (see [TOOL-SURFACE.md](./TOOL-SURFACE.md)). Then unbound `function_*` / `action_*` (alphabetical within each). Every included entity set also gets a named CRUD family, then that set’s instance-bound then collection-bound operations. `tools/list` pages that full list with an opaque cursor. The server chooses the page size through `ODataMcpCatalogOptions.ToolsPageSize` (default 100). Clients must not assume it.
 
-Generic tools first, then named tools by entity set then operation. `IncludeEntitySets` is ordered first; it does not drop the rest.
+Generic tools first, then unbound named operations, then named tools by entity set then operation. `IncludeEntitySets` is ordered first; it does not drop the rest. `odata_call` remains next to the named operation tools.
 
 Every tool: short `name`, human `title`, tight `description` (prefer CSDL docs), JSON Schema 2020-12 `inputSchema`, `outputSchema`, `structuredContent` plus a short text summary, verb annotations, `openWorldHint: true`.
 

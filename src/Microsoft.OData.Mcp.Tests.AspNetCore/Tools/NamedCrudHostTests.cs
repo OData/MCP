@@ -689,7 +689,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Tools
         }
 
         /// <summary>
-        /// Wrong snake <c>list_product</c> is unknown (set is Products).
+        /// <c>list_product</c> is unknown (set is Products, tool is <c>list_products</c>).
         /// </summary>
         [TestMethod]
         public async Task ListProducts_CalledAsList_Product_UnknownTool()

@@ -79,6 +79,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.CatalogShapes
             var session = TestServer.Services.GetRequiredService<ODataMcpSessionFactory>().Sessions["odata"];
             session.Catalog.Tools.Where(tool => tool.EntitySetName is not null).Should().BeEmpty();
             session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("odata_call");
+            session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("function_getstatus");
+            session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("function_mostvaluable");
+            session.Catalog.Tools.Select(tool => tool.Name).Should().Contain("action_reset");
 
             var result = await session.Runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
             result.IsError.Should().BeFalse();

@@ -837,7 +837,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 - Test: `src/Microsoft.OData.Mcp.Tests.Core/Catalog/NamedToolCapTests.cs`
 
 **Interfaces:**
-- Produces: `list_products`, `get_product`, etc. snake_case. Never partial CRUD for a set.
+- Produces: `list_products`, `get_product`, etc. EDM short name lowercased as declared. Never partial CRUD for a set.
 
 - [x] **Step 1:**
 

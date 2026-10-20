@@ -49,6 +49,9 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var runtime = new ODataToolRuntime(catalog, executor);
 
             catalog.Tools.Where(tool => tool.EntitySetName is not null).Should().BeEmpty();
+            catalog.Tools.Select(tool => tool.Name).Should().Contain("function_getstatus");
+            catalog.Tools.Select(tool => tool.Name).Should().Contain("action_reset");
+            catalog.Tools.Select(tool => tool.Name).Should().NotContain("function_ispremium");
             var listed = await runtime.InvokeAsync("odata_list_operations", null, CancellationToken.None);
             listed.IsError.Should().BeFalse();
             listed.StructuredContent.Should().Contain("GetStatus").And.Contain("Reset");

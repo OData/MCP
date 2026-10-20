@@ -194,6 +194,43 @@ Type: `string?`
 
 Names match by exact spelling; there is no fuzzy matching. Passing the binding parameter is an unknown-parameter error.
 
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateOperationArguments
+
+Validates non-binding operation arguments against the declared parameters.
+
+#### Syntax
+
+```csharp
+public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, bool isBound, System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement> arguments, string signature, out System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>> values)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
+| `parameters` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter>` | The declared parameters, including the binding parameter when bound. |
+| `isBound` | `bool` | Whether the first declared parameter is the binding parameter. |
+| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>` | The caller arguments keyed by declared parameter name, or `null` when omitted. |
+| `signature` | `string` | The rendered signature, appended to errors. |
+| `values` | `System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>>` | Receives the accepted arguments keyed by declared parameter name, in declaration order. |
+
+#### Returns
+
+Type: `string?`
+`null` when every argument is declared, required ones are present, and kinds match; otherwise the error message.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model*, *options*, or *parameters* is null. |
+
+#### Remarks
+
+Names match by exact spelling; there is no fuzzy matching. Passing the binding parameter is an unknown-parameter error.
+
 ### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ValidateValue
 
 Validates one JSON value against an EDM type.

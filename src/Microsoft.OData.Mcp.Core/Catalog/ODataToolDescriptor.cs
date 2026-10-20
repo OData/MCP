@@ -13,6 +13,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         #region Properties
 
         /// <summary>
+        /// Gets or sets the EDM binding parameter type for a named operation tool, or <c>null</c> when the tool is unbound or not an operation.
+        /// </summary>
+        public string? BindingParameterType { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         public string Description { get; set; } = string.Empty;
@@ -48,11 +53,22 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public bool OpenWorldHint { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets whether this tool is a named action, a named function, or neither.
+        /// </summary>
+        public ODataOperationKind OperationKind { get; set; }
+
+        /// <summary>
+        /// Gets or sets the EDM short name of the action or function, or <c>null</c> when the tool is not an operation.
+        /// </summary>
+        public string? OperationName { get; set; }
+
+        /// <summary>
         /// Gets or sets the JSON Schema for <c>structuredContent</c>, or <c>null</c> when the tool's result is not a fixed JSON shape.
         /// </summary>
         /// <remarks>
-        /// Only tools whose result is always the same JSON object declare one (the list tools). Describe tools return text or
-        /// JSON depending on <c>format</c>, and data tools forward OData bodies, so they leave this <c>null</c>.
+        /// List tools and named <c>action_*</c> / <c>function_*</c> tools whose EDM return type is known declare one.
+        /// Describe tools return text or JSON depending on <c>format</c>, and CRUD data tools forward OData bodies, so they
+        /// leave this <c>null</c>. Operations with no return type also leave it <c>null</c>.
         /// </remarks>
         public string? OutputSchema { get; set; }
 

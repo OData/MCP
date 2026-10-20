@@ -187,7 +187,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             if (edmType.StartsWith("Collection(", StringComparison.Ordinal) && edmType.EndsWith(')'))
             {
-                return $"{MapShapeType(model, edmType["Collection(".Length..^1], maxLength)}[]";
+                return $"{MapShapeType(model, UnwrapCollectionType(edmType)!, maxLength)}[]";
             }
 
             var enumType = model.GetEnumType(edmType);
@@ -389,11 +389,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return false;
             }
 
-            var target = IsCollectionBound(bindingParameterType)
-                ? bindingParameterType["Collection(".Length..^1]
-                : bindingParameterType;
-
-            return typeNames.Contains(target, StringComparer.Ordinal);
+            return typeNames.Contains(UnwrapCollectionType(bindingParameterType)!, StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -830,6 +826,23 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             var dot = qualifiedName.LastIndexOf('.');
 
             return dot >= 0 ? qualifiedName[(dot + 1)..] : qualifiedName;
+        }
+
+        /// <summary>
+        /// Returns the element type of a <c>Collection(...)</c> name, or the name itself.
+        /// </summary>
+        /// <param name="type">The EDM type name, or <c>null</c>.</param>
+        /// <returns>
+        /// The inner type, <paramref name="type"/> when it is not a collection, or <c>null</c> when <paramref name="type"/> is null or whitespace.
+        /// </returns>
+        public static string? UnwrapCollectionType(string? type)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                return type;
+            }
+
+            return IsCollectionBound(type) ? type["Collection(".Length..^1] : type;
         }
 
         #endregion

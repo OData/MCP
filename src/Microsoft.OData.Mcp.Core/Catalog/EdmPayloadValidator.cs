@@ -195,32 +195,80 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// </remarks>
         public static string? ValidateOperationArguments(EdmModel model, ODataMcpCatalogOptions options, IReadOnlyList<EdmParameter> parameters, bool isBound, JsonElement? arguments, string signature, out List<KeyValuePair<EdmParameter, JsonElement>> values)
         {
+            IReadOnlyDictionary<string, JsonElement>? map = null;
+            if (arguments is { ValueKind: JsonValueKind.Object } supplied)
+            {
+                var dictionary = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+                foreach (var property in supplied.EnumerateObject())
+                {
+                    dictionary[property.Name] = property.Value;
+                }
+
+                map = dictionary;
+            }
+
+            return ValidateOperationArguments(model, options, parameters, isBound, map, signature, out values);
+        }
+
+        /// <summary>
+        /// Validates non-binding operation arguments against the declared parameters.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="options">Catalog options (enum wire format).</param>
+        /// <param name="parameters">The declared parameters, including the binding parameter when bound.</param>
+        /// <param name="isBound">Whether the first declared parameter is the binding parameter.</param>
+        /// <param name="arguments">The caller arguments keyed by declared parameter name, or <c>null</c> when omitted.</param>
+        /// <param name="signature">The rendered signature, appended to errors.</param>
+        /// <param name="values">Receives the accepted arguments keyed by declared parameter name, in declaration order.</param>
+        /// <returns>
+        /// <c>null</c> when every argument is declared, required ones are present, and kinds match; otherwise the error message.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/>, <paramref name="options"/>, or <paramref name="parameters"/> is null.</exception>
+        /// <remarks>
+        /// Names match by exact spelling; there is no fuzzy matching. Passing the binding parameter is an unknown-parameter error.
+        /// </remarks>
+        public static string? ValidateOperationArguments(EdmModel model, ODataMcpCatalogOptions options, IReadOnlyList<EdmParameter> parameters, bool isBound, IReadOnlyDictionary<string, JsonElement>? arguments, string signature, out List<KeyValuePair<EdmParameter, JsonElement>> values)
+        {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(options);
             ArgumentNullException.ThrowIfNull(parameters);
 
             values = [];
-            var declared = parameters.Skip(isBound ? 1 : 0).ToList();
-            var declaredNames = declared.Count == 0 ? "none" : string.Join(", ", declared.Select(parameter => parameter.Name));
-
-            if (arguments is { ValueKind: JsonValueKind.Object } supplied)
+            var start = isBound ? 1 : 0;
+            if (start > parameters.Count)
             {
-                foreach (var argument in supplied.EnumerateObject())
+                start = parameters.Count;
+            }
+
+            var declared = new List<EdmParameter>(parameters.Count - start);
+            for (var index = start; index < parameters.Count; index++)
+            {
+                declared.Add(parameters[index]);
+            }
+
+            var declaredNames = new HashSet<string>(declared.Count, StringComparer.Ordinal);
+            foreach (var parameter in declared)
+            {
+                declaredNames.Add(parameter.Name);
+            }
+
+            var declaredList = declared.Count == 0 ? "none" : string.Join(", ", declared.Select(parameter => parameter.Name));
+            if (arguments is not null)
+            {
+                foreach (var name in arguments.Keys)
                 {
-                    if (declared.All(parameter => !parameter.Name.Equals(argument.Name, StringComparison.Ordinal)))
+                    if (!declaredNames.Contains(name))
                     {
-                        return $"Unknown parameter '{argument.Name}'. Declared: {declaredNames}.";
+                        return $"Unknown parameter '{name}'. Declared: {declaredList}.";
                     }
                 }
             }
 
             foreach (var parameter in declared)
             {
-                var value = default(JsonElement);
-                var provided = arguments is { ValueKind: JsonValueKind.Object } source
-                    && source.TryGetProperty(parameter.Name, out value)
-                    && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
-                if (!provided)
+                if (arguments is null
+                    || !arguments.TryGetValue(parameter.Name, out var value)
+                    || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
                 {
                     if (!parameter.Nullable)
                     {

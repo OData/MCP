@@ -516,3 +516,24 @@ public virtual string ToString()
 
 Type: `string?`
 
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> UnwrapCollectionType
+
+Returns the element type of a `Collection(...)` name, or the name itself.
+
+#### Syntax
+
+```csharp
+public static string UnwrapCollectionType(string type)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `type` | `string?` | The EDM type name, or `null`. |
+
+#### Returns
+
+Type: `string?`
+The inner type, *type* when it is not a collection, or `null` when *type* is null or whitespace.
+

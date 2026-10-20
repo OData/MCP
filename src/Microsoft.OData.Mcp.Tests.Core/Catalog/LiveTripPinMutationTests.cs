@@ -90,6 +90,45 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
+        /// Named ShareTrip posts to the same path as generic odata_call.
+        /// </summary>
+        [TestMethod]
+        public async Task Action_TripPin_ShareTrip_MatchesODataCall()
+        {
+            var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
+            var tripId = await FirstTripIdAsync(runtime);
+            var result = await runtime.InvokeAsync(
+                "action_person_sharetrip",
+                ToolArguments.Of("key", "russellwhyte", "userName", "scottketchum", "tripId", tripId),
+                CancellationToken.None);
+
+            capture.Last!.Method.Should().Be(HttpMethod.Post);
+            capture.Last.RelativePath.Should().Be("People('russellwhyte')/ShareTrip");
+            if (result.IsError)
+            {
+                result.Text.Should().Contain("OData request failed with status");
+            }
+        }
+
+        /// <summary>
+        /// Named ResetDataSource POSTs the unbound action.
+        /// </summary>
+        [TestMethod]
+        public async Task Action_TripPin_ResetDataSource_PostsWithoutEntitySet()
+        {
+            var (runtime, capture) = await LiveToolRuntime.CreateTripPinAsync();
+            var result = await runtime.InvokeAsync("action_resetdatasource", null, CancellationToken.None);
+
+            capture.Last!.Method.Should().Be(HttpMethod.Post);
+            capture.Last.RelativePath.Should().Be("ResetDataSource");
+            capture.Last.JsonBody.Should().Be("{}");
+            if (result.IsError)
+            {
+                result.Text.Should().Contain("OData request failed with status");
+            }
+        }
+
+        /// <summary>
         /// Bound ShareTrip posts to People('russellwhyte')/ShareTrip.
         /// </summary>
         [TestMethod]

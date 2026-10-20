@@ -419,15 +419,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// Equals named get_mcp_customer.
+        /// Equals named get_mcpcustomer.
         /// </summary>
         [TestMethod]
         public async Task ODataGet_EqualsGetCustomerNamedTool()
         {
-            Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("get_mcp_customer");
+            Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("get_mcpcustomer");
             Session().Catalog.Tools.Select(tool => tool.Name).Should().NotContain("get_customer");
             var generic = await Runtime().InvokeAsync("odata_get", ToolArguments.Of("entitySet", "Customers", "key", "1"), CancellationToken.None);
-            var named = await Runtime().InvokeAsync("get_mcp_customer", ToolArguments.Of("key", "1"), CancellationToken.None);
+            var named = await Runtime().InvokeAsync("get_mcpcustomer", ToolArguments.Of("key", "1"), CancellationToken.None);
             generic.StructuredContent.Should().Contain("Contoso");
             named.StructuredContent.Should().Contain("Contoso");
         }

@@ -39,6 +39,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public List<string> ExcludeEntitySets { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets a value indicating whether named <c>action_*</c> tools are generated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>true</c>. Turning it off omits named action tools; <c>odata_call</c> remains.
+        /// </remarks>
+        public bool IncludeActions { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether create tools are generated.
         /// </summary>
         public bool IncludeCreate { get; set; } = true;
@@ -52,6 +60,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets entity set names that receive named tools first.
         /// </summary>
         public List<string> IncludeEntitySets { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets a value indicating whether named <c>function_*</c> tools are generated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>true</c>. Turning it off omits named function tools; <c>odata_call</c> remains.
+        /// </remarks>
+        public bool IncludeFunctions { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether update tools are generated.

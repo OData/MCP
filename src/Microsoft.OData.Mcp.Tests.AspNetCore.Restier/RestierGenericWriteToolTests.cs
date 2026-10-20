@@ -36,7 +36,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         #region Public Methods
 
         /// <summary>
-        /// Named family uses list_customers and get_mcp_customer.
+        /// Named family uses list_customers and get_mcpcustomer.
         /// </summary>
         [TestMethod]
         public void NamedFamily_Restier_DoesNotSplit()
@@ -189,15 +189,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
-        /// Generic create equals named create_mcp_customer.
+        /// Generic create equals named create_mcpcustomer.
         /// </summary>
         [TestMethod]
         public async Task ODataCreate_EqualsCreateCustomerNamed_Restier()
         {
-            Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("create_mcp_customer");
+            Session().Catalog.Tools.Select(tool => tool.Name).Should().Contain("create_mcpcustomer");
             var generic = await Runtime().InvokeAsync("odata_create", ToolArguments.Of("entitySet", "Customers", "body", """{"Id":55,"CompanyName":"GenericTwin"}"""), CancellationToken.None);
             generic.IsError.Should().BeFalse(generic.Text);
-            var named = await Runtime().InvokeAsync("create_mcp_customer", ToolArguments.Of("Id", 56, "CompanyName", "NamedTwin"), CancellationToken.None);
+            var named = await Runtime().InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 56, "CompanyName", "NamedTwin"), CancellationToken.None);
             named.IsError.Should().BeFalse(named.Text);
         }
 
