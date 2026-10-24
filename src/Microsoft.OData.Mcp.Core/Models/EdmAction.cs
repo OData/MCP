@@ -44,6 +44,14 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string? LongDescription { get; set; }
 
         /// <summary>
+        /// Gets or sets JSON property names on the action result that are URLs to elicit.
+        /// </summary>
+        /// <value>
+        /// The declared <c>Microsoft.OData.Mcp.V1.ElicitUrlProperties</c> list, or <c>null</c> when the term is omitted.
+        /// </value>
+        public List<string>? ElicitUrlProperties { get; set; }
+
+        /// <summary>
         /// Gets the fully qualified name of the action.
         /// </summary>
         /// <value>The namespace and name separated by a dot.</value>
@@ -70,6 +78,14 @@ namespace Microsoft.OData.Mcp.Core.Models
         /// Bound actions are called on instances of a specific type.
         /// </remarks>
         public bool IsBound { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the action runs as an MCP task when the client opts in.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> when <c>Microsoft.OData.Mcp.V1.Task</c> is true; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsTask { get; set; }
 
         /// <summary>
         /// Gets or sets the type that this action is bound to.

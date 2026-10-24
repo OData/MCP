@@ -43,6 +43,14 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         public string InputSchema { get; set; } = "{}";
 
         /// <summary>
+        /// Gets or sets a value indicating whether a named action tool is annotated <c>Microsoft.OData.Mcp.V1.Task</c>.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> when the EDM action is a task; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsTask { get; set; }
+
+        /// <summary>
         /// Gets or sets the tool name.
         /// </summary>
         public string Name { get; set; } = string.Empty;

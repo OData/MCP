@@ -51,6 +51,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal bool IsBound { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the action is annotated <c>Microsoft.OData.Mcp.V1.Task</c>.
+        /// </summary>
+        internal bool IsTask { get; }
+
+        /// <summary>
         /// Gets the CSDL long description.
         /// </summary>
         internal string? LongDescription { get; }
@@ -88,6 +93,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             Description = action.Description;
             IsAction = true;
             IsBound = action.IsBound;
+            IsTask = action.IsTask;
             LongDescription = action.LongDescription;
             Name = action.Name;
             Parameters = action.Parameters;
@@ -108,6 +114,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             Description = function.Description;
             IsAction = false;
             IsBound = function.IsBound;
+            IsTask = false;
             LongDescription = function.LongDescription;
             Name = function.Name;
             Parameters = function.Parameters;

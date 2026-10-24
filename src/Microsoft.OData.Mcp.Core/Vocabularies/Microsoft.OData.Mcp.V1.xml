@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+  <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+    <edmx:Include Namespace="Org.OData.Core.V1" Alias="Core" />
+  </edmx:Reference>
+  <edmx:DataServices>
+    <Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="Microsoft.OData.Mcp.V1" Alias="Mcp">
+      <Annotation Term="Core.Description" String="Terms for OData MCP tool behavior." />
+
+      <Term Name="Task" Type="Core.Tag" Nullable="false" DefaultValue="true" AppliesTo="Action">
+        <Annotation Term="Core.Description" String="The action runs as an MCP task when the client opts into io.modelcontextprotocol/tasks." />
+      </Term>
+
+      <Term Name="ElicitUrlProperties" Type="Collection(Edm.String)" Nullable="false" AppliesTo="Action">
+        <Annotation Term="Core.Description" String="JSON property names on the action result that are URLs to elicit." />
+      </Term>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>

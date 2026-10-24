@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.OData.Mcp.Core.Constants;
 using Microsoft.OData.Mcp.Core.Models;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using static Microsoft.OData.Mcp.Core.Constants.ODataMcpCatalogConstants;
 
 namespace Microsoft.OData.Mcp.Core.Catalog
@@ -1160,15 +1161,17 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var documented = EdmDocumentation.First(operation.Description, operation.LongDescription);
             var fallbackTitle = operation.IsBound && type is not null ? $"{operation.Name} a {type.Name}" : operation.Name;
+            var suffix = operation.IsTask ? McpVocabulary.TaskToolDescription : null;
 
             return new ODataToolDescriptor
             {
                 BindingParameterType = operation.BindingParameterType,
-                Description = ComposeToolDescription(sentence, documented),
+                Description = ComposeToolDescription(sentence, documented, suffix),
                 DestructiveHint = operation.IsAction,
                 EntitySetName = set?.Name,
                 IdempotentHint = !operation.IsAction,
                 InputSchema = BuildOperationInputSchema(operation.Parameters, operation.IsBound, operation.CollectionBound, type),
+                IsTask = operation.IsTask,
                 Name = name,
                 OpenWorldHint = true,
                 OperationKind = operation.IsAction ? ODataOperationKind.Action : ODataOperationKind.Function,

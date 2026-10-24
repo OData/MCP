@@ -2,12 +2,14 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using CoreModel = Microsoft.OData.Mcp.Core.Models.EdmModel;
 using CoreAction = Microsoft.OData.Mcp.Core.Models.EdmAction;
 using CoreComplexType = Microsoft.OData.Mcp.Core.Models.EdmComplexType;
@@ -208,6 +210,89 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
         }
 
         /// <summary>
+        /// Reads whether an action carries a true <c>Microsoft.OData.Mcp.V1.Task</c> annotation.
+        /// </summary>
+        /// <param name="model">The source model.</param>
+        /// <param name="target">The annotatable action.</param>
+        /// <returns>
+        /// <c>true</c> when the term evaluates to true; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// The term defaults to <c>true</c>, so an annotation whose value is not a boolean constant is treated as true.
+        /// The short name <c>Task</c> is not enough; the term namespace must be <see cref="McpVocabulary.Namespace"/>.
+        /// </remarks>
+        internal static bool IsTask(IEdmModel model, IEdmVocabularyAnnotatable target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+
+            foreach (var annotation in model.FindVocabularyAnnotations(target))
+            {
+                if (!IsMcpTerm(annotation.Term, McpVocabulary.TaskTermName))
+                {
+                    continue;
+                }
+
+                if (annotation.Value is not IEdmBooleanConstantExpression boolean || boolean.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Reads <c>Microsoft.OData.Mcp.V1.ElicitUrlProperties</c> from an action.
+        /// </summary>
+        /// <param name="model">The source model.</param>
+        /// <param name="target">The annotatable action.</param>
+        /// <returns>
+        /// The declared property names, or <c>null</c> when the term is omitted.
+        /// </returns>
+        internal static List<string>? ReadElicitUrlProperties(IEdmModel model, IEdmVocabularyAnnotatable target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+
+            foreach (var annotation in model.FindVocabularyAnnotations(target))
+            {
+                if (!IsMcpTerm(annotation.Term, McpVocabulary.ElicitUrlPropertiesTermName))
+                {
+                    continue;
+                }
+
+                if (annotation.Value is not IEdmCollectionExpression collection)
+                {
+                    return [];
+                }
+
+                return [.. collection.Elements.OfType<IEdmStringConstantExpression>()
+                    .Select(item => item.Value)
+                    .Where(item => !string.IsNullOrWhiteSpace(item))];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns whether a vocabulary term is an MCP term of the given name.
+        /// </summary>
+        /// <param name="term">The annotation term.</param>
+        /// <param name="termName">The unqualified term name.</param>
+        /// <returns>
+        /// <c>true</c> when the term is in <see cref="McpVocabulary.Namespace"/> with that name.
+        /// </returns>
+        internal static bool IsMcpTerm(IEdmTerm term, string termName)
+        {
+            ArgumentNullException.ThrowIfNull(term);
+            ArgumentException.ThrowIfNullOrWhiteSpace(termName);
+
+            return term.Name.Equals(termName, StringComparison.Ordinal)
+                && term.Namespace.Equals(McpVocabulary.Namespace, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Maps a schema action.
         /// </summary>
         /// <param name="model">The source model.</param>
@@ -235,6 +320,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
             }
 
             ApplyVocabulary(model, action, value => mapped.Description = value, value => mapped.LongDescription = value);
+            mapped.IsTask = IsTask(model, action);
+            mapped.ElicitUrlProperties = ReadElicitUrlProperties(model, action);
 
             return mapped;
         }

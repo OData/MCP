@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OData.Mcp.Core.Catalog;
 using Microsoft.OData.Mcp.Core.Parsing;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.OData.Mcp.Tests.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -333,6 +334,53 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             tool.Title.Should().Be("Authorize the connection");
             tool.Description.Should().Contain("POST Authorize.");
             tool.Description.Should().Contain("Authorize the connection");
+        }
+
+        /// <summary>
+        /// An annotated task action appends the MCP task sentence to the named tool description.
+        /// </summary>
+        [TestMethod]
+        public void Catalog_TaskAction_AppendsTaskSentence()
+        {
+            const string csdl = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Authorize">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.Task" Bool="true" />
+                      </Action>
+                      <EntityContainer Name="Container" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var tool = Catalog(csdl).Tools.Single(item => item.Name == "action_authorize");
+
+            tool.IsTask.Should().BeTrue();
+            tool.Description.Should().Contain("POST Authorize.");
+            tool.Description.Should().Contain(McpVocabulary.TaskToolDescription);
+        }
+
+        /// <summary>
+        /// An unannotated action stays one-shot in the catalog.
+        /// </summary>
+        [TestMethod]
+        public void Catalog_UnannotatedAction_IsNotATask()
+        {
+            const string csdl = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Reset" />
+                      <EntityContainer Name="Container" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var tool = Catalog(csdl).Tools.Single(item => item.Name == "action_reset");
+
+            tool.IsTask.Should().BeFalse();
+            tool.Description.Should().NotContain(McpVocabulary.TaskToolDescription);
         }
 
         /// <summary>
