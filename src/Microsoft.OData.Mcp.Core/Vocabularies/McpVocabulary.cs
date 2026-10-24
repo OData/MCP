@@ -52,6 +52,11 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
         public const string ResourceName = "Microsoft.OData.Mcp.V1.xml";
 
         /// <summary>
+        /// Canonical <c>edmx:Reference</c> URI for the vocabulary document.
+        /// </summary>
+        public const string ReferenceUri = "https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml";
+
+        /// <summary>
         /// Qualified <c>Task</c> term.
         /// </summary>
         public const string TaskTerm = Namespace + "." + TaskTermName;

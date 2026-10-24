@@ -108,7 +108,7 @@ namespace Microsoft.OData.Mcp.Sample.Models
             var processOrder = order.Action("Process");
             processOrder.Returns<bool>();
             
-            var shipOrder = order.Action("Ship");
+            var shipOrder = order.Action("Ship").HasMcpTask();
             shipOrder.Parameter<string>("trackingNumber");
             shipOrder.Returns<bool>();
             
@@ -176,7 +176,7 @@ namespace Microsoft.OData.Mcp.Sample.Models
             var processOrder = order.Action("Process");
             processOrder.Returns<bool>();
             
-            var shipOrder = order.Action("Ship");
+            var shipOrder = order.Action("Ship").HasMcpTask();
             shipOrder.Parameter<string>("trackingNumber");
             shipOrder.Returns<bool>();
             
