@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
+using Microsoft.OData.Mcp.AspNetCore.Vocabularies;
 using Microsoft.OData.Mcp.Core.Catalog;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Hosting
@@ -103,8 +104,10 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             lock (_gate)
             {
                 var sessions = new Dictionary<string, ODataMcpSession>(StringComparer.OrdinalIgnoreCase);
+                var taskSources = McpTaskAttributeAnnotations.CollectSourceTypes(_services);
                 foreach (var binding in ODataMcpRouteDiscovery.Discover(_services, _hostOptions.Value, additionalSources))
                 {
+                    McpTaskAttributeAnnotations.Apply(binding.Model, taskSources);
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
                     var executor = new InProcessODataExecutor(

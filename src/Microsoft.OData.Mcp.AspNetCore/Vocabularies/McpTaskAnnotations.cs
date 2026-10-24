@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OData.Edm;
+using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 
@@ -66,7 +67,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         /// </code>
         /// </example>
         /// <remarks>
-        /// Used by Restier <c>McpTaskModelBuilder</c> after the inner builder produces operations.
+        /// Used after OData routes are mapped, when the finished model is already in hand.
+        /// The annotation is serialized inline on <paramref name="target"/> so it appears in
+        /// the schema that already declares the action.
         /// </remarks>
         public static void StampTask(EdmModel model, IEdmVocabularyAnnotatable target, IReadOnlyList<string>? elicitUrlProperties = null)
         {
@@ -77,7 +80,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
 
             var term = model.FindTerm(McpVocabulary.TaskTerm)
                 ?? throw new InvalidOperationException($"Term '{McpVocabulary.TaskTerm}' was not found after referencing the MCP vocabulary.");
-            model.SetVocabularyAnnotation(new EdmVocabularyAnnotation(target, term, new EdmBooleanConstant(true)));
+            SetInlineAnnotation(model, target, term, new EdmBooleanConstant(true));
 
             if (elicitUrlProperties is null || elicitUrlProperties.Count == 0)
             {
@@ -121,6 +124,31 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         }
 
         /// <summary>
+        /// Writes <paramref name="value"/> as an inline child of <paramref name="target"/> so
+        /// <c>CsdlWriter</c> emits it in the schema that already declares the operation.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The annotatable already on <paramref name="model"/> (the <c>IEdmAction</c>).</param>
+        /// <param name="term">The vocabulary term.</param>
+        /// <param name="value">The annotation value.</param>
+        /// <remarks>
+        /// OASIS CSDL XML 4.01 §14.2.2: the target MAY be specified by nesting the annotation
+        /// in the model element. That uses the action's declared <see cref="IEdmSchemaElement.Namespace"/>;
+        /// it does not construct a <c>Target</c> path.
+        /// </remarks>
+        internal static void SetInlineAnnotation(EdmModel model, IEdmVocabularyAnnotatable target, IEdmTerm term, IEdmExpression value)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+            ArgumentNullException.ThrowIfNull(term);
+            ArgumentNullException.ThrowIfNull(value);
+
+            var annotation = new EdmVocabularyAnnotation(target, term, value);
+            annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
+            model.SetVocabularyAnnotation(annotation);
+        }
+
+        /// <summary>
         /// Stamps <c>ElicitUrlProperties</c> on <paramref name="target"/>.
         /// </summary>
         /// <param name="model">The service model with the vocabulary referenced.</param>
@@ -137,7 +165,35 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             IEdmExpression[] elements = [.. elicitUrlProperties
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .Select(name => (IEdmExpression)new EdmStringConstant(name))];
-            model.SetVocabularyAnnotation(new EdmVocabularyAnnotation(target, term, new EdmCollectionExpression(elements)));
+            SetInlineAnnotation(model, target, term, new EdmCollectionExpression(elements));
+        }
+
+        /// <summary>
+        /// Forces an annotation already on <paramref name="target"/> to serialize inline.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The annotated element.</param>
+        /// <param name="termNamespace">The term namespace.</param>
+        /// <param name="termName">The unqualified term name.</param>
+        /// <remarks>
+        /// ModelBuilder's <c>VocabularyTermConfiguration</c> stamps first; this then pins
+        /// serialization so EdmLib does not emit a cross-schema <c>Annotations Target</c>.
+        /// </remarks>
+        internal static void WriteExistingInline(EdmModel model, IEdmVocabularyAnnotatable target, string termNamespace, string termName)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+            ArgumentException.ThrowIfNullOrWhiteSpace(termNamespace);
+            ArgumentException.ThrowIfNullOrWhiteSpace(termName);
+
+            foreach (var annotation in model.FindDeclaredVocabularyAnnotations(target))
+            {
+                if (string.Equals(annotation.Term.Namespace, termNamespace, StringComparison.Ordinal)
+                    && string.Equals(annotation.Term.Name, termName, StringComparison.Ordinal))
+                {
+                    annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
+                }
+            }
         }
 
         #endregion

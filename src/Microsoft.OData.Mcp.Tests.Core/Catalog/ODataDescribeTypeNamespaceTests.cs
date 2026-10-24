@@ -56,8 +56,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             """;
 
         /// <summary>
-        /// Entities in <c>PodOverlord.Core</c>; a bound and an unbound action return a complex type declared in
-        /// <c>PodOverlord.Business</c>, which uses an enumeration a collection-bound function also returns.
+        /// Restier-shaped CSDL: entities and operations in <c>PodOverlord.Core</c>, return types in
+        /// <c>PodOverlord.Business</c>, container-only <c>Default</c> with an import for the unbound action.
         /// </summary>
         internal const string TwoNamespaceCsdl = """
             <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -71,11 +71,6 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                     <Property Name="DisplayName" Type="Edm.String" Nullable="false" />
                     <NavigationProperty Name="Peers" Type="Collection(PodOverlord.Core.IntegrationConnection)" />
                   </EntityType>
-                  <EntityContainer Name="Container">
-                    <EntitySet Name="IntegrationConnections" EntityType="PodOverlord.Core.IntegrationConnection" />
-                  </EntityContainer>
-                </Schema>
-                <Schema Namespace="PodOverlord.Business" xmlns="http://docs.oasis-open.org/odata/ns/edm">
                   <Action Name="Authorize" IsBound="true">
                     <Parameter Name="bindingParameter" Type="PodOverlord.Core.IntegrationConnection" />
                     <ReturnType Type="PodOverlord.Business.ConnectionAuthorizationTicket" />
@@ -87,6 +82,8 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                     <Parameter Name="bindingParameter" Type="Collection(PodOverlord.Core.IntegrationConnection)" />
                     <ReturnType Type="Collection(PodOverlord.Business.ConnectionAuthorizationStatus)" />
                   </Function>
+                </Schema>
+                <Schema Namespace="PodOverlord.Business" xmlns="http://docs.oasis-open.org/odata/ns/edm">
                   <ComplexType Name="ConnectionAuthorizationTicket">
                     <Property Name="ConnectUri" Type="Edm.String" />
                     <Property Name="ExpiresIn" Type="Edm.Int32" />
@@ -98,6 +95,12 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                     <Member Name="Succeeded" Value="1" />
                     <Member Name="Failed" Value="2" />
                   </EnumType>
+                </Schema>
+                <Schema Namespace="Default" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                  <EntityContainer Name="Container">
+                    <EntitySet Name="IntegrationConnections" EntityType="PodOverlord.Core.IntegrationConnection" />
+                    <ActionImport Name="Reauthorize" Action="PodOverlord.Core.Reauthorize" />
+                  </EntityContainer>
                 </Schema>
               </edmx:DataServices>
             </edmx:Edmx>

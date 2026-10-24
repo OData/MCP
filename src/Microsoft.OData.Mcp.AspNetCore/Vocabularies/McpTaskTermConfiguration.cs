@@ -39,6 +39,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         {
             McpTaskAnnotations.EnsureReferenced(model);
             base.SetVocabularyAnnotations(model, target);
+            McpTaskAnnotations.WriteExistingInline(model, target, McpVocabulary.Namespace, McpVocabulary.TaskTermName);
 
             if (ElicitUrlProperties is { Count: > 0 })
             {

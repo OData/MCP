@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.Restier.AspNetCore.Model;
 using Microsoft.Restier.EntityFrameworkCore;
 
@@ -72,6 +73,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         /// The same customer.
         /// </returns>
         [BoundOperation(OperationType = OperationType.Action)]
+        [McpTask]
         public McpCustomer Share(McpCustomer customer, string userName)
         {
             ArgumentNullException.ThrowIfNull(customer);

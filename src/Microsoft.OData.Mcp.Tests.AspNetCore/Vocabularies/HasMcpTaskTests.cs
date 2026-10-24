@@ -4,11 +4,13 @@
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
+using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
 using Microsoft.OData.ModelBuilder;
@@ -33,8 +35,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         [TestMethod]
         public void HasMcpTask_GetEdmModel_StampsTaskTermAndReferencesVocabulary()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Customer>("Customers");
+            var builder = CreateBuilder();
             builder.EntityType<Customer>().Action("Authorize").HasMcpTask();
 
             var model = builder.GetEdmModel();
@@ -53,8 +54,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         [TestMethod]
         public void HasMcpTask_SiblingAction_IsNotATask()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Customer>("Customers");
+            var builder = CreateBuilder();
             builder.EntityType<Customer>().Action("Authorize").HasMcpTask();
             builder.EntityType<Customer>().Action("Reset");
 
@@ -70,8 +70,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         [TestMethod]
         public void HasMcpTask_ElicitUrlProperties_AreCopied()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Customer>("Customers");
+            var builder = CreateBuilder();
             builder.EntityType<Customer>().Action("Authorize").HasMcpTask("connectUri");
 
             var authorize = EdmModelAdapter.ToCoreModel(builder.GetEdmModel())
@@ -87,19 +86,79 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         [TestMethod]
         public void HasMcpTask_Csdl_WritesEdmxReference()
         {
-            var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Customer>("Customers");
+            var builder = CreateBuilder();
             builder.EntityType<Customer>().Action("Authorize").HasMcpTask();
+            var model = builder.GetEdmModel();
+            var xml = WriteCsdl(model);
 
-            using var buffer = new StringWriter();
-            using var writer = XmlWriter.Create(buffer);
-            CsdlWriter.TryWriteCsdl(builder.GetEdmModel(), writer, CsdlTarget.OData, out _).Should().BeTrue();
-            writer.Flush();
-
-            var xml = buffer.ToString();
             xml.Should().Contain(McpVocabulary.ReferenceUri);
             xml.Should().Contain($"Namespace=\"{McpVocabulary.Namespace}\"");
             xml.Should().Contain("Term=\"Mcp.Task\"");
+
+            var authorize = model.SchemaElements.OfType<IEdmAction>().Single(item => item.Name == "Authorize");
+            authorize.Namespace.Should().Be(typeof(Customer).Namespace);
+            AssertTaskIsInlineOnAction(xml, "Authorize", authorize.Namespace);
+            new CsdlParser().ParseFromString(xml).Actions.Single(action => action.Name == "Authorize").IsTask.Should().BeTrue();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Convention builder whose operations share the entity CLR namespace (TripPin layout).
+        /// </summary>
+        /// <returns>
+        /// A builder with <c>Customers</c> already registered.
+        /// </returns>
+        internal static ODataConventionModelBuilder CreateBuilder()
+        {
+            var builder = new ODataConventionModelBuilder
+            {
+                Namespace = typeof(Customer).Namespace!
+            };
+            builder.EntitySet<Customer>("Customers");
+            return builder;
+        }
+
+        /// <summary>
+        /// Asserts <c>Mcp.Task</c> is nested on <paramref name="actionName"/> in
+        /// <paramref name="schemaNamespace"/>, not an out-of-line <c>Annotations Target</c>.
+        /// </summary>
+        /// <param name="xml">Serialized CSDL.</param>
+        /// <param name="actionName">The action short name.</param>
+        /// <param name="schemaNamespace">The schema that declares the action.</param>
+        internal static void AssertTaskIsInlineOnAction(string xml, string actionName, string schemaNamespace)
+        {
+            var document = XDocument.Parse(xml);
+            XNamespace edm = "http://docs.oasis-open.org/odata/ns/edm";
+            var action = document.Descendants(edm + "Action")
+                .Single(element => element.Attribute("Name")?.Value == actionName);
+
+            ((XElement)action.Parent!).Attribute("Namespace")!.Value.Should().Be(schemaNamespace);
+            action.Elements(edm + "Annotation")
+                .Select(element => element.Attribute("Term")?.Value)
+                .Should().Contain("Mcp.Task");
+            document.Descendants(edm + "Annotations")
+                .SelectMany(element => element.Elements(edm + "Annotation"))
+                .Where(element => element.Attribute("Term")?.Value is "Mcp.Task" or "Microsoft.OData.Mcp.V1.Task")
+                .Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// Serializes <paramref name="model"/> as OData CSDL XML.
+        /// </summary>
+        /// <param name="model">The EdmLib model.</param>
+        /// <returns>
+        /// The CSDL document.
+        /// </returns>
+        internal static string WriteCsdl(IEdmModel model)
+        {
+            using var buffer = new StringWriter();
+            using var writer = XmlWriter.Create(buffer);
+            CsdlWriter.TryWriteCsdl(model, writer, CsdlTarget.OData, out _).Should().BeTrue();
+            writer.Flush();
+            return buffer.ToString();
         }
 
         #endregion
