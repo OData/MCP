@@ -1,0 +1,54 @@
+---
+title: IMcpAnnotatedActionWaiter
+description: "Host completion source for an annotated action after URL elicitation is accepted."
+icon: plug
+keywords: ['IMcpAnnotatedActionWaiter', 'Microsoft.OData.Mcp.AspNetCore.Hosting.IMcpAnnotatedActionWaiter', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'interface']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.IMcpAnnotatedActionWaiter
+```
+
+## Summary
+
+Host completion source for an annotated action after URL elicitation is accepted.
+
+## Remarks
+
+Register with `WaitForAnnotatedAction&lt;TWaiter&gt;`. Without a waiter, the task
+completes with the Started payload after elicitation (the URL was shown; the grant still
+finishes only in the browser). Decline, timeout, and `tasks/cancel` do not call
+[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.imcpannotatedactionwaiter.waitasync(microsoft.odata.mcp.aspnetcore.hosting.mcpannotatedactioncontext,system.threading.cancellationtoken)).
+
+## Methods
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WaitAsync <Badge color="orange">Abstract</Badge>
+
+Waits for the host callback that finishes the annotated action.
+
+#### Syntax
+
+```csharp
+System.Threading.Tasks.Task<ModelContextProtocol.Protocol.CallToolResult> WaitAsync(Microsoft.OData.Mcp.AspNetCore.Hosting.McpAnnotatedActionContext context, System.Threading.CancellationToken cancellationToken)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `context` | `Microsoft.OData.Mcp.AspNetCore.Hosting.McpAnnotatedActionContext` | Action name, binding key, one-shot result JSON, and task id. |
+| `cancellationToken` | `System.Threading.CancellationToken` | Timeout, `tasks/cancel`, and process shutdown. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.Task<ModelContextProtocol.Protocol.CallToolResult?>`
+The terminal tool result, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to keep the Started payload.
+

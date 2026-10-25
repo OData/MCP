@@ -27,6 +27,49 @@ See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.o
 
 ## Methods
 
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpElicitUrl <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
+
+Names JSON properties on this action's result that are URLs to elicit.
+`GetEdmModel` stamps `Microsoft.OData.Mcp.V1.ElicitUrlProperties`.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.ModelBuilder.ActionConfiguration HasMcpElicitUrl(Microsoft.OData.ModelBuilder.ActionConfiguration action, params string[] propertyNames)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `action` | `Microsoft.OData.ModelBuilder.ActionConfiguration` | The action to annotate. |
+| `propertyNames` | `string[]` | JSON property names that hold elicit URLs. |
+
+#### Returns
+
+Type: `Microsoft.OData.ModelBuilder.ActionConfiguration`
+*action* so further configuration can chain.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *action* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *propertyNames* is empty. |
+
+#### Examples
+
+```csharp
+builder.EntityType&lt;Order&gt;().Action("Authorize").HasMcpTask().HasMcpElicitUrl("connectUri");
+```
+
+#### Remarks
+
+Pair with [String[])](https://learn.microsoft.com/dotnet/api/microsoft.odata.modelbuilder.odatamodelbuildermcpextensions.hasmcptask(microsoft.odata.modelbuilder.actionconfiguration,system.string[])). When this term is omitted, the runtime elicits
+[McpVocabulary.DefaultElicitUrlProperties](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpVocabulary#defaulteliciturlproperties) if they appear on the Started JSON.
+
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpTask <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>

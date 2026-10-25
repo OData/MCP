@@ -16,8 +16,8 @@
       },
       {
         "group": "Guides",
-        "icon": "dog-leashed",
         "root": "guides/index",
+        "icon": "dog-leashed",
         "pages": [
           "guides/index",
           {
@@ -133,12 +133,15 @@
                             "icon": "folder-tree",
                             "pages": [
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/index",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/IMcpAnnotatedActionWaiter",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpAnnotatedActionContext",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipeline",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipelineStartupFilter",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteBinding",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteDiscovery",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpSessionFactory"
                             ]
                           },

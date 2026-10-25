@@ -1,4 +1,4 @@
-<Project Sdk="DotNetDocs.Sdk/1.5.5-preview.1">
+﻿<Project Sdk="DotNetDocs.Sdk/1.5.5-preview.1">
 
     <PropertyGroup>
         <DocumentationType>Mintlify</DocumentationType>
@@ -51,5 +51,11 @@
             </Navigation>
         </MintlifyTemplate>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
+      <ProjectReference Include="..\Microsoft.OData.Mcp.Authentication\Microsoft.OData.Mcp.Authentication.csproj" />
+      <ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
+    </ItemGroup>
 
 </Project>

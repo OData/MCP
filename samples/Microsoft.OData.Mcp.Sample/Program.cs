@@ -53,11 +53,7 @@ public class Program
         // Register the OData options provider bridge
         //builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
 
-        builder.Services.AddODataMcp(options =>
-        {
-            options.Catalog.IncludeEntitySets.Add("Customers");
-            options.Catalog.IncludeEntitySets.Add("Products");
-        });
+        builder.Services.AddODataMcp();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

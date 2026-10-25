@@ -130,6 +130,54 @@ This package does not reference Microsoft.AspNetCore.OData. The app brings OData
 This method does not map endpoints. Call `UseODataMcp` to map MCP. Do not call
 the SDK `MapMcp` yourself.
 
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcp <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_AspNetCore_ServiceCollectionExtensions`</Note>
+
+Registers OData MCP services. Call `UseODataMcp` after mapping OData routes
+to turn MCP on at `{prefix}/mcp`. Discovers prefixes from ASP.NET Core endpoint
+routing (OData 7 `MapODataRoute` / Restier `MapApiRoute` and OData 8
+conventional endpoints), plus any routes registered with
+[IEdmModel)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcphostoptions.addroute(system.string,microsoft.odata.edm.iedmmodel)). Prefer this unless a prefix must stay
+hidden from agents; then set [ODataMcpHostOptions.IncludePrefixes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#includeprefixes) or
+[ODataMcpHostOptions.ExcludeRoutes](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions#excluderoutes).
+
+#### Syntax
+
+```csharp
+public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddODataMcp(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions> configure, System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder> configureServer)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `services` | `Microsoft.Extensions.DependencyInjection.IServiceCollection` | The service collection. |
+| `configure` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions>` | Configures host options. |
+| `configureServer` | `System.Action<Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder>?` | Optional Tasks configuration (`WithTasks`,
+`WaitForAnnotatedAction`). Null means no Tasks wrapping. |
+
+#### Returns
+
+Type: `Microsoft.Extensions.DependencyInjection.IServiceCollection`
+The service collection.
+
+#### Examples
+
+```csharp
+builder.Services.AddODataMcp(options =&gt; { }, mcp =&gt;
+{
+    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
+});
+```
+
+#### Remarks
+
+This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
+This method does not map endpoints. Call `UseODataMcp` to map MCP. Do not call
+the SDK `MapMcp` yourself. Configure Tasks here, not on `UseODataMcp`.
+
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AddODataMcpCore <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.Extensions.DependencyInjection.ODataMcp_Core_ServiceCollectionExtensions`</Note>

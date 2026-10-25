@@ -1,0 +1,246 @@
+---
+title: ODataMcpServerBuilder
+description: "Configures OData MCP Tasks on `AddODataMcp`. Hosts call [IMcpTaskStore)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatam..."
+icon: lock
+tag: "SEALED"
+keywords: ['ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder
+```
+
+## Summary
+
+Configures OData MCP Tasks on `AddODataMcp`. Hosts call
+[IMcpTaskStore)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.withtasks(modelcontextprotocol.extensions.tasks.imcptaskstore)) and [WaitForAnnotatedAction``1](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.waitforannotatedaction`-1) here, not on
+`UseODataMcp` and not via SDK `WithTasks` from app code.
+
+## Examples
+
+```csharp
+builder.Services.AddODataMcp(options =&gt; { }, mcp =&gt;
+{
+    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
+});
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Server
+
+Gets the SDK builder already used for `WithHttpTransport` and catalog handlers.
+Hosts may attach logging filters. They must not call SDK `WithTasks` on it.
+
+#### Syntax
+
+```csharp
+public Microsoft.Extensions.DependencyInjection.IMcpServerBuilder Server { get; }
+```
+
+#### Property Value
+
+Type: `Microsoft.Extensions.DependencyInjection.IMcpServerBuilder`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WaitForAnnotatedAction
+
+Registers the host waiter used after URL elicitation is accepted.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder WaitForAnnotatedAction<TWaiter>() where TWaiter : class, Microsoft.OData.Mcp.AspNetCore.Hosting.IMcpAnnotatedActionWaiter
+```
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder`
+This builder.
+
+#### Type Parameters
+
+- `TWaiter` - The waiter type.
+
+#### Remarks
+
+Required for Succeeded after elicitation. Without it, the call completes with the
+Started payload after the URL is shown.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithTasks
+
+Enables MCP Tasks for annotated actions only. CRUD, functions, and unannotated
+actions stay one-shot.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder WithTasks(ModelContextProtocol.Extensions.Tasks.IMcpTaskStore store)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `store` | `ModelContextProtocol.Extensions.Tasks.IMcpTaskStore` | The protocol task store. Register a singleton; stateless HTTP
+creates a fresh server per POST. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder`
+This builder.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *store* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Remarks
+
+Wires `tasks/get`, `tasks/update`, and `tasks/cancel` from
+`ModelContextProtocol.Extensions.Tasks`. Does not wrap every catalog tool:
+the execution-mode selector returns Optional only for annotated actions.
+

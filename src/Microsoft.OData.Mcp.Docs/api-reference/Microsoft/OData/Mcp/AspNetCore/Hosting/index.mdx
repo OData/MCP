@@ -3,7 +3,7 @@ title: Overview
 description: "Summary of the Microsoft.OData.Mcp.AspNetCore.Hosting Namespace"
 icon: folder-tree
 mode: wide
-keywords: ['Microsoft.OData.Mcp.AspNetCore.Hosting', 'namespace', 'McpHttpContextAccessor', 'ODataMcpHostOptions', 'ODataMcpPipeline', 'ODataMcpPipelineStartupFilter', 'ODataMcpRouteBinding', 'ODataMcpRouteDiscovery', 'ODataMcpSessionFactory']
+keywords: ['Microsoft.OData.Mcp.AspNetCore.Hosting', 'namespace', 'IMcpAnnotatedActionWaiter', 'McpAnnotatedActionContext', 'McpHttpContextAccessor', 'ODataMcpHostOptions', 'ODataMcpPipeline', 'ODataMcpPipelineStartupFilter', 'ODataMcpRouteBinding', 'ODataMcpRouteDiscovery', 'ODataMcpServerBuilder', 'ODataMcpSessionFactory']
 ---
 
 ## Types
@@ -12,11 +12,19 @@ keywords: ['Microsoft.OData.Mcp.AspNetCore.Hosting', 'namespace', 'McpHttpContex
 
 | Name | Summary |
 | ---- | ------- |
+| [McpAnnotatedActionContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpAnnotatedActionContext) | Context passed to [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.imcpannotatedactionwaiter.waitasync(microsoft.odata.mcp.aspnetcore.hosting.mcpannotatedactioncontext,system.threading.cancellationtoken)) after elicitation is accepted. |
 | [McpHttpContextAccessor](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor) | [IHttpContextAccessor](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.ihttpcontextaccessor) that keeps the MCP request and the in-process OData  request as two contexts. [McpHttpContextAccessor.HttpContext](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#httpcontext) always returns [McpHttpContextAccessor.Active](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#active).  [HttpContext)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.mcphttpcontextaccessor.start(microsoft.aspnetcore.http.httpcontext)) / [McpHttpContextAccessor.End](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/McpHttpContextAccessor#end) change which context is active without using  Microsoft's `HttpContextAccessor` setter (that setter nulls a shared holder and ends  the outer request). |
 | [ODataMcpHostOptions](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpHostOptions) | Host options for `AddODataMcp`. |
 | [ODataMcpPipeline](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipeline) | Host-lifetime state for in-process OData execution. `AddODataMcp` registers this disabled;  `UseODataMcp` is the on switch. |
 | [ODataMcpPipelineStartupFilter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpPipelineStartupFilter) | Captures the application `RequestDelegate` when MCP is on so tool calls can invoke  routing in-process instead of looping back through the server. |
 | [ODataMcpRouteBinding](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteBinding) | An OData route prefix bound to an [IEdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmmodel). |
 | [ODataMcpRouteDiscovery](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteDiscovery) | Discovers `(prefix, IEdmModel)` pairs from ASP.NET Core endpoint routing without compiling against  Microsoft.AspNetCore.OData 7 or 8. |
+| [ODataMcpServerBuilder](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder) | Configures OData MCP Tasks on `AddODataMcp`. Hosts call  [IMcpTaskStore)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.withtasks(modelcontextprotocol.extensions.tasks.imcptaskstore)) and [WaitForAnnotatedAction``1](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.waitforannotatedaction`-1) here, not on  `UseODataMcp` and not via SDK `WithTasks` from app code. |
 | [ODataMcpSessionFactory](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpSessionFactory) | Builds one MCP session per enabled OData route prefix discovered from endpoint routing. |
+
+### <Icon icon="plug" iconType="duotone" color="#419AC5" size={24} style={{ paddingRight: '8px' }} /> Interfaces
+
+| Name | Summary |
+| ---- | ------- |
+| [IMcpAnnotatedActionWaiter](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/IMcpAnnotatedActionWaiter) | Host completion source for an annotated action after URL elicitation is accepted. |
 

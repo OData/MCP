@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -45,6 +46,52 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Catalog option copies carry every settable option, including named-operation includes.
+        /// </summary>
+        [TestMethod]
+        public void CopyCatalogOptions_CopiesEverySettableProperty()
+        {
+            var source = new ODataMcpCatalogOptions
+            {
+                EnforceRequiredOnCreate = false,
+                EnumJsonFormat = ODataEnumJsonFormat.Integer,
+                ExcludeEntitySets = ["Audit"],
+                IncludeActions = false,
+                IncludeCreate = false,
+                IncludeDelete = false,
+                IncludeEntitySets = ["Customers"],
+                IncludeFunctions = false,
+                IncludeUpdate = false,
+                InstructionsPreface = "Contoso.",
+                IsDynamicModel = true,
+                MaxCompletionValues = 7,
+                MaxExpandLength = 8,
+                MaxFilterLength = 9,
+                MaxOperationWait = TimeSpan.FromMinutes(3),
+                MaxRequestBodyBytes = 10,
+                MaxResources = 11,
+                MaxResponseBytes = 12,
+                MaxSelectLength = 13,
+                RouteName = "ignored",
+                ToolsPageSize = 14
+            };
+
+            var copy = ODataMcpSessionFactory.CopyCatalogOptions(source, "odata");
+
+            foreach (var property in typeof(ODataMcpCatalogOptions).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (property.Name == nameof(ODataMcpCatalogOptions.RouteName))
+                {
+                    continue;
+                }
+
+                property.GetValue(copy).Should().BeEquivalentTo(property.GetValue(source), because: property.Name);
+            }
+
+            copy.RouteName.Should().Be("odata");
+        }
+
+        /// <summary>
         /// Catalog option copies carry the shape options: enum wire format, preface, dynamic model, and tools page size.
         /// </summary>
         [TestMethod]
@@ -54,6 +101,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
                 new ODataMcpCatalogOptions
                 {
                     EnumJsonFormat = ODataEnumJsonFormat.Integer,
+                    IncludeActions = false,
+                    IncludeFunctions = false,
                     InstructionsPreface = "Contoso.",
                     IsDynamicModel = true,
                     MaxOperationWait = TimeSpan.FromMinutes(3),
@@ -62,6 +111,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
                 "odata");
 
             copy.EnumJsonFormat.Should().Be(ODataEnumJsonFormat.Integer);
+            copy.IncludeActions.Should().BeFalse();
+            copy.IncludeFunctions.Should().BeFalse();
             copy.InstructionsPreface.Should().Be("Contoso.");
             copy.IsDynamicModel.Should().BeTrue();
             copy.MaxOperationWait.Should().Be(TimeSpan.FromMinutes(3));
