@@ -2,7 +2,9 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.OData.Mcp.AspNetCore.Vocabularies;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 
 namespace Microsoft.OData.ModelBuilder
 {
@@ -45,6 +47,43 @@ namespace Microsoft.OData.ModelBuilder
             }
 
             action.VocabularyTermConfigurations[typeof(McpTaskTermConfiguration)] = configuration;
+            return action;
+        }
+
+        /// <summary>
+        /// Names JSON properties on this action's result that are URLs to elicit.
+        /// <c>GetEdmModel</c> stamps <c>Microsoft.OData.Mcp.V1.ElicitUrlProperties</c>.
+        /// </summary>
+        /// <param name="action">The action to annotate.</param>
+        /// <param name="propertyNames">JSON property names that hold elicit URLs.</param>
+        /// <returns>
+        /// <paramref name="action"/> so further configuration can chain.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="action"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="propertyNames"/> is empty.</exception>
+        /// <example>
+        /// <code>
+        /// builder.EntityType&lt;Order&gt;().Action("Authorize").HasMcpTask().HasMcpElicitUrl("connectUri");
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// Pair with <see cref="HasMcpTask"/>. When this term is omitted, the runtime elicits
+        /// <see cref="McpVocabulary.DefaultElicitUrlProperties"/> if they appear on the Started JSON.
+        /// </remarks>
+        public static ActionConfiguration HasMcpElicitUrl(this ActionConfiguration action, params string[] propertyNames)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentNullException.ThrowIfNull(propertyNames);
+            if (propertyNames.Length == 0 || propertyNames.All(string.IsNullOrWhiteSpace))
+            {
+                throw new ArgumentException("At least one elicit URL property name is required.", nameof(propertyNames));
+            }
+
+            action.VocabularyTermConfigurations[typeof(McpElicitUrlTermConfiguration)] = new McpElicitUrlTermConfiguration
+            {
+                PropertyNames = [.. propertyNames.Where(name => !string.IsNullOrWhiteSpace(name))]
+            };
+
             return action;
         }
 

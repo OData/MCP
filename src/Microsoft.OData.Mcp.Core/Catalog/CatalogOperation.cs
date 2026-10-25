@@ -41,6 +41,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal string? Description { get; }
 
         /// <summary>
+        /// Gets JSON property names on the action result that are URLs to elicit, or <c>null</c>.
+        /// </summary>
+        internal IReadOnlyList<string>? ElicitUrlProperties { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the operation is an action.
         /// </summary>
         internal bool IsAction { get; }
@@ -91,6 +96,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(action.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(action.BindingParameterType);
             Description = action.Description;
+            ElicitUrlProperties = action.ElicitUrlProperties;
             IsAction = true;
             IsBound = action.IsBound;
             IsTask = action.IsTask;
@@ -112,6 +118,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(function.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(function.BindingParameterType);
             Description = function.Description;
+            ElicitUrlProperties = null;
             IsAction = false;
             IsBound = function.IsBound;
             IsTask = false;

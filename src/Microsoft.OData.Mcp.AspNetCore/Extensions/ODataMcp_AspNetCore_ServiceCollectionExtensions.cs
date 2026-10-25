@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Authentication;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Catalog;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -96,6 +98,44 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         public static IServiceCollection AddODataMcp(this IServiceCollection services, Action<ODataMcpHostOptions> configure)
         {
+            return services.AddODataMcp(configure, configureServer: null);
+        }
+
+        /// <summary>
+        /// Registers OData MCP services. Call <c>UseODataMcp</c> after mapping OData routes
+        /// to turn MCP on at <c>{prefix}/mcp</c>. Discovers prefixes from ASP.NET Core endpoint
+        /// routing (OData 7 <c>MapODataRoute</c> / Restier <c>MapApiRoute</c> and OData 8
+        /// conventional endpoints), plus any routes registered with
+        /// <see cref="ODataMcpHostOptions.AddRoute"/>. Prefer this unless a prefix must stay
+        /// hidden from agents; then set <see cref="ODataMcpHostOptions.IncludePrefixes"/> or
+        /// <see cref="ODataMcpHostOptions.ExcludeRoutes"/>.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <param name="configure">Configures host options.</param>
+        /// <param name="configureServer">Optional Tasks configuration (<c>WithTasks</c>,
+        /// <c>WaitForAnnotatedAction</c>). Null means no Tasks wrapping.</param>
+        /// <returns>
+        /// The service collection.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// builder.Services.AddODataMcp(options => { }, mcp =>
+        /// {
+        ///     mcp.WithTasks(new InMemoryMcpTaskStore());
+        ///     mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
+        /// });
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This package does not reference Microsoft.AspNetCore.OData. The app brings OData 7 or 8.
+        /// This method does not map endpoints. Call <c>UseODataMcp</c> to map MCP. Do not call
+        /// the SDK <c>MapMcp</c> yourself. Configure Tasks here, not on <c>UseODataMcp</c>.
+        /// </remarks>
+        public static IServiceCollection AddODataMcp(
+            this IServiceCollection services,
+            Action<ODataMcpHostOptions> configure,
+            Action<ODataMcpServerBuilder>? configureServer)
+        {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configure);
 
@@ -108,19 +148,25 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<ODataMcpSessionFactory>();
 
-            services.AddMcpServer()
+            var server = services.AddMcpServer()
                 .WithHttpTransport(options =>
                 {
                     options.Stateless = true;
-                })
-                .WithODataCatalogHandlers(
-                    sp =>
-                    {
-                        var factory = sp.GetRequiredService<ODataMcpSessionFactory>();
-                        var http = sp.GetService<IHttpContextAccessor>()?.HttpContext;
+                });
 
-                        return factory.Resolve(http);
-                    });
+            var odata = new ODataMcpServerBuilder(server, services);
+            server.WithODataCatalogHandlers(
+                sp =>
+                {
+                    var factory = sp.GetRequiredService<ODataMcpSessionFactory>();
+                    var http = sp.GetService<IHttpContextAccessor>()?.HttpContext;
+
+                    return factory.Resolve(http);
+                },
+                afterInvoke: (request, result, cancellationToken) =>
+                    odata.AfterInvoke(request, result, cancellationToken));
+
+            configureServer?.Invoke(odata);
 
             // initialize.instructions: the shared default, with the developer's preface first. The preface is a catalog
             // option known before any metadata is read, so this is configured once and never assigned after build.

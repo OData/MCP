@@ -129,7 +129,9 @@ Log stacks server-side. Do not send demystified traces to agents by default.
 
 ## 11. Out of phase 1
 
-MRTR confirm-on-delete, Tasks, MCP Apps, `subscriptions/listen` on HTTP.
+MRTR confirm-on-delete, MCP Apps, `subscriptions/listen` on HTTP, SEP-2575 `notifications/tasks`.
+
+Annotated-action Tasks (`io.modelcontextprotocol/tasks` + URL elicitation) are in [ACTIONS.md](./ACTIONS.md) §5. They are AspNetCore-only, opt-in per EDM term `Microsoft.OData.Mcp.V1.Task`, and registered on `AddODataMcp`’s `ODataMcpServerBuilder` — not by holding `tools/call` open.
 
 ---
 

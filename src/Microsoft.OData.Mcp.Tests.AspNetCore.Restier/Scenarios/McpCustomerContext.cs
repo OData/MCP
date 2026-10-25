@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
 using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
@@ -35,6 +36,18 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         public McpCustomerContext(DbContextOptions<McpCustomerContext> options)
             : base(options)
         {
+        }
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <inheritdoc />
+        protected override void OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder modelBuilder)
+        {
+            ArgumentNullException.ThrowIfNull(modelBuilder);
+
+            modelBuilder.Entity<McpCustomer>().Ignore(customer => customer.Authorization);
         }
 
         #endregion

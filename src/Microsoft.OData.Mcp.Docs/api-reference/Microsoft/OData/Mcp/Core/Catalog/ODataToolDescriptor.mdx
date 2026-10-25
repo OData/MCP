@@ -88,6 +88,21 @@ public bool DestructiveHint { get; set; }
 
 Type: `bool`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitUrlProperties
+
+Gets or sets JSON property names on the action result that are URLs to elicit, or `null`
+when the term is omitted (the runtime then uses [McpVocabulary.DefaultElicitUrlProperties](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpVocabulary#defaulteliciturlproperties)).
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.IReadOnlyList<string> ElicitUrlProperties { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.IReadOnlyList<string>?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EntitySetName
 
 Gets or sets the entity set this named tool targets, if any.
@@ -129,6 +144,21 @@ public string InputSchema { get; set; }
 #### Property Value
 
 Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsTask
+
+Gets or sets a value indicating whether a named action tool is annotated `Microsoft.OData.Mcp.V1.Task`.
+
+#### Syntax
+
+```csharp
+public bool IsTask { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+`true` when the EDM action is a task; otherwise, `false`.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
 

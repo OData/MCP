@@ -56,6 +56,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
                     EnumJsonFormat = ODataEnumJsonFormat.Integer,
                     InstructionsPreface = "Contoso.",
                     IsDynamicModel = true,
+                    MaxOperationWait = TimeSpan.FromMinutes(3),
                     ToolsPageSize = 25
                 },
                 "odata");
@@ -63,6 +64,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             copy.EnumJsonFormat.Should().Be(ODataEnumJsonFormat.Integer);
             copy.InstructionsPreface.Should().Be("Contoso.");
             copy.IsDynamicModel.Should().BeTrue();
+            copy.MaxOperationWait.Should().Be(TimeSpan.FromMinutes(3));
             copy.ToolsPageSize.Should().Be(25);
         }
 

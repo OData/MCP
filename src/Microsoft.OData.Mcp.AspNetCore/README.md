@@ -98,7 +98,7 @@ builder.Services.AddODataMcp(options =>
 
 ## Securing your MCP server
 
-MCP here is a sibling of your OData API. Lock the MCP endpoint the same way you lock the API, then tell Local MCP how to sign in.
+MCP here is a sibling of your OData API. Lock the MCP endpoint the same way you lock the API. The harness (Claude Desktop, Cursor, Claude Code, VS Code, …) presents whatever credential that pipeline already accepts.
 
 **Require an authenticated user on MCP**
 
@@ -131,9 +131,9 @@ builder.Services.AddODataMcp(options =>
 
 A global `UseRateLimiter` still applies when no policy name is set.
 
-**Let Local MCP sign in with no extra flags**
+**Let an OAuth-capable harness find your authorization server**
 
-Publish protected-resource metadata (RFC 9728) so `dotnet odata-mcp start` can discover the authorization server from a `401`. Independent of `AddODataMcp`.
+Publish protected-resource metadata (RFC 9728) so a `401` on `/mcp` can carry `resource_metadata="…"`. Independent of `AddODataMcp`.
 
 ```csharp
 builder.Services.AddProtectedResourceMetadata(options =>
@@ -143,7 +143,7 @@ builder.Services.AddProtectedResourceMetadata(options =>
 });
 ```
 
-There is no `Use` call. The default protected resource is the application root. The document is served anonymously at `/.well-known/oauth-protected-resource`. A `401` on the host — OData HTTP or `{prefix}/mcp` — gains `resource_metadata="…"`. Same authorization server, same scopes, same Bearer.
+There is no `Use` call. The default protected resource is the application root. The document is served anonymously at `/.well-known/oauth-protected-resource`. A `401` on `{prefix}/mcp` gains `resource_metadata="…"`. Same authorization server, same scopes, same Bearer.
 
 Set `options.Prefixes` when the resource is not the whole host — any route base Endpoint Routing or Minimal APIs accept, including `""` and `"/"`. Each extra base is also published at `/.well-known/oauth-protected-resource/{prefix}`.
 

@@ -1,0 +1,65 @@
+---
+title: "Microsoft OData for AI"
+description: "Assistants talk to live OData data through a compact catalog. Local MCP on your machine; Remote MCP on the API you ship."
+---
+
+Ask an assistant about live business data — customers, orders, projects — and get answers from the OData APIs you already run. Microsoft OData for AI connects that assistant through [Model Context Protocol 2.0](https://modelcontextprotocol.io). It looks up a record, filters a list, follows a relationship, and makes a change, without anyone pasting a spreadsheet into the chat.
+
+The assistant is steered toward the right call the first time. It spends tokens on the question, not on chewing through `$metadata`.
+
+## What you can ask
+
+Once it is connected, questions like these go against **your** data:
+
+- Tell me about customer ALFKI.
+- When was the last order for that account?
+- Find customers who have not created a new project in 45 days.
+- Give me ten non-obvious insights about this account.
+- Who are the German customers, and what are they waiting on?
+
+## How the system works
+
+An OData MCP **catalog** is built from the service `$metadata`. That catalog is what the assistant sees: named tools (`list_customers`, `get_order`, `action_order_ship`), compact type cards, and a short list of rules (parameter names omit `$`, prefer named tools, and so on).
+
+The OData API itself stays OData HTTP. MCP is how the assistant talks.
+
+| Service | `$metadata` | Compact catalog | Token reduction |
+|---|---|---|---|
+| Northwind | 4,802 tokens | 654 tokens | 86.4% |
+| TripPin | 1,859 tokens | 91 tokens | 95.1% |
+
+Two products share that catalog idea.
+
+<CardGroup cols={2}>
+  <Card title="Local MCP" icon="laptop" href="/guides/local">
+    A small app on your machine for any OData service. Your agent gets compact tools and spends far fewer tokens decoding the API.
+  </Card>
+  <Card title="Remote MCP" icon="server" href="/guides/remote">
+    You ship the OData API. Put MCP on it. Customers connect Claude Desktop, Cursor, Claude Code, or another harness to `https://your-api/odata/mcp`.
+  </Card>
+</CardGroup>
+
+| | **Local MCP** | **Remote MCP** |
+|---|---|---|
+| Who | You, using an AI on your machine | You, shipping an OData API |
+| What | A small app that talks to any OData service on your behalf | A NuGet package that puts MCP on the API you already host |
+| Where | Windows, macOS, and Linux | Your ASP.NET Core host |
+| Package | `Microsoft.OData.Mcp` (`dotnet odata-mcp`) | `Microsoft.OData.Mcp.AspNetCore` |
+| How the assistant connects | Your harness starts Local MCP over stdio | Customers point their harness at `{prefix}/mcp` |
+
+**Local MCP** reads an ordinary OData v4 service — a public sample, Microsoft Graph, a vendor ERP — and builds the catalog on your box. The service stays OData HTTP.
+
+**Remote MCP** is what you offer **your customers**. They stay in their harness, pointed at your `/mcp` URL, and ask about *their* data on *your* API.
+
+`Microsoft.OData.Mcp.Core` is the shared catalog. `Microsoft.OData.Mcp.Authentication` is outbound OAuth for Local MCP.
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Guides" icon="book" href="/guides">
+    Install Local MCP, or add Remote MCP to the API you host — including sign-in, Tasks, and elicitations.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference">
+    Types, options, and extension methods generated from the packages.
+  </Card>
+</CardGroup>

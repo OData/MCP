@@ -17,6 +17,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         #region Properties
 
         /// <summary>
+        /// Gets or sets the authorization ticket. Declared so Restier includes
+        /// <see cref="McpAuthorizationTicket"/> as a complex type; EF ignores it.
+        /// </summary>
+        public McpAuthorizationTicket? Authorization { get; set; }
+
+        /// <summary>
         /// Gets or sets the company name.
         /// </summary>
         public string CompanyName { get; set; } = string.Empty;

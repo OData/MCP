@@ -1,38 +1,36 @@
 # Actions as first-class MCP tools
 
 **Status:** Draft (input for implementation)  
-**Date:** 2026-10-20  
+**Date:** 2026-10-24  
 **Applies to:** Core catalog + runtime; `Microsoft.OData.Mcp.AspNetCore` Streamable HTTP (`{prefix}/mcp`); Tools host for remote one-shot calls  
-**Host example:** PodOverlord Restier `Authorize` on `IntegrationConnection`
+**Host example:** Restier `[McpTask]` on a bound action; convention `HasMcpTask()` on `ActionConfiguration`
 
 Companion docs: [TOOL-SURFACE.md](./TOOL-SURFACE.md), [PROTOCOL.md](./PROTOCOL.md), [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md), [OPTIMIZATION.md](./OPTIMIZATION.md), [TYPE-SHAPES.md](./TYPE-SHAPES.md), [AUTHENTICATION.md](./AUTHENTICATION.md).
 
-The catalog builds a named tool per entity-set CRUD verb and a generic `odata_call` for operations. It never emits a named tool per action. That is unfinished catalog work: Task 7 of [EXECUTION-PLAN.md](./EXECUTION-PLAN.md) implemented named CRUD; operations were later given a generic invoke and never got the same named pass. This document finishes that pass, then adds the long-running `tools/call` behavior the Authorize scenario needs.
+The catalog already emits named `action_*` / `function_*` tools (PR 1, §4) plus generic `odata_call`. This document keeps that catalog contract and replaces the old “hold `tools/call` open and stream `IAsyncEnumerable`” plan with **MCP Tasks + URL elicitation** for a small set of annotated actions.
 
 ---
 
 ## 1. Scenario
 
-PodOverlord tracks podcast social metrics. It never posts. To pull YouTube stats, an operator must grant a YouTube Brand Account. That grant is a Restier **bound action** on `IntegrationConnection`:
+An operator-present bound action starts an out-of-band browser hop and returns a ticket with a URL. Example: Restier `Authorize` on `IntegrationConnection`:
 
 ```
 POST /v1/IntegrationConnections({id})/Authorize
 ```
 
-The API starts an Auth0 Connected Accounts browser hop (Google Brand Account picker) and holds an in-memory session until Auth0 redirects to:
+The API starts Connected Accounts, returns `{ status: Started, connectUri, expiresIn, message }`, and holds an in-memory session until the provider redirects to the app callback (same process as MCP). The browser is the user-agent. Tokens never pass through the MCP client.
 
-```
-GET /auth0/connected-accounts/callback?connect_code=…&state=…
-```
+Two remaining gaps:
 
-MCP and that callback run **in the same process**. The session is already there. The assistant opened the picker because the tool told it to. When the callback completes, the MCP client still does not see `Succeeded`.
+1. **Catalog.** Named `action_integrationconnection_authorize` exists; assistants can still find the action on `odata_describe_type` and invoke `odata_call`. Both paths must behave the same.
+2. **Completion.** `tools/call` today finishes when the inner OData body is the Started ticket. The callback later writes Succeeded to the **browser**, not to the MCP client.
 
-Two gaps:
+MCP 2026-07-28 Streamable HTTP is stateless, so the SDK cannot send a live `elicitation/create` JSON-RPC request (`ElicitAsync` throws). URL elicitation uses **MRTR** ([SEP-2322](https://csharp.sdk.modelcontextprotocol.io/v2/concepts/mrtr/mrtr.html)): throw `InputRequiredException` with `InputRequest.ForElicitation` (`mode: url`). The client fulfills that and retries `tools/call` with `inputResponses` + `requestState`. Protocol Tasks (`io.modelcontextprotocol/tasks`) are optional: when the client also opted in, the same elicitation is nested as task `inputRequests` and the waiter can outlive the original POST.
 
-1. **Catalog.** `Authorize` is not a named tool. The assistant finds it on `odata_describe_type` and invokes it through generic `odata_call`.
-2. **Runtime.** Every tool, including `odata_call`, waits for a complete inner OData HTTP body and returns that body as the `tools/call` result. There is no progress channel. A Started ticket with `connectUri` is either the final result (HTTP ended too early) or invisible until the wait finishes (too late to open the picker).
+If the client does **not** advertise URL elicitation, `tools/call` returns the Started ticket (`connectUri` + `message`) and is done. The operator opens the URL, finishes in the browser, and **tells the assistant they are done**.
 
-Named tools without streaming still leave the operator-wait broken. Streaming only on `odata_call` still leaves agents on the generic.
+This document does **not** cover background jobs, queue drain, or any work that continues after the operator has left the browser hop. Those stay on the host’s own dispatcher. The C# SDK does not implement SEP-2575 (`notifications/tasks`); task-capable clients poll `tasks/get`. That is enough for a minutes-long consent wait on the Tasks path. It is not a completion signal for unattended work, and it is not used when the client omitted tasks.
 
 ---
 
@@ -46,7 +44,7 @@ Bound operations remain on `odata_describe_type`. Unbound operations remain on `
 
 [TOOL-SURFACE.md](./TOOL-SURFACE.md) §3 documents the CRUD family and the `action_*` / `function_*` rows. The line “Do not register `odata_call_function` / `odata_call_action`” forbids splitting the **generic** into two generics.
 
-`odata_call` stays, the same way `odata_get` stays next to `get_product`. Execution is still one-shot: the inner OData HTTP body is the `tools/call` result. Long-running wait is §5.
+`odata_call` stays, the same way `odata_get` stays next to `get_product`. Execution is one-shot unless §5 applies.
 
 ---
 
@@ -58,9 +56,7 @@ Bound operations remain on `odata_describe_type`. Unbound operations remain on `
 4. The operator may finish Google. Auth0 hits the API callback. The API completes the in-memory session.
 5. The browser receives `{ status: Succeeded, … }`. **That HTTP client is the browser, not the MCP session.** The assistant never gets the final ticket.
 
-A second `GET …/events` SSE URL would not help. Claude’s tool call will not subscribe to it. Streamable HTTP already has a **request-scoped** SSE channel for this `tools/call`. Use that.
-
-`WithHttpTransport(options => options.Stateless = true)` stays. MCP 2026-07-28 has no protocol session id. Stateless means every POST stands alone. The server may still answer one `tools/call` with an SSE stream that carries `notifications/progress` and then the JSON-RPC result. [PROTOCOL.md](./PROTOCOL.md) §6 “No HTTP+SSE” forbids a custom `MapGet` / `/mcp/events` route, not the official per-request response stream.
+A second `GET …/events` SSE URL would not help. Claude’s tool call will not subscribe to it. `WithHttpTransport(options => options.Stateless = true)` stays. MCP 2026-07-28 has no protocol session id; every POST stands alone. The durable handle is a **task id**, not a held request stream. [PROTOCOL.md](./PROTOCOL.md) §6 “No HTTP+SSE” still forbids a custom `MapGet` / `/mcp/events` route.
 
 ---
 
@@ -80,7 +76,7 @@ Named CRUD tools use the same rule (`get_integrationconnection`, `list_orderdeta
 
 `{singular_type}` is the entity type short name, lowercased (`IntegrationConnection` → `integrationconnection`). Instance-bound actions take a `key`. `{set}` is the entity set short name, lowercased. Collection-bound actions take no `key`.
 
-Functions are the same overlooked pass. Same patterns with prefix `function_`: `function_getnearestairport`, `function_person_getfavoriteairline`. Functions are GET and `readOnlyHint: true`. They do not stream.
+Functions are the same overlooked pass. Same patterns with prefix `function_`: `function_getnearestairport`, `function_person_getfavoriteairline`. Functions are GET and `readOnlyHint: true`. They are never MCP Tasks (§5.2).
 
 Title: CSDL `Description` when present, otherwise `"{Action} a {Type}"` / `"{Action}"`. Description: CSDL docs plus one operational sentence (instance-bound: `POST {Set}({key})/{Action}.`; collection-bound: `POST {Set}/{Action}.`; unbound: `POST {Action}.`). Functions say GET.
 
@@ -156,151 +152,226 @@ Update [TOOL-SURFACE.md](./TOOL-SURFACE.md) §3 in the same PR as the generator:
 
 ---
 
-## 5. Long-running actions
+## 5. Annotated actions as MCP Tasks
 
-### 5.1 Cycle (one MCP request, no second SSE)
+### 5.1 Cycle
 
-Keep `tools/call` **open** for the life of the in-memory session. Emit the Started ticket **before** the wait so the client can open `connectUri`. When the callback completes the session, finish the same `tools/call`.
+When the client opted into `io.modelcontextprotocol/tasks` **and** the resolved action carries `Microsoft.OData.Mcp.V1.Task`, `tools/call` returns a task handle immediately. The inner OData POST still runs once (Started ticket). URL elicitation asks the operator to open `connectUri`. Completing elicitation means the link was opened or refused, not that the provider grant finished. The task goes back to `working` and waits on the host completion source. The callback completes that source. `tasks/get` then returns `completed` with the Succeeded or Failed ticket as the ordinary `CallToolResult`.
 
 ```
-Assistant                         MCP Streamable HTTP                    API process
-    |                                    |                                    |
-    |  tools/call                        |                                    |
+Assistant                      MCP (stateless HTTP)                 API process
+    |                                  |                                  |
+    |  tools/call                      |                                  |
     |  action_integrationconnection_authorize
-    |  (_meta.progressToken)             |                                    |
-    |----------------------------------->|  start in-process Authorize        |
-    |                                    |  (IAsyncEnumerable or coordinator) |
-    |                                    |         start session              |
-    |                                    |         yield Started+connectUri   |
-    |  notifications/progress            |<-----------------------------------|
-    |  (Started ticket; open connectUri) |                                    |
-    |<-----------------------------------|                                    |
-    |  [optional] elicitation/create     |                                    |
-    |  mode=url, Url=connectUri          |                                    |
-    |<-----------------------------------|                                    |
-    |  (browser: Auth0 + Google picker)  |                                    |
-    |                                    |         GET callback complete      |
-    |                                    |         session TCS completes      |
-    |                                    |         yield Succeeded            |
-    |  tools/call result                 |<-----------------------------------|
-    |  (Succeeded ticket + next-step msg)|                                    |
-    |<-----------------------------------|                                    |
+    |  (_meta.extensions.tasks)        |                                  |
+    |--------------------------------->|  CreateTask (working)            |
+    |  resultType=task                 |<---------------------------------|
+    |<---------------------------------|                                  |
+    |  tasks/get                       |  in-process Authorize            |
+    |--------------------------------->|  Started + connectUri            |
+    |  status=input_required           |  ElicitAsync mode=url            |
+    |  elicitation/create url=connectUri
+    |<---------------------------------|                                  |
+    |  (Claude: open this URL)         |                                  |
+    |  tasks/update inputResponses     |                                  |
+    |--------------------------------->|  elicitation accepted            |
+    |  tasks/get status=working        |  wait on host TCS                |
+    |  (browser: provider picker)      |         GET callback             |
+    |                                  |         TCS completes            |
+    |  tasks/get status=completed      |                                  |
+    |  result = Succeeded ticket       |                                  |
+    |<---------------------------------|                                  |
 ```
 
 Hard rules:
 
-1. **Official MCP only.** Progress and result travel on the existing Streamable HTTP (or stdio) session for this `tools/call`. Do not `MapGet` a second `text/event-stream`. Do not invent `/mcp/events`. Do not use MCP Tasks ([PROTOCOL.md](./PROTOCOL.md) §11 stays deferred).
-2. **Inner work stays in-process.** Same as [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md): no `HttpClient` to `{prefix}/mcp` or to an events URL on the same app. The wait is on the host’s session object.
-3. **Client abort cancels the action.** `CancellationToken` from `tools/call` must cancel the Restier wait. Closing the request SSE stream is the Streamable HTTP cancel signal (MCP 2026-07-28).
-4. **Timeout = session expiry.** If the operator never finishes, the stream ends with a Failed ticket, not a hung tool. Honor the host session’s `expiresIn` when present; otherwise `ODataMcpCatalogOptions.MaxOperationWait` (default 10 minutes) cancels the token.
+1. **Official MCP only.** No second SSE URL, no `/mcp/events`, no custom JSON-RPC. Clients poll `tasks/get`. Do not implement SEP-2575 (`notifications/tasks`); the C# SDK does not ship it.
+2. **Return a task only when the request opted in.** `_meta["io.modelcontextprotocol/clientCapabilities"].extensions["io.modelcontextprotocol/tasks"]`. If that key is absent: one-shot Started ticket, return, stop. No `ElicitAsync`, no waiter, no `tasks/*`, no progress. Missing `taskId` / `status` / `createdAt` / `lastUpdatedAt` / `ttlMs` on a task result is a tool error on Claude Code (`Unsupported result type 'task'`).
+3. **Inner OData stays in-process.** [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md). The first execute is still one-shot `IODataExecutor.ExecuteAsync`. The wait after elicitation is a host `IMcpAnnotatedActionWaiter`, not a held OData HTTP body.
+4. **Elicitation accept is not completion.** `tasks/update` for `elicitation/create` means the operator opened or declined the URL. Decline / `Esc` → terminal Failed ticket (`completed` + `isError: true`) or `cancelled`. Accept → `working` and wait.
+5. **Timeout = session expiry.** Honor `expiresIn` on the Started ticket when present; otherwise `ODataMcpCatalogOptions.MaxOperationWait` (default 10 minutes). `tasks/cancel` is cooperative: cancel the waiter’s token.
+6. **Domain errors stay `completed`.** A Failed authorization ticket is `CallToolResult` with `isError: true` inside a `completed` task. Reserve task status `failed` for protocol errors (SEP-2663).
 
-Named `action_*` and `odata_call` share the stream mapping. Streaming is not generic-only.
+Named `action_*` and `odata_call` of the **same** annotated action share this path. CRUD and functions never do.
 
-### 5.2 How an action becomes a stream
+### 5.2 Who gets wrapped
 
-CSDL has no `IAsyncEnumerable`. Detection is two-sided.
+SDK `IMcpServerBuilder.WithTasks(store)` wraps **every** `[McpServerTool]`. OData tools are catalog handlers, not `[McpServerTool]`, and wrapping `odata_query` / `list_*` / `get_*` as tasks would poll for every read. Do **not** call SDK `WithTasks` from app code.
 
-**Catalog (advertised to the client):**
+OData MCP wraps a `tools/call` as a task only when **all** of these hold:
 
-- Vocabulary term `Microsoft.OData.Mcp.V1.StreamResults` (boolean) on the action, **or**
-- AspNetCore adapter sets the same flag when the CLR method returns `IAsyncEnumerable<T>` (or `IAsyncEnumerable<T?>`) whose `T` is the EDM return type or the collection element type.
+| Gate | Rule |
+|------|------|
+| Client | This request includes the tasks extension. |
+| Host | `ODataMcpServerBuilder.WithTasks` ran at `AddODataMcp` (store registered). |
+| Kind | The resolved tool is an **action** (`OperationKind = Action`), named or via `odata_call`. |
+| Annotation | The EDM action has `Microsoft.OData.Mcp.V1.Task` = true. |
 
-Store `StreamResults` on `EdmAction` (bool, default `false`). Named tool description appends `Stays open until the last item; watch progress for URLs to open.` when true. The runtime still streams `odata_call` when the resolved action has the flag.
+Functions, entity-set CRUD, generics (`odata_query`, `odata_get`, …), and unannotated actions stay one-shot even when the client opted into tasks.
 
-**Runtime (in-process):**
+CSDL has no Tasks concept. Detection is the vocabulary term on the **action** already in the model (`IEdmAction.Namespace` + `Name`). Hosts stamp that object; they do not invent a `Target` path or a `Default` schema. `$metadata` must export it so Tools, remote clients, and other OData stacks can see the same annotation.
 
-Do not wait for a buffered inner HTTP body. `InProcessODataExecutor.ExecuteAsync` as written (`await pipeline(inner)` then seek `Response.Body`) cannot emit progress during a wait: the pipeline has not returned.
+OASIS CSDL XML 4.01 §14.2.2: nest the annotation in the model element (the Action lives in whichever schema the builder already put it in). TripPin and Microsoft Graph do this for operations — types and actions share a schema (`Trippin`, `microsoft.graph`); bound actions have no `ActionImport`; unbound functions/actions are imported on the container. Restier matches TripPin for operations (declared in the entity schema) and Northwind for the container (`Default` holds only the entity container).
 
-Use an in-process enumerator that runs with `McpHttpContextAccessor.Start` / `End` so Restier and `User` see a normal request, and **yields CLR items as they are produced**, serialized to JSON by Core (`System.Text.Json`), not by the OData formatter.
+```xml
+<edmx:Reference Uri="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml">
+  <edmx:Include Namespace="Microsoft.OData.Mcp.V1" Alias="Mcp" />
+</edmx:Reference>
+…
+<Schema Namespace="Trippin">
+  <Action Name="ShareTrip" IsBound="true">
+    <Parameter Name="personInstance" Type="Trippin.Person" />
+    <Annotation Term="Mcp.Task" Bool="true" />
+  </Action>
+</Schema>
+```
 
-| Source | Behavior |
-|--------|----------|
-| CLR method is `IAsyncEnumerable<T>` | AspNetCore resolves and invokes it (binding entity + non-binding parameters + `CancellationToken`). `await foreach` each item. |
-| Host registers `IMcpOperationStream` for that action name | Same `await foreach`. Escape hatch when Restier cannot expose the enumerator. |
-| Neither | One-shot `ExecuteAsync` as today. `StreamResults` on the catalog is ignored at runtime (remote Tools host; CSDL-only flag). |
+Out-of-line targeting is also legal. The `Target` is the qualified operation name, optionally with overload parentheses (OASIS Example 42). A slash after a structured type names a property or navigation:
 
-Do not add a second OData HTTP call. Do not require the OData JSON formatter to flush a `{"value":[…]}` array; current Restier/OData buffers collections and would emit Started only after Succeeded already exists.
+```xml
+<Annotations Target="Trippin.ShareTrip(Trippin.Person)">
+  <Annotation Term="Mcp.Task" Bool="true" />
+</Annotations>
+```
 
-Remote Tools host: always one-shot. Named tools still exist. Streaming is an AspNetCore in-process feature.
+Other OASIS Example 42 forms: `Trippin.ShareTrip`, `Trippin.ShareTrip()`, `Trippin.Container/ResetDataSource` (the unbound **import**).
 
-### 5.3 Item → MCP mapping
+Store `IsTask` on Core `EdmAction` (bool, default `false`). AspNetCore `EdmModelAdapter` copies the term from `IEdmModel`. Named tool description appends one sentence when `IsTask`: `Runs as an MCP task when the client opts in; open any returned URL to finish.`
 
-| Stream item | MCP |
-|-------------|-----|
-| Every item except the last | `notifications/progress` when the client sent `_meta.progressToken`. `ProgressNotificationValue.Message` is the compact JSON of the item (must include `connectUri` when present). `Progress` is 1-based item index; `Total` omitted unless the host knows it. |
-| Last item | `tools/call` **result** (`structuredContent` = the item, short text = `message` if present). |
-| Exception / cancel | Failed tool result (`isError: true`); do not leave the call open. |
-| Timeout | Failed tool result whose structured content is a Failed ticket when the host produced one; otherwise text `The operation timed out.` |
+Hosts stamp the term; they do not wrap Restier `IModelBuilder` and they do not reference Restier from `Microsoft.OData.Mcp.AspNetCore`.
 
-First item is `Started` (must include `connectUri` for Authorize). Last item is `Succeeded` or `Failed`.
+| Host | Stamp |
+|------|--------|
+| Convention ModelBuilder | `action.HasMcpTask()` (optional `elicitUrlProperties`). Chain `HasMcpElicitUrl("connectUri")` to stamp `ElicitUrlProperties` as its own term. `GetEdmModel` references the vocabulary and writes the terms. |
+| Restier API / OData controller | `[McpTask]` on the CLR method (Core). Pair `[McpElicitUrl("connectUri")]` to stamp `ElicitUrlProperties`. `UseODataMcp` stamps the finished `EdmModel` (`McpTaskAttributeAnnotations.Apply`) by matching method name and bound/unbound shape. Functions are not tasked. |
 
-`notifications/progress` requires a client `progressToken` (MCP 2026-07-28). `notifications/message` requires `_meta` `logLevel`. Neither is guaranteed.
+Canonical CSDL lives in Core (`Microsoft.OData.Mcp.V1.xml`). `CsdlParser` reads it from remote `$metadata`. AspNetCore `McpTaskAnnotations.EnsureReferenced` adds `edmx:Reference` + Include alias `Mcp` so GET `{prefix}/$metadata` and the MCP `odata://{prefix}/$metadata` resource carry the same document.
 
-**URI fallback:** when a non-final item has a URI-looking property (`connectUri`, `url`, `authorizationUrl`, `verificationUri`) and the client advertised URL elicitation, send `elicitation/create` `mode: url` with that URL (same shape as [AUTHENTICATION.md](./AUTHENTICATION.md) mid-session consent: URL + `ElicitationId`, never tokens). The tool **keeps waiting** on the host TCS while the elicitation is open; completing or cancelling the elicitation does not complete the action. AspNetCore must grow this elicitation path if it is Tools-only today.
+Optional term `Microsoft.OData.Mcp.V1.ElicitUrlProperties` (collection of strings) names JSON properties on the action result that are URLs to elicit. Default when omitted: `connectUri`, `url`, `authorizationUrl`, `verificationUri`. Hosts stamp it with `[McpElicitUrl("connectUri")]` / `HasMcpElicitUrl("connectUri")`. `[McpTask("connectUri")]` / `HasMcpTask("connectUri")` remain a convenience that stamps both terms. Same URL-only rule as [AUTHENTICATION.md](./AUTHENTICATION.md): `ElicitationId` is a new GUID; never tokens, `connect_code`, or vault ids in the elicitation payload or message.
 
-Do not make URL elicitation the only channel. Progress is enough when the client sends a token. Elicitation is how a URI reaches a human when progress is absent.
+Unannotated `Authorize`, or an annotated action called by a client that did not advertise URL elicitation, is one-shot: Started ticket with `connectUri`. The operator tells the assistant when they have finished. Do not wait in-process for that client. A client that advertised `elicitation.url` gets MRTR URL elicitation even without the Tasks extension.
 
-Do not require the assistant to poll `GET IntegrationConnections(id)` as the completion signal.
+### 5.3 Where the task store lives
 
-### 5.4 What the AspNetCore host must not do
+`IMcpTaskStore` is an MCP protocol store: `taskId`, status, TTL, `inputRequests`, terminal `CallToolResult`. It is **not** a column on `IntegrationConnection` and **not** a table of grant rows.
 
-- Open `HttpClient` to `{prefix}/mcp` or to an events URL on the same app.
-- Return `text/event-stream` from the Restier action itself as a second protocol. Restier yields CLR objects; **MCP** multiplexes them onto the session already open for `tools/call`.
-- Flip `Stateless = false` to make progress work.
-- Buffer the enumerator into a list and then emit progress. Started must leave the process before the wait begins.
+| Store | Owns |
+|-------|------|
+| `IMcpTaskStore` | Ephemeral task handles (minutes). Singleton under stateless HTTP so `tasks/get` on a later POST finds the id. `InMemoryMcpTaskStore` for a single process. A host that scales out supplies a shared implementation (SDK: same instance or external storage; `CreateTaskAsync` must be visible to the next `GetTaskAsync` before return). |
+| Host session (e.g. Connected Accounts TCS) | The operator-wait that the callback completes. Already in-memory; same single-process rule. |
+| `IntegrationConnection` | Domain: `DateAuthorized`, `ConnectionHealthTypeId`, `SecretsProtected`, `SettingsJson`. |
 
-### 5.5 Progress plumbing in Core
+Do not add `McpTaskId` (or a serialized store) to `IntegrationConnections`. A connection outlives many Authorize attempts. Tasks expire. Unbound annotated actions have no connection row. Assistants must not poll the entity as the completion channel.
 
-`ODataMcpHandlers.CallToolAsync` already receives `RequestContext<CallToolRequestParams>`. Today it only reads `Name` and `Arguments`.
+SEP-2663: register the store as a **singleton**. Stateless Streamable HTTP creates a fresh server per POST; a scoped store looks empty on `tasks/get`.
 
-- Read `request.Params.ProgressToken`.
-- When present, pass `IProgress<ProgressNotificationValue>` into `ODataToolRuntime.InvokeAsync` (new optional parameter; default no-op).
-- The handler reports via `request.Server.NotifyProgressAsync` (SDK 2.2 `McpSession.NotifyProgressAsync`).
-- `CallOperationAsync` (and the named `action_` / `function_` dispatch into it) is the only invoke path that reports. CRUD does not.
+### 5.4 Builder: `AddODataMcp`, not `UseODataMcp`
 
-`IODataExecutor` stays one-shot. Streaming is a separate in-process invoker, not a second execute method on every host.
+`AddODataMcp` is where `services.AddMcpServer()` runs (`IMcpServerBuilder`). Task method handlers, capability advertisement, and the annotated-action call filter have to be registered there. `UseODataMcp` only maps `{prefix}/mcp` via internal `MapMcp`. It cannot call SDK builder methods after `WebApplication.Build()`.
+
+```csharp
+builder.Services.AddODataMcp(options =>
+{
+    options.Catalog.InstructionsPreface = "…";
+}, mcp =>
+{
+    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>();
+});
+
+app.MapRestier(/* … */);
+app.UseODataMcp();
+```
+
+Keep today’s overloads. Add an optional `Action<ODataMcpServerBuilder> configureServer` (null = no Tasks). `AddODataMcp` still returns `IServiceCollection`.
+
+`ODataMcpServerBuilder` (AspNetCore):
+
+| Member | Role |
+|--------|------|
+| `IMcpServerBuilder Server` | The SDK builder already used for `WithHttpTransport` + `WithODataCatalogHandlers`. Hosts may attach logging filters. They must **not** call SDK `WithTasks` on it. |
+| `WithTasks(IMcpTaskStore store)` | Our method. Registers `store` as singleton `IMcpTaskStore`. Advertises `io.modelcontextprotocol/tasks` on server capabilities. Wires `tasks/get`, `tasks/update`, `tasks/cancel` from `ModelContextProtocol.Extensions.Tasks`. Installs OData’s annotated-action alternate `tools/call` path (§5.5). PackageReference `ModelContextProtocol.Extensions.Tasks` on the AspNetCore host. |
+| `WaitForAnnotatedAction<TWaiter>()` where `TWaiter : IMcpAnnotatedActionWaiter` | Registers the host waiter as singleton. Required for Succeeded after elicitation. Without it, the task completes with the Started payload after elicitation (URL was shown; grant still finishes only in the browser). |
+
+`UseODataMcp()` stays parameterless. Do not add `UseODataMcp(mcp => mcp.WithTasks(…))`; that callback would run too late.
+
+Tools host: named action tools still generate; Tasks wrapping is AspNetCore-only (in-process callback). Remote `odata-mcp` stays one-shot.
+
+### 5.5 Runtime (annotated action, client opted in)
+
+1. Resolve the tool. If any §5.2 gate fails, `CallToolAsync` as today.
+2. `CreateTaskAsync` on the store **before** the JSON-RPC result. Return `CreateTaskResult`: new `taskId`, `status: working`, `createdAt` / `lastUpdatedAt` UTC, `ttlMs` from `MaxOperationWait` (or ticket `expiresIn` once known), `pollIntervalMs` default 1000, optional `statusMessage` from the action description.
+3. Run the inner `CallOperationAsync` on a background scope (new DI scope; `McpHttpContextAccessor.Start` / `End` as today). First result is the Started JSON.
+4. If the JSON has an elicit URL property, `server.ElicitAsync` with `mode: url`, that URL, message = ticket `message` when present. Inside a task scope the SDK surfaces this as `input_required` / `inputRequests` instead of a server-initiated JSON-RPC request.
+5. After accept: `IMcpAnnotatedActionWaiter.WaitAsync`. After decline: complete with Failed ticket / `isError`. After timeout or `tasks/cancel`: cancel the waiter token; complete with Failed or `cancelled`.
+6. Waiter returns the terminal `CallToolResult` (Succeeded / Failed ticket). `SetCompletedAsync`. No waiter: `SetCompletedAsync` with the Started payload.
+
+```csharp
+public interface IMcpAnnotatedActionWaiter
+{
+    /// <param name="context">Action name, binding key, one-shot result JSON, task id.</param>
+    /// <param name="cancellationToken">Timeout, <c>tasks/cancel</c>, and process shutdown.</param>
+    /// <returns>The terminal tool result, or <see langword="null"/> to keep the Started payload.</returns>
+    Task<CallToolResult?> WaitAsync(McpAnnotatedActionContext context, CancellationToken cancellationToken);
+}
+```
+
+`IODataExecutor` stays one-shot. Do not add `IAsyncEnumerable` / `StreamResults` / `IMcpOperationStream`. Do not hold the original `tools/call` POST.
+
+### 5.6 What the AspNetCore host must not do
+
+- Call SDK `WithTasks` (wraps every attributed tool; OData tools are not those).
+- Wrap unannotated actions, functions, or CRUD.
+- Open `HttpClient` to `{prefix}/mcp`.
+- Flip `Stateless = false`.
+- Persist `IMcpTaskStore` or `taskId` on domain entity tables.
+- Put tokens or vault ids in elicitation Content, `statusMessage`, or tool `structuredContent`.
+- Require the assistant to `GET` the binding entity as the completion signal.
+- Elicit, wait, or poll when the client omitted URL elicitation. That client gets Started and the operator says they are done.
 
 ---
 
-## 6. Host (PodOverlord) once MCP streams
+## 6. Host checklist once Tasks wrap an annotated action
 
-1. Change `Authorize` to `IAsyncEnumerable<ConnectionAuthorizationTicket>` (same complex type as today).
-2. Yield `Started` with `connectUri` (Auth0 `/authorize` for the first-party Regular Web app; callback is `GET /auth0/connected-accounts/callback`) **before** waiting.
-3. Wait on `TaskCompletionSource` on the in-memory Connected Accounts session, observing `CancellationToken`.
-4. Callback `CompleteAsync` sets the TCS.
-5. Yield `Succeeded` (`message`: YouTube is authorized; next step is YouTube sync / query metrics) or `Failed`.
+1. Keep the action returning a single ticket JSON. First HTTP response is still Started + `connectUri`. Do not change it to `IAsyncEnumerable`.
+2. Stamp `Microsoft.OData.Mcp.V1.Task` with `[McpTask]` (Restier / controllers) or `HasMcpTask()` (convention). Stamp `ElicitUrlProperties` with `[McpElicitUrl("connectUri")]` or `HasMcpElicitUrl("connectUri")` when the default list is too wide. Confirm GET `{prefix}/$metadata` contains the `edmx:Reference`, `Term="Mcp.Task"`, and the nested `ElicitUrlProperties` collection on that action.
+3. `AddODataMcp(..., mcp => { mcp.WithTasks(new InMemoryMcpTaskStore()); mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>(); })`.
+4. Waiter: given the Started ticket, wait on the host completion source (same token as session `expiresIn`). Return Succeeded (`message`: the grant completed) or Failed.
+5. Single-process: in-memory store + in-memory session. Refuse scale-out while both are in-memory.
 
-No second SSE. No HTML bootstrap. The browser is only the OAuth user-agent. The AspNetCore adapter sees `IAsyncEnumerable<>` and sets `StreamResults` on the EDM action. The catalog emits `action_integrationconnection_authorize`.
+No HTML bootstrap. The browser is only the OAuth user-agent. `action_integrationconnection_authorize` and `odata_call` `Authorize` both hit §5.5.
+
+Claude Code: Tasks are public beta (v2.1.304+, protocol 2026-07-28, interactive CLI / Agent SDK / GitHub Actions). URL elicitation is interactive-terminal only; a non-interactive run that hits `input_required` asks the server to cancel.
 
 ---
 
 ## 7. Implementation order
 
-One builder, one invoke path. Tests first in each PR (MSTest v3, Breakdance, FluentAssertions, no mocks). Update [TOOL-SURFACE.md](./TOOL-SURFACE.md) §3, [OPTIMIZATION.md](./OPTIMIZATION.md) §1, [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md), and [PROTOCOL.md](./PROTOCOL.md) §5 in the same PRs as the code they describe.
+One builder, one invoke path. Tests first in each PR (MSTest v3, Breakdance, FluentAssertions, no mocks). Update [TOOL-SURFACE.md](./TOOL-SURFACE.md) §3, [OPTIMIZATION.md](./OPTIMIZATION.md) §1, [TOOL-TEST-MANIFEST.md](./TOOL-TEST-MANIFEST.md), [PROTOCOL.md](./PROTOCOL.md) §5 and §11, and [ARCHITECTURE.md](./ARCHITECTURE.md) §4.1 in the same PRs as the code they describe.
 
 ### PR 1 — Named `action_*` / `function_*` tools (catalog + one-shot invoke) — done (§4)
 
-**Files:** `ODataMcpCatalog.cs`, `ODataMcpCatalogOptions.cs`, `ODataToolDescriptor.cs`, `ODataMcpCatalogConstants.cs`, `ODataToolRuntime.cs` (`InvokeNamedAsync`), `ODataMcpInstructions.cs`, new `NamedOperationToolTests`, TripPin/Restier host tests for `action_person_sharetrip` / `action_resetdatasource` / `function_getnearestairport`.
+**Files:** `ODataMcpCatalog.cs`, `ODataMcpCatalogOptions.cs`, `ODataToolDescriptor.cs`, `ODataMcpCatalogConstants.cs`, `ODataToolRuntime.cs` (`InvokeNamedAsync`), `ODataMcpInstructions.cs`, `NamedOperationToolTests`, TripPin/Restier host tests.
 
-**Behavior:** Generate and dispatch named tools. Execution is still one-shot `CallOperationAsync` → `IODataExecutor`. `action_integrationconnection_authorize` still returns Started as the result until PR 2.
+**Behavior:** Generate and dispatch named tools. Execution is one-shot. Annotated Tasks are PR 2.
 
-**Tests:** TripPin unbound action and bound action have the names in §4.1; `tools/list` order is generics, then unbound `function_*`/`action_*`, then per-set CRUD and bound tools; `odata_call` still works; no `action_*` name collides with CRUD; `IncludeActions=false` omits named actions; bound tools respect `ExcludeEntitySets`; `tools/list` pages still include generics.
+**Tests:** TripPin names in §4.1; `tools/list` order; `odata_call` still works; no `action_*` collision with CRUD; `IncludeActions=false`; `ExcludeEntitySets`; paging still includes generics.
 
-### PR 2 — Streamed in-process actions
+### PR 2 — Tasks infrastructure + annotation gate — done
 
-**Files:** `EdmAction` (`StreamResults`), AspNetCore `EdmModelAdapter` (detect `IAsyncEnumerable`), new `IMcpOperationStream` + default CLR enumerator, `ODataMcpHandlers` progress wiring, `ODataToolRuntime.CallOperationAsync` stream loop, `ODataMcpCatalogOptions.MaxOperationWait`, handler tests that assert a progress notification is sent **before** the enumerator’s second item is awaited.
+**Files:** Core `EdmAction.IsTask`, `McpTaskAttribute`, embedded `Microsoft.OData.Mcp.V1.xml`; AspNetCore `HasMcpTask`, `McpTaskAttributeAnnotations`, `EdmModelAdapter` copy; `ODataMcpServerBuilder`; `AddODataMcp` `configureServer`; `WithTasks(IMcpTaskStore)` calling SDK `WithTasks` with `ExecutionModeSelector` Optional only for annotated actions; `ODataMcpHandlers` catalog `CallToolHandler` plus `AfterInvoke`; `ODataMcpCatalogOptions.MaxOperationWait`; Restier fixture `[McpTask]` on `Share`.
 
-**Behavior:** `tools/call` stays open. First item → progress. Last item → result. Cancel and timeout covered.
+**Behavior:** Opt-in client + annotated action → `CreateTaskResult`. Unannotated / no opt-in → one-shot. `tasks/get` finds the id on a later POST (singleton store). CRUD never becomes a task. GET `$metadata` exports `edmx:Reference` + `Mcp.Task` so external clients parse the same term.
 
-**Tests:** A Restier (OData 7) fixture action that yields Started, delays, yields Succeeded. JSON-RPC Streamable HTTP: progress event on the response stream contains `connectUri`; final `CallToolResult.structuredContent` is Succeeded. Client disconnect cancels the delay. `action_*` and `odata_call` both stream. A one-shot action is unchanged.
+**Tests:** Restier `[McpTask]` on `Share` (`action_mcpcustomer_share` is a task; `Reset` is not); convention `HasMcpTask`; HTTP `$metadata` and session CSDL contain `McpVocabulary.ReferenceUri` and `Term="Mcp.Task"`. JSON-RPC Streamable HTTP: first `tools/call` result has `resultType=task`; `tasks/get` is `working` then `completed` with the inner OData JSON when no waiter is registered. Same action without the term stays one-shot even if the client sends the extension. `list_*` / `odata_query` stay one-shot. Missing URL elicitation + annotated action is one-shot Started with no elicitation and no waiter. Missing Tasks + URL elicitation is MRTR `InputRequiredResult`, not a task handle. `UseODataMcp` does not grow a `WithTasks` overload.
 
-### PR 3 — URL elicitation fallback for URI tickets
+### PR 3 — URL elicitation inside the task + host waiter — done
 
-**Files:** AspNetCore elicitation path (mirror Tools [AUTHENTICATION.md](./AUTHENTICATION.md) `mode: url`), stream loop calls it for URI properties on non-final items when the client advertised the capability.
+**Files:** Core `McpElicitUrlAttribute`; AspNetCore `HasMcpElicitUrl` / `McpElicitUrlTermConfiguration`, `ODataMcpAnnotatedActionTasks` (`AfterInvokeAsync`, `FindElicitUrl`, AUTH-12), `IMcpAnnotatedActionWaiter`, `McpAnnotatedActionContext`, `WaitForAnnotatedAction<T>`; Restier fixture `Authorize` + `[McpElicitUrl("connectUri")]` + `McpAuthorizationTicket` + `RestierAuthorizeWaiter`; `RestierMcpElicitationTests`.
 
-**Behavior:** Operator gets an open-this-URL prompt even without `progressToken`. Wait still ends on the host TCS.
+**Behavior:** `tasks/get` → `input_required` with `elicitation/create`. Accept → waiter → terminal ticket. Decline → Failed. `tasks/cancel` / timeout cancel the waiter token.
 
-Depends on PR 2. Keep it in the plan because 2026-07-28 makes progress optional.
+**Tests:** Fixture yields connectUri; client capability includes URL elicitation; `tasks/get` carries `inputRequests`; after `tasks/update` accept the waiter’s Succeeded JSON is the completed `CallToolResult`. Decline does not call the waiter. Tokens absent from elicitation params.
 
 ---
 
@@ -314,13 +385,15 @@ Catalog:
 - `odata_call` `Authorize` / `ShareTrip` / `ResetDataSource` still succeed.
 - `IncludeActions=false` removes named action tools only.
 
-Streaming (in-process):
+Tasks (in-process, annotated):
 
-- After `tools/call` `action_integrationconnection_authorize` (or `odata_call` `Authorize`), the client receives a progress (or URL elicitation) containing `connectUri` **before** the operator finishes the picker.
-- The same `tools/call` does not return until callback completion, client abort, or timeout.
-- The result payload is the Succeeded/Failed ticket, not the Started ticket.
-- Network trace shows **one** MCP Streamable HTTP POST for that call; zero extra `text/event-stream` routes; `Stateless` remains `true`.
-- `CancellationToken` from the MCP request cancels the Restier wait.
+- Client with tasks extension + annotated `Authorize`: `tools/call` returns `resultType=task`; `tasks/get` shows `input_required` with URL elicitation for `connectUri` before the operator finishes the picker.
+- After callback (waiter) the completed task result is the Succeeded/Failed ticket, not the Started ticket.
+- Client with URL elicitation and no Tasks extension: `tools/call` returns MRTR `InputRequiredResult` (`elicitation/create` `mode: url`). Retry with `inputResponses` completes the waiter. No `CreateTaskResult`.
+- Client without URL elicitation, or action without the term: one-shot Started ticket. Zero elicitation, zero waiter. The operator tells the assistant when they are done.
+- `odata_query` / `get_*` / unannotated `ShareTrip` never create tasks.
+- Network: original `tools/call` POST ends after `CreateTaskResult`. Later POSTs are `tasks/get` / `tasks/update` / `tasks/cancel`. Zero extra `text/event-stream` routes. `Stateless` remains `true`.
+- `tasks/cancel` and wait timeout cancel the waiter. Domain Failed tickets are `completed` + `isError`.
 
 ---
 
@@ -328,10 +401,13 @@ Streaming (in-process):
 
 | Item | Why |
 |------|------|
-| MCP Tasks / `tasks/get` | [PROTOCOL.md](./PROTOCOL.md) §11. A handle-and-poll loop is a different product. |
-| `subscriptions/listen` | Change notifications, not request-scoped progress. |
-| OData `respond-async` / 202 + monitor URL | A second HTTP resource. The wait is in-process. |
-| Streaming through the OData JSON formatter | Current Restier/OData buffers collections. Revisit if a formatter flushes `IAsyncEnumerable` items. |
+| SEP-2575 `notifications/tasks` | Not in the C# SDK. Poll `tasks/get`. |
+| SDK `WithTasks` auto-wrap of all tools | Would task CRUD. OData tools are handlers, not `[McpServerTool]`. |
+| `IMcpTaskStore` / `taskId` on `IntegrationConnection` | Protocol store vs domain row. Tasks expire; connections do not. |
+| Holding `tools/call` open / `IAsyncEnumerable` / `StreamResults` | Replaced by Tasks. |
+| Elicitation / waiter on clients that omit URL elicitation | Started ticket; the human tells the assistant they are done. |
+| `subscriptions/listen` | Change notifications, not this wait. |
+| OData `respond-async` / 202 + monitor URL | A second HTTP resource. |
 | Named tools for operation overloads past the first | `odata_call` remains. |
-| Remote (Tools host) streaming | No in-process enumerator. Named tools still generate. |
-| Flipping Streamable HTTP to stateful | Not required for per-request progress. |
+| Tools-host (remote) Tasks | No in-process callback. Named tools still generate. |
+| Flipping Streamable HTTP to stateful | Store singleton is enough. |

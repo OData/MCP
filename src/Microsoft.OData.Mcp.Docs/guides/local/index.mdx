@@ -1,0 +1,20 @@
+---
+title: "Local MCP"
+description: "A small app on your machine for any OData service. Compact tools, fewer tokens, live data."
+---
+
+Local MCP (`dotnet odata-mcp`) runs on Windows, macOS, and Linux. You point it at an OData service root. It reads `$metadata`, builds a compact catalog, and speaks MCP to your assistant over stdio.
+
+Package: [`Microsoft.OData.Mcp`](https://www.nuget.org/packages/Microsoft.OData.Mcp/).
+
+<CardGroup cols={2}>
+  <Card title="Use Local MCP" icon="play" href="/guides/local/get-started">
+    Install, `try`, `add`, and ask about the live data.
+  </Card>
+  <Card title="Sign in to the service" icon="key" href="/guides/local/sign-in">
+    Local MCP uses your credentials for `$metadata`, collections, and POST.
+  </Card>
+  <Card title="How Local MCP works" icon="gears" href="/guides/local/how-it-works">
+    Startup, the probe, the catalog, stdio, and outbound OAuth.
+  </Card>
+</CardGroup>

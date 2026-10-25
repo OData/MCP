@@ -1,0 +1,51 @@
+---
+title: "Long-running actions"
+description: "Mark an action that needs a few minutes, and the harness will wait instead of assuming it is done."
+keywords: ["Remote MCP", "McpTask", "HasMcpTask", "WithTasks"]
+---
+
+Most calls finish when your API returns. Shipping an order, kicking off a report, or starting a sign-in that opens a browser can take longer than one chat turn.
+
+Put `[McpTask]` on that action. The harness gets a handle, polls until you are done, and then sees the real result.
+
+CRUD, queries, and unmarked actions still finish immediately.
+
+## Mark the action
+
+<Tabs>
+  <Tab title="Restier / controllers">
+    ```csharp
+    using Microsoft.OData.Mcp.Core.Vocabularies;
+
+    [BoundOperation(OperationType = OperationType.Action)]
+    [McpTask]
+    public Order Ship(Order order) => order;
+    ```
+  </Tab>
+  <Tab title="ModelBuilder">
+    ```csharp
+    builder.EntityType<Order>().Action("Ship").HasMcpTask().Returns<Order>();
+    ```
+  </Tab>
+</Tabs>
+
+`$metadata` will show the MCP Task term on that action. Named `action_order_ship` and `odata_call` of `Ship` behave the same.
+
+## Turn waiting on
+
+```csharp
+builder.Services.AddODataMcp(options => { }, mcp =>
+{
+    mcp.WithTasks(new InMemoryMcpTaskStore());
+});
+```
+
+That store is in-memory and single-process. If the app scales out, give `WithTasks` a store every instance can see.
+
+`UseODataMcp()` stays as it is. Waiting is configured on `AddODataMcp`.
+
+If the action also returns a URL the operator must open, add [elicitation](/guides/remote/elicitations) and a waiter so “done” means the grant finished, not merely that the link was shown.
+
+<Accordion title="What the harness actually sees">
+  When it opted into Tasks, `tools/call` returns a task id. It polls until the work completes or is cancelled. Without that opt-in, the same annotated action is still one response with whatever JSON you returned (usually a Started ticket).
+</Accordion>

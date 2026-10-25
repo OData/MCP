@@ -1,0 +1,90 @@
+---
+title: "Ask the operator to open a URL"
+description: "When an action returns a connect URL, the harness shows it. After they finish in the browser, your waiter sends the real result."
+keywords: ["Remote MCP", "McpElicitUrl", "HasMcpElicitUrl", "waiter"]
+---
+
+Connected Accounts, device login, any hop that belongs in a **browser**: your action returns a Started ticket with a URL. The harness should show that URL, then wait until *your* callback says the grant finished.
+
+Mark the action. Register a waiter. Tokens never go through the chat.
+
+## Mark the URL
+
+<Tabs>
+  <Tab title="Restier / controllers">
+    ```csharp
+    using Microsoft.OData.Mcp.Core.Vocabularies;
+
+    [BoundOperation(OperationType = OperationType.Action)]
+    [McpTask]
+    [McpElicitUrl("connectUri")]
+    public AuthorizationTicket Authorize(IntegrationConnection connection)
+    {
+        return ticket;
+    }
+    ```
+  </Tab>
+  <Tab title="ModelBuilder">
+    ```csharp
+    builder.EntityType<IntegrationConnection>()
+        .Action("Authorize")
+        .HasMcpTask()
+        .HasMcpElicitUrl("connectUri")
+        .Returns<AuthorizationTicket>();
+    ```
+  </Tab>
+</Tabs>
+
+Keep returning one JSON ticket, for example:
+
+```json
+{
+  "status": "Started",
+  "connectUri": "https://login.example.com/connect/...",
+  "expiresIn": 600,
+  "message": "Open the URL to finish authorization."
+}
+```
+
+If you omit `[McpElicitUrl]`, the host looks for `connectUri`, `url`, `authorizationUrl`, or `verificationUri` on that JSON. Names that look like secrets (`token`, `password`, `code`) are ignored on purpose.
+
+Pair it with `[McpTask]` / `HasMcpTask()` so the harness waits while the operator is in the browser.
+
+## Wait until your callback fires
+
+```csharp
+builder.Services.AddODataMcp(options => { }, mcp =>
+{
+    mcp.WaitForAnnotatedAction<AuthorizeWaiter>();
+});
+```
+
+```csharp
+public sealed class AuthorizeWaiter : IMcpAnnotatedActionWaiter
+{
+    private readonly ConnectionSessions _sessions;
+
+    public AuthorizeWaiter(ConnectionSessions sessions) => _sessions = sessions;
+
+    public async Task<CallToolResult?> WaitAsync(
+        McpAnnotatedActionContext context,
+        CancellationToken cancellationToken)
+    {
+        var json = await _sessions.WaitAsync(context.BindingKey, cancellationToken);
+        return new CallToolResult
+        {
+            Content = [new TextContentBlock { Text = json }]
+        };
+    }
+}
+```
+
+`context` has the action name, the entity key, and the Started JSON. Return `null` to keep that Started payload.
+
+Without a waiter, the harness still shows the URL, then the call ends. The operator finishing in the browser never comes back on MCP.
+
+If the harness cannot show a URL, they get the Started ticket and the human says when they are done.
+
+<Accordion title="If you also enabled Tasks">
+  The same elicitation is nested on the task. The operator accepts or declines; accept runs the waiter; decline skips it. Pair `WithTasks` and `WaitForAnnotatedAction` in the same `AddODataMcp` callback.
+</Accordion>

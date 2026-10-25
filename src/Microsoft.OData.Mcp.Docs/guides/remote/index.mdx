@@ -1,0 +1,28 @@
+---
+title: "Remote MCP"
+description: "Put MCP on the OData API you ship. Customers point their harness at {prefix}/mcp."
+---
+
+Remote MCP is what you offer **your customers**. They stay in Claude Desktop, Cursor, Claude Code, or another harness, pointed at your `/mcp` URL, and ask about *their* data on *your* API.
+
+Your OData API does not change. MCP is a sibling at `{yourRoute}/mcp`.
+
+Package: [`Microsoft.OData.Mcp.AspNetCore`](https://www.nuget.org/packages/Microsoft.OData.Mcp.AspNetCore/).
+
+<CardGroup cols={2}>
+  <Card title="Add Remote MCP to your API" icon="play" href="/guides/remote/setup">
+    Two lines: `AddODataMcp` and `UseODataMcp`.
+  </Card>
+  <Card title="Tune Remote MCP" icon="sliders" href="/guides/remote/advanced">
+    Product sentence, which APIs to expose, canned prompts, rate limits.
+  </Card>
+  <Card title="Long-running actions" icon="hourglass" href="/guides/remote/tasks">
+    `[McpTask]` so the harness waits instead of assuming the call is done.
+  </Card>
+  <Card title="Ask the operator to open a URL" icon="arrow-up-right-from-square" href="/guides/remote/elicitations">
+    `[McpElicitUrl]` and a waiter. Tokens stay out of the chat.
+  </Card>
+  <Card title="Lock Remote MCP like the API" icon="lock" href="/guides/remote/authentication">
+    The harness presents whatever credential your pipeline already accepts.
+  </Card>
+</CardGroup>

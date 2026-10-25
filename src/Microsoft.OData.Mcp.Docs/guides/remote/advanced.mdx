@@ -1,0 +1,102 @@
+---
+title: "Tune Remote MCP"
+description: "A product sentence for the assistant, which APIs and entity sets to expose, canned prompts, and how hard to lean on the endpoint."
+keywords: ["Remote MCP", "InstructionsPreface", "IncludePrefixes", "WithPrompts"]
+---
+
+Most hosts stop at [two lines](/guides/remote/setup). Use this page when you want the assistant to sound like *your* product, or when you do not want every route on the box.
+
+## Tell the assistant what this API is
+
+```csharp
+builder.Services.AddODataMcp(options =>
+{
+    options.Catalog.InstructionsPreface =
+        "Contoso ERP. Monetary amounts are USD. Start with list_orders for recent activity.";
+});
+```
+
+That sentence is prepended to the shared instructions every Remote MCP host already sends (prefer named tools, omit `$` on parameter names, and so on). You cannot replace those; you only introduce your product.
+
+Keep it short. Currency, tenancy, and where to start are enough.
+
+## Show only some of the API
+
+```csharp
+builder.Services.AddODataMcp(options =>
+{
+    options.IncludePrefixes.Add("odata");          // this prefix only
+    options.Catalog.IncludeEntitySets.Add("Customers");
+    options.Catalog.IncludeEntitySets.Add("Orders");
+    options.Catalog.ExcludeEntitySets.Add("AuditEntries");
+});
+```
+
+Empty include lists mean “everything we discovered.” `ExcludeRoutes` hides a prefix after include.
+
+Turn off create, update, or delete named tools with `Catalog.IncludeCreate` / `IncludeUpdate` / `IncludeDelete` when those verbs should stay off-limits.
+
+## Canned prompts
+
+The catalog does not invent prompts from your EDM. If you want “quarterly review” as a first-class prompt the harness can pick:
+
+```csharp
+builder.Services.AddODataMcp(options => { }, mcp =>
+{
+    mcp.Server.WithPrompts<SalesPrompts>();
+});
+```
+
+```csharp
+using System.ComponentModel;
+using ModelContextProtocol.Server;
+
+[McpServerPromptType]
+public static class SalesPrompts
+{
+    [McpServerPrompt(Name = "quarterly_review"), Description("Summarize shipped orders this quarter.")]
+    public static string QuarterlyReview()
+    {
+        return "Call list_orders with filter Status eq 'Shipped'. Summarize totals by customer.";
+    }
+}
+```
+
+## Slow the endpoint down
+
+Lock it like the API, then add a limiter if harness traffic will share the box with humans:
+
+```csharp
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("mcp", limiter =>
+    {
+        limiter.PermitLimit = 30;
+        limiter.Window = TimeSpan.FromMinutes(1);
+    });
+});
+
+builder.Services.AddODataMcp(options =>
+{
+    options.RequireAuthorization = true;
+    options.RateLimitingPolicyName = "mcp";
+});
+```
+
+How the harness authenticates is [authentication](/guides/remote/authentication).
+
+<AccordionGroup>
+  <Accordion title="Routing cannot see your model">
+    ```csharp
+    builder.Services.AddODataMcp(options =>
+    {
+        options.AddRoute("odata", GetEdmModel());
+    });
+    ```
+
+    Discovery still runs and wins when it finds the same prefix.
+  </Accordion>
+  <Accordion title="Catalog knobs you will rarely touch">
+    `ToolsPageSize` (default 100), `MaxResources` (50, including `$metadata`), payload caps, and `MaxOperationWait` (10 minutes) live on `options.Catalog`. See [ODataMcpCatalogOptions](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions).
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,58 @@
+---
+title: McpTaskAttributeAnnotations
+description: "Stamps `[McpTask]` onto matching EDM actions on a finished model."
+icon: bolt
+tag: "STATIC"
+keywords: ['McpTaskAttributeAnnotations', 'Microsoft.OData.Mcp.AspNetCore.Vocabularies.McpTaskAttributeAnnotations', 'Microsoft.OData.Mcp.AspNetCore.Vocabularies', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Vocabularies
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Vocabularies.McpTaskAttributeAnnotations
+```
+
+## Summary
+
+Stamps `[McpTask]` onto matching EDM actions on a finished model.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Apply
+
+Stamps `Microsoft.OData.Mcp.V1.Task` on each EDM action whose CLR method on
+*sourceTypes* has [McpTaskAttribute](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpTaskAttribute).
+
+#### Syntax
+
+```csharp
+public static void Apply(Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IEnumerable<System.Type> sourceTypes)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.IEdmModel` | The finished service model from route discovery. |
+| `sourceTypes` | `System.Collections.Generic.IEnumerable<System.Type>` | Restier API types and/or MVC controllers. |
+
+#### Examples
+
+```csharp
+McpTaskAttributeAnnotations.Apply(edmModel, [typeof(MyApi)]);
+```
+
+#### Remarks
+
+No-ops when *model* is not a mutable [EdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.edmmodel).
+Methods are matched to [IEdmAction](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.iedmaction) by name and bound/unbound shape.
+Functions are never stamped.
+

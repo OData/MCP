@@ -11,17 +11,37 @@
         "group": "Getting Started",
         "icon": "stars",
         "pages": [
-          "index",
-          "why-mcp",
-          "quickstart-local",
-          "quickstart-server"
+          "index"
         ]
       },
       {
         "group": "Guides",
         "icon": "dog-leashed",
+        "root": "guides/index",
         "pages": [
-          "guides/cli/how-it-works"
+          "guides/index",
+          {
+            "group": "Local MCP",
+            "root": "guides/local/index",
+            "pages": [
+              "guides/local/index",
+              "guides/local/get-started",
+              "guides/local/sign-in",
+              "guides/local/how-it-works"
+            ]
+          },
+          {
+            "group": "Remote MCP",
+            "root": "guides/remote/index",
+            "pages": [
+              "guides/remote/index",
+              "guides/remote/setup",
+              "guides/remote/advanced",
+              "guides/remote/tasks",
+              "guides/remote/elicitations",
+              "guides/remote/authentication"
+            ]
+          }
         ]
       },
       {
@@ -120,6 +140,16 @@
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteBinding",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpRouteDiscovery",
                               "api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpSessionFactory"
+                            ]
+                          },
+                          {
+                            "group": "Vocabularies",
+                            "icon": "folder-tree",
+                            "pages": [
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Vocabularies/index",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Vocabularies/McpTaskAnnotations",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Vocabularies/McpTaskAttributeAnnotations",
+                              "api-reference/Microsoft/OData/Mcp/AspNetCore/Vocabularies/McpVocabularyModel"
                             ]
                           }
                         ]
@@ -261,6 +291,16 @@
                               "api-reference/Microsoft/OData/Mcp/Core/Parsing/CsdlParser",
                               "api-reference/Microsoft/OData/Mcp/Core/Parsing/ICsdlMetadataParser"
                             ]
+                          },
+                          {
+                            "group": "Vocabularies",
+                            "icon": "folder-tree",
+                            "pages": [
+                              "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/index",
+                              "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpElicitUrlAttribute",
+                              "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpTaskAttribute",
+                              "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpVocabulary"
+                            ]
                           }
                         ]
                       },
@@ -296,6 +336,14 @@
                           }
                         ]
                       }
+                    ]
+                  },
+                  {
+                    "group": "ModelBuilder",
+                    "icon": "folder-tree",
+                    "pages": [
+                      "api-reference/Microsoft/OData/ModelBuilder/index",
+                      "api-reference/Microsoft/OData/ModelBuilder/ActionConfiguration"
                     ]
                   }
                 ]

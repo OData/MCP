@@ -1,0 +1,53 @@
+---
+title: "Guides"
+description: "Use Local MCP on your machine, or put Remote MCP on the API you ship."
+---
+
+Pick the product that matches what you are doing, then open the pages in that section.
+
+<CardGroup cols={2}>
+  <Card title="Local MCP" icon="laptop" href="/guides/local">
+    Point `dotnet odata-mcp` at any OData service. Your assistant gets compact tools over stdio.
+  </Card>
+  <Card title="Remote MCP" icon="server" href="/guides/remote">
+    Add two lines to your ASP.NET Core host. Customers point their harness at `{prefix}/mcp`.
+  </Card>
+</CardGroup>
+
+## Local MCP
+
+A small app on Windows, macOS, and Linux. Package: `Microsoft.OData.Mcp`.
+
+<CardGroup cols={2}>
+  <Card title="Use Local MCP" href="/guides/local/get-started">
+    Install, `try`, `add`, and ask.
+  </Card>
+  <Card title="Sign in to the service" href="/guides/local/sign-in">
+    Flags `try` prints, Graph, and protected resource metadata.
+  </Card>
+  <Card title="How Local MCP works" href="/guides/local/how-it-works">
+    Startup, the probe, the catalog, stdio, and outbound sign-in.
+  </Card>
+</CardGroup>
+
+## Remote MCP
+
+A NuGet package on the OData API you already host. Package: `Microsoft.OData.Mcp.AspNetCore`.
+
+<CardGroup cols={2}>
+  <Card title="Add Remote MCP to your API" href="/guides/remote/setup">
+    `AddODataMcp` and `UseODataMcp`. Customers paste `https://your-host/odata/mcp` into the harness.
+  </Card>
+  <Card title="Tune Remote MCP" href="/guides/remote/advanced">
+    Product sentence, which sets to expose, canned prompts, rate limits.
+  </Card>
+  <Card title="Long-running actions" href="/guides/remote/tasks">
+    `[McpTask]` so the harness waits while shipping, a report, or a browser hop finishes.
+  </Card>
+  <Card title="Ask the operator to open a URL" href="/guides/remote/elicitations">
+    `[McpElicitUrl]` plus a waiter. Tokens stay out of the chat.
+  </Card>
+  <Card title="Lock Remote MCP like the API" href="/guides/remote/authentication">
+    `RequireAuthorization` and protected resource metadata for the harness.
+  </Card>
+</CardGroup>

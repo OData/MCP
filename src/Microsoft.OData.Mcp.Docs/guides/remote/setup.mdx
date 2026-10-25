@@ -1,0 +1,63 @@
+---
+title: "Add Remote MCP to your API"
+description: "Two lines of code and your customers' harness can ask about their data on your API."
+keywords: ["Remote MCP", "AddODataMcp", "UseODataMcp", "harness"]
+---
+
+This is what you offer **your customers**. They stay in their assistant — Claude Desktop, Cursor, Claude Code, and the rest — and ask about *their* data on *your* API.
+
+- Tell me about customer ALFKI.
+- When was the last order on that account?
+- Find customers who have not created a new project in 45 days.
+
+Your OData API does not change. MCP is a sibling at `{yourRoute}/mcp`. Customers point their harness at that URL.
+
+## Add it
+
+```bash
+dotnet add package Microsoft.OData.Mcp.AspNetCore
+```
+
+```csharp
+builder.Services
+    .AddControllers()
+    .AddOData(options => options.AddRouteComponents("odata", GetEdmModel()));
+
+builder.Services.AddODataMcp();
+
+var app = builder.Build();
+app.MapControllers();
+app.UseODataMcp();
+```
+
+Customers point the harness at `https://your-host/odata/mcp`. OData at `/odata` is unchanged.
+
+<Tabs>
+  <Tab title="OData 8">
+    `AddRouteComponents` + `MapControllers`, then `UseODataMcp`.
+  </Tab>
+  <Tab title="Restier">
+    ```csharp
+    builder.Services.AddODataMcp();
+
+    var app = builder.Build();
+    app.MapRestier(routes => routes.MapApiRoute<MyApi>("odata", "odata"));
+    app.UseODataMcp();
+    ```
+
+    No extra Restier package. Attributes such as `[McpTask]` come from `Microsoft.OData.Mcp.Core`.
+  </Tab>
+  <Tab title="Several APIs">
+    Each OData prefix gets its own MCP endpoint: `/odata/mcp`, `/reporting/mcp`, `/api/v1/mcp`. Hide one with [advanced setup](/guides/remote/advanced).
+  </Tab>
+</Tabs>
+
+Call `UseODataMcp` **after** your OData routes exist. That is the whole on switch.
+
+## What the harness gets
+
+Named tools from your model: `list_customers`, `get_customer`, `create_order`, `action_order_ship`. Generic `odata_*` tools cover everything else. Type cards are compact, so the model spends tokens on the question instead of your `$metadata`.
+
+Answers come back as the same JSON your API already returns. A bad create or a missing key fails with a readable message before it ever hits your controllers.
+
+Give the assistant a one-line preface about your product in [advanced setup](/guides/remote/advanced). If an action opens a browser for the operator, see [Tasks](/guides/remote/tasks) and [Elicitations](/guides/remote/elicitations). Lock `/mcp` the same way you lock the API in [authentication](/guides/remote/authentication).

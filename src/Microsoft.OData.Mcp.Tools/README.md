@@ -50,7 +50,7 @@ You need [.NET 8](https://dotnet.microsoft.com/download) or later on Windows, ma
 **1. Install**
 
 ```bash
-dotnet tool install -g Microsoft.OData.Mcp.Tools
+dotnet tool install -g Microsoft.OData.Mcp
 ```
 
 **2. Check the service**
@@ -110,7 +110,7 @@ dotnet odata-mcp start https://graph.microsoft.com/v1.0 \
 
 Sign-in prompts show as `Sign in at <url>` and `Code: <code>`. Tokens are stored on your machine and refreshed for you.
 
-If you **own** the API, one line in that app (`AddProtectedResourceMetadata`) lets Local MCP discover how to sign in with no extra flags. That is documented with [Remote MCP](../Microsoft.OData.Mcp.AspNetCore/readme.md).
+If you **own** the OData API, one line in that app (`AddProtectedResourceMetadata`) lets Local MCP discover how to sign in with no extra flags beyond a client id.
 
 ## Commands you will actually use
 

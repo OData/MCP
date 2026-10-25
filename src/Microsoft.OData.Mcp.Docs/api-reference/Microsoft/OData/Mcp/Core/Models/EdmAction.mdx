@@ -100,6 +100,21 @@ public string Description { get; set; }
 Type: `string?`
 A human-readable summary from metadata, or `null` when none is declared.
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitUrlProperties
+
+Gets or sets JSON property names on the action result that are URLs to elicit.
+
+#### Syntax
+
+```csharp
+public System.Collections.Generic.List<string> ElicitUrlProperties { get; set; }
+```
+
+#### Property Value
+
+Type: `System.Collections.Generic.List<string>?`
+The declared `Microsoft.OData.Mcp.V1.ElicitUrlProperties` list, or `null` when the term is omitted.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> FullName
 
 Gets the fully qualified name of the action.
@@ -133,6 +148,21 @@ Type: `bool`
 #### Remarks
 
 Bound actions are called on instances of a specific type.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsTask
+
+Gets or sets a value indicating whether the action runs as an MCP task when the client opts in.
+
+#### Syntax
+
+```csharp
+public bool IsTask { get; set; }
+```
+
+#### Property Value
+
+Type: `bool`
+`true` when `Microsoft.OData.Mcp.V1.Task` is true; otherwise, `false`.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> LongDescription
 

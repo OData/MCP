@@ -45,7 +45,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
                     Namespace = typeof(Customer).Namespace!
                 };
                 builder.EntitySet<Customer>("Customers");
-                builder.EntityType<Customer>().Action("Authorize").HasMcpTask();
+                builder.EntityType<Customer>().Action("Authorize").HasMcpTask().HasMcpElicitUrl("connectUri");
                 builder.EntityType<Customer>().Action("Reset");
 
                 services
@@ -133,6 +133,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
             var parsed = new CsdlParser().ParseFromString(xml!);
             var tasked = parsed.Actions.Single(action => action.Name == taskedAction);
             tasked.IsTask.Should().BeTrue();
+            tasked.ElicitUrlProperties.Should().Equal("connectUri");
             tasked.Namespace.Should().Be(typeof(Customer).Namespace);
             parsed.Actions.Single(action => action.Name == oneShotAction).IsTask.Should().BeFalse();
 
@@ -143,7 +144,8 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
             ((XElement)action.Parent!).Attribute("Namespace")!.Value.Should().Be(typeof(Customer).Namespace);
             action.Elements(edm + "Annotation")
                 .Select(element => element.Attribute("Term")?.Value)
-                .Should().Contain("Mcp.Task");
+                .Should().Contain("Mcp.Task")
+                .And.Contain("Mcp.ElicitUrlProperties");
         }
 
         #endregion

@@ -32,6 +32,29 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         #region Public Methods
 
         /// <summary>
+        /// Bound action that returns a Started ticket with a URL to elicit.
+        /// </summary>
+        /// <param name="customer">The bound customer.</param>
+        /// <returns>
+        /// A Started ticket whose <c>connectUri</c> the host elicits.
+        /// </returns>
+        [BoundOperation(OperationType = OperationType.Action)]
+        [McpTask]
+        [McpElicitUrl("connectUri")]
+        public McpAuthorizationTicket Authorize(McpCustomer customer)
+        {
+            ArgumentNullException.ThrowIfNull(customer);
+
+            return new McpAuthorizationTicket
+            {
+                ConnectUri = "https://login.example.test/connect",
+                ExpiresIn = 600,
+                Message = "Open the URL to finish authorization.",
+                Status = "Started"
+            };
+        }
+
+        /// <summary>
         /// Unbound function with a string parameter.
         /// </summary>
         /// <param name="code">The status code to echo.</param>

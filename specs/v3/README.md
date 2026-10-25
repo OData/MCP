@@ -1,7 +1,7 @@
 # OData MCP Platform — Specification v3
 
 **Status:** Living (authoritative)  
-**Revised:** 2026-09-06  
+**Revised:** 2026-10-24  
 **Protocol:** MCP `2026-07-28` via **ModelContextProtocol C# SDK 2.x**  
 **Stance:** Concepts are sacred. Every current class is a candidate for deletion.
 
@@ -30,7 +30,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [PROTOCOL.md](./PROTOCOL.md) | MCP 2: resources = graph, tools = operations |
 | [METADATA-STRATEGY.md](./METADATA-STRATEGY.md) | Custom EDM stays; AspNetCore adapts `IEdmModel` |
 | [TOOL-SURFACE.md](./TOOL-SURFACE.md) | Generic + named tools; local `shutdown_server` |
-| [ACTIONS.md](./ACTIONS.md) | Named tools for bound/unbound actions (and functions); long-running in-process actions stream progress on the existing `tools/call`, no second SSE |
+| [ACTIONS.md](./ACTIONS.md) | Named tools for bound/unbound actions (and functions); annotated actions become MCP Tasks with URL elicitation (`AddODataMcp` builder `WithTasks`) |
 | [TYPE-SHAPES.md](./TYPE-SHAPES.md) | How MCP describes OData types: grammar, describe/describe_model, required-on-create, operations |
 | [PERFORMANCE.md](./PERFORMANCE.md) | Serve more requests with less memory: parse schemas once, share type schemas, drop duplicate shape data, compact in-process CSDL |
 | [OPTIMIZATION.md](./OPTIMIZATION.md) | Hide EDMX from the calling AI; steer first-call success so the user is not waiting on retries |

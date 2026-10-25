@@ -1,41 +1,55 @@
 <Project Sdk="DotNetDocs.Sdk/1.5.5-preview.1">
 
     <PropertyGroup>
-		<DocumentationType>Mintlify</DocumentationType>
-		<GenerateDocumentation>true</GenerateDocumentation>
-		<NamespaceMode>Folder</NamespaceMode>
-		<ShowDocumentationStats>true</ShowDocumentationStats>
+        <DocumentationType>Mintlify</DocumentationType>
+        <GenerateDocumentation>true</GenerateDocumentation>
+        <NamespaceMode>Folder</NamespaceMode>
+        <ShowDocumentationStats>true</ShowDocumentationStats>
 
-		<ConceptualDocsEnabled>false</ConceptualDocsEnabled>
-		<ShowPlaceholders>false</ShowPlaceholders>
+        <ConceptualDocsEnabled>false</ConceptualDocsEnabled>
+        <ShowPlaceholders>false</ShowPlaceholders>
 
-		<MintlifyTemplate>
-			<Name>OData MCP</Name>
-			<Theme>maple</Theme>
-			<Colors>
-				<Primary>#419AC5</Primary>
-				<Light>#419AC5</Light>
-				<Dark>#3CD0E2</Dark>
-			</Colors>
+        <MintlifyTemplate>
+            <Name>OData MCP</Name>
+            <Theme>maple</Theme>
+            <Colors>
+                <Primary>#419AC5</Primary>
+                <Light>#419AC5</Light>
+                <Dark>#3CD0E2</Dark>
+            </Colors>
             <Navigation Mode="Unified">
                 <Pages>
                     <Groups>
                         <Group Name="Getting Started" Icon="stars">
-                            <Pages>index;why-mcp;quickstart-local;quickstart-server</Pages>
+                            <Pages>index</Pages>
                         </Group>
-                        <Group Name="Guides" Icon="dog-leashed">
-                            <Pages>guides/cli/how-it-works</Pages>
+                        <Group Name="Guides" Icon="dog-leashed" Root="guides/index">
+                            <Pages>guides/index</Pages>
+                            <Groups>
+                                <Group Name="Local MCP" Root="guides/local/index">
+                                    <Pages>
+                                        guides/local/index;
+                                        guides/local/get-started;
+                                        guides/local/sign-in;
+                                        guides/local/how-it-works
+                                    </Pages>
+                                </Group>
+                                <Group Name="Remote MCP" Root="guides/remote/index">
+                                    <Pages>
+                                        guides/remote/index;
+                                        guides/remote/setup;
+                                        guides/remote/advanced;
+                                        guides/remote/tasks;
+                                        guides/remote/elicitations;
+                                        guides/remote/authentication
+                                    </Pages>
+                                </Group>
+                            </Groups>
                         </Group>
                     </Groups>
                 </Pages>
             </Navigation>
-		</MintlifyTemplate>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Microsoft.OData.Mcp.AspNetCore\Microsoft.OData.Mcp.AspNetCore.csproj" />
-		<ProjectReference Include="..\Microsoft.OData.Mcp.Core\Microsoft.OData.Mcp.Core.csproj" />
-		<ProjectReference Include="..\Microsoft.OData.Mcp.Tools\Microsoft.OData.Mcp.Tools.csproj" />
-	</ItemGroup>
+        </MintlifyTemplate>
+    </PropertyGroup>
 
 </Project>

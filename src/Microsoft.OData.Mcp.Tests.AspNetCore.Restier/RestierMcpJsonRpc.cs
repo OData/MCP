@@ -20,6 +20,22 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
 
         internal const string ProtocolVersion = "2025-06-18";
 
+        /// <summary>
+        /// Per-request <c>_meta</c> for protocol <c>2026-07-28</c> with URL elicitation and no Tasks extension.
+        /// </summary>
+        internal const string ElicitationMetaJson = """{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"odata-mcp-tests","version":"1.0"},"io.modelcontextprotocol/clientCapabilities":{"elicitation":{"url":{}}}}""";
+
+        /// <summary>
+        /// Per-request <c>_meta</c> for protocol <c>2026-07-28</c>: version, client info, URL elicitation,
+        /// and the Tasks extension opt-in.
+        /// </summary>
+        internal const string TasksMetaJson = """{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"odata-mcp-tests","version":"1.0"},"io.modelcontextprotocol/clientCapabilities":{"elicitation":{"url":{}},"extensions":{"io.modelcontextprotocol/tasks":{}}}}""";
+
+        /// <summary>
+        /// Protocol version that advertises Tasks and URL elicitation.
+        /// </summary>
+        internal const string TasksProtocolVersion = "2026-07-28";
+
         #endregion
 
         #region Public Methods
@@ -44,6 +60,59 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var payload = "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"tools/call\",\"params\":{\"name\":\"" + toolName + "\",\"arguments\":" + args + "}}";
 
             return await SendAfterInitializeAsync(client, path, payload);
+        }
+
+        /// <summary>
+        /// Builds a <c>tools/call</c> JSON-RPC payload.
+        /// </summary>
+        /// <param name="toolName">The tool name.</param>
+        /// <param name="argumentsJson">JSON object of arguments.</param>
+        /// <param name="metaJson">Optional <c>_meta</c> JSON object.</param>
+        /// <returns>
+        /// The JSON.
+        /// </returns>
+        public static string CallToolPayload(string toolName, string argumentsJson = "{}", string? metaJson = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
+
+            var args = string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson;
+            var meta = string.IsNullOrWhiteSpace(metaJson)
+                ? string.Empty
+                : ",\"_meta\":" + metaJson;
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"tools/call\",\"params\":{\"name\":\"" + toolName + "\",\"arguments\":" + args + meta + "}}";
+        }
+
+        /// <summary>
+        /// Builds a <c>tools/call</c> retry after an MRTR <c>InputRequiredResult</c>.
+        /// </summary>
+        /// <param name="toolName">The tool name.</param>
+        /// <param name="argumentsJson">JSON object of arguments.</param>
+        /// <param name="inputResponsesJson">JSON object of input responses.</param>
+        /// <param name="requestState">Opaque state from the previous result.</param>
+        /// <param name="metaJson">Optional <c>_meta</c> JSON object.</param>
+        /// <returns>
+        /// The JSON-RPC body.
+        /// </returns>
+        public static string CallToolRetryPayload(
+            string toolName,
+            string argumentsJson,
+            string inputResponsesJson,
+            string requestState,
+            string? metaJson = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(inputResponsesJson);
+            ArgumentException.ThrowIfNullOrWhiteSpace(requestState);
+
+            var args = string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson;
+            var meta = string.IsNullOrWhiteSpace(metaJson)
+                ? string.Empty
+                : ",\"_meta\":" + metaJson;
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"tools/call\",\"params\":{\"name\":\"" + toolName
+                + "\",\"arguments\":" + args
+                + ",\"inputResponses\":" + inputResponsesJson
+                + ",\"requestState\":" + JsonSerializer.Serialize(requestState)
+                + meta + "}}";
         }
 
         /// <summary>
@@ -117,7 +186,123 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         /// </returns>
         public static string InitializePayload()
         {
-            return "{\"jsonrpc\":\"2.0\",\"id\":\"init\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"" + ProtocolVersion + "\",\"capabilities\":{},\"clientInfo\":{\"name\":\"odata-mcp-tests\",\"version\":\"1.0\"}}}";
+            return InitializePayload(ProtocolVersion, "{}");
+        }
+
+        /// <summary>
+        /// Builds the initialize JSON-RPC payload.
+        /// </summary>
+        /// <param name="protocolVersion">The MCP protocol version.</param>
+        /// <param name="capabilitiesJson">JSON object of client capabilities.</param>
+        /// <returns>
+        /// The JSON.
+        /// </returns>
+        public static string InitializePayload(string protocolVersion, string capabilitiesJson)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(protocolVersion);
+            ArgumentException.ThrowIfNullOrWhiteSpace(capabilitiesJson);
+
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"init\",\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"" + protocolVersion + "\",\"capabilities\":" + capabilitiesJson + ",\"clientInfo\":{\"name\":\"odata-mcp-tests\",\"version\":\"1.0\"}}}";
+        }
+
+        /// <summary>
+        /// Posts <c>initialize</c> and returns the session id when the server sent one.
+        /// </summary>
+        /// <param name="client">The HTTP client.</param>
+        /// <param name="path">The MCP path.</param>
+        /// <param name="protocolVersion">The MCP protocol version.</param>
+        /// <param name="capabilitiesJson">JSON object of client capabilities.</param>
+        /// <returns>
+        /// The session id, or <c>null</c>.
+        /// </returns>
+        public static async Task<string?> InitializeSessionAsync(
+            HttpClient client,
+            string path,
+            string? protocolVersion = null,
+            string? capabilitiesJson = null)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json, text/event-stream");
+            using var initialize = Content(InitializePayload(
+                string.IsNullOrWhiteSpace(protocolVersion) ? ProtocolVersion : protocolVersion,
+                string.IsNullOrWhiteSpace(capabilitiesJson) ? "{}" : capabilitiesJson));
+            using var initialized = await client.PostAsync(path, initialize);
+            return initialized.Headers.TryGetValues("mcp-session-id", out var values)
+                ? string.Join(",", values)
+                : null;
+        }
+
+        /// <summary>
+        /// Posts a JSON-RPC body, carrying the session header when present.
+        /// </summary>
+        /// <param name="client">The HTTP client.</param>
+        /// <param name="path">The MCP path.</param>
+        /// <param name="json">The JSON-RPC payload.</param>
+        /// <param name="sessionId">The session id from initialize, or <c>null</c>.</param>
+        /// <returns>
+        /// The response.
+        /// </returns>
+        public static async Task<HttpResponseMessage> PostAsync(HttpClient client, string path, string json, string? sessionId)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json, text/event-stream");
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            {
+                Content = Content(json)
+            };
+            if (!string.IsNullOrWhiteSpace(sessionId))
+            {
+                request.Headers.TryAddWithoutValidation("mcp-session-id", sessionId);
+            }
+
+            return await client.SendAsync(request);
+        }
+
+        /// <summary>
+        /// Posts a protocol <c>2026-07-28</c> JSON-RPC request. That revision has no initialize
+        /// handshake; the MCP method and name travel as headers.
+        /// </summary>
+        /// <param name="client">The HTTP client.</param>
+        /// <param name="path">The MCP path.</param>
+        /// <param name="json">The JSON-RPC payload.</param>
+        /// <param name="method">The JSON-RPC method, for example <c>tools/call</c>.</param>
+        /// <param name="name">The tool or resource name when the method requires <c>Mcp-Name</c>.</param>
+        /// <returns>
+        /// The response.
+        /// </returns>
+        public static async Task<HttpResponseMessage> PostJuly2026Async(
+            HttpClient client,
+            string path,
+            string json,
+            string method,
+            string? name = null)
+        {
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            ArgumentException.ThrowIfNullOrWhiteSpace(json);
+            ArgumentException.ThrowIfNullOrWhiteSpace(method);
+
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json, text/event-stream");
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            {
+                Content = Content(json)
+            };
+            request.Headers.TryAddWithoutValidation("MCP-Protocol-Version", TasksProtocolVersion);
+            request.Headers.TryAddWithoutValidation("Mcp-Method", method);
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                request.Headers.TryAddWithoutValidation("Mcp-Name", name);
+            }
+
+            return await client.SendAsync(request);
         }
 
         /// <summary>
@@ -260,6 +445,62 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             }
 
             return await client.SendAsync(request);
+        }
+
+        /// <summary>
+        /// Builds a <c>tasks/cancel</c> JSON-RPC payload.
+        /// </summary>
+        /// <param name="taskId">The task id.</param>
+        /// <param name="metaJson">Optional <c>_meta</c> JSON object.</param>
+        /// <returns>
+        /// The JSON.
+        /// </returns>
+        public static string TasksCancelPayload(string taskId, string? metaJson = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(taskId);
+
+            var meta = string.IsNullOrWhiteSpace(metaJson)
+                ? string.Empty
+                : ",\"_meta\":" + metaJson;
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"4\",\"method\":\"tasks/cancel\",\"params\":{\"taskId\":" + JsonSerializer.Serialize(taskId) + meta + "}}";
+        }
+
+        /// <summary>
+        /// Builds a <c>tasks/get</c> JSON-RPC payload.
+        /// </summary>
+        /// <param name="taskId">The task id.</param>
+        /// <param name="metaJson">Optional <c>_meta</c> JSON object.</param>
+        /// <returns>
+        /// The JSON.
+        /// </returns>
+        public static string TasksGetPayload(string taskId, string? metaJson = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(taskId);
+
+            var meta = string.IsNullOrWhiteSpace(metaJson)
+                ? string.Empty
+                : ",\"_meta\":" + metaJson;
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"tasks/get\",\"params\":{\"taskId\":" + JsonSerializer.Serialize(taskId) + meta + "}}";
+        }
+
+        /// <summary>
+        /// Builds a <c>tasks/update</c> JSON-RPC payload.
+        /// </summary>
+        /// <param name="taskId">The task id.</param>
+        /// <param name="inputResponsesJson">JSON object of input responses.</param>
+        /// <param name="metaJson">Optional <c>_meta</c> JSON object.</param>
+        /// <returns>
+        /// The JSON.
+        /// </returns>
+        public static string TasksUpdatePayload(string taskId, string inputResponsesJson, string? metaJson = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(taskId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(inputResponsesJson);
+
+            var meta = string.IsNullOrWhiteSpace(metaJson)
+                ? string.Empty
+                : ",\"_meta\":" + metaJson;
+            return "{\"jsonrpc\":\"2.0\",\"id\":\"3\",\"method\":\"tasks/update\",\"params\":{\"taskId\":" + JsonSerializer.Serialize(taskId) + ",\"inputResponses\":" + inputResponsesJson + meta + "}}";
         }
 
         #endregion

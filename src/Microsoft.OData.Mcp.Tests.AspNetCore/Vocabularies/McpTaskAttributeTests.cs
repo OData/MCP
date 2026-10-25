@@ -85,6 +85,21 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
             pay.ElicitUrlProperties.Should().Equal("connectUri");
         }
 
+        /// <summary>
+        /// <c>[McpTask]</c> plus <c>[McpElicitUrl]</c> stamps both terms. The dedicated attribute
+        /// is the first-class elicit mark.
+        /// </summary>
+        [TestMethod]
+        public void Apply_McpElicitUrl_StampsElicitUrlProperties()
+        {
+            var model = BuildModel();
+            McpTaskAttributeAnnotations.Apply(model, [typeof(TaskedOperations)]);
+
+            var refund = EdmModelAdapter.ToCoreModel(model).Actions.Single(item => item.Name == "Refund");
+            refund.IsTask.Should().BeTrue();
+            refund.ElicitUrlProperties.Should().Equal("connectUri");
+        }
+
         #endregion
 
         #region Internal Methods
@@ -104,6 +119,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
             builder.EntitySet<Customer>("Customers");
             builder.EntityType<Customer>().Action("Authorize");
             builder.EntityType<Customer>().Action("Pay");
+            builder.EntityType<Customer>().Action("Refund");
             builder.Action("Reset");
             builder.Function("MostValuable").Returns<int>();
             return builder.GetEdmModel();

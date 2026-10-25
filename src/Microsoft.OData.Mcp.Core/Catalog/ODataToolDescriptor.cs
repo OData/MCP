@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.OData.Mcp.Core.Catalog
 {
 
@@ -26,6 +28,12 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets a value indicating whether the tool is destructive.
         /// </summary>
         public bool DestructiveHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets JSON property names on the action result that are URLs to elicit, or <c>null</c>
+        /// when the term is omitted (the runtime then uses <see cref="Microsoft.OData.Mcp.Core.Vocabularies.McpVocabulary.DefaultElicitUrlProperties"/>).
+        /// </summary>
+        public IReadOnlyList<string>? ElicitUrlProperties { get; set; }
 
         /// <summary>
         /// Gets or sets the entity set this named tool targets, if any.

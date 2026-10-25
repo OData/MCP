@@ -28,6 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="listExtraTools">Optional extra tools (for example, <c>shutdown_server</c>).</param>
         /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
         /// <param name="tryHandleCallException">Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself.</param>
+        /// <param name="afterInvoke">Optional hook that sees the catalog <c>tools/call</c> result. AspNetCore uses this for URL elicitation (MRTR or Tasks).</param>
         /// <returns>
         /// The builder.
         /// </returns>
@@ -49,14 +50,15 @@ namespace Microsoft.Extensions.DependencyInjection
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<IServiceProvider, IReadOnlyList<Tool>>? listExtraTools = null,
             Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra = null,
-            Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException = null)
+            Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException = null,
+            Func<RequestContext<CallToolRequestParams>, CallToolResult, CancellationToken, ValueTask<CallToolResult>>? afterInvoke = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
             ArgumentNullException.ThrowIfNull(resolveSession);
 
             return builder
                 .WithListToolsHandler((request, cancellationToken) => ODataMcpHandlers.ListToolsAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, listExtraTools, request.Params?.Cursor, cancellationToken))
-                .WithCallToolHandler((request, cancellationToken) => ODataMcpHandlers.CallToolAsync(request, resolveSession, tryHandleExtra, tryHandleCallException, cancellationToken))
+                .WithCallToolHandler((request, cancellationToken) => ODataMcpHandlers.CallToolAsync(request, resolveSession, tryHandleExtra, tryHandleCallException, cancellationToken, afterInvoke))
                 .WithListResourcesHandler((request, cancellationToken) => ODataMcpHandlers.ListResourcesAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, cancellationToken))
                 .WithReadResourceHandler((request, cancellationToken) => ODataMcpHandlers.ReadResourceAsync(request, resolveSession, cancellationToken))
                 .WithListResourceTemplatesHandler((request, cancellationToken) => ODataMcpHandlers.ListTemplatesAsync(ODataMcpHandlers.RequireServices(request.Services), resolveSession, cancellationToken))

@@ -1,0 +1,79 @@
+---
+title: McpTaskAttribute
+description: "Marks a CLR operation as an MCP task. After OData routes are mapped, the host stamps `Microsoft.OData.Mcp.V1.Task` on the matching EDM action."
+icon: lock
+tag: "SEALED"
+keywords: ['McpTaskAttribute', 'Microsoft.OData.Mcp.Core.Vocabularies.McpTaskAttribute', 'Microsoft.OData.Mcp.Core.Vocabularies', 'class', 'System.Attribute']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Vocabularies
+
+**Inheritance:** System.Attribute
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Vocabularies.McpTaskAttribute
+```
+
+## Summary
+
+Marks a CLR operation as an MCP task. After OData routes are mapped, the host stamps
+`Microsoft.OData.Mcp.V1.Task` on the matching EDM action.
+
+## Remarks
+
+Pair with Restier `[BoundOperation]` / `[UnboundOperation]` or an OData controller action.
+Convention ModelBuilder hosts use `HasMcpTask()` instead. Pair
+[McpElicitUrlAttribute](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpElicitUrlAttribute) to name elicit URL properties without relying on the
+constructor convenience arguments. Functions are not tasked.
+
+## Examples
+
+```csharp
+[BoundOperation(OperationType = OperationType.Action)]
+[McpTask]
+public Order Ship(Order order)
+{
+    return order;
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Marks the method as an MCP task.
+
+#### Syntax
+
+```csharp
+public McpTaskAttribute(params string[] elicitUrlProperties)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `elicitUrlProperties` | `string[]` | Optional JSON property names for `ElicitUrlProperties`. |
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitUrlProperties
+
+Gets JSON property names for `ElicitUrlProperties`. Empty when omitted.
+
+#### Syntax
+
+```csharp
+public string[] ElicitUrlProperties { get; }
+```
+
+#### Property Value
+
+Type: `string[]`
+

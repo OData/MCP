@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.OData.Mcp.Core.Catalog
@@ -106,6 +107,15 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets the maximum length of a <c>filter</c> argument.
         /// </summary>
         public int MaxFilterLength { get; set; } = 2_048;
+
+        /// <summary>
+        /// Gets or sets how long an annotated-action MCP task may wait for elicitation and the
+        /// host waiter. Used as the task TTL when the Started ticket has no <c>expiresIn</c>.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 10 minutes. <c>tasks/cancel</c> and this timeout cancel the waiter token.
+        /// </remarks>
+        public TimeSpan MaxOperationWait { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// Gets or sets the maximum JSON body size in bytes for create, update, and operation calls.

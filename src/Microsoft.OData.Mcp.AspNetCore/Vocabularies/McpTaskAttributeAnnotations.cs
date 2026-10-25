@@ -215,8 +215,9 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
                     continue;
                 }
 
-                var attribute = method.GetCustomAttribute<McpTaskAttribute>(true);
-                if (attribute is null)
+                var task = method.GetCustomAttribute<McpTaskAttribute>(true);
+                var elicit = method.GetCustomAttribute<McpElicitUrlAttribute>(true);
+                if (task is null && elicit is null)
                 {
                     continue;
                 }
@@ -227,7 +228,18 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
                     continue;
                 }
 
-                McpTaskAnnotations.StampTask(model, action, attribute.ElicitUrlProperties);
+                var elicitNames = elicit is { PropertyNames.Length: > 0 }
+                    ? elicit.PropertyNames
+                    : task?.ElicitUrlProperties;
+                if (task is not null)
+                {
+                    McpTaskAnnotations.StampTask(model, action, elicitNames);
+                }
+                else if (elicitNames is { Length: > 0 })
+                {
+                    McpTaskAnnotations.EnsureReferenced(model);
+                    McpTaskAnnotations.StampElicitUrlProperties(model, action, elicitNames);
+                }
             }
         }
 

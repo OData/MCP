@@ -241,7 +241,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var result = await InvokeAsync("create_mcpcustomer", ToolArguments.Of("Id", 122, "CompanyName", "Extra", "NoSuch", "x"));
 
             result.IsError.Should().BeTrue();
-            result.Text.Should().Be("Unknown property 'NoSuch' on McpCustomer. Declared: Id, CompanyName.");
+            result.Text.Should().StartWith("Unknown property 'NoSuch' on McpCustomer. Declared:");
+            result.Text.Should().Contain("Id");
+            result.Text.Should().Contain("CompanyName");
         }
 
         /// <summary>

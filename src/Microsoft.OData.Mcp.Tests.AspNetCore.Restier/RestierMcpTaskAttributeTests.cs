@@ -71,6 +71,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             share.Description.Should().Contain(McpVocabulary.TaskToolDescription);
             reset.IsTask.Should().BeFalse();
             reset.Description.Should().NotContain(McpVocabulary.TaskToolDescription);
+
+            var authorize = Catalog().Tools.Single(tool => tool.Name == "action_mcpcustomer_authorize");
+            authorize.IsTask.Should().BeTrue();
+            authorize.ElicitUrlProperties.Should().Equal("connectUri");
         }
 
         #endregion

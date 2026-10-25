@@ -429,6 +429,55 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Resolves a tasked EDM action for a named <c>action_*</c> tool or <c>odata_call</c> of the same action.
+        /// </summary>
+        /// <param name="toolName">The MCP tool name.</param>
+        /// <param name="arguments">The call arguments, used to read <c>name</c> on <c>odata_call</c>.</param>
+        /// <param name="action">The tasked action when found.</param>
+        /// <returns>
+        /// <c>true</c> when the resolved tool is an annotated action.
+        /// </returns>
+        /// <remarks>
+        /// CRUD tools, functions, and unannotated actions return <c>false</c>. Named
+        /// <c>action_*</c> and <c>odata_call</c> of the same annotated action share this path.
+        /// </remarks>
+        public bool TryGetTaskedAction(string toolName, IReadOnlyDictionary<string, JsonElement>? arguments, out EdmAction? action)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
+
+            action = null;
+            if (TryGetTool(toolName, out var tool) && tool is { OperationKind: ODataOperationKind.Action, IsTask: true })
+            {
+                action = _model.Actions.FirstOrDefault(candidate =>
+                    candidate.IsTask
+                    && string.Equals(candidate.Name, tool.OperationName, StringComparison.Ordinal)
+                    && string.Equals(candidate.BindingParameterType, tool.BindingParameterType, StringComparison.Ordinal));
+
+                return action is not null;
+            }
+
+            if (!string.Equals(toolName, ODataCall, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (arguments is null
+                || !arguments.TryGetValue(Name, out var nameValue)
+                || nameValue.ValueKind != JsonValueKind.String
+                || string.IsNullOrWhiteSpace(nameValue.GetString()))
+            {
+                return false;
+            }
+
+            var operationName = nameValue.GetString()!;
+            action = _model.Actions.FirstOrDefault(candidate =>
+                candidate.IsTask
+                && string.Equals(candidate.Name, operationName, StringComparison.OrdinalIgnoreCase));
+
+            return action is not null;
+        }
+
+        /// <summary>
         /// Finds a catalog tool by exact name.
         /// </summary>
         /// <param name="name">The tool name.</param>
@@ -1168,6 +1217,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 BindingParameterType = operation.BindingParameterType,
                 Description = ComposeToolDescription(sentence, documented, suffix),
                 DestructiveHint = operation.IsAction,
+                ElicitUrlProperties = operation.ElicitUrlProperties,
                 EntitySetName = set?.Name,
                 IdempotentHint = !operation.IsAction,
                 InputSchema = BuildOperationInputSchema(operation.Parameters, operation.IsBound, operation.CollectionBound, type),

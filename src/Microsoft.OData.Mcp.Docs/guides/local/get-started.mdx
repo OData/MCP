@@ -1,0 +1,84 @@
+---
+title: "Use Local MCP"
+description: "Point a small app on your machine at any OData service, and ask your assistant about the live data."
+keywords: ["Local MCP", "dotnet odata-mcp", "try", "add"]
+---
+
+Local MCP is a small app on your machine for any OData service. You install it, point it at the service root, and your assistant gets compact tools instead of chewing through `$metadata`.
+
+It runs on Windows, macOS, and Linux. You do not need to know OData.
+
+- Tell me about customer ALFKI.
+- When was the last time that account placed an order?
+- Find the customers who have not created a new project in 45 days.
+
+You stay in the chat. You do not export a spreadsheet first.
+
+## Get started
+
+You need [.NET 8](https://dotnet.microsoft.com/download) or later, and an assistant that can use MCP (Claude Code, Claude Desktop, Cursor, and others).
+
+<Steps>
+  <Step title="Install">
+    ```bash
+    dotnet tool install -g Microsoft.OData.Mcp
+    ```
+  </Step>
+  <Step title="Check the service">
+    ```bash
+    dotnet odata-mcp try https://services.odata.org/TripPinRESTierService
+    ```
+
+    You want `Verdict: ready`. If the service needs a sign-in, `try` tells you what to add and does not sign in behind your back.
+  </Step>
+  <Step title="Add it to your assistant">
+    ```bash
+    dotnet odata-mcp add
+    ```
+
+    The wizard asks a few questions and prints the registration command, so a token never lands in your shell history.
+
+    Claude Desktop (edit the config it already uses for MCP servers):
+
+    ```json
+    {
+      "mcpServers": {
+        "trippin": {
+          "command": "dotnet",
+          "args": ["odata-mcp", "start", "https://services.odata.org/TripPinRESTierService"]
+        }
+      }
+    }
+    ```
+  </Step>
+  <Step title="Ask">
+    Open a new chat: *Tell me about the people in this service. Who has trips coming up?*
+  </Step>
+</Steps>
+
+That is the happy path. Most people stop here.
+
+If the service needs a sign-in, see [Sign in to the service](/guides/local/sign-in).
+
+## Commands you will actually use
+
+| Command | What it does |
+|---|---|
+| `dotnet odata-mcp try <url>` | Probe the service. Exit 0 means ready. |
+| `dotnet odata-mcp add` | Wizard that registers the server with Claude Code. |
+| `dotnet odata-mcp start <url>` | Run it. Your assistant starts this for you after registration. |
+
+Pass the service root (the URL you would open in a browser). If you paste `/$metadata` on the end, it is trimmed for you.
+
+## When something is off
+
+Run `try` first. The verdict line is the answer.
+
+| Verdict | What to do |
+|---|---|
+| `ready` | `dotnet odata-mcp start <url>` or `dotnet odata-mcp add` |
+| `data requires sign-in` / `metadata requires sign-in` | Add the flags `try` printed, run `try` again |
+| `unreachable` | Check the URL. Use the service root, not a single collection |
+| `unreadable` | The URL answered, but not as OData this tool understands (login page, or an older OData version) |
+
+`dotnet odata-mcp start … --verbose` prints each call your assistant makes, on stderr only.

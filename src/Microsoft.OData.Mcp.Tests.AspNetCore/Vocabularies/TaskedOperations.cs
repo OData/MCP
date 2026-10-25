@@ -46,6 +46,16 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         }
 
         /// <summary>
+        /// Bound task action whose elicit names come from <see cref="McpElicitUrlAttribute"/>.
+        /// </summary>
+        /// <param name="customer">The bound customer.</param>
+        [McpTask]
+        [McpElicitUrl("connectUri")]
+        public void Refund(Customer customer)
+        {
+        }
+
+        /// <summary>
         /// Unbound one-shot action.
         /// </summary>
         public void Reset()

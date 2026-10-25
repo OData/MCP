@@ -1,0 +1,49 @@
+---
+title: McpVocabulary
+description: "Identifiers and CSDL for the `Microsoft.OData.Mcp.V1` vocabulary."
+icon: bolt
+tag: "STATIC"
+keywords: ['McpVocabulary', 'Microsoft.OData.Mcp.Core.Vocabularies.McpVocabulary', 'Microsoft.OData.Mcp.Core.Vocabularies', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Vocabularies
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Vocabularies.McpVocabulary
+```
+
+## Summary
+
+Identifiers and CSDL for the `Microsoft.OData.Mcp.V1` vocabulary.
+
+## Remarks
+
+Core ships the vocabulary document so the CSDL parser and the Tools host can read
+`Task` / `ElicitUrlProperties` from remote `$metadata`. AspNetCore loads the
+same XML into EdmLib when a host stamps those terms onto an `IEdmModel`.
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CsdlXml
+
+Gets the vocabulary CSDL XML.
+
+#### Syntax
+
+```csharp
+public static string CsdlXml { get; }
+```
+
+#### Property Value
+
+Type: `string`
+The embedded `Microsoft.OData.Mcp.V1.xml` document.
+

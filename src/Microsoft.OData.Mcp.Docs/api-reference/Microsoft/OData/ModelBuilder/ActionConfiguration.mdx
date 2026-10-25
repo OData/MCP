@@ -1,0 +1,71 @@
+---
+title: ActionConfiguration
+description: "Extension methods for ActionConfiguration from Microsoft.OData.ModelBuilder"
+icon: file-brackets-curly
+keywords: ['ActionConfiguration', 'Microsoft.OData.ModelBuilder.ActionConfiguration', 'Microsoft.OData.ModelBuilder', 'error']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.ModelBuilder.dll
+
+**Namespace:** Microsoft.OData.ModelBuilder
+
+## Syntax
+
+```csharp
+Microsoft.OData.ModelBuilder.ActionConfiguration
+```
+
+## Summary
+
+This type is defined in Microsoft.OData.ModelBuilder.
+
+## Remarks
+
+See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.odata.modelbuilder.actionconfiguration) for more information about the rest of the API.
+
+## Methods
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpTask <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
+
+Marks this action as an MCP task. `GetEdmModel` attaches
+`Microsoft.OData.Mcp.V1` and stamps the Task term.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.ModelBuilder.ActionConfiguration HasMcpTask(Microsoft.OData.ModelBuilder.ActionConfiguration action, params string[] elicitUrlProperties)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `action` | `Microsoft.OData.ModelBuilder.ActionConfiguration` | The action to annotate. |
+| `elicitUrlProperties` | `string[]` | Optional JSON property names for `ElicitUrlProperties`. |
+
+#### Returns
+
+Type: `Microsoft.OData.ModelBuilder.ActionConfiguration`
+*action* so further configuration can chain.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *action* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+builder.EntityType&lt;Order&gt;().Action("Ship").HasMcpTask().Returns&lt;bool&gt;();
+```
+
+#### Remarks
+
+The host does not wrap `GetEdmModel`. The vocabulary is referenced the first time this
+configuration is applied.
+

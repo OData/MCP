@@ -22,7 +22,9 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
     /// </example>
     /// <remarks>
     /// Pair with Restier <c>[BoundOperation]</c> / <c>[UnboundOperation]</c> or an OData controller action.
-    /// Convention ModelBuilder hosts use <c>HasMcpTask()</c> instead. Functions are not tasked.
+    /// Convention ModelBuilder hosts use <c>HasMcpTask()</c> instead. Pair
+    /// <see cref="McpElicitUrlAttribute"/> to name elicit URL properties without relying on the
+    /// constructor convenience arguments. Functions are not tasked.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class McpTaskAttribute : Attribute

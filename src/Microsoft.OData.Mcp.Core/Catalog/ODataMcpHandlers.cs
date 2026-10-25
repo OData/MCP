@@ -31,6 +31,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
         /// <param name="tryHandleCallException">Optional recovery handler that sees an exception the catalog tool threw.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="afterInvoke">Optional hook that sees the catalog result (AspNetCore URL elicitation).</param>
         /// <returns>
         /// The call result.
         /// </returns>
@@ -45,7 +46,8 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra,
             Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            Func<RequestContext<CallToolRequestParams>, CallToolResult, CancellationToken, ValueTask<CallToolResult>>? afterInvoke = null)
         {
             ArgumentNullException.ThrowIfNull(request);
             ArgumentNullException.ThrowIfNull(resolveSession);
@@ -69,6 +71,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 };
             }
 
+            if (afterInvoke is not null && !string.IsNullOrWhiteSpace(request.Params?.RequestState))
+            {
+                return await afterInvoke(request, ResultFromRequestState(request.Params.RequestState), cancellationToken).ConfigureAwait(false);
+            }
+
             var session = resolveSession(RequireServices(request.Services));
             var arguments = request.Params?.Arguments;
 
@@ -88,12 +95,19 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return recovered;
             }
 
-            return new CallToolResult
+            var callResult = new CallToolResult
             {
                 Content = [new TextContentBlock { Text = result.Text }],
                 IsError = result.IsError,
                 StructuredContent = result.ToStructuredContent()
             };
+
+            if (afterInvoke is null)
+            {
+                return callResult;
+            }
+
+            return await afterInvoke(request, callResult, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -319,6 +333,36 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal static IServiceProvider RequireServices(IServiceProvider? services)
         {
             return services ?? throw new InvalidOperationException("MCP request services are required.");
+        }
+
+        /// <summary>
+        /// Rebuilds a catalog tool result from MRTR <c>requestState</c> so a retry does not
+        /// re-invoke OData.
+        /// </summary>
+        /// <param name="requestState">Opaque Started JSON echoed by the client.</param>
+        /// <returns>
+        /// A tool result whose structured content is <paramref name="requestState"/>.
+        /// </returns>
+        internal static CallToolResult ResultFromRequestState(string requestState)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(requestState);
+
+            try
+            {
+                using var document = JsonDocument.Parse(requestState);
+                return new CallToolResult
+                {
+                    Content = [new TextContentBlock { Text = requestState }],
+                    StructuredContent = document.RootElement.Clone()
+                };
+            }
+            catch (JsonException)
+            {
+                return new CallToolResult
+                {
+                    Content = [new TextContentBlock { Text = requestState }]
+                };
+            }
         }
 
         /// <summary>

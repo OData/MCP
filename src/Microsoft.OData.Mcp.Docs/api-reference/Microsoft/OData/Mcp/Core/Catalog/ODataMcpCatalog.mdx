@@ -288,3 +288,31 @@ public virtual string ToString()
 
 Type: `string?`
 
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TryGetTaskedAction
+
+Resolves a tasked EDM action for a named `action_*` tool or `odata_call` of the same action.
+
+#### Syntax
+
+```csharp
+public bool TryGetTaskedAction(string toolName, System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement> arguments, out Microsoft.OData.Mcp.Core.Models.EdmAction action)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `toolName` | `string` | The MCP tool name. |
+| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>` | The call arguments, used to read `name` on `odata_call`. |
+| `action` | `Microsoft.OData.Mcp.Core.Models.EdmAction?` | The tasked action when found. |
+
+#### Returns
+
+Type: `bool`
+`true` when the resolved tool is an annotated action.
+
+#### Remarks
+
+CRUD tools, functions, and unannotated actions return `false`. Named
+`action_*` and `odata_call` of the same annotated action share this path.
+

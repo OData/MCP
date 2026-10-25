@@ -1,0 +1,81 @@
+---
+title: McpElicitUrlAttribute
+description: "Names JSON properties on an action result that are URLs to elicit. After OData routes are mapped, the host stamps `Microsoft.OData.Mcp.V1.ElicitUrlProperties..."
+icon: lock
+tag: "SEALED"
+keywords: ['McpElicitUrlAttribute', 'Microsoft.OData.Mcp.Core.Vocabularies.McpElicitUrlAttribute', 'Microsoft.OData.Mcp.Core.Vocabularies', 'class', 'System.Attribute']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Vocabularies
+
+**Inheritance:** System.Attribute
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Vocabularies.McpElicitUrlAttribute
+```
+
+## Summary
+
+Names JSON properties on an action result that are URLs to elicit. After OData routes
+are mapped, the host stamps `Microsoft.OData.Mcp.V1.ElicitUrlProperties` on the
+matching EDM action.
+
+## Remarks
+
+Pair with [McpTaskAttribute](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpTaskAttribute). Convention ModelBuilder hosts use
+`HasMcpElicitUrl` instead. When this term is omitted, the runtime elicits the
+default names in [McpVocabulary.DefaultElicitUrlProperties](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpVocabulary#defaulteliciturlproperties) if they appear
+on the Started JSON. Functions are not elicited.
+
+## Examples
+
+```csharp
+[BoundOperation(OperationType = OperationType.Action)]
+[McpTask]
+[McpElicitUrl("connectUri")]
+public AuthorizationTicket Authorize(IntegrationConnection connection)
+{
+    return ticket;
+}
+```
+
+## Constructors
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor
+
+Marks the method's result JSON properties as URLs to elicit.
+
+#### Syntax
+
+```csharp
+public McpElicitUrlAttribute(params string[] propertyNames)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `propertyNames` | `string[]` | JSON property names that hold elicit URLs. |
+
+## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> PropertyNames
+
+Gets JSON property names for `ElicitUrlProperties`.
+
+#### Syntax
+
+```csharp
+public string[] PropertyNames { get; }
+```
+
+#### Property Value
+
+Type: `string[]`
+

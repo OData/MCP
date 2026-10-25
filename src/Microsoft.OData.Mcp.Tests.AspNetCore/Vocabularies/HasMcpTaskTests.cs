@@ -72,12 +72,19 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         {
             var builder = CreateBuilder();
             builder.EntityType<Customer>().Action("Authorize").HasMcpTask("connectUri");
+            var model = builder.GetEdmModel();
 
-            var authorize = EdmModelAdapter.ToCoreModel(builder.GetEdmModel())
+            var authorize = EdmModelAdapter.ToCoreModel(model)
                 .Actions.Single(item => item.Name == "Authorize");
 
             authorize.IsTask.Should().BeTrue();
             authorize.ElicitUrlProperties.Should().Equal("connectUri");
+
+            var xml = WriteCsdl(model);
+            xml.Should().Contain("Term=\"Mcp.ElicitUrlProperties\"");
+            xml.Should().Contain("connectUri");
+            new CsdlParser().ParseFromString(xml).Actions.Single(action => action.Name == "Authorize")
+                .ElicitUrlProperties.Should().Equal("connectUri");
         }
 
         /// <summary>
@@ -94,6 +101,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
             xml.Should().Contain(McpVocabulary.ReferenceUri);
             xml.Should().Contain($"Namespace=\"{McpVocabulary.Namespace}\"");
             xml.Should().Contain("Term=\"Mcp.Task\"");
+            xml.Should().NotContain("ElicitUrlProperties");
 
             var authorize = model.SchemaElements.OfType<IEdmAction>().Single(item => item.Name == "Authorize");
             authorize.Namespace.Should().Be(typeof(Customer).Namespace);
