@@ -16,6 +16,7 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="McpEssentials.Core" Version="1.*-*" />
         <PackageReference Include="Microsoft.OData.Edm" Version="7.*" />
         <PackageReference Include="Microsoft.OData.ModelBuilder" Version="1.*" />
     </ItemGroup>

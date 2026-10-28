@@ -204,6 +204,58 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         }
 
         /// <summary>
+        /// Protocol <c>2026-07-28</c> without the per-request Tasks extension stays one-shot.
+        /// Claude Code omits the extension when the call cannot become a task; a task handle
+        /// would surface as <c>Unsupported result type 'task' for tools/call</c>.
+        /// </summary>
+        [TestMethod]
+        public async Task CallAuthorize_July2026WithoutTasksMeta_IsOneShot()
+        {
+            using var client = CreateClient();
+            using var response = await RestierMcpJsonRpc.PostJuly2026Async(
+                client,
+                "odata/mcp",
+                RestierMcpJsonRpc.CallToolPayload(
+                    "action_mcpcustomer_authorize",
+                    """{"key":"1"}""",
+                    RestierMcpJsonRpc.July2026MetaJson),
+                "tools/call",
+                "action_mcpcustomer_authorize");
+            var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
+
+            response.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)response.StatusCode, body);
+            body.Contains("connectUri", StringComparison.OrdinalIgnoreCase).Should().BeTrue(body);
+            body.Should().Contain("https://login.example.test/connect");
+            body.Should().NotContain("\"resultType\":\"task\"");
+            RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
+            ((RestierAuthorizeWaiter)TestServer.Services.GetRequiredService<IMcpAnnotatedActionWaiter>()).WaitCalls.Should().Be(0);
+        }
+
+        /// <summary>
+        /// Generic <c>odata_call</c> of annotated Authorize without the Tasks extension stays one-shot.
+        /// </summary>
+        [TestMethod]
+        public async Task CallAuthorize_ODataCall_WithoutTasksMeta_IsOneShot()
+        {
+            using var client = CreateClient();
+            using var response = await RestierMcpJsonRpc.PostJuly2026Async(
+                client,
+                "odata/mcp",
+                RestierMcpJsonRpc.CallToolPayload(
+                    "odata_call",
+                    """{"name":"Authorize","entitySet":"Customers","key":"1"}""",
+                    RestierMcpJsonRpc.July2026MetaJson),
+                "tools/call",
+                "odata_call");
+            var body = await RestierMcpJsonRpc.ReadBodyAsync(response);
+
+            response.IsSuccessStatusCode.Should().BeTrue("status {0} body {1}", (int)response.StatusCode, body);
+            body.Contains("connectUri", StringComparison.OrdinalIgnoreCase).Should().BeTrue(body);
+            body.Should().NotContain("\"resultType\":\"task\"");
+            RestierMcpJsonRpc.ReadIsError(body).Should().BeFalse();
+        }
+
+        /// <summary>
         /// <c>tasks/cancel</c> during URL elicitation does not call the waiter.
         /// </summary>
         [TestMethod]
@@ -289,7 +341,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
             var json = RestierMcpJsonRpc.ExtractJson(body);
             using var document = JsonDocument.Parse(json);
             document.RootElement.TryGetProperty("result", out var result).Should().BeTrue("body {0}", json);
-            ReadTaskId(result).Should().NotBeNullOrWhiteSpace("body {0}", json);
+            AssertClaudeCodeTaskHandle(result);
         }
 
         /// <summary>
@@ -342,6 +394,46 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Asserts a <c>CreateTaskResult</c> has the fields Claude Code requires on a task handle.
+        /// Missing <c>taskId</c>, <c>status</c>, <c>createdAt</c>, <c>lastUpdatedAt</c>, or
+        /// <c>ttlMs</c> surfaces as <c>Unsupported result type 'task' for tools/call</c>.
+        /// </summary>
+        /// <param name="result">The JSON-RPC <c>result</c> object.</param>
+        internal static void AssertClaudeCodeTaskHandle(JsonElement result)
+        {
+            result.ValueKind.Should().Be(JsonValueKind.Object);
+            result.TryGetProperty("resultType", out var resultType).Should().BeTrue(result.GetRawText());
+            resultType.GetString().Should().Be("task");
+
+            var handle = result;
+            if ((!result.TryGetProperty("taskId", out var topId) || topId.ValueKind != JsonValueKind.String)
+                && result.TryGetProperty("task", out var nested)
+                && nested.ValueKind == JsonValueKind.Object)
+            {
+                handle = nested;
+            }
+
+            handle.TryGetProperty("taskId", out var taskId).Should().BeTrue(handle.GetRawText());
+            taskId.GetString().Should().NotBeNullOrWhiteSpace();
+
+            handle.TryGetProperty("status", out var status).Should().BeTrue(handle.GetRawText());
+            status.GetString().Should().NotBeNullOrWhiteSpace();
+
+            handle.TryGetProperty("createdAt", out var createdAt).Should().BeTrue(handle.GetRawText());
+            createdAt.GetString().Should().NotBeNullOrWhiteSpace();
+
+            handle.TryGetProperty("lastUpdatedAt", out var lastUpdated).Should().BeTrue(handle.GetRawText());
+            lastUpdated.GetString().Should().NotBeNullOrWhiteSpace();
+
+            handle.TryGetProperty("ttlMs", out var ttl).Should().BeTrue("Claude Code requires ttlMs. Handle: {0}", handle.GetRawText());
+            (ttl.ValueKind is JsonValueKind.Number or JsonValueKind.Null).Should().BeTrue("ttlMs was {0}", ttl.ValueKind);
+            if (ttl.ValueKind == JsonValueKind.Number)
+            {
+                ttl.GetInt64().Should().BeGreaterThan(0);
+            }
+        }
 
         /// <summary>
         /// Asserts Authorize carries inline Task and ElicitUrlProperties.
@@ -425,7 +517,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         {
             services.AddODataMcp(ConfigureODataMcp, mcp =>
             {
-                mcp.WithTasks(new InMemoryMcpTaskStore());
+                mcp.WithTasks();
                 mcp.WaitForAnnotatedAction<RestierAuthorizeWaiter>();
             });
         }

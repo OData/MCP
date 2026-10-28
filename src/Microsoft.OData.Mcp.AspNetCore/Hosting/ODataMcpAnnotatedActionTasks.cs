@@ -103,19 +103,19 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         /// <param name="request">The call request.</param>
         /// <returns>
-        /// <c>true</c> when the request <c>_meta</c> or initialize capabilities include
+        /// <c>true</c> when this request's <c>_meta</c> includes
         /// <c>io.modelcontextprotocol/tasks</c>.
         /// </returns>
+        /// <remarks>
+        /// Initialize-time capabilities are ignored. Claude Code omits the extension on a
+        /// <c>tools/call</c> that cannot become a task; wrapping from leftover initialize
+        /// caps yields <c>Unsupported result type 'task'</c>.
+        /// </remarks>
         internal static bool ClientOptedIntoTasks(RequestContext<CallToolRequestParams> request)
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            if (HasTasksExtension(request.Params?.Meta))
-            {
-                return true;
-            }
-
-            return request.Server?.ClientCapabilities?.Extensions?.ContainsKey(TasksProtocol.ExtensionId) == true;
+            return HasTasksExtension(request.Params?.Meta);
         }
 
         /// <summary>
@@ -524,6 +524,27 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Selects MCP Tasks wrapping for this call.
+        /// </summary>
+        /// <param name="context">The call request.</param>
+        /// <returns>
+        /// <see cref="McpTaskExecutionMode.Optional"/> when the tool is a tasked action and this
+        /// request advertised the Tasks extension; otherwise <see cref="McpTaskExecutionMode.Synchronous"/>.
+        /// </returns>
+        /// <remarks>
+        /// Claude Code omits the Tasks extension on a <c>tools/call</c> that cannot become a task.
+        /// Returning Optional without that key yields <c>Unsupported result type 'task'</c>.
+        /// </remarks>
+        internal static McpTaskExecutionMode SelectExecutionMode(RequestContext<CallToolRequestParams> context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return IsTaskedCall(context) && HasTasksExtension(context.Params?.Meta)
+                ? McpTaskExecutionMode.Optional
+                : McpTaskExecutionMode.Synchronous;
         }
 
         /// <summary>

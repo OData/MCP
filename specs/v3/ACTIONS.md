@@ -275,7 +275,7 @@ builder.Services.AddODataMcp(options =>
     options.Catalog.InstructionsPreface = "…";
 }, mcp =>
 {
-    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WithTasks();
     mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>();
 });
 
@@ -335,7 +335,7 @@ public interface IMcpAnnotatedActionWaiter
 
 1. Keep the action returning a single ticket JSON. First HTTP response is still Started + `connectUri`. Do not change it to `IAsyncEnumerable`.
 2. Stamp `Microsoft.OData.Mcp.V1.Task` with `[McpTask]` (Restier / controllers) or `HasMcpTask()` (convention). Stamp `ElicitUrlProperties` with `[McpElicitUrl("connectUri")]` or `HasMcpElicitUrl("connectUri")` when the default list is too wide. Confirm GET `{prefix}/$metadata` contains the `edmx:Reference`, `Term="Mcp.Task"`, and the nested `ElicitUrlProperties` collection on that action.
-3. `AddODataMcp(..., mcp => { mcp.WithTasks(new InMemoryMcpTaskStore()); mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>(); })`.
+3. `AddODataMcp(..., mcp => { mcp.WithTasks(); mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>(); })`.
 4. Waiter: given the Started ticket, wait on the host completion source (same token as session `expiresIn`). Return Succeeded (`message`: the grant completed) or Failed.
 5. Single-process: in-memory store + in-memory session. Refuse scale-out while both are in-memory.
 

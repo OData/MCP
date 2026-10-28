@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <code>
         /// builder.Services.AddODataMcp(options => { }, mcp =>
         /// {
-        ///     mcp.WithTasks(new InMemoryMcpTaskStore());
+        ///     mcp.WithTasks();
         ///     mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
         /// });
         /// </code>

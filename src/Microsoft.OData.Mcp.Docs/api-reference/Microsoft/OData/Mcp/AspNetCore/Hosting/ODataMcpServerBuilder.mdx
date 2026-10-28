@@ -1,6 +1,6 @@
 ---
 title: ODataMcpServerBuilder
-description: "Configures OData MCP Tasks on `AddODataMcp`. Hosts call [IMcpTaskStore)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatam..."
+description: "Configures OData MCP Tasks on `AddODataMcp`. Hosts call [ODataMcpServerBuilder.WithTasks](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServe..."
 icon: lock
 tag: "SEALED"
 keywords: ['ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
@@ -23,7 +23,7 @@ Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder
 ## Summary
 
 Configures OData MCP Tasks on `AddODataMcp`. Hosts call
-[IMcpTaskStore)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.withtasks(modelcontextprotocol.extensions.tasks.imcptaskstore)) and [WaitForAnnotatedAction``1](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.waitforannotatedaction`-1) here, not on
+[ODataMcpServerBuilder.WithTasks](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder#withtasks) and [WaitForAnnotatedAction``1](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.waitforannotatedaction`-1) here, not on
 `UseODataMcp` and not via SDK `WithTasks` from app code.
 
 ## Examples
@@ -31,7 +31,7 @@ Configures OData MCP Tasks on `AddODataMcp`. Hosts call
 ```csharp
 builder.Services.AddODataMcp(options =&gt; { }, mcp =&gt;
 {
-    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WithTasks();
     mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
 });
 ```
@@ -211,6 +211,59 @@ Started payload after the URL is shown.
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithTasks
 
+Enables MCP Tasks for annotated actions only, using `InMemoryMcpTaskStorePlus`.
+Authenticated callers are isolated by user id. Unauthenticated callers share owner
+[UnauthenticatedTaskOwner](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.unauthenticatedtaskowner) and the task id is the secret.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder WithTasks()
+```
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder`
+This builder.
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithTasks
+
+Enables MCP Tasks and selects a plus store provider.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder WithTasks(System.Action<CloudNimble.McpEssentials.Core.Tasks.McpTaskStoreBuilder> configure)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `configure` | `System.Action<CloudNimble.McpEssentials.Core.Tasks.McpTaskStoreBuilder>` | Selects `UseInMemory` or a provider `Use*` method. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder`
+This builder.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *configure* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InvalidOperationException` | Thrown when *configure* did not call a `Use*` method. |
+
+#### Examples
+
+```csharp
+mcp.WithTasks(tasks =&gt; tasks.UseInMemory("local-user"));
+mcp.WithTasks(tasks =&gt; tasks.UseEntityFramework&lt;AppDbContext&gt;(
+    sp =&gt; sp.GetRequiredService&lt;IHttpContextAccessor&gt;().HttpContext?.User));
+```
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithTasks
+
 Enables MCP Tasks for annotated actions only. CRUD, functions, and unannotated
 actions stay one-shot.
 
@@ -242,5 +295,7 @@ This builder.
 
 Wires `tasks/get`, `tasks/update`, and `tasks/cancel` from
 `ModelContextProtocol.Extensions.Tasks`. Does not wrap every catalog tool:
-the execution-mode selector returns Optional only for annotated actions.
+the execution-mode selector returns Optional only for annotated actions whose
+request advertised the Tasks extension. Stamps `DefaultTimeToLive` on
+`IMcpTaskStorePlus` so Claude Code receives `ttlMs`.
 

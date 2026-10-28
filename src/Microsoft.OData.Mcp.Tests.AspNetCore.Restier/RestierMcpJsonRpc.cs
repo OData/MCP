@@ -26,6 +26,12 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier
         internal const string ElicitationMetaJson = """{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"odata-mcp-tests","version":"1.0"},"io.modelcontextprotocol/clientCapabilities":{"elicitation":{"url":{}}}}""";
 
         /// <summary>
+        /// Per-request <c>_meta</c> for protocol <c>2026-07-28</c> with no Tasks extension and
+        /// no URL elicitation. Claude Code omits both on a <c>tools/call</c> that cannot become a task.
+        /// </summary>
+        internal const string July2026MetaJson = """{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"odata-mcp-tests","version":"1.0"},"io.modelcontextprotocol/clientCapabilities":{}}""";
+
+        /// <summary>
         /// Per-request <c>_meta</c> for protocol <c>2026-07-28</c>: version, client info, URL elicitation,
         /// and the Tasks extension opt-in.
         /// </summary>

@@ -167,7 +167,7 @@ The service collection.
 ```csharp
 builder.Services.AddODataMcp(options =&gt; { }, mcp =&gt;
 {
-    mcp.WithTasks(new InMemoryMcpTaskStore());
+    mcp.WithTasks();
     mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
 });
 ```

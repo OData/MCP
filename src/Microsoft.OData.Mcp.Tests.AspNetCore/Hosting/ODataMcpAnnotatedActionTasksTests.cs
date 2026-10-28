@@ -50,7 +50,9 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Missing Tasks extension is not an opt-in.
+        /// Missing Tasks extension on this request is not an opt-in. Initialize-time
+        /// capabilities are ignored; Claude Code omits the extension on a <c>tools/call</c>
+        /// that cannot become a task.
         /// </summary>
         [TestMethod]
         public void ClientOptedIntoTasks_MissingExtension_IsFalse()
@@ -58,6 +60,32 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             var request = Context(new CallToolRequestParams { Name = "action_customer_authorize" });
 
             ODataMcpAnnotatedActionTasks.ClientOptedIntoTasks(request).Should().BeFalse();
+            ODataMcpAnnotatedActionTasks.HasTasksExtension(request.Params?.Meta).Should().BeFalse();
+        }
+
+        /// <summary>
+        /// URL elicitation without the Tasks extension is not a task opt-in.
+        /// </summary>
+        [TestMethod]
+        public void ClientOptedIntoTasks_UrlElicitationOnly_IsFalse()
+        {
+            var request = Context(new CallToolRequestParams
+            {
+                Name = "action_customer_authorize",
+                Meta = new JsonObject
+                {
+                    ["io.modelcontextprotocol/clientCapabilities"] = new JsonObject
+                    {
+                        ["elicitation"] = new JsonObject
+                        {
+                            ["url"] = new JsonObject()
+                        }
+                    }
+                }
+            });
+
+            ODataMcpAnnotatedActionTasks.ClientOptedIntoTasks(request).Should().BeFalse();
+            ODataMcpAnnotatedActionTasks.ClientHasUrlElicitation(request).Should().BeTrue();
         }
 
         /// <summary>
@@ -122,6 +150,45 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             var result = Result("""{"status":"Started","message":"Open the URL to finish.","connectUri":"https://login.example.test/connect"}""");
 
             ODataMcpAnnotatedActionTasks.ReadTicketMessage(result).Should().Be("Open the URL to finish.");
+        }
+
+        /// <summary>
+        /// A tasked action without the per-request Tasks extension stays synchronous so
+        /// Claude Code receives <c>connectUri</c> instead of <c>resultType=task</c>.
+        /// </summary>
+        [TestMethod]
+        public void SelectExecutionMode_MissingExtension_IsSynchronous()
+        {
+            var request = Context(new CallToolRequestParams { Name = "action_customer_authorize" });
+
+            ODataMcpAnnotatedActionTasks.SelectExecutionMode(request)
+                .Should().Be(McpTaskExecutionMode.Synchronous);
+        }
+
+        /// <summary>
+        /// Tasks opt-in without a catalog action stays synchronous. CRUD and unannotated
+        /// tools never wrap.
+        /// </summary>
+        [TestMethod]
+        public void SelectExecutionMode_TasksMetaWithoutCatalog_IsSynchronous()
+        {
+            var request = Context(new CallToolRequestParams
+            {
+                Name = "action_customer_authorize",
+                Meta = new JsonObject
+                {
+                    ["io.modelcontextprotocol/clientCapabilities"] = new JsonObject
+                    {
+                        ["extensions"] = new JsonObject
+                        {
+                            [TasksProtocol.ExtensionId] = new JsonObject()
+                        }
+                    }
+                }
+            });
+
+            ODataMcpAnnotatedActionTasks.SelectExecutionMode(request)
+                .Should().Be(McpTaskExecutionMode.Synchronous);
         }
 
         /// <summary>
