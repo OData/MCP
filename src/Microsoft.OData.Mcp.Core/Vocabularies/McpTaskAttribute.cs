@@ -13,7 +13,7 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
     /// <example>
     /// <code>
     /// [BoundOperation(OperationType = OperationType.Action)]
-    /// [McpTask]
+    /// [McpTask(Description = "Ships the order.")]
     /// public Order Ship(Order order)
     /// {
     ///     return order;
@@ -31,6 +31,12 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
     {
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets operator-facing text stamped as <c>Org.OData.Core.V1.Description</c>
+        /// on the action. The named tool and <c>odata_describe_*</c> surfaces use this.
+        /// </summary>
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets JSON property names for <c>ElicitUrlProperties</c>. Empty when omitted.

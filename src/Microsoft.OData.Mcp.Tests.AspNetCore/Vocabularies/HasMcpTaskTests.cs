@@ -65,6 +65,25 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         }
 
         /// <summary>
+        /// <c>WithDescription</c> stamps <c>Org.OData.Core.V1.Description</c>.
+        /// </summary>
+        [TestMethod]
+        public void WithDescription_StampsCoreDescription()
+        {
+            var builder = CreateBuilder();
+            builder.EntityType<Customer>().Action("Authorize")
+                .HasMcpTask("connectUri")
+                .WithDescription("Starts provider authorization.");
+
+            var authorize = EdmModelAdapter.ToCoreModel(builder.GetEdmModel())
+                .Actions.Single(item => item.Name == "Authorize");
+
+            authorize.IsTask.Should().BeTrue();
+            authorize.ElicitUrlProperties.Should().Equal("connectUri");
+            authorize.Description.Should().Be("Starts provider authorization.");
+        }
+
+        /// <summary>
         /// Optional elicit property names are stamped next to Task.
         /// </summary>
         [TestMethod]

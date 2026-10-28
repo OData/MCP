@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
+using Microsoft.OData.Edm.Vocabularies.V1;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
@@ -61,6 +62,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         /// <param name="model">The service model.</param>
         /// <param name="target">The action to annotate.</param>
         /// <param name="elicitUrlProperties">Optional JSON property names for <c>ElicitUrlProperties</c>.</param>
+        /// <param name="description">Optional <c>Org.OData.Core.V1.Description</c> on the action.</param>
         /// <example>
         /// <code>
         /// McpTaskAnnotations.StampTask(edmModel, authorizeAction);
@@ -71,7 +73,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         /// The annotation is serialized inline on <paramref name="target"/> so it appears in
         /// the schema that already declares the action.
         /// </remarks>
-        public static void StampTask(EdmModel model, IEdmVocabularyAnnotatable target, IReadOnlyList<string>? elicitUrlProperties = null)
+        public static void StampTask(EdmModel model, IEdmVocabularyAnnotatable target, IReadOnlyList<string>? elicitUrlProperties = null, string? description = null)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(target);
@@ -82,12 +84,15 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
                 ?? throw new InvalidOperationException($"Term '{McpVocabulary.TaskTerm}' was not found after referencing the MCP vocabulary.");
             SetInlineAnnotation(model, target, term, new EdmBooleanConstant(true));
 
-            if (elicitUrlProperties is null || elicitUrlProperties.Count == 0)
+            if (elicitUrlProperties is { Count: > 0 })
             {
-                return;
+                StampElicitUrlProperties(model, target, elicitUrlProperties);
             }
 
-            StampElicitUrlProperties(model, target, elicitUrlProperties);
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                StampDescription(model, target, description);
+            }
         }
 
         #endregion
@@ -146,6 +151,28 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             var annotation = new EdmVocabularyAnnotation(target, term, value);
             annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
             model.SetVocabularyAnnotation(annotation);
+        }
+
+        /// <summary>
+        /// Stamps <c>Org.OData.Core.V1.Description</c> on <paramref name="target"/>.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The action to annotate.</param>
+        /// <param name="description">The description text.</param>
+        internal static void StampDescription(EdmModel model, IEdmVocabularyAnnotatable target, string description)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+            ArgumentException.ThrowIfNullOrWhiteSpace(description);
+
+            if (model.FindTerm(CoreVocabularyConstants.Description) is null)
+            {
+                model.AddReferencedModel(CoreVocabularyModel.Instance);
+            }
+
+            var term = model.FindTerm(CoreVocabularyConstants.Description)
+                ?? throw new InvalidOperationException($"Term '{CoreVocabularyConstants.Description}' was not found after referencing the Core vocabulary.");
+            SetInlineAnnotation(model, target, term, new EdmStringConstant(description.Trim()));
         }
 
         /// <summary>

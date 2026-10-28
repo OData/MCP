@@ -236,7 +236,7 @@ Out-of-line targeting is also legal. The `Target` is the qualified operation nam
 
 Other OASIS Example 42 forms: `Trippin.ShareTrip`, `Trippin.ShareTrip()`, `Trippin.Container/ResetDataSource` (the unbound **import**).
 
-Store `IsTask` on Core `EdmAction` (bool, default `false`). AspNetCore `EdmModelAdapter` copies the term from `IEdmModel`. Named tool description appends one sentence when `IsTask`: `Runs as an MCP task when the client opts in; open any returned URL to finish.`
+Store `IsTask` on Core `EdmAction` (bool, default `false`). AspNetCore `EdmModelAdapter` copies the term from `IEdmModel`. Named tool description appends one sentence when `IsTask`: `May run as an MCP task when the client opts in.` Operation-specific consent or URL text belongs on `Org.OData.Core.V1.Description` / `LongDescription`.
 
 Hosts stamp the term; they do not wrap Restier `IModelBuilder` and they do not reference Restier from `Microsoft.OData.Mcp.AspNetCore`.
 
@@ -247,7 +247,7 @@ Hosts stamp the term; they do not wrap Restier `IModelBuilder` and they do not r
 
 Canonical CSDL lives in Core (`Microsoft.OData.Mcp.V1.xml`). `CsdlParser` reads it from remote `$metadata`. AspNetCore `McpTaskAnnotations.EnsureReferenced` adds `edmx:Reference` + Include alias `Mcp` so GET `{prefix}/$metadata` and the MCP `odata://{prefix}/$metadata` resource carry the same document.
 
-Optional term `Microsoft.OData.Mcp.V1.ElicitUrlProperties` (collection of strings) names JSON properties on the action result that are URLs to elicit. Default when omitted: `connectUri`, `url`, `authorizationUrl`, `verificationUri`. Hosts stamp it with `[McpElicitUrl("connectUri")]` / `HasMcpElicitUrl("connectUri")`. `[McpTask("connectUri")]` / `HasMcpTask("connectUri")` remain a convenience that stamps both terms. Same URL-only rule as [AUTHENTICATION.md](./AUTHENTICATION.md): `ElicitationId` is a new GUID; never tokens, `connect_code`, or vault ids in the elicitation payload or message.
+Optional term `Microsoft.OData.Mcp.V1.ElicitUrlProperties` (collection of strings) names JSON properties on the action result that are URLs to elicit. Default when omitted: `connectUri`, `url`, `authorizationUrl`, `verificationUri`. **Annotations set expectations:** declare the term so `$metadata`, named tools, and `odata_describe_*` advertise the same elicit intent the runtime will honor. The default list is a fallback when a host omitted the annotation; it is not a substitute for being explicit. Hosts stamp it with `[McpElicitUrl("connectUri")]` / `HasMcpElicitUrl("connectUri")`. `[McpTask("connectUri")]` / `HasMcpTask("connectUri")` remain a convenience that stamps both terms. Same URL-only rule as [AUTHENTICATION.md](./AUTHENTICATION.md): `ElicitationId` is a new GUID; never tokens, `connect_code`, or vault ids in the elicitation payload or message.
 
 Unannotated `Authorize`, or an annotated action called by a client that did not advertise URL elicitation, is one-shot: Started ticket with `connectUri`. The operator tells the assistant when they have finished. Do not wait in-process for that client. A client that advertised `elicitation.url` gets MRTR URL elicitation even without the Tasks extension.
 

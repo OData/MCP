@@ -31,7 +31,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Vocabularies
             McpVocabulary.TaskTerm.Should().Be("Microsoft.OData.Mcp.V1.Task");
             McpVocabulary.ElicitUrlPropertiesTerm.Should().Be("Microsoft.OData.Mcp.V1.ElicitUrlProperties");
             McpVocabulary.ReferenceUri.Should().Be("https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml");
-            McpVocabulary.TaskToolDescription.Should().Be("Runs as an MCP task when the client opts in; open any returned URL to finish.");
+            McpVocabulary.TaskToolDescription.Should().Be("May run as an MCP task when the client opts in.");
             McpVocabulary.DefaultElicitUrlProperties.Should().Equal("connectUri", "url", "authorizationUrl", "verificationUri");
         }
 

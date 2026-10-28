@@ -74,6 +74,13 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                   <Action Name="Authorize" IsBound="true">
                     <Parameter Name="bindingParameter" Type="PodOverlord.Core.IntegrationConnection" />
                     <ReturnType Type="PodOverlord.Business.ConnectionAuthorizationTicket" />
+                    <Annotation Term="Org.OData.Core.V1.Description" String="YouTube opens Google's Brand Account picker; one grant is one channel." />
+                    <Annotation Term="Microsoft.OData.Mcp.V1.Task" Bool="true" />
+                    <Annotation Term="Microsoft.OData.Mcp.V1.ElicitUrlProperties">
+                      <Collection>
+                        <String>connectUri</String>
+                      </Collection>
+                    </Annotation>
                   </Action>
                   <Action Name="Reauthorize">
                     <ReturnType Type="PodOverlord.Business.ConnectionAuthorizationTicket" />
@@ -261,7 +268,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_describe_model", ToolArguments.Of("detail", "complete"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.Text.Should().Contain("\n    Authorize() -> ConnectionAuthorizationTicket // writes");
+            result.Text.Should().Contain("\n    Authorize() -> ConnectionAuthorizationTicket // writes, task, elicit; YouTube opens Google's Brand Account picker; one grant is one channel.");
             result.Text.Should().Contain("\n\nPodOverlord.Business.ConnectionAuthorizationTicket  (complex)\n");
         }
 

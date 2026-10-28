@@ -233,7 +233,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
                     : task?.ElicitUrlProperties;
                 if (task is not null)
                 {
-                    McpTaskAnnotations.StampTask(model, action, elicitNames);
+                    McpTaskAnnotations.StampTask(model, action, elicitNames, task.Description);
                 }
                 else if (elicitNames is { Length: > 0 })
                 {

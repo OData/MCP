@@ -347,6 +347,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
                   <edmx:DataServices>
                     <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
                       <Action Name="Authorize">
+                        <Annotation Term="Org.OData.Core.V1.Description" String="YouTube opens Google's Brand Account picker." />
                         <Annotation Term="Microsoft.OData.Mcp.V1.Task" Bool="true" />
                       </Action>
                       <EntityContainer Name="Container" />
@@ -358,6 +359,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
 
             tool.IsTask.Should().BeTrue();
             tool.Description.Should().Contain("POST Authorize.");
+            tool.Description.Should().Contain("YouTube opens Google's Brand Account picker.");
             tool.Description.Should().Contain(McpVocabulary.TaskToolDescription);
         }
 

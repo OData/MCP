@@ -86,6 +86,20 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         }
 
         /// <summary>
+        /// <c>[McpTask(Description)]</c> stamps <c>Org.OData.Core.V1.Description</c>.
+        /// </summary>
+        [TestMethod]
+        public void Apply_Description_StampsCoreDescription()
+        {
+            var model = BuildModel();
+            McpTaskAttributeAnnotations.Apply(model, [typeof(TaskedOperations)]);
+
+            var authorize = EdmModelAdapter.ToCoreModel(model).Actions.Single(item => item.Name == "Authorize");
+            authorize.IsTask.Should().BeTrue();
+            authorize.Description.Should().Be("Starts provider authorization.");
+        }
+
+        /// <summary>
         /// <c>[McpTask]</c> plus <c>[McpElicitUrl]</c> stamps both terms. The dedicated attribute
         /// is the first-class elicit mark.
         /// </summary>

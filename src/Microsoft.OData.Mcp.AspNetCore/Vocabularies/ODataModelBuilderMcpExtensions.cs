@@ -40,13 +40,32 @@ namespace Microsoft.OData.ModelBuilder
         {
             ArgumentNullException.ThrowIfNull(action);
 
-            var configuration = new McpTaskTermConfiguration();
+            var configuration = McpTaskTermConfiguration.GetOrAdd(action);
             if (elicitUrlProperties is { Length: > 0 })
             {
                 configuration.ElicitUrlProperties = elicitUrlProperties;
             }
 
-            action.VocabularyTermConfigurations[typeof(McpTaskTermConfiguration)] = configuration;
+            return action;
+        }
+
+        /// <summary>
+        /// Sets <c>Org.OData.Core.V1.Description</c> on this tasked action. Named tools and
+        /// <c>odata_describe_*</c> use this text.
+        /// </summary>
+        /// <param name="action">The action to annotate.</param>
+        /// <param name="description">Operator-facing description.</param>
+        /// <returns>
+        /// <paramref name="action"/> so further configuration can chain.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="action"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="description"/> is <see langword="null"/> or whitespace.</exception>
+        public static ActionConfiguration WithDescription(this ActionConfiguration action, string description)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentException.ThrowIfNullOrWhiteSpace(description);
+
+            McpTaskTermConfiguration.GetOrAdd(action).Description = description;
             return action;
         }
 

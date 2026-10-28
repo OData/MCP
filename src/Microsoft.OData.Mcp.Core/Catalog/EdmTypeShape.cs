@@ -225,11 +225,13 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="bindingParameterType">The binding parameter type, used for the <c>// collection</c> marker.</param>
         /// <param name="writes">Whether the operation mutates (an EDM action).</param>
         /// <param name="description">CSDL documentation, or <c>null</c>.</param>
+        /// <param name="isTask">Whether the action is annotated <c>Mcp.Task</c>.</param>
+        /// <param name="elicits">Whether the action declares <c>ElicitUrlProperties</c>.</param>
         /// <returns>
         /// For example <c>ShareTrip(userName: string, tripId: int) // writes</c> or <c>(count: int) -> Person[] // collection</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="parameters"/> is null.</exception>
-        public static string RenderOperation(EdmModel model, string? name, IReadOnlyList<EdmParameter> parameters, string? returnType, bool isBound, string? bindingParameterType, bool writes, string? description)
+        public static string RenderOperation(EdmModel model, string? name, IReadOnlyList<EdmParameter> parameters, string? returnType, bool isBound, string? bindingParameterType, bool writes, string? description, bool isTask = false, bool elicits = false)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(parameters);
@@ -253,6 +255,16 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             if (writes)
             {
                 markers.Add("writes");
+            }
+
+            if (isTask)
+            {
+                markers.Add("task");
+            }
+
+            if (elicits)
+            {
+                markers.Add("elicit");
             }
 
             AppendComment(builder, markers, DocumentationFor(description, null, name));
@@ -449,7 +461,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             foreach (var action in BoundActions)
             {
-                ops[action.Name] = RenderOperation(_model, null, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description);
+                ops[action.Name] = RenderOperation(_model, null, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 });
             }
 
             if (ops.Count > 0)
@@ -721,7 +733,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var lines = new List<string> { "  operations" };
             lines.AddRange(BoundFunctions.Select(function => $"    {RenderOperation(_model, function.Name, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description)}"));
-            lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description)}"));
+            lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 })}"));
 
             return lines;
         }

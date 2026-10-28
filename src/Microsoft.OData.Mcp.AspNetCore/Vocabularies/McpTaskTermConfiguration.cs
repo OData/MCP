@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Vocabularies;
@@ -21,6 +22,11 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
     {
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets optional <c>Org.OData.Core.V1.Description</c> text.
+        /// </summary>
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets optional JSON property names for <c>ElicitUrlProperties</c>.
@@ -45,12 +51,45 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             {
                 McpTaskAnnotations.StampElicitUrlProperties(model, target, ElicitUrlProperties);
             }
+
+            if (!string.IsNullOrWhiteSpace(Description))
+            {
+                McpTaskAnnotations.StampDescription(model, target, Description);
+            }
         }
 
         /// <inheritdoc />
         public override IEdmExpression ToEdmExpression()
         {
             return new EdmBooleanConstant(true);
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Gets the Task configuration on <paramref name="action"/>, adding it when missing so
+        /// <c>HasMcpTask</c> and description can share one instance.
+        /// </summary>
+        /// <param name="action">The action being configured.</param>
+        /// <returns>
+        /// The Task configuration.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="action"/> is <see langword="null"/>.</exception>
+        internal static McpTaskTermConfiguration GetOrAdd(ActionConfiguration action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            if (action.VocabularyTermConfigurations.TryGetValue(typeof(McpTaskTermConfiguration), out var existing)
+                && existing is McpTaskTermConfiguration found)
+            {
+                return found;
+            }
+
+            var configuration = new McpTaskTermConfiguration();
+            action.VocabularyTermConfigurations[typeof(McpTaskTermConfiguration)] = configuration;
+            return configuration;
         }
 
         #endregion

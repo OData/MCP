@@ -69,7 +69,12 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
         /// <summary>
         /// Sentence appended to a named action tool when <see cref="TaskTerm"/> is true.
         /// </summary>
-        public const string TaskToolDescription = "Runs as an MCP task when the client opts in; open any returned URL to finish.";
+        /// <remarks>
+        /// Models already know MCP Tasks and elicitation. This only flags that the server
+        /// may wrap the call. Operation-specific consent or URL text belongs on
+        /// <c>Org.OData.Core.V1.Description</c>.
+        /// </remarks>
+        public const string TaskToolDescription = "May run as an MCP task when the client opts in.";
 
         static readonly Lazy<string> EmbeddedCsdl = new(LoadCsdlXml, true);
 

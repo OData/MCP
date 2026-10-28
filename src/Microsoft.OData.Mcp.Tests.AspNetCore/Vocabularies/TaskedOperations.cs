@@ -16,10 +16,10 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         #region Public Methods
 
         /// <summary>
-        /// Bound task action.
+        /// Bound task action with an MCP description.
         /// </summary>
         /// <param name="customer">The bound customer.</param>
-        [McpTask]
+        [McpTask(Description = "Starts provider authorization.")]
         public void Authorize(Customer customer)
         {
         }

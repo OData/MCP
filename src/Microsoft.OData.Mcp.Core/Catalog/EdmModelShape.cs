@@ -163,7 +163,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             foreach (var action in model.Actions.Where(action => !action.IsBound))
             {
-                operations[action.Name] = EdmTypeShape.RenderOperation(model, null, action.Parameters, action.ReturnType, isBound: false, null, writes: true, action.Description);
+                operations[action.Name] = EdmTypeShape.RenderOperation(model, null, action.Parameters, action.ReturnType, isBound: false, null, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 });
             }
 
             return operations;
@@ -185,7 +185,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             lines.AddRange(model.Functions.Where(function => !function.IsBound)
                 .Select(function => $"  {EdmTypeShape.RenderOperation(model, function.Name, function.Parameters, function.ReturnType, isBound: false, null, writes: false, function.Description)}"));
             lines.AddRange(model.Actions.Where(action => !action.IsBound)
-                .Select(action => $"  {EdmTypeShape.RenderOperation(model, action.Name, action.Parameters, action.ReturnType, isBound: false, null, writes: true, action.Description)}"));
+                .Select(action => $"  {EdmTypeShape.RenderOperation(model, action.Name, action.Parameters, action.ReturnType, isBound: false, null, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 })}"));
 
             return lines.Count == 0 ? [] : [Operations, .. lines];
         }
