@@ -41,6 +41,16 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal string? Description { get; }
 
         /// <summary>
+        /// Gets the compact form elicited before invoke, or <c>null</c>.
+        /// </summary>
+        internal EdmElicitForm? ElicitForm { get; }
+
+        /// <summary>
+        /// Gets JSON property names on the action result that are URLs to elicit, or <c>null</c>.
+        /// </summary>
+        internal IReadOnlyList<string>? ElicitUrlProperties { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the operation is an action.
         /// </summary>
         internal bool IsAction { get; }
@@ -49,6 +59,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets a value indicating whether the operation is bound.
         /// </summary>
         internal bool IsBound { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the action is annotated <c>Microsoft.OData.Mcp.V1.Task</c>.
+        /// </summary>
+        internal bool IsTask { get; }
 
         /// <summary>
         /// Gets the CSDL long description.
@@ -86,8 +101,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(action.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(action.BindingParameterType);
             Description = action.Description;
+            ElicitForm = action.ElicitForm;
+            ElicitUrlProperties = action.ElicitUrlProperties;
             IsAction = true;
             IsBound = action.IsBound;
+            IsTask = action.IsTask;
             LongDescription = action.LongDescription;
             Name = action.Name;
             Parameters = action.Parameters;
@@ -106,8 +124,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(function.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(function.BindingParameterType);
             Description = function.Description;
+            ElicitForm = null;
+            ElicitUrlProperties = null;
             IsAction = false;
             IsBound = function.IsBound;
+            IsTask = false;
             LongDescription = function.LongDescription;
             Name = function.Name;
             Parameters = function.Parameters;

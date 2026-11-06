@@ -3,7 +3,7 @@ title: Overview
 description: "Summary of the Microsoft.OData.Mcp.Core.Catalog Namespace"
 icon: folder-tree
 mode: wide
-keywords: ['Microsoft.OData.Mcp.Core.Catalog', 'namespace', 'EdmModelShape', 'EdmPayloadValidator', 'EdmTypeShape', 'ODataEnumJsonFormat', 'ODataMcpCatalog', 'ODataMcpCatalogOptions', 'ODataMcpInstructions', 'ODataMcpSession', 'ODataOperationKind', 'ODataResourceDescriptor']
+keywords: ['Microsoft.OData.Mcp.Core.Catalog', 'namespace', 'EdmModelShape', 'EdmPayloadValidator', 'EdmTypeShape', 'ElicitFormMapper', 'ODataEnumJsonFormat', 'ODataMcpCatalog', 'ODataMcpCatalogOptions', 'ODataMcpFormElicitation', 'ODataMcpInstructions', 'ODataMcpSession']
 ---
 
 ## Types
@@ -15,9 +15,11 @@ keywords: ['Microsoft.OData.Mcp.Core.Catalog', 'namespace', 'EdmModelShape', 'Ed
 | [EdmModelShape](/api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmModelShape) | Renders the whole-service map behind `odata_describe_model`: a summary of sets and navigations, a complete  dump of every in-scope type, a relationship-only mermaid diagram, and the unbound operation list. |
 | [EdmPayloadValidator](/api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmPayloadValidator) | Validates tool payloads against the declared EDM before any OData HTTP is sent, and formats values for the wire. |
 | [EdmTypeShape](/api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmTypeShape) | The shape of one entity type as the calling AI reads it: the declaration-grammar text, the compact JSON,  the exposed properties, the required-on-create names, and the operations bound to the type. |
+| [ElicitFormMapper](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ElicitFormMapper) | Projects a Core [EdmElicitForm](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitForm) onto SDK `ElicitRequestParams`. |
 | [ODataEnumJsonFormat](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat) | Controls how enumeration values are advertised in JSON Schema and accepted on input. |
 | [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) | Builds MCP resources and tools from a Core EDM. Only declared model members  are serialized into catalogs, schemas, and completions. |
 | [ODataMcpCatalogOptions](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions) | Options that control how an [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) is built from an EDM. |
+| [ODataMcpFormElicitation](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpFormElicitation) | Before-invoke form elicitation: client gate, MRTR, merge, decline. |
 | [ODataMcpInstructions](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions) | The MCP `initialize.instructions` text every OData MCP host advertises. |
 | [ODataMcpSession](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession) | Per-endpoint MCP state: catalog, runtime, and optional CSDL cache. |
 | [ODataOperationKind](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataOperationKind) | Distinguishes CRUD/generic catalog tools from named OData operations. |

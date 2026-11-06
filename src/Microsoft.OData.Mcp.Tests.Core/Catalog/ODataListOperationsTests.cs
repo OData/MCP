@@ -72,6 +72,23 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             result.Text.Should().Be("Declared operations: 3.");
         }
 
+        /// <summary>
+        /// Unbound form and URL elicitations use distinct markers.
+        /// </summary>
+        [TestMethod]
+        public async Task ListOperations_ElicitFormAndUrl_DistinctMarkers()
+        {
+            var form = new ODataToolRuntime(ODataMcpCatalogTaskedActionTests.FormCatalog(), new UnusedODataExecutor());
+            var listedForm = await form.InvokeAsync("odata_list_operations", null, CancellationToken.None);
+            listedForm.IsError.Should().BeFalse(listedForm.Text);
+            listedForm.StructuredContent.Should().Be("""{"operations":{"Ship":"() // writes, elicit_form","Reset":"() // writes"}}""");
+
+            var url = new ODataToolRuntime(ODataMcpCatalogTaskedActionTests.Catalog(), new UnusedODataExecutor());
+            var listedUrl = await url.InvokeAsync("odata_list_operations", null, CancellationToken.None);
+            listedUrl.IsError.Should().BeFalse(listedUrl.Text);
+            listedUrl.StructuredContent.Should().Be("""{"operations":{"Authorize":"() // writes, task, elicit_url","Reset":"() // writes"}}""");
+        }
+
         #endregion
 
     }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModelContextProtocol.Protocol;
 
 namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
 {
@@ -37,6 +38,38 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
 
             accessor.Should().BeSameAs(typed);
             accessor.Should().BeOfType<McpHttpContextAccessor>();
+        }
+
+        /// <summary>
+        /// Stashing the call on Outer is visible after <c>Start</c> swaps Active to Inner.
+        /// </summary>
+        [TestMethod]
+        public void CallTool_AfterSet_ReadsFromOuterDuringInnerInvoke()
+        {
+            var accessor = new McpHttpContextAccessor();
+            var outer = new DefaultHttpContext();
+            var inner = new DefaultHttpContext();
+            accessor.HttpContext = outer;
+            var request = ODataMcpAnnotatedActionTasksTests.Context(new CallToolRequestParams { Name = "action_order_ship" });
+
+            accessor.SetCallTool(request);
+            accessor.Start(inner);
+
+            accessor.CallTool.Should().BeSameAs(request);
+        }
+
+        /// <summary>
+        /// Direct OData URLs have no stashed call.
+        /// </summary>
+        [TestMethod]
+        public void CallTool_DirectRequest_IsNull()
+        {
+            var accessor = new McpHttpContextAccessor
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            accessor.CallTool.Should().BeNull();
         }
 
         /// <summary>
@@ -76,6 +109,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
 
             accessor.HttpContext.Should().BeNull();
             accessor.Active.Should().BeNull();
+            accessor.CallTool.Should().BeNull();
             accessor.Outer.Should().BeNull();
             accessor.Inner.Should().BeNull();
         }
@@ -154,6 +188,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             accessor.Active.Should().BeSameAs(inner);
             accessor.Outer.Should().BeSameAs(outer);
             accessor.Inner.Should().BeSameAs(inner);
+        }
+
+        /// <summary>
+        /// <c>SetCallTool</c> rejects a null request.
+        /// </summary>
+        [TestMethod]
+        public void SetCallTool_Null_Throws()
+        {
+            var accessor = new McpHttpContextAccessor();
+            var act = () => accessor.SetCallTool(null!);
+            act.Should().Throw<ArgumentNullException>().WithParameterName("request");
         }
 
         #endregion

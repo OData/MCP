@@ -19,9 +19,10 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
-        <SignAssembly>false</SignAssembly>
-        <!-- Signing disabled for now - add proper key file when needed -->
-        <!-- <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)odata-mcp.snk</AssemblyOriginatorKeyFile> -->
+        <SignAssembly>true</SignAssembly>
+        <SignAssembly Condition="'$(MSBuildProjectExtension)' == '.docsproj'">false</SignAssembly>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)odata-mcp.snk</AssemblyOriginatorKeyFile>
+        <StrongNamePublicKey>PublicKey=0024000004800000140100000602000000240000525341310008000001000100591e86cb4aab73b707e214cf7b4984a64e1e0a3a1767097d7186bcb20cdd4b7d059311c1e06f8892c799bff7c46787967850a9c1ccaf4aa8ea6ebb51ec904b937d49587ab68d67f236dc462d30af4063c03a6b6e21c4bdf796adddef10af7e411d65b9ece98dc3ce8b612e5f1f67b152714a418081973831e6cfbcdfa60ccefbd3b583bfe23342de47b00ca4d5f42df5a33863f30bd708024196cceaff158ef6655379c67c5ce85ea9c8a882a17c875eded465a9c06a65c77345cd67d801029d13b4af158d031f993645cf72aeb288713478ccd9ca7dba9f13307cdc8b33df4760f86b486f8689017a04a5288f0683f91470843c8ccaa4e7acbc76b0c64870ea</StrongNamePublicKey>
 
         <LangVersion>latest</LangVersion>
         <!-- Default to Debug configuration if none is specified -->
@@ -121,8 +122,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition=" $(IsTestProject) != 'true' and $(IsSampleProject) != 'true' and $(IsTemplateProject) != 'true' ">
-        <InternalsVisibleTo Include="$(AssemblyName.Replace('Microsoft.OData.Mcp', 'Microsoft.OData.Mcp.Tests'))" />
-        <InternalsVisibleTo Include="Microsoft.OData.Mcp.Tests.AspNetCore.Restier" />
+        <InternalsVisibleTo Include="$(AssemblyName.Replace('Microsoft.OData.Mcp', 'Microsoft.OData.Mcp.Tests')), $(StrongNamePublicKey)" />
+        <InternalsVisibleTo Include="Microsoft.OData.Mcp.Tests.AspNetCore.Restier, $(StrongNamePublicKey)" />
     </ItemGroup>
 
     <ItemGroup Condition=" $(IsTestProject) == 'true' and $(IsSampleProject) != 'true' ">

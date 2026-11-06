@@ -57,6 +57,8 @@ public Object()
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKey
 
+Gets or sets the raw API key value for the API key escape hatch.
+
 #### Syntax
 
 ```csharp
@@ -68,6 +70,8 @@ public string ApiKey { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ApiKeyHeader
+
+Gets or sets the header name [TryCommand.ApiKey](/api-reference/Microsoft/OData/Mcp/Tools/Commands/TryCommand#apikey) is sent under.
 
 #### Syntax
 
@@ -81,6 +85,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthServer
 
+Gets or sets the operator's authorization server override.
+
 #### Syntax
 
 ```csharp
@@ -92,6 +98,8 @@ public string AuthServer { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthTimeout
+
+Gets or sets how long, in seconds, an interactive grant may run before it is abandoned.
 
 #### Syntax
 
@@ -105,6 +113,8 @@ Type: `System.Nullable<int>?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
 
+Gets or sets the authentication token.
+
 #### Syntax
 
 ```csharp
@@ -116,6 +126,8 @@ public string AuthToken { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicPassword
+
+Gets or sets the RFC 7617 Basic authentication password.
 
 #### Syntax
 
@@ -129,6 +141,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BasicUser
 
+Gets or sets the RFC 7617 Basic authentication user name.
+
 #### Syntax
 
 ```csharp
@@ -140,6 +154,8 @@ public string BasicUser { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientId
+
+Gets or sets the OAuth client id this process authenticates as.
 
 #### Syntax
 
@@ -153,6 +169,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientMetadataDocument
 
+Gets or sets the client identity metadata document (CIMD) URI.
+
 #### Syntax
 
 ```csharp
@@ -164,6 +182,8 @@ public string ClientMetadataDocument { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientSecret
+
+Gets or sets the OAuth client secret for a confidential client.
 
 #### Syntax
 
@@ -177,6 +197,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Grant
 
+Gets or sets the operator's `--grant` selection.
+
 #### Syntax
 
 ```csharp
@@ -188,6 +210,8 @@ public string Grant { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientId
+
+Gets or sets the enterprise IdP client id used to obtain the id token the identity assertion grant exchanges.
 
 #### Syntax
 
@@ -201,6 +225,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpClientSecret
 
+Gets or sets the enterprise IdP client secret.
+
 #### Syntax
 
 ```csharp
@@ -212,6 +238,8 @@ public string IdpClientSecret { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpIdTokenFile
+
+Gets or sets the path to a UTF-8 OIDC id token file for the identity assertion grant.
 
 #### Syntax
 
@@ -225,6 +253,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpScope
 
+Gets or sets the scope requested from the enterprise IdP.
+
 #### Syntax
 
 ```csharp
@@ -236,6 +266,8 @@ public string IdpScope { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpTokenEndpoint
+
+Gets or sets the enterprise IdP token endpoint.
 
 #### Syntax
 
@@ -249,6 +281,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpUrl
 
+Gets or sets the enterprise IdP base URL.
+
 #### Syntax
 
 ```csharp
@@ -261,7 +295,7 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Output
 
-Where the report is written. Defaults to standard output.
+Gets or sets where the probe report is written. Defaults to [Out](https://learn.microsoft.com/dotnet/api/system.console.out).
 
 #### Syntax
 
@@ -275,6 +309,8 @@ Type: `System.IO.TextWriter`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RedirectUri
 
+Gets or sets the loopback redirect URI override for the authorization code grant.
+
 #### Syntax
 
 ```csharp
@@ -286,6 +322,8 @@ public string RedirectUri { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Resource
+
+Gets or sets the RFC 8707 resource indicator / audience override.
 
 #### Syntax
 
@@ -299,6 +337,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
 
+Gets or sets the fallback scope list requested when the authorization server advertises none.
+
 #### Syntax
 
 ```csharp
@@ -311,6 +351,8 @@ Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TokenCache
 
+Gets or sets the directory the Latchkey File and Dpapi backends store cached tokens in.
+
 #### Syntax
 
 ```csharp
@@ -322,6 +364,8 @@ public string TokenCache { get; set; }
 Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Url
+
+Gets or sets the OData service root URL. A pasted `$metadata` URL is accepted.
 
 #### Syntax
 

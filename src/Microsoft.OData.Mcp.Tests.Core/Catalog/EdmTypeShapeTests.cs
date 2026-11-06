@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.OData.Mcp.Core.Catalog;
@@ -103,6 +104,70 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             EdmTypeShape.IsCollectionBound("Trippin.Person").Should().BeFalse();
             EdmTypeShape.IsCollectionBound(null).Should().BeFalse();
             EdmTypeShape.IsCollectionBound(" ").Should().BeFalse();
+        }
+
+        /// <summary>
+        /// Form and URL elicitation are distinct markers; both can appear on one signature.
+        /// </summary>
+        [TestMethod]
+        public void RenderOperation_ElicitMarkers_DistinguishFormAndUrl()
+        {
+            var model = new EdmModel();
+            IReadOnlyList<EdmParameter> none = [];
+
+            EdmTypeShape.RenderOperation(model, "Ship", none, null, isBound: false, null, writes: true, null, elicitForm: true)
+                .Should().Be("Ship() // writes, elicit_form");
+            EdmTypeShape.RenderOperation(model, "Authorize", none, null, isBound: false, null, writes: true, null, isTask: true, elicitUrl: true)
+                .Should().Be("Authorize() // writes, task, elicit_url");
+            EdmTypeShape.RenderOperation(model, "Both", none, null, isBound: false, null, writes: true, null, isTask: true, elicitForm: true, elicitUrl: true)
+                .Should().Be("Both() // writes, task, elicit_form, elicit_url");
+            EdmTypeShape.RenderOperation(model, "Reset", none, null, isBound: false, null, writes: true, null)
+                .Should().Be("Reset() // writes");
+        }
+
+        /// <summary>
+        /// The action overload reads <c>ElicitForm</c> and <c>ElicitUrlProperties</c> from the EDM action.
+        /// </summary>
+        [TestMethod]
+        public void RenderOperation_ActionOverload_ReadsElicitTerms()
+        {
+            var form = new CsdlParser().ParseFromString("""
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Ship">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.ElicitForm">
+                          <Form xmlns="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml" Message="Ship this order">
+                            <Field Name="trackingNumber" Type="string"/>
+                          </Form>
+                        </Annotation>
+                      </Action>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """);
+            var url = new CsdlParser().ParseFromString("""
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Authorize">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.Task" Bool="true"/>
+                        <Annotation Term="Microsoft.OData.Mcp.V1.ElicitUrlProperties">
+                          <Collection>
+                            <String>connectUri</String>
+                          </Collection>
+                        </Annotation>
+                      </Action>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """);
+
+            EdmTypeShape.RenderOperation(form, "Ship", form.Actions[0]).Should().Be("Ship() // writes, elicit_form");
+            EdmTypeShape.RenderOperation(url, "Authorize", url.Actions[0]).Should().Be("Authorize() // writes, task, elicit_url");
+
+            var nullAction = () => EdmTypeShape.RenderOperation(form, "Ship", (EdmAction)null!);
+            nullAction.Should().Throw<ArgumentNullException>().WithParameterName("action");
         }
 
         /// <summary>

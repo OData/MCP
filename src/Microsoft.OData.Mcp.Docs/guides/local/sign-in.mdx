@@ -1,0 +1,45 @@
+---
+title: "Sign in to the service"
+description: "How Local MCP authenticates to the OData service on your behalf."
+keywords: ["Local MCP", "OAuth", "device_code", "protected resource metadata"]
+---
+
+Local MCP signs in to the OData service on your behalf — `$metadata`, collections, POST. It uses your credentials, not the assistant's.
+
+`try` prints the flags. Common cases:
+
+| Situation | Add this |
+|---|---|
+| The service is public | nothing |
+| You already have a bearer token | `--auth-token "<token>"` |
+| The service uses OAuth (including Microsoft Graph) | `--client-id <your-app-id>` — you get a URL and a code the first time; after that it remembers |
+| Unattended, no person to click | `--grant client_credentials --client-secret <secret>` |
+| API key or HTTP Basic | `--api-key` / `--basic-user` as `try` suggests |
+
+Example (Microsoft Graph):
+
+```bash
+dotnet odata-mcp start https://graph.microsoft.com/v1.0 \
+  --client-id "{your-app-registration-id}" \
+  --scopes "https://graph.microsoft.com/.default"
+```
+
+Sign-in prompts show as `Sign in at <url>` and `Code: <code>`. Tokens stay on your machine and refresh for you. They never appear in tool results or in the command that `add` prints.
+
+A daemon must pass `--grant client_credentials` (and `--client-secret` or `ODATA_MCP_CLIENT_SECRET`). There is no TTY detection; an interactive grant with nobody present will hang.
+
+## If you own the OData API
+
+Publish protected resource metadata on **that API**. Local MCP then discovers the authorization server from a `401`.
+
+```csharp
+builder.Services.AddProtectedResourceMetadata(options =>
+{
+    options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+    options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+});
+```
+
+There is no `Use` call. The document is public at `/.well-known/oauth-protected-resource`. Operators still need a client id when the authorization server does not allow dynamic registration.
+
+Every flag: [How Local MCP works](/guides/local/how-it-works).

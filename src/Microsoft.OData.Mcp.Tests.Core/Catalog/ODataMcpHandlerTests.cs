@@ -226,6 +226,67 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
         }
 
         /// <summary>
+        /// After-invoke sees the catalog result and may replace it.
+        /// </summary>
+        [TestMethod]
+        public async Task CallToolAsync_AfterInvoke_SeesCatalogResult()
+        {
+            CallToolResult? seen = null;
+            var replacement = new CallToolResult
+            {
+                Content = [new TextContentBlock { Text = "after" }]
+            };
+            var result = await ODataMcpHandlers.CallToolAsync(
+                Context(new CallToolRequestParams
+                {
+                    Name = "odata_list_entity_sets",
+                    Arguments = new Dictionary<string, JsonElement>()
+                }),
+                _ => Session(),
+                null,
+                null,
+                CancellationToken.None,
+                (request, callResult, _) =>
+                {
+                    seen = callResult;
+                    return ValueTask.FromResult(replacement);
+                });
+
+            seen.Should().NotBeNull();
+            seen!.IsError.Should().BeFalse();
+            result.Should().BeSameAs(replacement);
+        }
+
+        /// <summary>
+        /// MRTR <c>requestState</c> skips the catalog invoke and hands the echoed ticket to after-invoke.
+        /// </summary>
+        [TestMethod]
+        public async Task CallToolAsync_RequestState_SkipsInvoke()
+        {
+            const string started = """{"status":"Started","connectUri":"https://login.example.test/connect"}""";
+            CallToolResult? seen = null;
+            var result = await ODataMcpHandlers.CallToolAsync(
+                Context(new CallToolRequestParams
+                {
+                    Name = "does_not_exist",
+                    RequestState = started
+                }),
+                _ => Session(),
+                null,
+                null,
+                CancellationToken.None,
+                (request, callResult, _) =>
+                {
+                    seen = callResult;
+                    return ValueTask.FromResult(callResult);
+                });
+
+            seen.Should().NotBeNull();
+            result.IsError.Should().NotBeTrue();
+            result.StructuredContent?.GetRawText().Should().Contain("https://login.example.test/connect");
+        }
+
+        /// <summary>
         /// Null request services throw.
         /// </summary>
         [TestMethod]

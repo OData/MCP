@@ -1,0 +1,105 @@
+---
+title: McpTaskAnnotations
+description: "Attaches `Microsoft.OData.Mcp.V1` to an [EdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.edmmodel) and stamps Task annotations."
+icon: bolt
+tag: "STATIC"
+keywords: ['McpTaskAnnotations', 'Microsoft.OData.Mcp.AspNetCore.Vocabularies.McpTaskAnnotations', 'Microsoft.OData.Mcp.AspNetCore.Vocabularies', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+
+**Namespace:** Microsoft.OData.Mcp.AspNetCore.Vocabularies
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.AspNetCore.Vocabularies.McpTaskAnnotations
+```
+
+## Summary
+
+Attaches `Microsoft.OData.Mcp.V1` to an [EdmModel](https://learn.microsoft.com/dotnet/api/microsoft.odata.edm.edmmodel) and stamps Task annotations.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> EnsureReferenced
+
+Adds the MCP vocabulary as a referenced model and an `edmx:Reference` Include
+when the service model does not already have it.
+
+#### Syntax
+
+```csharp
+public static void EnsureReferenced(Microsoft.OData.Edm.EdmModel model)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.EdmModel` | The service model being built. |
+
+#### Examples
+
+```csharp
+McpTaskAnnotations.EnsureReferenced(edmModel);
+```
+
+#### Remarks
+
+`FindTerm` only sees terms on referenced models.
+`SetEdmReferences` is merged so ModelBuilder's Core/Capabilities references stay on the model.
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StampElicitForm
+
+Stamps `Microsoft.OData.Mcp.V1.ElicitForm` and the compact `Form` island.
+
+#### Syntax
+
+```csharp
+public static void StampElicitForm(Microsoft.OData.Edm.EdmModel model, Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable target, string islandXml)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.EdmModel` | The service model. |
+| `target` | `Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable` | The action to annotate. |
+| `islandXml` | `string` | The compact form island, including the vocab `xmlns`. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StampTask
+
+Stamps `Microsoft.OData.Mcp.V1.Task` on an action, attaching the vocabulary if needed.
+
+#### Syntax
+
+```csharp
+public static void StampTask(Microsoft.OData.Edm.EdmModel model, Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable target, System.Collections.Generic.IReadOnlyList<string> elicitUrlProperties = null, string description = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.EdmModel` | The service model. |
+| `target` | `Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable` | The action to annotate. |
+| `elicitUrlProperties` | `System.Collections.Generic.IReadOnlyList<string>?` | Optional JSON property names for `ElicitUrlProperties`. |
+| `description` | `string?` | Optional `Org.OData.Core.V1.Description` on the action. |
+
+#### Examples
+
+```csharp
+McpTaskAnnotations.StampTask(edmModel, authorizeAction);
+```
+
+#### Remarks
+
+Used after OData routes are mapped, when the finished model is already in hand.
+The annotation is serialized inline on *target* so it appears in
+the schema that already declares the action.
+

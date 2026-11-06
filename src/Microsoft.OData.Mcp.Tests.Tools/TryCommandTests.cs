@@ -92,10 +92,13 @@ namespace Microsoft.OData.Mcp.Tests.Tools
         }
 
         /// <summary>
-        /// Connection test fetches live Northwind metadata.
+        /// Connection test fetches live Northwind metadata. Ceiling sits above
+        /// <see cref="System.Net.Http.HttpClient"/>'s 100-second default so a slow public
+        /// <c>$metadata</c> still writes <c>Could not connect</c> through
+        /// <see cref="AddCommand.TestConnection"/>.
         /// </summary>
         [TestMethod]
-        [Timeout(20000)]
+        [Timeout(120000)]
         public async Task AddCommand_TestConnection_NorthwindSucceeds()
         {
             var output = new StringWriter();

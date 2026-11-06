@@ -18,6 +18,7 @@
 | [v3/OPTIMIZATION-REPORT.md](./v3/OPTIMIZATION-REPORT.md) | Token measurements per round |
 | [v3/ODATA-HOSTING.md](./v3/ODATA-HOSTING.md) | Web MCP inside ASP.NET Core OData apps |
 | [v3/AUTHENTICATION.md](./v3/AUTHENTICATION.md) | Outbound OAuth and protected-resource metadata |
+| [v3/ELICIT-FORM.md](./v3/ELICIT-FORM.md) | Form elicitation before invoke: compact `<Form>` CSDL island, McpEssentials XML codec |
 | [v3/TESTING.md](./v3/TESTING.md) | Test strategy: real HTTP, no mocks |
 | [v3/TOOL-TEST-MANIFEST.md](./v3/TOOL-TEST-MANIFEST.md) | Per-tool contract and test inventory |
 | [v3/INVENTORY.md](./v3/INVENTORY.md) | Concept vs delete for every prior type |

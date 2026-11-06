@@ -41,7 +41,7 @@ Rules:
 | Navigation | `Name -> Type` or `Name -> Type[]` | `[]` is collection. Single-valued optional nav keeps the arrow: `Name? -> Type` (the arrow is what tells `odata_navigate` targets apart from complex-typed properties). No `1` / `0..1`. |
 | Short string | `string(n)` | Only when `MaxLength` is present **and** `n ≤ 16`. |
 | Enum | `Name: enum(Red\|Green\|Blue)` | Members always. `// flags, comma-separated` when `IsFlags`. |
-| Operation | `Name(arg: type, arg?: type) -> Return` | Bound ops only, on the type. Binding parameter omitted. `// collection` when bound to `Collection(...)`. `// writes` when it mutates (EDM action). |
+| Operation | `Name(arg: type, arg?: type) -> Return` | Bound ops only, on the type. Binding parameter omitted. `// collection` when bound to `Collection(...)`. `// writes` when it mutates (EDM action). `// task` when `Mcp.Task`. `// elicit_form` when `Mcp.ElicitForm`. `// elicit_url` when `Mcp.ElicitUrlProperties`. |
 | Docs | `// summary` | Only when CSDL/vocabulary has it **and** it is not the member name. Second `//` line only when LongDescription differs from Description. When a line has both markers and docs they share one comment: markers joined with `, `, then `; `, then the summary (`UserName: string // key; Unique person name.`). Type-level docs are one `//` line each for type Description, type LongDescription, set Description, set LongDescription, deduplicated. |
 
 Do **not** emit empty `operations` / docs keys. Do **not** fall back to the property name as a description.

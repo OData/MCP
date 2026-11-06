@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
 using Microsoft.OData.Mcp.AspNetCore.Execution;
+using Microsoft.OData.Mcp.AspNetCore.Vocabularies;
 using Microsoft.OData.Mcp.Core.Catalog;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Hosting
@@ -103,8 +104,10 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             lock (_gate)
             {
                 var sessions = new Dictionary<string, ODataMcpSession>(StringComparer.OrdinalIgnoreCase);
+                var taskSources = McpTaskAttributeAnnotations.CollectSourceTypes(_services);
                 foreach (var binding in ODataMcpRouteDiscovery.Discover(_services, _hostOptions.Value, additionalSources))
                 {
+                    McpTaskAttributeAnnotations.Apply(binding.Model, taskSources, _services);
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
                     var executor = new InProcessODataExecutor(
@@ -112,7 +115,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                         _httpContextAccessor,
                         _services.GetRequiredService<IServiceScopeFactory>(),
                         binding.Prefix);
-                    sessions[binding.Prefix] = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
+                    var session = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
+                    sessions[binding.Prefix] = session;
                 }
 
                 _sessions = sessions;
@@ -169,15 +173,18 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                 EnforceRequiredOnCreate = source.EnforceRequiredOnCreate,
                 EnumJsonFormat = source.EnumJsonFormat,
                 ExcludeEntitySets = [.. source.ExcludeEntitySets],
+                IncludeActions = source.IncludeActions,
                 IncludeCreate = source.IncludeCreate,
                 IncludeDelete = source.IncludeDelete,
                 IncludeEntitySets = [.. source.IncludeEntitySets],
+                IncludeFunctions = source.IncludeFunctions,
                 IncludeUpdate = source.IncludeUpdate,
                 InstructionsPreface = source.InstructionsPreface,
                 IsDynamicModel = source.IsDynamicModel,
                 MaxCompletionValues = source.MaxCompletionValues,
                 MaxExpandLength = source.MaxExpandLength,
                 MaxFilterLength = source.MaxFilterLength,
+                MaxOperationWait = source.MaxOperationWait,
                 MaxRequestBodyBytes = source.MaxRequestBodyBytes,
                 MaxResources = source.MaxResources,
                 MaxResponseBytes = source.MaxResponseBytes,

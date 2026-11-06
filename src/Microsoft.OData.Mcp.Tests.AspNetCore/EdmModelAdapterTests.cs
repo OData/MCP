@@ -6,8 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using FluentAssertions;
+using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
+using Microsoft.OData.Edm.Vocabularies;
+using Microsoft.OData.Edm.Vocabularies.V1;
 using Microsoft.OData.Mcp.AspNetCore.Adaptation;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
 using Microsoft.OData.Mcp.Tests.Shared.Models;
 using Microsoft.OData.ModelBuilder;
@@ -236,6 +240,80 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
             widget.GetProperty("RowVersion")!.Computed.Should().BeTrue("out-of-line Annotations apply too");
             widget.GetProperty("Notes")!.Computed.Should().BeFalse();
             widget.GetProperty("Sequence")!.Computed.Should().BeFalse("Int32 keys are never inferred as Computed");
+        }
+
+        /// <summary>
+        /// The Core MCP vocabulary CSDL loads as an EdmLib model with the Task term.
+        /// </summary>
+        [TestMethod]
+        public void Adapter_McpVocabularyCsdl_DeclaresTaskTerm()
+        {
+            using var reader = XmlReader.Create(new StringReader(McpVocabulary.CsdlXml));
+            CsdlReader.TryParse(reader, [CoreVocabularyModel.Instance], false, out var vocab, out var errors).Should().BeTrue();
+            errors.Should().BeEmpty();
+
+            var term = vocab.FindDeclaredTerm(McpVocabulary.TaskTerm);
+            term.Should().NotBeNull();
+            term!.Name.Should().Be(McpVocabulary.TaskTermName);
+            term.Namespace.Should().Be(McpVocabulary.Namespace);
+            vocab.FindDeclaredTerm(McpVocabulary.ElicitUrlPropertiesTerm).Should().NotBeNull();
+        }
+
+        /// <summary>
+        /// Task and ElicitUrlProperties annotations on an EdmLib action are copied.
+        /// </summary>
+        [TestMethod]
+        public void Adapter_TaskAnnotation_CopiesIsTaskAndElicitUrlProperties()
+        {
+            const string csdl = """
+                <?xml version="1.0" encoding="utf-8"?>
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Authorize">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.Task" Bool="true" />
+                        <Annotation Term="Microsoft.OData.Mcp.V1.ElicitUrlProperties">
+                          <Collection>
+                            <String>connectUri</String>
+                          </Collection>
+                        </Annotation>
+                      </Action>
+                      <Action Name="Reset" />
+                      <EntityContainer Name="Container" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            using var reader = XmlReader.Create(new StringReader(csdl));
+            var core = EdmModelAdapter.ToCoreModel(CsdlReader.Parse(reader));
+
+            var authorize = core.Actions.Single(item => item.Name == "Authorize");
+            var reset = core.Actions.Single(item => item.Name == "Reset");
+
+            authorize.IsTask.Should().BeTrue();
+            authorize.ElicitUrlProperties.Should().Equal("connectUri");
+            reset.IsTask.Should().BeFalse();
+            reset.ElicitUrlProperties.Should().BeNull();
+        }
+
+        /// <summary>
+        /// A Task term stamped after <c>GetEdmModel</c> is copied.
+        /// </summary>
+        [TestMethod]
+        public void Adapter_StampedTaskTerm_CopiesIsTask()
+        {
+            var builder = new ODataConventionModelBuilder();
+            builder.EntitySet<Customer>("Customers");
+            builder.EntityType<Customer>().Action("Authorize");
+            var edm = (EdmModel)builder.GetEdmModel();
+            var action = edm.SchemaElements.OfType<IEdmAction>().Single(item => item.Name == "Authorize");
+            var term = new EdmTerm(McpVocabulary.Namespace, McpVocabulary.TaskTermName, EdmCoreModel.Instance.GetBoolean(false), "Action");
+            edm.AddElement(term);
+            edm.SetVocabularyAnnotation(new EdmVocabularyAnnotation(action, term, new EdmBooleanConstant(true)));
+
+            var core = EdmModelAdapter.ToCoreModel(edm);
+
+            core.Actions.Single(item => item.Name == "Authorize").IsTask.Should().BeTrue();
         }
 
         /// <summary>

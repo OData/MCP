@@ -1,0 +1,63 @@
+---
+title: ElicitFormXml
+description: "Closed AOT reader for the compact `Form` / `Field` / `Option` island nested under `Microsoft.OData.Mcp.V1.ElicitForm`."
+icon: bolt
+tag: "STATIC"
+keywords: ['ElicitFormXml', 'Microsoft.OData.Mcp.Core.Parsing.ElicitFormXml', 'Microsoft.OData.Mcp.Core.Parsing', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Parsing
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Parsing.ElicitFormXml
+```
+
+## Summary
+
+Closed AOT reader for the compact `Form` / `Field` / `Option` island
+nested under `Microsoft.OData.Mcp.V1.ElicitForm`.
+
+## Remarks
+
+Same grammar as McpEssentials `FormXml`. Core does not reference McpEssentials.
+Readers match [LocalName](https://learn.microsoft.com/dotnet/api/system.xml.xmlreader.localname) only. DTD processing is prohibited.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Parse
+
+Reads a compact form island. Namespace prefixes are ignored.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.Mcp.Core.Models.EdmElicitForm Parse(string xml)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `xml` | `string` | The island text. |
+
+#### Returns
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmElicitForm`
+The catalog snapshot.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentException` | Thrown when *xml* is empty. |
+| `InvalidOperationException` | Thrown when the island is not a valid form. |
+| `XmlException` | Thrown when the text is not well-formed XML or contains a DTD. |
+

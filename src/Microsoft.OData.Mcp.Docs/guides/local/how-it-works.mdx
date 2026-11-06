@@ -1,23 +1,24 @@
 ---
-title: How the CLI works
-description: What `dotnet odata-mcp` does between the service root you give it and the tools your assistant sees, including startup, the probe, the generated tools, transport, and outbound authentication.
+title: "How Local MCP works"
+description: "What Local MCP does between the OData service root and the tools your harness sees: startup, the probe, the catalog, stdio, and outbound sign-in."
+keywords: ["Local MCP", "dotnet odata-mcp", "ServiceProbe", "stdio"]
 ---
 
-`dotnet odata-mcp` is a local MCP server for one remote OData service. This page is the technical companion to the package README: what happens at startup, what the assistant is given, how `try` reaches its verdict, how sign-in is discovered and cached, and every flag.
+Local MCP (`dotnet odata-mcp`) is an MCP server on your machine for one OData HTTP API. It reads `$metadata`, builds a compact catalog, and speaks MCP to your harness over stdio. This page is the technical companion to [Use Local MCP](/guides/local/get-started).
 
 ## The service root
 
-Every command takes the **service root**, for example `https://host/odata`. The CLI appends `$metadata` itself. A pasted URL that ends in `/$metadata` (with or without `?$format=xml`) is trimmed to its root by `ToolsMcpHost.NormalizeServiceRoot`; `$metadata` anywhere else in the path is left alone. The root always ends in `/` internally so relative segments append instead of replacing the last path segment.
+Every command takes the **service root**, for example `https://host/odata`. Local MCP appends `$metadata` itself. A pasted URL that ends in `/$metadata` (with or without `?$format=xml`) is trimmed to its root; `$metadata` anywhere else in the path is left alone. The root always ends in `/` internally so relative segments append instead of replacing the last path segment.
 
 ## Startup sequence (`start`)
 
 1. **Build the host.** One generic host owns everything: the authenticating `"OData"` HTTP client, the plain `"OAuth"` client used to talk to authorization servers, the token cache, the CSDL parser, the catalog options, and (for `start`) the stdio MCP server with its `shutdown_server` tool. There is exactly one `Build()`, and nothing touches the network before it, because the two named clients must share one `IHttpClientFactory` for the negotiated credential to reach the tools.
 2. **Fetch and parse `$metadata`** through the `"OData"` client. If the service answers 401, the authentication handler runs discovery, acquires a token (interactively or not, depending on flags), and retries. A restart with a still-valid cached token spends exactly one request here.
 3. **Build the catalog.** `ODataMcpCatalog` turns the parsed model into resources and tools (below). Type shapes are computed once and cached.
-4. **Probe the data anonymously.** After the catalog exists, the CLI runs steps 2 to 4 of the service probe through the default, unauthenticated client: one `GET {firstSet}?$top=1` and a check of the row against the model. The verdict is logged at Information level. When the data answered 401 or 403 and no credential flag was passed, the model's `initialize.instructions` gain a one-sentence preface saying that data requires sign-in and that the first call may pause for authentication. Probe failures never block startup, and the interactive sign-in still happens lazily on the first real tool call, so an unattended process does not stall on a prompt at boot.
-5. **Serve stdio.** JSON-RPC in on stdin, out on stdout. All logging goes to stderr. There is no HTTP transport in the CLI.
+4. **Probe the data anonymously.** After the catalog exists, Local MCP runs steps 2 to 4 of the service probe through the default, unauthenticated client: one `GET {firstSet}?$top=1` and a check of the row against the model. The verdict is logged at Information level. When the data answered 401 or 403 and no credential flag was passed, the model's `initialize.instructions` gain a one-sentence preface saying that data requires sign-in and that the first call may pause for authentication. Probe failures never block startup, and the interactive sign-in still happens lazily on the first real tool call, so an unattended process does not stall on a prompt at boot.
+5. **Serve stdio.** JSON-RPC in on stdin, out on stdout. All logging goes to stderr. There is no HTTP transport in Local MCP.
 
-## What the assistant is given
+## What the harness is given
 
 **Instructions.** `initialize.instructions` carries the handful of rules a model cannot infer from schemas: parameter names omit `$`, prefer named tools, where bound and unbound operations are listed, how to pass arguments to `odata_call`, and not to read the raw `$metadata` resource to explore. A developer-supplied preface can precede it.
 
@@ -50,11 +51,11 @@ Verdicts, in precedence order: `MetadataSecured`, `Unreachable` (metadata 404/5x
 
 ## Transport
 
-Standard MCP stdio. One JSON-RPC message per line on stdout; nothing else may be written there. Logging is `Microsoft.Extensions.Logging` console output routed entirely to stderr, at Information by default and Debug with `--verbose`. MCP SDK internals are filtered to Warning unless `--verbose` is set.
+Standard MCP stdio to the harness. One JSON-RPC message per line on stdout; nothing else may be written there. Logging is `Microsoft.Extensions.Logging` console output routed entirely to stderr, at Information by default and Debug with `--verbose`. MCP SDK internals are filtered to Warning unless `--verbose` is set.
 
 ## Outbound authentication
 
-The CLI signs in to the OData service on the operator's behalf; it does not proxy the assistant's identity.
+Local MCP signs in to the OData HTTP API on the operator's behalf. Happy-path flags: [Sign in to the service](/guides/local/sign-in).
 
 **Discovery.** On a 401 the handler reads the `WWW-Authenticate` challenge, then looks for RFC 9728 protected resource metadata (the `resource_metadata` URL from the challenge first, then the well-known locations under the service root), then RFC 8414 or OpenID Connect authorization server metadata at the issuers the resource metadata names. `--auth-server` supplies the issuer when a service returns only a bare `Bearer` challenge and publishes nothing. `--resource` overrides the audience.
 
@@ -62,7 +63,7 @@ The CLI signs in to the OData service on the operator's behalf; it does not prox
 
 **Tokens.** Access and refresh tokens live in the operating system credential store through Latchkey, keyed by service root and client id, or in a file-based backend under `--token-cache`. Refresh happens on the send path before a request goes out; an `invalid_token` answer to an attached token triggers one forced refresh. Tokens never appear in tool results, logs, or the registration command that `add` prints.
 
-**Mid-session re-authentication.** When a token cannot be refreshed while serving stdio, the handler starts the grant, the server elicits the sign-in URL to the assistant so it can relay it to the user, completes the grant, and retries the tool call once.
+**Mid-session re-authentication.** When a token cannot be refreshed while serving stdio, the handler starts the grant, Local MCP elicits the sign-in URL to the harness so it can relay it to the user, completes the grant, and retries the tool call once.
 
 **Unattended processes.** There is no TTY detection. A daemon must pass `--grant client_credentials` (and `--client-secret` or `ODATA_MCP_CLIENT_SECRET`), or it will fall into an interactive grant nobody is present to complete.
 
@@ -88,12 +89,11 @@ Shared by `start` and `try`.
 | `--idp-url`, `--idp-token-endpoint`, `--idp-client-id`, `--idp-client-secret`, `--idp-scope`, `--idp-id-token-file` | Enterprise IdP settings for `identity_assertion`. |
 | `-v`, `--verbose` | `start` only. Debug logging to stderr. |
 
-### Making your API self-describing
+### Making the OData API self-describing
 
-If you own the OData service, add protected resource metadata to it and the CLI needs no sign-in flags beyond a client id:
+If you own the OData HTTP API, publish protected resource metadata on it. Local MCP then needs no sign-in flags beyond a client id.
 
 ```csharp
-// In the API, using Microsoft.OData.Mcp.AspNetCore
 builder.Services.AddProtectedResourceMetadata(options =>
 {
     options.AuthorizationServers.Add(new Uri("https://login.example.com/oauth2/v2.0"));
@@ -101,7 +101,7 @@ builder.Services.AddProtectedResourceMetadata(options =>
 });
 ```
 
-That publishes an RFC 9728 document at `/.well-known/oauth-protected-resource` for the application root, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a 401. Set `options.Prefixes` to any Endpoint Routing or Minimal API route base (including `""`) when the resource is not the whole host. No MCP server and no pipeline call are required in the API.
+That publishes an RFC 9728 document at `/.well-known/oauth-protected-resource` for the application root, anonymously, and adds `resource_metadata="…"` to the `WWW-Authenticate` header on a 401. Set `options.Prefixes` to any Endpoint Routing or Minimal API route base (including `""`) when the resource is not the whole host.
 
 ## Exit codes
 

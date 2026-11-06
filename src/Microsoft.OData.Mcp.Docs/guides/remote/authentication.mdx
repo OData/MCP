@@ -1,0 +1,34 @@
+---
+title: "Lock Remote MCP like the API"
+description: "Require a signed-in caller on /mcp. The harness authenticates the same way anything else calling your API does."
+keywords: ["Remote MCP", "RequireAuthorization", "harness"]
+---
+
+MCP is a sibling of your OData API. Lock `{prefix}/mcp` the same way you lock the API. The harness (Claude Desktop, Cursor, Claude Code, VS Code, …) presents whatever credential that pipeline already accepts. Customers paste `https://your-host/odata/mcp` into the harness.
+
+## Require a signed-in caller
+
+```csharp
+builder.Services.AddODataMcp(options =>
+{
+    options.RequireAuthorization = true;
+});
+```
+
+Your existing authentication pipeline applies. Anonymous `/mcp` is refused. Token issuance stays with that pipeline.
+
+A 401 on `/mcp` can carry `resource_metadata="…"` so an OAuth-capable harness finds your authorization server. Publish that document with `AddProtectedResourceMetadata`. There is no `Use` call. Token validation stays with your JWT handler or gateway.
+
+```csharp
+builder.Services.AddProtectedResourceMetadata(options =>
+{
+    options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
+    options.ScopesSupported.Add("api://contoso-odata/Data.Read");
+});
+```
+
+If the protected resource is not the whole host, set `options.Prefixes` (`""` for the root, `"odata"` for `/odata`).
+
+## Browser hops
+
+When an action opens a login page, the harness shows a URL. Access tokens from that hop never belong in the chat. See [Elicitations](/guides/remote/elicitations).

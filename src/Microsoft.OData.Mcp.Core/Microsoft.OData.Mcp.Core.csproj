@@ -48,5 +48,10 @@
         <PackageReference Include="System.Text.Json" Version="10.*" />
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="Vocabularies\Microsoft.OData.Mcp.V1.xml">
+            <LogicalName>Microsoft.OData.Mcp.V1.xml</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>

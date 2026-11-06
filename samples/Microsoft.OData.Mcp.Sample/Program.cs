@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,14 +51,12 @@ public class Program
         // Register the in-memory data store as a singleton
         builder.Services.AddSingleton<InMemoryDataStore>();
 
-        // Register the OData options provider bridge
-        //builder.Services.AddSingleton<IODataOptionsProvider, ODataOptionsProviderBridge>();
+        builder.Services.AddFormElicitation("ship",
+            FormElicitationBuilder.Create("Ship this order")
+                .String("trackingNumber").Required().MinLength(1)
+                .Title("Tracking number"));
 
-        builder.Services.AddODataMcp(options =>
-        {
-            options.Catalog.IncludeEntitySets.Add("Customers");
-            options.Catalog.IncludeEntitySets.Add("Products");
-        });
+        builder.Services.AddODataMcp();
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

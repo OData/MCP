@@ -13,7 +13,7 @@ Two products, one idea:
 | Who | You, using an AI on your machine | You, shipping an OData API |
 | What | A small app that talks to any OData service on your behalf | A NuGet package that puts MCP on the API you already host |
 | Where | Windows, macOS, and Linux | Your ASP.NET Core host |
-| Package | `Microsoft.OData.Mcp.Tools` (`dotnet odata-mcp`) | `Microsoft.OData.Mcp.AspNetCore` |
+| Package | `Microsoft.OData.Mcp` (`dotnet odata-mcp`) | `Microsoft.OData.Mcp.AspNetCore` |
 
 Namespaces and project names stay `Microsoft.OData.Mcp.*`.
 
@@ -62,7 +62,7 @@ The assistant is steered toward the right call the first time. It does not chew 
 
 | Package | What it is | Version |
 |---|---|---|
-| [`Microsoft.OData.Mcp.Tools`](https://www.nuget.org/packages/Microsoft.OData.Mcp.Tools/) | Local MCP (`dotnet odata-mcp`) | [![NuGet](https://img.shields.io/nuget/vpre/Microsoft.OData.Mcp.Tools.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp.Tools/) |
+| [`Microsoft.OData.Mcp`](https://www.nuget.org/packages/Microsoft.OData.Mcp/) | Local MCP (`dotnet odata-mcp`) | [![NuGet](https://img.shields.io/nuget/vpre/Microsoft.OData.Mcp.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp/) |
 | [`Microsoft.OData.Mcp.AspNetCore`](https://www.nuget.org/packages/Microsoft.OData.Mcp.AspNetCore/) | Remote MCP | [![NuGet](https://img.shields.io/nuget/vpre/Microsoft.OData.Mcp.AspNetCore.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp.AspNetCore/) |
 | [`Microsoft.OData.Mcp.Core`](https://www.nuget.org/packages/Microsoft.OData.Mcp.Core/) | Shared catalog and models | [![NuGet](https://img.shields.io/nuget/vpre/Microsoft.OData.Mcp.Core.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp.Core/) |
 | [`Microsoft.OData.Mcp.Authentication`](https://www.nuget.org/packages/Microsoft.OData.Mcp.Authentication/) | Outbound OAuth for Local MCP | [![NuGet](https://img.shields.io/nuget/vpre/Microsoft.OData.Mcp.Authentication.svg)](https://www.nuget.org/packages/Microsoft.OData.Mcp.Authentication/) |
@@ -82,7 +82,7 @@ The assistant is steered toward the right call the first time. It does not chew 
 Install the tool, point it at a service, add it to your assistant.
 
 ```bash
-dotnet tool install -g Microsoft.OData.Mcp.Tools
+dotnet tool install -g Microsoft.OData.Mcp
 
 dotnet odata-mcp try https://services.odata.org/TripPinRESTierService
 dotnet odata-mcp add
@@ -106,6 +106,6 @@ app.MapControllers();   // or MapODataRoute / MapApiRoute
 app.UseODataMcp();      // MCP at {prefix}/mcp, for example /odata/mcp
 ```
 
-Assistants (and Local MCP) then talk to `https://your-api.example/odata/mcp`.
+Customers point their harness at `https://your-api.example/odata/mcp`.
 
 Install, getting started, and securing the endpoint: [Remote MCP](src/Microsoft.OData.Mcp.AspNetCore/readme.md).

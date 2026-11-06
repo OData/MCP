@@ -271,6 +271,25 @@ public int MaxFilterLength { get; set; }
 
 Type: `int`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxOperationWait
+
+Gets or sets how long an annotated-action MCP task may wait for elicitation and the
+host waiter. Used as the task TTL when the Started ticket has no `expiresIn`.
+
+#### Syntax
+
+```csharp
+public System.TimeSpan MaxOperationWait { get; set; }
+```
+
+#### Property Value
+
+Type: `System.TimeSpan`
+
+#### Remarks
+
+Defaults to 10 minutes. `tasks/cancel` and this timeout cancel the waiter token.
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MaxRequestBodyBytes
 
 Gets or sets the maximum JSON body size in bytes for create, update, and operation calls.

@@ -31,6 +31,12 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="tryHandleExtra">Optional extra call handler that runs before catalog tools.</param>
         /// <param name="tryHandleCallException">Optional recovery handler that sees an exception the catalog tool threw.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="afterInvoke">Optional hook that sees the catalog result (AspNetCore URL elicitation).</param>
+        /// <param name="beforeInvoke">
+        /// Optional hook that runs after extras and the tool name check, before OData invoke.
+        /// A non-null return replaces <c>request.Params</c> (merged form fields).
+        /// <see cref="InputRequiredException"/> is the MRTR path.
+        /// </param>
         /// <returns>
         /// The call result.
         /// </returns>
@@ -38,14 +44,18 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Only the tool invocation itself is guarded: a missing tool name and the extra call handler run
         /// outside the <c>try</c>, so <paramref name="tryHandleCallException"/> never sees a failure that has
         /// nothing to do with executing a catalog tool. A recovery handler that returns <see langword="null"/>
-        /// leaves the original exception to propagate with its stack intact.
+        /// leaves the original exception to propagate with its stack intact. Form elicitation is
+        /// <c>RequireForm</c> in the operation; URL elicitation runs after invoke.
+        /// <see cref="InputRequiredException"/> always propagates.
         /// </remarks>
         internal static async ValueTask<CallToolResult> CallToolAsync(
             RequestContext<CallToolRequestParams> request,
             Func<IServiceProvider, ODataMcpSession> resolveSession,
             Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolResult?>>? tryHandleExtra,
             Func<RequestContext<CallToolRequestParams>, Exception, CancellationToken, ValueTask<CallToolResult?>>? tryHandleCallException,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            Func<RequestContext<CallToolRequestParams>, CallToolResult, CancellationToken, ValueTask<CallToolResult>>? afterInvoke = null,
+            Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolRequestParams?>>? beforeInvoke = null)
         {
             ArgumentNullException.ThrowIfNull(request);
             ArgumentNullException.ThrowIfNull(resolveSession);
@@ -69,15 +79,40 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 };
             }
 
+            CallToolRequestParams? callParams = request.Params;
+            if (beforeInvoke is not null)
+            {
+                try
+                {
+                    var replaced = await beforeInvoke(request, cancellationToken).ConfigureAwait(false);
+                    if (replaced is not null)
+                    {
+                        callParams = replaced;
+                        name = replaced.Name;
+                    }
+                }
+                catch (ODataFormElicitationDeclinedException declined)
+                {
+                    return declined.Result;
+                }
+            }
+
+            if (afterInvoke is not null
+                && !string.IsNullOrWhiteSpace(request.Params?.RequestState)
+                && !ODataMcpFormElicitation.IsFormRetry(request))
+            {
+                return await afterInvoke(request, ResultFromRequestState(request.Params.RequestState), cancellationToken).ConfigureAwait(false);
+            }
+
             var session = resolveSession(RequireServices(request.Services));
-            var arguments = request.Params?.Arguments;
+            var arguments = callParams?.Arguments;
 
             ODataToolInvocationResult result;
             try
             {
                 result = await session.Runtime.InvokeAsync(name, arguments, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (tryHandleCallException is not null)
+            catch (Exception exception) when (tryHandleCallException is not null && exception is not InputRequiredException)
             {
                 var recovered = await tryHandleCallException(request, exception, cancellationToken).ConfigureAwait(false);
                 if (recovered is null)
@@ -88,12 +123,19 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 return recovered;
             }
 
-            return new CallToolResult
+            var callResult = new CallToolResult
             {
                 Content = [new TextContentBlock { Text = result.Text }],
                 IsError = result.IsError,
                 StructuredContent = result.ToStructuredContent()
             };
+
+            if (afterInvoke is null)
+            {
+                return callResult;
+            }
+
+            return await afterInvoke(request, callResult, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -319,6 +361,36 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal static IServiceProvider RequireServices(IServiceProvider? services)
         {
             return services ?? throw new InvalidOperationException("MCP request services are required.");
+        }
+
+        /// <summary>
+        /// Rebuilds a catalog tool result from MRTR <c>requestState</c> so a retry does not
+        /// re-invoke OData.
+        /// </summary>
+        /// <param name="requestState">Opaque Started JSON echoed by the client.</param>
+        /// <returns>
+        /// A tool result whose structured content is <paramref name="requestState"/>.
+        /// </returns>
+        internal static CallToolResult ResultFromRequestState(string requestState)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(requestState);
+
+            try
+            {
+                using var document = JsonDocument.Parse(requestState);
+                return new CallToolResult
+                {
+                    Content = [new TextContentBlock { Text = requestState }],
+                    StructuredContent = document.RootElement.Clone()
+                };
+            }
+            catch (JsonException)
+            {
+                return new CallToolResult
+                {
+                    Content = [new TextContentBlock { Text = requestState }]
+                };
+            }
         }
 
         /// <summary>

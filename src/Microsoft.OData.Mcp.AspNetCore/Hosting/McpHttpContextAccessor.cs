@@ -4,6 +4,8 @@
 using System;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Hosting
 {
@@ -59,6 +61,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         public HttpContext? Active => Current.Value?.Active;
 
+        /// <summary>
+        /// Gets the current MCP <c>tools/call</c> when this OData invoke was started by a tool.
+        /// Direct OData URLs are <see langword="null"/>.
+        /// </summary>
+        internal RequestContext<CallToolRequestParams>? CallTool => Current.Value?.CallTool;
+
         /// <inheritdoc />
         public HttpContext? HttpContext
         {
@@ -72,6 +80,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                 if (holder is not null)
                 {
                     holder.Active = null;
+                    holder.CallTool = null;
                     holder.Inner = null;
                     holder.Outer = null;
                 }
@@ -122,6 +131,23 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Stores <paramref name="request"/> on the MCP HTTP context so <c>[FromServices]</c>
+        /// can inject it during the inner OData invoke.
+        /// </summary>
+        /// <param name="request">The current <c>tools/call</c>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+        internal void SetCallTool(RequestContext<CallToolRequestParams> request)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            var holder = Current.Value;
+            if (holder is not null)
+            {
+                holder.CallTool = request;
+            }
+        }
+
+        /// <summary>
         /// Makes <see cref="HttpContext"/> return <paramref name="inner"/> without dropping
         /// <see cref="Outer"/>. Do not use the <see cref="HttpContext"/> setter for this.
         /// </summary>
@@ -163,6 +189,11 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             /// Gets or sets the context everyone else sees through <see cref="McpHttpContextAccessor.HttpContext"/>.
             /// </summary>
             internal HttpContext? Active { get; set; }
+
+            /// <summary>
+            /// Gets or sets the current MCP <c>tools/call</c>, or <see langword="null"/>.
+            /// </summary>
+            internal RequestContext<CallToolRequestParams>? CallTool { get; set; }
 
             /// <summary>
             /// Gets or sets the in-process OData context.

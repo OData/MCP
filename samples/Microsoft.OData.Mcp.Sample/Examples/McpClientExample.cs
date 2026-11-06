@@ -2,307 +2,125 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.OData.Mcp.Sample.Examples
 {
-    /// <summary>
-    /// Example demonstrating how to interact with MCP endpoints.
-    /// </summary>
-    public class McpClientExample
-    {
-        internal readonly HttpClient _httpClient;
-        internal readonly JsonSerializerOptions _jsonOptions;
 
+    /// <summary>
+    /// Posts JSON-RPC to the sample's Streamable HTTP MCP endpoint at <c>/odata/mcp</c>.
+    /// The usual client is a harness (Claude Desktop, Cursor, Claude Code). This is the raw protocol.
+    /// </summary>
+    public sealed class McpClientExample
+    {
+
+        #region Fields
+
+        internal const string McpPath = "/odata/mcp";
+
+        internal readonly HttpClient _httpClient;
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
-        /// 
+        /// Creates an example client against the sample's launch URL.
         /// </summary>
         public McpClientExample()
         {
-            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:5001") };
-            _jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNameCaseInsensitive = true };
+            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:59982") };
+            _httpClient.DefaultRequestHeaders.Accept.ParseAdd("application/json, text/event-stream");
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Calls <c>list_customers</c> for USA accounts.
+        /// </summary>
+        public Task<string> CallListCustomersAsync()
+        {
+            return PostAfterInitializeAsync(
+                """{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"list_customers","arguments":{"filter":"Country eq 'USA'","top":5}}}""");
         }
 
         /// <summary>
-        /// Example 1: Get MCP server information.
+        /// Calls bound <c>action_product_applydiscount</c> on product 1.
         /// </summary>
-        public async Task GetServerInfoExample()
+        public Task<string> CallProductApplyDiscountAsync()
         {
-            Console.WriteLine("=== Example 1: Get MCP Server Info ===");
-            
-            // Try all three MCP endpoints
-            var endpoints = new[] { "/api/v1/mcp", "/api/v2/mcp", "/odata/mcp" };
-            
-            foreach (var endpoint in endpoints)
-            {
-                Console.WriteLine($"\nGetting info from: {endpoint}");
-                var response = await _httpClient.GetAsync(endpoint);
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(content);
-                }
-            }
+            return PostAfterInitializeAsync(
+                """{"jsonrpc":"2.0","id":"1","method":"tools/call","params":{"name":"action_product_applydiscount","arguments":{"key":1,"percentage":15}}}""");
         }
 
         /// <summary>
-        /// Example 2: List available tools.
+        /// Lists tools on <c>/odata/mcp</c>.
         /// </summary>
-        public async Task ListToolsExample()
+        public Task<string> ListToolsAsync()
         {
-            Console.WriteLine("\n=== Example 2: List Available Tools ===");
-            
-            var response = await _httpClient.GetAsync("/odata/mcp/tools");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var tools = JsonSerializer.Deserialize<ToolsResponse>(content, _jsonOptions);
-                
-                Console.WriteLine($"Found {tools?.Tools?.Count ?? 0} tools:");
-                foreach (var tool in tools?.Tools ?? [])
-                {
-                    Console.WriteLine($"  - {tool.Name}: {tool.Description}");
-                }
-            }
+            return PostAfterInitializeAsync(
+                """{"jsonrpc":"2.0","id":"1","method":"tools/list","params":{}}""");
         }
 
         /// <summary>
-        /// Example 3: Query customers using MCP tool.
+        /// Runs list, query, and a named action against a running sample host.
         /// </summary>
-        public async Task QueryCustomersExample()
+        public async Task RunAllAsync()
         {
-            Console.WriteLine("\n=== Example 3: Query Customers ===");
-            
-            var toolRequest = new
+            Console.WriteLine(await ListToolsAsync());
+            Console.WriteLine(await CallListCustomersAsync());
+            Console.WriteLine(await CallProductApplyDiscountAsync());
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Builds JSON content for an MCP POST.
+        /// </summary>
+        /// <param name="json">The JSON payload.</param>
+        /// <returns>
+        /// The content.
+        /// </returns>
+        internal static StringContent JsonContent(string json)
+        {
+            return new StringContent(json, Encoding.UTF8, "application/json");
+        }
+
+        /// <summary>
+        /// Initializes the Streamable HTTP session, then posts <paramref name="json"/>.
+        /// </summary>
+        /// <param name="json">A JSON-RPC request body.</param>
+        /// <returns>
+        /// The response body.
+        /// </returns>
+        internal async Task<string> PostAfterInitializeAsync(string json)
+        {
+            using var initialize = JsonContent(
+                """{"jsonrpc":"2.0","id":"init","method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"odata-mcp-sample","version":"1.0"}}}""");
+            using var initialized = await _httpClient.PostAsync(McpPath, initialize);
+            initialized.EnsureSuccessStatusCode();
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, McpPath)
             {
-                tool = "odata.Customer.query",
-                parameters = new
-                {
-                    filter = "Country eq 'USA'",
-                    orderby = "Name",
-                    top = 5,
-                    select = "Id,Name,Email,Country"
-                }
+                Content = JsonContent(json)
             };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
+            if (initialized.Headers.TryGetValues("mcp-session-id", out var values))
             {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Query Results:");
-                Console.WriteLine(result);
+                request.Headers.TryAddWithoutValidation("mcp-session-id", string.Join(",", values));
             }
+
+            using var response = await _httpClient.SendAsync(request);
+            return await response.Content.ReadAsStringAsync();
         }
 
-        /// <summary>
-        /// Example 4: Create a new customer.
-        /// </summary>
-        public async Task CreateCustomerExample()
-        {
-            Console.WriteLine("\n=== Example 4: Create New Customer ===");
-            
-            var newCustomer = new
-            {
-                Name = "Tech Innovations Inc.",
-                Email = "contact@techinnovations.com",
-                Phone = "+1-555-0199",
-                Address = "789 Innovation Drive",
-                City = "San Francisco",
-                Country = "USA",
-                CreditLimit = 50000
-            };
-            
-            var toolRequest = new
-            {
-                tool = "odata.Customer.create",
-                parameters = new
-                {
-                    entity = JsonSerializer.Serialize(newCustomer)
-                }
-            };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Created Customer:");
-                Console.WriteLine(result);
-            }
-        }
+        #endregion
 
-        /// <summary>
-        /// Example 5: Get a specific customer by ID.
-        /// </summary>
-        public async Task GetCustomerByIdExample()
-        {
-            Console.WriteLine("\n=== Example 5: Get Customer by ID ===");
-            
-            var toolRequest = new
-            {
-                tool = "odata.Customer.get",
-                parameters = new
-                {
-                    key = "1",
-                    expand = "Orders"
-                }
-            };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Customer Details:");
-                Console.WriteLine(result);
-            }
-        }
-
-        /// <summary>
-        /// Example 6: Query products with complex filtering.
-        /// </summary>
-        public async Task QueryProductsExample()
-        {
-            Console.WriteLine("\n=== Example 6: Query Products ===");
-            
-            var toolRequest = new
-            {
-                tool = "odata.Product.query",
-                parameters = new
-                {
-                    filter = "UnitPrice gt 50 and UnitsInStock lt 100",
-                    orderby = "UnitPrice desc",
-                    expand = "Category",
-                    top = 10
-                }
-            };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Product Query Results:");
-                Console.WriteLine(result);
-            }
-        }
-
-        /// <summary>
-        /// Example 7: Execute an OData action.
-        /// </summary>
-        public async Task ExecuteActionExample()
-        {
-            Console.WriteLine("\n=== Example 7: Execute OData Action ===");
-            
-            // Example: Apply discount to a product
-            var toolRequest = new
-            {
-                tool = "odata.Product.applyDiscount",
-                parameters = new
-                {
-                    key = "1",
-                    percentage = 15
-                }
-            };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Action Result:");
-                Console.WriteLine(result);
-            }
-        }
-
-        /// <summary>
-        /// Example 8: Navigate relationships.
-        /// </summary>
-        public async Task NavigateRelationshipsExample()
-        {
-            Console.WriteLine("\n=== Example 8: Navigate Relationships ===");
-            
-            // Get orders for a specific customer
-            var toolRequest = new
-            {
-                tool = "odata.Customer.getOrders",
-                parameters = new
-                {
-                    key = "1",
-                    filter = "TotalAmount gt 1000",
-                    orderby = "OrderDate desc"
-                }
-            };
-            
-            var json = JsonSerializer.Serialize(toolRequest, _jsonOptions);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await _httpClient.PostAsync("/odata/mcp/tools/execute", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Customer Orders:");
-                Console.WriteLine(result);
-            }
-        }
-
-        /// <summary>
-        /// Run all examples.
-        /// </summary>
-        public async Task RunAllExamples()
-        {
-            try
-            {
-                await GetServerInfoExample();
-                await ListToolsExample();
-                await QueryCustomersExample();
-                await CreateCustomerExample();
-                await GetCustomerByIdExample();
-                await QueryProductsExample();
-                await ExecuteActionExample();
-                await NavigateRelationshipsExample();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-        }
-
-        // Helper classes for deserialization
-        internal class ToolsResponse
-        {
-            public List<Tool> Tools { get; set; } = [];
-        }
-
-        internal class Tool
-        {
-            public string Name { get; set; } = string.Empty;
-            public string Description { get; set; } = string.Empty;
-            public Dictionary<string, object> Parameters { get; set; } = [];
-        }
     }
+
 }

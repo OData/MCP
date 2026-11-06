@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.OData.Mcp.Core.Models;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 
 namespace Microsoft.OData.Mcp.Core.Parsing
 {
@@ -30,6 +32,8 @@ namespace Microsoft.OData.Mcp.Core.Parsing
 
         internal static readonly XNamespace EdmNamespace = "http://docs.oasis-open.org/odata/ns/edm";
         internal static readonly XNamespace EdmxNamespace = "http://docs.oasis-open.org/odata/ns/edmx";
+
+        internal Dictionary<string, string> VocabularyAliases { get; private set; } = new(StringComparer.Ordinal);
 
         #endregion
 
@@ -179,14 +183,31 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             _logger?.LogDebug("Parsing EDMX document version {Version}", version);
 
             var model = new EdmModel(version);
+            VocabularyAliases = ReadVocabularyAliases(root);
 
             var dataServices = root.Element(EdmxNamespace + "DataServices") ??
                 throw new InvalidOperationException("EDMX document missing DataServices element");
 
-            var schemas = dataServices.Elements(EdmNamespace + "Schema");
+            var schemas = dataServices.Elements(EdmNamespace + "Schema").ToList();
             foreach (var schema in schemas)
             {
                 ParseSchema(schema, model);
+            }
+
+            // OASIS CSDL XML 4.01 §5.2 / §14.2.2: out-of-line Annotations may live in a
+            // different schema from the target. Apply them after every schema is parsed.
+            foreach (var schema in schemas)
+            {
+                var schemaNamespace = schema.Attribute("Namespace")?.Value;
+                if (string.IsNullOrWhiteSpace(schemaNamespace))
+                {
+                    continue;
+                }
+
+                foreach (var annotations in schema.Elements(EdmNamespace + "Annotations"))
+                {
+                    ApplyTargetedAnnotations(annotations, model, schemaNamespace);
+                }
             }
 
             _logger?.LogDebug("Parsed CSDL model with {EntityTypeCount} entity types, {ComplexTypeCount} complex types, {ContainerCount} containers",
@@ -200,6 +221,10 @@ namespace Microsoft.OData.Mcp.Core.Parsing
         /// </summary>
         /// <param name="schemaElement">The schema XML element.</param>
         /// <param name="model">The model to populate.</param>
+        /// <remarks>
+        /// Out-of-line <c>Annotations</c> are applied in <see cref="ParseDocument"/> after every schema is parsed
+        /// because OASIS CSDL XML 4.01 §14.2.2 allows the annotation to live in a different schema from the target.
+        /// </remarks>
         internal void ParseSchema(XElement schemaElement, EdmModel model)
         {
             var namespaceAttr = schemaElement.Attribute("Namespace") ??
@@ -254,11 +279,6 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             {
                 var parsedContainer = ParseEntityContainer(entityContainer, schemaNamespace);
                 model.AddEntityContainer(parsedContainer);
-            }
-
-            foreach (var annotations in schemaElement.Elements(EdmNamespace + "Annotations"))
-            {
-                ApplyTargetedAnnotations(annotations, model, schemaNamespace);
             }
         }
 
@@ -774,6 +794,35 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             {
                 AssignComputed(model, target);
             }
+
+            if (TryReadMcpBoolean(annotationsElement, McpVocabulary.TaskTermName, out var isTask))
+            {
+                var action = FindAction(model, target);
+                if (action is not null)
+                {
+                    action.IsTask = isTask;
+                }
+            }
+
+            var elicit = ReadMcpStringCollection(annotationsElement, McpVocabulary.ElicitUrlPropertiesTermName);
+            if (elicit is not null)
+            {
+                var action = FindAction(model, target);
+                if (action is not null)
+                {
+                    action.ElicitUrlProperties = elicit;
+                }
+            }
+
+            var form = ReadMcpElicitForm(annotationsElement);
+            if (form is not null)
+            {
+                var action = FindAction(model, target);
+                if (action is not null)
+                {
+                    action.ElicitForm = form;
+                }
+            }
         }
 
         /// <summary>
@@ -810,6 +859,324 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             {
                 property.Computed = true;
             }
+        }
+
+        /// <summary>
+        /// Finds the action identified by a CSDL annotation target.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="target">The CSDL target path.</param>
+        /// <returns>
+        /// The matching action, or <c>null</c> when none matches.
+        /// </returns>
+        /// <remarks>
+        /// OASIS CSDL XML 4.01 §14.2.2 Example 42:
+        /// <c>MySchema.MyAction</c>, <c>MySchema.MyAction(MySchema.MyBindingType)</c>,
+        /// <c>MySchema.MyAction(Collection(MySchema.BindingType))</c>,
+        /// <c>MySchema.MyAction()</c>, and
+        /// <c>MySchema.MyEntityContainer/MyActionImport</c>.
+        /// A slash after an entity or complex type names a property, not an action.
+        /// </remarks>
+        internal static EdmAction? FindAction(EdmModel model, string target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentException.ThrowIfNullOrWhiteSpace(target);
+
+            var (path, overload) = SplitOperationTarget(target);
+
+            var slash = path.LastIndexOf('/');
+            if (slash >= 0)
+            {
+                var owner = path[..slash];
+                var member = path[(slash + 1)..];
+                if (member.Equals("$ReturnType", StringComparison.Ordinal))
+                {
+                    return null;
+                }
+
+                var container = model.GetEntityContainer(owner);
+                var import = container?.ActionImports.FirstOrDefault(item =>
+                    item.Name.Equals(member, StringComparison.Ordinal));
+                if (import is null || string.IsNullOrWhiteSpace(import.Action))
+                {
+                    return null;
+                }
+
+                path = import.Action;
+            }
+
+            var matches = model.Actions.Where(item =>
+                item.FullName.Equals(path, StringComparison.Ordinal));
+
+            if (overload is null)
+            {
+                return matches.FirstOrDefault();
+            }
+
+            if (overload.Length == 0)
+            {
+                return matches.FirstOrDefault(item => !item.IsBound);
+            }
+
+            var bindingType = FirstOverloadParameterType(overload);
+            return matches.FirstOrDefault(item => BindingTypeMatches(item.BindingParameterType, bindingType));
+        }
+
+        /// <summary>
+        /// Reads <c>edmx:Include</c> aliases from the EDMX root.
+        /// </summary>
+        /// <param name="root">The <c>edmx:Edmx</c> element.</param>
+        /// <returns>
+        /// Alias to namespace map.
+        /// </returns>
+        internal static Dictionary<string, string> ReadVocabularyAliases(XElement root)
+        {
+            ArgumentNullException.ThrowIfNull(root);
+
+            var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var include in root.Elements(EdmxNamespace + "Reference").Elements(EdmxNamespace + "Include"))
+            {
+                var alias = include.Attribute("Alias")?.Value;
+                var includeNamespace = include.Attribute("Namespace")?.Value;
+                if (!string.IsNullOrWhiteSpace(alias) && !string.IsNullOrWhiteSpace(includeNamespace))
+                {
+                    aliases[alias] = includeNamespace;
+                }
+            }
+
+            return aliases;
+        }
+
+        /// <summary>
+        /// Reads a boolean MCP vocabulary tag.
+        /// </summary>
+        /// <param name="element">The element whose child <c>Annotation</c> elements are inspected.</param>
+        /// <param name="termName">The unqualified term name, such as <c>Task</c>.</param>
+        /// <param name="value">The boolean value when the term is present.</param>
+        /// <returns>
+        /// <c>true</c> when the term is present; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// Tag terms default to <c>true</c>, so an annotation with no value is true.
+        /// </remarks>
+        internal bool TryReadMcpBoolean(XElement element, string termName, out bool value)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+            ArgumentException.ThrowIfNullOrWhiteSpace(termName);
+
+            value = false;
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                if (!IsMcpTerm(annotation.Attribute("Term")?.Value, termName))
+                {
+                    continue;
+                }
+
+                var raw = annotation.Attribute("Bool")?.Value ?? annotation.Element(EdmNamespace + "Bool")?.Value;
+                value = string.IsNullOrWhiteSpace(raw) || (bool.TryParse(raw.Trim(), out var parsed) && parsed);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Reads a collection of strings from an MCP vocabulary annotation.
+        /// </summary>
+        /// <param name="element">The element whose child <c>Annotation</c> elements are inspected.</param>
+        /// <param name="termName">The unqualified term name.</param>
+        /// <returns>
+        /// The declared strings, or <c>null</c> when the term is omitted.
+        /// </returns>
+        internal List<string>? ReadMcpStringCollection(XElement element, string termName)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+            ArgumentException.ThrowIfNullOrWhiteSpace(termName);
+
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                if (!IsMcpTerm(annotation.Attribute("Term")?.Value, termName))
+                {
+                    continue;
+                }
+
+                var collection = annotation.Element(EdmNamespace + "Collection");
+                if (collection is null)
+                {
+                    return [];
+                }
+
+                return [.. collection.Elements(EdmNamespace + "String")
+                    .Select(item => item.Value)
+                    .Where(item => !string.IsNullOrWhiteSpace(item))];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads <c>Microsoft.OData.Mcp.V1.ElicitForm</c> and its compact <c>Form</c> island.
+        /// </summary>
+        /// <param name="element">The element whose child <c>Annotation</c> elements are inspected.</param>
+        /// <returns>
+        /// The form, or <see langword="null"/> when the term is omitted.
+        /// </returns>
+        internal EdmElicitForm? ReadMcpElicitForm(XElement element)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                if (!IsMcpTerm(annotation.Attribute("Term")?.Value, McpVocabulary.ElicitFormTermName))
+                {
+                    continue;
+                }
+
+                var form = annotation.Elements().FirstOrDefault(child => child.Name.LocalName == McpVocabulary.FormElementName);
+                if (form is null)
+                {
+                    return new EdmElicitForm();
+                }
+
+                return ElicitFormXml.Parse(form.ToString(SaveOptions.DisableFormatting));
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns whether a Term attribute is an MCP vocabulary term.
+        /// </summary>
+        /// <param name="term">The Term attribute value.</param>
+        /// <param name="termName">The unqualified term name.</param>
+        /// <returns>
+        /// <c>true</c> when the term is <c>Microsoft.OData.Mcp.V1.{termName}</c> or an include alias for that namespace.
+        /// </returns>
+        internal bool IsMcpTerm(string? term, string termName)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(termName);
+
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return false;
+            }
+
+            if (term.Equals(McpVocabulary.Namespace + "." + termName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            var dot = term.LastIndexOf('.');
+            if (dot <= 0)
+            {
+                return false;
+            }
+
+            var prefix = term[..dot];
+            var name = term[(dot + 1)..];
+
+            return name.Equals(termName, StringComparison.Ordinal)
+                && VocabularyAliases.TryGetValue(prefix, out var mapped)
+                && mapped.Equals(McpVocabulary.Namespace, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Returns whether a binding parameter type equals an OASIS overload argument.
+        /// </summary>
+        /// <param name="bindingParameterType">The action binding parameter type.</param>
+        /// <param name="declaredType">The type from the target parentheses, including any <c>Collection(…)</c> wrapper.</param>
+        /// <returns>
+        /// <c>true</c> when the declared types are identical.
+        /// </returns>
+        internal static bool BindingTypeMatches(string? bindingParameterType, string declaredType)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(declaredType);
+
+            return !string.IsNullOrWhiteSpace(bindingParameterType)
+                && bindingParameterType.Equals(declaredType, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// First parameter type inside OASIS operation-overload parentheses.
+        /// </summary>
+        /// <param name="overload">The text between <c>(</c> and <c>)</c>.</param>
+        /// <returns>
+        /// The first type, keeping a <c>Collection(…)</c> wrapper intact.
+        /// </returns>
+        /// <remarks>
+        /// Actions identify an overload by the binding parameter type (OASIS §14.2.2).
+        /// EdmLib may list further parameter types after a comma; those are ignored.
+        /// </remarks>
+        internal static string FirstOverloadParameterType(string overload)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(overload);
+
+            overload = overload.Trim();
+            if (overload.StartsWith("Collection(", StringComparison.Ordinal))
+            {
+                var depth = 0;
+                for (var index = 0; index < overload.Length; index++)
+                {
+                    if (overload[index] == '(')
+                    {
+                        depth++;
+                    }
+                    else if (overload[index] == ')')
+                    {
+                        depth--;
+                        if (depth == 0)
+                        {
+                            return overload[..(index + 1)];
+                        }
+                    }
+                }
+            }
+
+            var comma = overload.IndexOf(',');
+            return comma < 0 ? overload : overload[..comma].Trim();
+        }
+
+        /// <summary>
+        /// Splits an OASIS operation target into the qualified name and optional overload arguments.
+        /// </summary>
+        /// <param name="target">A CSDL <c>Annotations Target</c> value.</param>
+        /// <returns>
+        /// The path before <c>(</c>, and the inner overload text (<see langword="null"/> when there
+        /// are no parentheses, empty when the target is <c>Namespace.Action()</c>).
+        /// </returns>
+        internal static (string Path, string? Overload) SplitOperationTarget(string target)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(target);
+
+            var paren = target.IndexOf('(');
+            if (paren < 0)
+            {
+                return (target, null);
+            }
+
+            var path = target[..paren];
+            var close = target.LastIndexOf(')');
+            var inner = close > paren ? target[(paren + 1)..close] : target[(paren + 1)..];
+            return (path, inner);
+        }
+
+        /// <summary>
+        /// Strips a <c>Collection(...)</c> wrapper from an EDM type name.
+        /// </summary>
+        /// <param name="type">The declared type.</param>
+        /// <returns>
+        /// The element type, or <paramref name="type"/> when it is not a collection.
+        /// </returns>
+        internal static string? UnwrapCollectionType(string? type)
+        {
+            const string prefix = "Collection(";
+            if (string.IsNullOrWhiteSpace(type) || !type.StartsWith(prefix, StringComparison.Ordinal) || !type.EndsWith(')'))
+            {
+                return type;
+            }
+
+            return type[prefix.Length..^1];
         }
 
         /// <summary>
@@ -1143,6 +1510,14 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             };
 
             ApplyDocumentation(actionElement, description => action.Description = description, longDescription => action.LongDescription = longDescription);
+
+            if (TryReadMcpBoolean(actionElement, McpVocabulary.TaskTermName, out var isTask))
+            {
+                action.IsTask = isTask;
+            }
+
+            action.ElicitUrlProperties = ReadMcpStringCollection(actionElement, McpVocabulary.ElicitUrlPropertiesTermName);
+            action.ElicitForm = ReadMcpElicitForm(actionElement);
 
             foreach (var parameter in actionElement.Elements(EdmNamespace + "Parameter"))
             {

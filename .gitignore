@@ -428,3 +428,4 @@ docs/superpowers/
 specs/*
 !specs/README.md
 !specs/v3/
+/.playwright-mcp

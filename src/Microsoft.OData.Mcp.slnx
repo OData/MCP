@@ -26,10 +26,13 @@
     <File Path="../README.md" />
   </Folder>
   <Folder Name="/Solution Items/Specs/">
+    <File Path="../specs/v3/ACTIONS.md" />
     <File Path="../specs/v3/ARCHITECTURE.md" />
     <File Path="../specs/v3/AUTHENTICATION.md" />
+    <File Path="../specs/v3/CLIENT-SECRETS.md" />
     <File Path="../specs/v3/CRITICAL-ANALYSIS.md" />
     <File Path="../specs/v3/EXECUTION-PLAN.md" />
+    <File Path="../specs/v3/IN-PROCESS-ODATA-EXECUTION.md" />
     <File Path="../specs/v3/INVENTORY.md" />
     <File Path="../specs/v3/METADATA-STRATEGY.md" />
     <File Path="../specs/v3/ODATA-HOSTING.md" />

@@ -1,28 +1,28 @@
 ---
-title: ODataMcpRegistration
-description: "Tracks whether MCP was enabled for all routes or for specific prefixes."
+title: EdmElicitFormOption
+description: "One allowed value on an enum or multi form field."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataMcpRegistration', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRegistration', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+keywords: ['EdmElicitFormOption', 'Microsoft.OData.Mcp.Core.Models.EdmElicitFormOption', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
 ---
 
 ## Definition
 
-**Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
+**Assembly:** Microsoft.OData.Mcp.Core.dll
 
-**Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
+**Namespace:** Microsoft.OData.Mcp.Core.Models
 
 **Inheritance:** System.Object
 
 ## Syntax
 
 ```csharp
-Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpRegistration
+Microsoft.OData.Mcp.Core.Models.EdmElicitFormOption
 ```
 
 ## Summary
 
-Tracks whether MCP was enabled for all routes or for specific prefixes.
+One allowed value on an enum or multi form field.
 
 ## Constructors
 
@@ -31,7 +31,7 @@ Tracks whether MCP was enabled for all routes or for specific prefixes.
 #### Syntax
 
 ```csharp
-public ODataMcpRegistration()
+public EdmElicitFormOption()
 ```
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
@@ -46,33 +46,47 @@ public Object()
 
 ## Properties
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AllRoutes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Selected
 
-Gets or sets a value indicating whether every OData route is exposed over MCP.
+Gets or sets whether this option is a default.
 
 #### Syntax
 
 ```csharp
-public bool AllRoutes { get; set; }
+public bool Selected { get; set; }
 ```
 
 #### Property Value
 
 Type: `bool`
 
-### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OptInPrefixes
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Title
 
-Gets prefixes enabled by `WithMcp`.
+Gets or sets the display title.
 
 #### Syntax
 
 ```csharp
-public System.Collections.Generic.List<string> OptInPrefixes { get; }
+public string Title { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Collections.Generic.List<string>`
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Value
+
+Gets or sets the wire value.
+
+#### Syntax
+
+```csharp
+public string Value { get; set; }
+```
+
+#### Property Value
+
+Type: `string`
 
 ## Methods
 
@@ -179,16 +193,6 @@ public static bool ReferenceEquals(object objA, object objB)
 #### Returns
 
 Type: `bool`
-
-### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ThrowIfMutuallyExclusive
-
-Throws when `AddODataMcp` and `WithMcp` were both used.
-
-#### Syntax
-
-```csharp
-public void ThrowIfMutuallyExclusive()
-```
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
 

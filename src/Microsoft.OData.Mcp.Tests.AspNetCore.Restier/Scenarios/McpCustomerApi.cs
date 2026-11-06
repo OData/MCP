@@ -2,6 +2,8 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.Restier.AspNetCore.Model;
 using Microsoft.Restier.EntityFrameworkCore;
 
@@ -29,6 +31,29 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Bound action that returns a Started ticket with a URL to elicit.
+        /// </summary>
+        /// <param name="customer">The bound customer.</param>
+        /// <returns>
+        /// A Started ticket whose <c>connectUri</c> the host elicits.
+        /// </returns>
+        [BoundOperation(OperationType = OperationType.Action)]
+        [McpTask]
+        [McpElicitUrl("connectUri")]
+        public McpAuthorizationTicket Authorize(McpCustomer customer)
+        {
+            ArgumentNullException.ThrowIfNull(customer);
+
+            return new McpAuthorizationTicket
+            {
+                ConnectUri = "https://login.example.test/connect",
+                ExpiresIn = 600,
+                Message = "Open the URL to finish authorization.",
+                Status = "Started"
+            };
+        }
 
         /// <summary>
         /// Unbound function with a string parameter.
@@ -72,6 +97,7 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Restier.Scenarios
         /// The same customer.
         /// </returns>
         [BoundOperation(OperationType = OperationType.Action)]
+        [McpTask]
         public McpCustomer Share(McpCustomer customer, string userName)
         {
             ArgumentNullException.ThrowIfNull(customer);

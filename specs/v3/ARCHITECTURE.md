@@ -102,7 +102,7 @@ app.MapRestier(builder => builder.MapApiRoute<SomeApi>("odata", "odata"));
 // AddODataMcp() already registered — discovers prefix "odata" from the catch-all endpoint
 ```
 
-MCP appears at `{prefix}/mcp` (sibling of `$metadata`). `AddODataMcp` registers services. `UseODataMcp` maps MCP after OData routes exist. XML docs on `AddODataMcp` must say: *registers MCP for every OData prefix on the endpoint data source (OData 7 and 8); call `UseODataMcp` after mapping OData. Prefer this unless a route must stay hidden from agents.*
+MCP appears at `{prefix}/mcp` (sibling of `$metadata`). `AddODataMcp` registers services and is the only place the SDK `IMcpServerBuilder` exists. Optional second argument `Action<ODataMcpServerBuilder>` is how a host calls `WithTasks` / `WaitForAnnotatedAction` ([ACTIONS.md](./ACTIONS.md) §5.4). `UseODataMcp` maps MCP after OData routes exist and stays parameterless. XML docs on `AddODataMcp` must say: *registers MCP for every OData prefix on the endpoint data source (OData 7 and 8); call `UseODataMcp` after mapping OData. Prefer this unless a route must stay hidden from agents. Configure Tasks on this call, not on `UseODataMcp`.*
 
 **One prefix only (version-neutral):**
 

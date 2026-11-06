@@ -71,6 +71,17 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore
         }
 
         /// <summary>
+        /// Streamable HTTP is stateless so each POST is a fresh server.
+        /// </summary>
+        [TestMethod]
+        public void AddODataMcp_HttpTransport_IsStateless()
+        {
+            var transport = TestServer.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<ModelContextProtocol.AspNetCore.HttpServerTransportOptions>>().Value;
+
+            transport.Stateless.Should().BeTrue();
+        }
+
+        /// <summary>
         /// Every route component gets a catalog that includes odata_query and omits shutdown_server.
         /// </summary>
         [TestMethod]
