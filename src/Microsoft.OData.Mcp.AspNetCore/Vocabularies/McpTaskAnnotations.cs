@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
@@ -18,6 +20,15 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
     /// </summary>
     public static class McpTaskAnnotations
     {
+
+        #region Fields
+
+        /// <summary>
+        /// Direct-value annotation holding a keyed form name until Rebuild resolves the instance.
+        /// </summary>
+        internal const string PendingElicitFormName = "ElicitFormName";
+
+        #endregion
 
         #region Public Methods
 
@@ -95,9 +106,79 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             }
         }
 
+        /// <summary>
+        /// Stamps <c>Microsoft.OData.Mcp.V1.ElicitForm</c> and the compact <c>Form</c> island.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The action to annotate.</param>
+        /// <param name="islandXml">The compact form island, including the vocab <c>xmlns</c>.</param>
+        public static void StampElicitForm(EdmModel model, IEdmVocabularyAnnotatable target, string islandXml)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+            ArgumentException.ThrowIfNullOrWhiteSpace(islandXml);
+
+            EnsureReferenced(model);
+            var term = RequireElicitFormTerm(model);
+            var annotation = new EdmVocabularyAnnotation(target, term, new EdmBooleanConstant(true));
+            annotation.SetSerializationLocation(model, EdmVocabularyAnnotationSerializationLocation.Inline);
+            model.SetVocabularyAnnotation(annotation);
+
+            var island = new EdmStringConstant(EdmCoreModel.Instance.GetString(false), islandXml);
+            island.SetIsSerializedAsElement(model, true);
+            model.SetAnnotationValue(annotation, McpVocabulary.ReferenceUri, McpVocabulary.FormElementName, island);
+        }
+
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Resolves keyed forms whose names were stored during <c>GetEdmModel</c> and stamps their islands.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="services">The application services that hold keyed <see cref="IFormElicitationSource"/> registrations.</param>
+        internal static void ApplyNamedElicitForms(EdmModel model, IServiceProvider services)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(services);
+
+            foreach (var action in model.SchemaElements.OfType<IEdmAction>())
+            {
+                if (model.GetAnnotationValue(action, McpVocabulary.ReferenceUri, PendingElicitFormName) is not string name
+                    || string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                IFormElicitationSource form;
+                try
+                {
+                    form = services.GetRequiredKeyedService<IFormElicitationSource>(name);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Action '{action.Name}' elicits form '{name}', but no IFormElicitationSource is registered under that name.",
+                        ex);
+                }
+
+                StampElicitForm(model, action, form);
+            }
+        }
+
+        /// <summary>
+        /// Stamps the compact form island from <paramref name="form"/>.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The action to annotate.</param>
+        /// <param name="form">The live form.</param>
+        internal static void StampElicitForm(EdmModel model, IEdmVocabularyAnnotatable target, IFormElicitationSource form)
+        {
+            ArgumentNullException.ThrowIfNull(form);
+
+            StampElicitForm(model, target, form.ToXml(McpVocabulary.ReferenceUri));
+        }
 
         /// <summary>
         /// Returns whether <paramref name="reference"/> includes the MCP vocabulary namespace.
@@ -126,6 +207,21 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             ArgumentNullException.ThrowIfNull(model);
 
             return model.FindTerm(McpVocabulary.TaskTerm) is not null;
+        }
+
+        /// <summary>
+        /// Finds <c>Microsoft.OData.Mcp.V1.ElicitForm</c> on a model that already references the vocabulary.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <returns>The term.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the term is not on <paramref name="model"/>.</exception>
+        internal static IEdmTerm RequireElicitFormTerm(EdmModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            return model.FindTerm(McpVocabulary.ElicitFormTerm)
+                ?? throw new InvalidOperationException($"Term '{McpVocabulary.ElicitFormTerm}' was not found after referencing the MCP vocabulary.");
         }
 
         /// <summary>
@@ -173,6 +269,24 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
             var term = model.FindTerm(CoreVocabularyConstants.Description)
                 ?? throw new InvalidOperationException($"Term '{CoreVocabularyConstants.Description}' was not found after referencing the Core vocabulary.");
             SetInlineAnnotation(model, target, term, new EdmStringConstant(description.Trim()));
+        }
+
+        /// <summary>
+        /// Stamps the ElicitForm tag and records <paramref name="name"/> for Rebuild to resolve.
+        /// </summary>
+        /// <param name="model">The service model.</param>
+        /// <param name="target">The action to annotate.</param>
+        /// <param name="name">The keyed-DI form name.</param>
+        internal static void StampElicitFormName(EdmModel model, IEdmVocabularyAnnotatable target, string name)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            EnsureReferenced(model);
+            var term = RequireElicitFormTerm(model);
+            SetInlineAnnotation(model, target, term, new EdmBooleanConstant(true));
+            model.SetAnnotationValue(target, McpVocabulary.ReferenceUri, PendingElicitFormName, name);
         }
 
         /// <summary>

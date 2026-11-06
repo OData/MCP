@@ -215,9 +215,11 @@
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmModelShape",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmPayloadValidator",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/EdmTypeShape",
+                              "api-reference/Microsoft/OData/Mcp/Core/Catalog/ElicitFormMapper",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalogOptions",
+                              "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpFormElicitation",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession",
                               "api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataOperationKind",
@@ -269,6 +271,10 @@
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmActionImport",
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmComplexType",
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmDocumentation",
+                              "api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitForm",
+                              "api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitFormField",
+                              "api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitFormFieldType",
+                              "api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitFormOption",
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntityContainer",
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntitySet",
                               "api-reference/Microsoft/OData/Mcp/Core/Models/EdmEntityType",
@@ -292,6 +298,7 @@
                             "pages": [
                               "api-reference/Microsoft/OData/Mcp/Core/Parsing/index",
                               "api-reference/Microsoft/OData/Mcp/Core/Parsing/CsdlParser",
+                              "api-reference/Microsoft/OData/Mcp/Core/Parsing/ElicitFormXml",
                               "api-reference/Microsoft/OData/Mcp/Core/Parsing/ICsdlMetadataParser"
                             ]
                           },
@@ -300,7 +307,6 @@
                             "icon": "folder-tree",
                             "pages": [
                               "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/index",
-                              "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpElicitUrlAttribute",
                               "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpTaskAttribute",
                               "api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpVocabulary"
                             ]

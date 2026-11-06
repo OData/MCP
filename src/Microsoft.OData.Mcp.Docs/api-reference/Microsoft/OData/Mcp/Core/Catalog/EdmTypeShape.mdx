@@ -446,7 +446,7 @@ Renders an operation signature in the shape grammar, omitting the binding parame
 #### Syntax
 
 ```csharp
-public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel model, string name, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, string returnType, bool isBound, string bindingParameterType, bool writes, string description)
+public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel model, string name, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, string returnType, bool isBound, string bindingParameterType, bool writes, string description, bool isTask = false, bool elicitForm = false, bool elicitUrl = false)
 ```
 
 #### Parameters
@@ -461,6 +461,9 @@ public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel mo
 | `bindingParameterType` | `string?` | The binding parameter type, used for the `// collection` marker. |
 | `writes` | `bool` | Whether the operation mutates (an EDM action). |
 | `description` | `string?` | CSDL documentation, or `null`. |
+| `isTask` | `bool` | Whether the action is annotated `Mcp.Task`. |
+| `elicitForm` | `bool` | Whether the action declares `ElicitForm`. |
+| `elicitUrl` | `bool` | Whether the action declares `ElicitUrlProperties`. |
 
 #### Returns
 
@@ -472,6 +475,35 @@ For example `ShareTrip(userName: string, tripId: int) // writes` or `(count: int
 | Exception | Description |
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *model* or *parameters* is null. |
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderOperation
+
+Renders an action signature, including task and elicitation markers from the EDM action.
+
+#### Syntax
+
+```csharp
+public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel model, string name, Microsoft.OData.Mcp.Core.Models.EdmAction action)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM. |
+| `name` | `string?` | The operation name, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) to render only the parenthesized part (compact JSON). |
+| `action` | `Microsoft.OData.Mcp.Core.Models.EdmAction` | The action. |
+
+#### Returns
+
+Type: `string`
+The shape-grammar signature.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *model* or *action* is null. |
 
 ### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RenderProperty
 

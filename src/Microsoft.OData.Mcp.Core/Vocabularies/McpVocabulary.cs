@@ -15,6 +15,7 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
     /// Core ships the vocabulary document so the CSDL parser and the Tools host can read
     /// <c>Task</c> / <c>ElicitUrlProperties</c> from remote <c>$metadata</c>. AspNetCore loads the
     /// same XML into EdmLib when a host stamps those terms onto an <c>IEdmModel</c>.
+    /// Form elicitation is <see cref="ElicitFormTerm"/> plus a compact <c>Form</c> island.
     /// </remarks>
     public static class McpVocabulary
     {
@@ -32,6 +33,16 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
         public static readonly string[] DefaultElicitUrlProperties = ["connectUri", "url", "authorizationUrl", "verificationUri"];
 
         /// <summary>
+        /// Qualified <c>ElicitForm</c> term.
+        /// </summary>
+        public const string ElicitFormTerm = Namespace + "." + ElicitFormTermName;
+
+        /// <summary>
+        /// Unqualified <c>ElicitForm</c> term name.
+        /// </summary>
+        public const string ElicitFormTermName = "ElicitForm";
+
+        /// <summary>
         /// Qualified <c>ElicitUrlProperties</c> term.
         /// </summary>
         public const string ElicitUrlPropertiesTerm = Namespace + "." + ElicitUrlPropertiesTermName;
@@ -40,6 +51,11 @@ namespace Microsoft.OData.Mcp.Core.Vocabularies
         /// Unqualified <c>ElicitUrlProperties</c> term name.
         /// </summary>
         public const string ElicitUrlPropertiesTermName = "ElicitUrlProperties";
+
+        /// <summary>
+        /// Local name of the compact form island nested under <see cref="ElicitFormTerm"/>.
+        /// </summary>
+        public const string FormElementName = "Form";
 
         /// <summary>
         /// Vocabulary namespace.

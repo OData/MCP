@@ -813,6 +813,16 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                     action.ElicitUrlProperties = elicit;
                 }
             }
+
+            var form = ReadMcpElicitForm(annotationsElement);
+            if (form is not null)
+            {
+                var action = FindAction(model, target);
+                if (action is not null)
+                {
+                    action.ElicitForm = form;
+                }
+            }
         }
 
         /// <summary>
@@ -1000,6 +1010,36 @@ namespace Microsoft.OData.Mcp.Core.Parsing
                 return [.. collection.Elements(EdmNamespace + "String")
                     .Select(item => item.Value)
                     .Where(item => !string.IsNullOrWhiteSpace(item))];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads <c>Microsoft.OData.Mcp.V1.ElicitForm</c> and its compact <c>Form</c> island.
+        /// </summary>
+        /// <param name="element">The element whose child <c>Annotation</c> elements are inspected.</param>
+        /// <returns>
+        /// The form, or <see langword="null"/> when the term is omitted.
+        /// </returns>
+        internal EdmElicitForm? ReadMcpElicitForm(XElement element)
+        {
+            ArgumentNullException.ThrowIfNull(element);
+
+            foreach (var annotation in element.Elements(EdmNamespace + "Annotation"))
+            {
+                if (!IsMcpTerm(annotation.Attribute("Term")?.Value, McpVocabulary.ElicitFormTermName))
+                {
+                    continue;
+                }
+
+                var form = annotation.Elements().FirstOrDefault(child => child.Name.LocalName == McpVocabulary.FormElementName);
+                if (form is null)
+                {
+                    return new EdmElicitForm();
+                }
+
+                return ElicitFormXml.Parse(form.ToString(SaveOptions.DisableFormatting));
             }
 
             return null;
@@ -1477,6 +1517,7 @@ namespace Microsoft.OData.Mcp.Core.Parsing
             }
 
             action.ElicitUrlProperties = ReadMcpStringCollection(actionElement, McpVocabulary.ElicitUrlPropertiesTermName);
+            action.ElicitForm = ReadMcpElicitForm(actionElement);
 
             foreach (var parameter in actionElement.Elements(EdmNamespace + "Parameter"))
             {

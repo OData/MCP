@@ -31,6 +31,7 @@ Both speak **only** official MCP through the **official C# SDK 2.x**.
 | [METADATA-STRATEGY.md](./METADATA-STRATEGY.md) | Custom EDM stays; AspNetCore adapts `IEdmModel` |
 | [TOOL-SURFACE.md](./TOOL-SURFACE.md) | Generic + named tools; local `shutdown_server` |
 | [ACTIONS.md](./ACTIONS.md) | Named tools for bound/unbound actions (and functions); annotated actions become MCP Tasks with URL elicitation (`AddODataMcp` builder `WithTasks`) |
+| [ELICIT-FORM.md](./ELICIT-FORM.md) | Form elicitation before invoke: compact `<Form>` island on `Mcp.ElicitForm`, McpEssentials `ToXml`, `HasMcpElicitForm` / `[McpElicitForm]` |
 | [TYPE-SHAPES.md](./TYPE-SHAPES.md) | How MCP describes OData types: grammar, describe/describe_model, required-on-create, operations |
 | [PERFORMANCE.md](./PERFORMANCE.md) | Serve more requests with less memory: parse schemas once, share type schemas, drop duplicate shape data, compact in-process CSDL |
 | [OPTIMIZATION.md](./OPTIMIZATION.md) | Hide EDMX from the calling AI; steer first-call success so the user is not waiting on retries |

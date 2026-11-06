@@ -1,12 +1,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
+using Microsoft.OData.Mcp.Core.Catalog;
+using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Extensions.Tasks;
@@ -192,6 +199,32 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// A form-elicited action stays on <c>tools/call</c> even when this request advertised Tasks.
+        /// </summary>
+        [TestMethod]
+        public void SelectExecutionMode_FormActionWithTasks_IsSynchronous()
+        {
+            var request = FormSessionRequest(
+                new CallToolRequestParams
+                {
+                    Name = "action_ship",
+                    Meta = new JsonObject
+                    {
+                        ["io.modelcontextprotocol/clientCapabilities"] = new JsonObject
+                        {
+                            ["extensions"] = new JsonObject
+                            {
+                                [TasksProtocol.ExtensionId] = new JsonObject()
+                            }
+                        }
+                    }
+                });
+
+            ODataMcpAnnotatedActionTasks.SelectExecutionMode(request)
+                .Should().Be(McpTaskExecutionMode.Synchronous);
+        }
+
+        /// <summary>
         /// AfterInvoke leaves one-shot results alone when the client did not advertise URL elicitation.
         /// </summary>
         [TestMethod]
@@ -229,6 +262,101 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
             ODataMcpAnnotatedActionTasks.ClientHasUrlElicitation(request).Should().BeTrue();
         }
 
+        /// <summary>
+        /// Before-invoke stashes the call on <see cref="McpHttpContextAccessor"/>.
+        /// </summary>
+        [TestMethod]
+        public async Task BeforeInvokeAsync_StashesCallTool()
+        {
+            var accessor = new McpHttpContextAccessor
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+            var request = Context(new CallToolRequestParams { Name = "action_ship" });
+            var services = new ServiceCollection();
+            services.AddSingleton(accessor);
+            request.Services = services.BuildServiceProvider();
+
+            var result = await ODataMcpAnnotatedActionTasks.BeforeInvokeAsync(request, CancellationToken.None);
+
+            result.Should().BeNull();
+            accessor.CallTool.Should().BeSameAs(request);
+        }
+
+        /// <summary>
+        /// TryGetElicitFormAction without services is false.
+        /// </summary>
+        [TestMethod]
+        public void TryGetElicitFormAction_NoServices_IsFalse()
+        {
+            var request = Context(new CallToolRequestParams { Name = "action_ship" });
+            ODataMcpAnnotatedActionTasks.TryGetElicitFormAction(request, out var action).Should().BeFalse();
+            action.Should().BeNull();
+        }
+
+        /// <summary>
+        /// TryGetElicitFormAction without a session factory is false.
+        /// </summary>
+        [TestMethod]
+        public void TryGetElicitFormAction_NoFactory_IsFalse()
+        {
+            var request = Context(new CallToolRequestParams { Name = "action_ship" });
+            request.Services = new ServiceCollection().BuildServiceProvider();
+            ODataMcpAnnotatedActionTasks.TryGetElicitFormAction(request, out var action).Should().BeFalse();
+            action.Should().BeNull();
+        }
+
+        /// <summary>
+        /// An HTTP context is forwarded to session resolve.
+        /// </summary>
+        [TestMethod]
+        public void TryGetElicitFormAction_HttpContext_IsForwarded()
+        {
+            var request = Context(new CallToolRequestParams { Name = "action_ship" });
+            var accessor = new Microsoft.AspNetCore.Http.HttpContextAccessor
+            {
+                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext()
+            };
+            var services = new ServiceCollection();
+            services.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor>(accessor);
+            var host = new ODataMcpHostOptions();
+            services.AddSingleton(Microsoft.Extensions.Options.Options.Create(host));
+            var provider = services.BuildServiceProvider();
+            services = new ServiceCollection();
+            services.AddSingleton(new ODataMcpSessionFactory(
+                provider,
+                Microsoft.Extensions.Options.Options.Create(host),
+                new ODataMcpPipeline(),
+                new McpHttpContextAccessor()));
+            services.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor>(accessor);
+            request.Services = services.BuildServiceProvider();
+
+            ODataMcpAnnotatedActionTasks.TryGetElicitFormAction(request, out _).Should().BeFalse();
+        }
+
+        /// <summary>
+        /// TryGetElicitFormAction is false when the factory has no matching session.
+        /// </summary>
+        [TestMethod]
+        public void TryGetElicitFormAction_FactoryThrows_IsFalse()
+        {
+            var request = Context(new CallToolRequestParams { Name = "action_ship" });
+            request.Services = FactoryServices();
+
+            ODataMcpAnnotatedActionTasks.TryGetElicitFormAction(request, out var action).Should().BeFalse();
+            action.Should().BeNull();
+        }
+
+        /// <summary>
+        /// A null before-invoke request is rejected.
+        /// </summary>
+        [TestMethod]
+        public async Task BeforeInvokeAsync_Null_ThrowsArgumentNullException()
+        {
+            var act = async () => await ODataMcpAnnotatedActionTasks.BeforeInvokeAsync(null!, default);
+            await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("request");
+        }
+
         #endregion
 
         #region Internal Methods
@@ -244,6 +372,68 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Hosting
         {
             var request = (RequestContext<CallToolRequestParams>)RuntimeHelpers.GetUninitializedObject(typeof(RequestContext<CallToolRequestParams>));
             request.Params = parameters;
+            return request;
+        }
+
+        /// <summary>
+        /// Services whose session factory has no discovered routes.
+        /// </summary>
+        /// <returns>The service provider.</returns>
+        internal static IServiceProvider FactoryServices()
+        {
+            var host = new ODataMcpHostOptions();
+            var services = new ServiceCollection();
+            services.AddSingleton(Microsoft.Extensions.Options.Options.Create(host));
+            var provider = services.BuildServiceProvider();
+            var factory = new ODataMcpSessionFactory(
+                provider,
+                Microsoft.Extensions.Options.Options.Create(host),
+                new ODataMcpPipeline(),
+                new McpHttpContextAccessor());
+            var withFactory = new ServiceCollection();
+            withFactory.AddSingleton(factory);
+            return withFactory.BuildServiceProvider();
+        }
+
+        /// <summary>
+        /// Request whose session catalog contains a form-elicited Ship action.
+        /// </summary>
+        /// <param name="parameters">Call parameters.</param>
+        /// <returns>The context.</returns>
+        internal static RequestContext<CallToolRequestParams> FormSessionRequest(CallToolRequestParams parameters)
+        {
+            var xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Ship">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.ElicitForm">
+                          <Form xmlns="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml"
+                                Message="Ship this order" Name="ship">
+                            <Field Name="trackingNumber" Type="string" Required="true"/>
+                          </Form>
+                        </Annotation>
+                      </Action>
+                      <EntityContainer Name="Container">
+                        <ActionImport Name="Ship" Action="S.Ship" />
+                      </EntityContainer>
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+            var catalog = new ODataMcpCatalog(new CsdlParser().ParseFromString(xml), new ODataMcpCatalogOptions());
+            var session = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, new UnusedFormODataExecutor()), "{}");
+            var factory = HostingMoreTests.CreateFactory();
+            factory._discovered = true;
+            factory._sessions = new Dictionary<string, ODataMcpSession>(StringComparer.OrdinalIgnoreCase)
+            {
+                [string.Empty] = session
+            };
+
+            var services = new ServiceCollection();
+            services.AddSingleton(factory);
+            var request = Context(parameters);
+            request.Services = services.BuildServiceProvider();
             return request;
         }
 

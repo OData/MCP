@@ -41,6 +41,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         internal string? Description { get; }
 
         /// <summary>
+        /// Gets the compact form elicited before invoke, or <c>null</c>.
+        /// </summary>
+        internal EdmElicitForm? ElicitForm { get; }
+
+        /// <summary>
         /// Gets JSON property names on the action result that are URLs to elicit, or <c>null</c>.
         /// </summary>
         internal IReadOnlyList<string>? ElicitUrlProperties { get; }
@@ -96,6 +101,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(action.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(action.BindingParameterType);
             Description = action.Description;
+            ElicitForm = action.ElicitForm;
             ElicitUrlProperties = action.ElicitUrlProperties;
             IsAction = true;
             IsBound = action.IsBound;
@@ -118,6 +124,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
             BindingType = EdmTypeShape.UnwrapCollectionType(function.BindingParameterType) ?? string.Empty;
             CollectionBound = EdmTypeShape.IsCollectionBound(function.BindingParameterType);
             Description = function.Description;
+            ElicitForm = null;
             ElicitUrlProperties = null;
             IsAction = false;
             IsBound = function.IsBound;

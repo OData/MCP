@@ -479,6 +479,117 @@ namespace Microsoft.OData.Mcp.Tests.Core.Parsing
         }
 
         /// <summary>
+        /// An aliased <c>Mcp.ElicitForm</c> island copies field names and types.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_AliasedElicitForm_CopiesIsland()
+        {
+            const string xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:Reference Uri="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml">
+                    <edmx:Include Namespace="Microsoft.OData.Mcp.V1" Alias="Mcp" />
+                  </edmx:Reference>
+                  <edmx:DataServices>
+                    <Schema Namespace="S" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Ship" IsBound="true">
+                        <Parameter Name="bindingParameter" Type="S.Order" />
+                        <Annotation Term="Mcp.Task" Bool="true" />
+                        <Annotation Term="Mcp.ElicitForm">
+                          <Form xmlns="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml"
+                                Message="Ship this order">
+                            <Field Name="trackingNumber" Type="string" Required="true"/>
+                            <Field Name="priority" Type="enum">
+                              <Option Value="low"/>
+                              <Option Value="high" Selected="true"/>
+                            </Field>
+                          </Form>
+                        </Annotation>
+                      </Action>
+                      <EntityType Name="Order">
+                        <Key>
+                          <PropertyRef Name="Id" />
+                        </Key>
+                        <Property Name="Id" Type="Edm.Int32" Nullable="false" />
+                      </EntityType>
+                      <EntityContainer Name="Container" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+
+            var action = new CsdlParser().ParseFromString(xml).Actions.Single();
+            action.ElicitForm.Should().NotBeNull();
+            action.ElicitForm!.Message.Should().Be("Ship this order");
+            action.ElicitForm.Fields.Should().HaveCount(2);
+            action.ElicitForm.Fields[0].Name.Should().Be("trackingNumber");
+            action.ElicitForm.Fields[0].Required.Should().BeTrue();
+            action.ElicitForm.Fields[1].Type.Should().Be(Microsoft.OData.Mcp.Core.Models.EdmElicitFormFieldType.Enum);
+            action.ElicitForm.Fields[1].DefaultString.Should().Be("high");
+        }
+
+        /// <summary>
+        /// The ElicitForm term without an island stores an empty form.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_ElicitFormWithoutIsland_HasEmptyFields()
+        {
+            var action = ParseAction("""
+                <Action Name="Ship">
+                  <Annotation Term="Microsoft.OData.Mcp.V1.ElicitForm" />
+                </Action>
+                """);
+
+            action.ElicitForm.Should().NotBeNull();
+            action.ElicitForm!.Message.Should().BeEmpty();
+            action.ElicitForm.Fields.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// An omitted ElicitForm term leaves the form null.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_OmittedElicitForm_IsNull()
+        {
+            var action = ParseAction("""
+                <Action Name="Ship">
+                  <Annotation Term="Microsoft.OData.Mcp.V1.Task" />
+                </Action>
+                """);
+
+            action.ElicitForm.Should().BeNull();
+        }
+
+        /// <summary>
+        /// Out-of-line Annotations apply ElicitForm the same way as Task.
+        /// </summary>
+        [TestMethod]
+        public void ParseFromString_OutOfLineElicitForm_CopiesIsland()
+        {
+            const string xml = """
+                <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+                  <edmx:DataServices>
+                    <Schema Namespace="Host" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+                      <Action Name="Ship" />
+                      <Annotations Target="Host.Ship()">
+                        <Annotation Term="Microsoft.OData.Mcp.V1.ElicitForm">
+                          <Form xmlns="https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml"
+                                Message="Confirm?">
+                            <Field Name="note" Type="string"/>
+                          </Form>
+                        </Annotation>
+                      </Annotations>
+                      <EntityContainer Name="Container" />
+                    </Schema>
+                  </edmx:DataServices>
+                </edmx:Edmx>
+                """;
+
+            var action = new CsdlParser().ParseFromString(xml).Actions.Single();
+            action.ElicitForm!.Message.Should().Be("Confirm?");
+            action.ElicitForm.Fields[0].Name.Should().Be("note");
+        }
+
+        /// <summary>
         /// An unannotated action stays one-shot with no elicit property list.
         /// </summary>
         [TestMethod]

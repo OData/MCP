@@ -9,6 +9,8 @@ using System.Xml;
 using Microsoft.OData.Edm;
 using Microsoft.OData.Edm.Csdl;
 using Microsoft.OData.Edm.Vocabularies;
+using Microsoft.OData.Mcp.Core.Models;
+using Microsoft.OData.Mcp.Core.Parsing;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 using CoreModel = Microsoft.OData.Mcp.Core.Models.EdmModel;
 using CoreAction = Microsoft.OData.Mcp.Core.Models.EdmAction;
@@ -276,6 +278,51 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
         }
 
         /// <summary>
+        /// Reads <c>Microsoft.OData.Mcp.V1.ElicitForm</c> and its compact island from an action.
+        /// </summary>
+        /// <param name="model">The source model.</param>
+        /// <param name="target">The annotatable action.</param>
+        /// <returns>
+        /// The form, or <c>null</c> when the term is omitted.
+        /// </returns>
+        internal static EdmElicitForm? ReadElicitForm(IEdmModel model, IEdmVocabularyAnnotatable target)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(target);
+
+            foreach (var annotation in model.FindVocabularyAnnotations(target))
+            {
+                if (!IsMcpTerm(annotation.Term, McpVocabulary.ElicitFormTermName))
+                {
+                    continue;
+                }
+
+                foreach (var direct in model.DirectValueAnnotations(annotation))
+                {
+                    if (!string.Equals(direct.Name, McpVocabulary.FormElementName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    var xml = direct.Value switch
+                    {
+                        IEdmStringValue text => text.Value,
+                        string text => text,
+                        _ => null
+                    };
+                    if (!string.IsNullOrWhiteSpace(xml))
+                    {
+                        return ElicitFormXml.Parse(xml);
+                    }
+                }
+
+                return new EdmElicitForm();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns whether a vocabulary term is an MCP term of the given name.
         /// </summary>
         /// <param name="term">The annotation term.</param>
@@ -321,6 +368,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Adaptation
 
             ApplyVocabulary(model, action, value => mapped.Description = value, value => mapped.LongDescription = value);
             mapped.IsTask = IsTask(model, action);
+            mapped.ElicitForm = ReadElicitForm(model, action);
             mapped.ElicitUrlProperties = ReadElicitUrlProperties(model, action);
 
             return mapped;

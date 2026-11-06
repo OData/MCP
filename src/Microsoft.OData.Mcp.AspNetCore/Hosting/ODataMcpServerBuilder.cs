@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CloudNimble.McpEssentials.Core.Tasks;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -59,6 +60,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         internal Func<RequestContext<CallToolRequestParams>, CallToolResult, CancellationToken, ValueTask<CallToolResult>> AfterInvoke { get; set; }
 
+        /// <summary>
+        /// Gets the before-invoke hook installed on catalog <c>tools/call</c>. Stashes the
+        /// call so <c>[FromServices]</c> can inject it and the operation can <c>RequireForm</c>.
+        /// </summary>
+        internal Func<RequestContext<CallToolRequestParams>, CancellationToken, ValueTask<CallToolRequestParams?>> BeforeInvoke { get; set; }
+
         #endregion
 
         #region Constructors
@@ -76,6 +83,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             Server = server;
             _services = services;
             AfterInvoke = ODataMcpAnnotatedActionTasks.AfterInvokeAsync;
+            BeforeInvoke = ODataMcpAnnotatedActionTasks.BeforeInvokeAsync;
         }
 
         #endregion
@@ -232,6 +240,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
             Server.WithTasks(store, options =>
             {
                 options.ExecutionModeSelector = ODataMcpAnnotatedActionTasks.SelectExecutionMode;
+                FormElicitationExecutionMode.Apply(options);
             });
 
             return this;

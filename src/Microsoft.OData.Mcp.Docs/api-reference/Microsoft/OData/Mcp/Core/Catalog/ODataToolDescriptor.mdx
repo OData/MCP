@@ -88,6 +88,20 @@ public bool DestructiveHint { get; set; }
 
 Type: `bool`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitForm
+
+Gets or sets the compact form elicited before invoke, or `null` when the term is omitted.
+
+#### Syntax
+
+```csharp
+public Microsoft.OData.Mcp.Core.Models.EdmElicitForm ElicitForm { get; set; }
+```
+
+#### Property Value
+
+Type: `Microsoft.OData.Mcp.Core.Models.EdmElicitForm?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitUrlProperties
 
 Gets or sets JSON property names on the action result that are URLs to elicit, or `null`
@@ -200,7 +214,7 @@ public Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind OperationKind { get; 
 
 #### Property Value
 
-Type: `Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind`
+Type: `Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> OperationName
 

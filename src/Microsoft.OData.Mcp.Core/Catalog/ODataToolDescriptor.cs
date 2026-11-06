@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.OData.Mcp.Core.Models;
 
 namespace Microsoft.OData.Mcp.Core.Catalog
 {
@@ -28,6 +29,11 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// Gets or sets a value indicating whether the tool is destructive.
         /// </summary>
         public bool DestructiveHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the compact form elicited before invoke, or <c>null</c> when the term is omitted.
+        /// </summary>
+        public EdmElicitForm? ElicitForm { get; set; }
 
         /// <summary>
         /// Gets or sets JSON property names on the action result that are URLs to elicit, or <c>null</c>

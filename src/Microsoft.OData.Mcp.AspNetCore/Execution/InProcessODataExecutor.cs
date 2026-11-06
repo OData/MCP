@@ -9,10 +9,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Mcp.AspNetCore.Hosting;
 using Microsoft.OData.Mcp.Core.Execution;
+using ModelContextProtocol;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.AspNetCore.Execution
 {
@@ -117,6 +121,11 @@ namespace Microsoft.OData.Mcp.AspNetCore.Execution
             finally
             {
                 _httpContextAccessor.End();
+            }
+
+            if (inner.Features.Get<IExceptionHandlerFeature>()?.Error is InputRequiredException handled)
+            {
+                throw handled;
             }
 
             if (inner.Response.Body.CanSeek)

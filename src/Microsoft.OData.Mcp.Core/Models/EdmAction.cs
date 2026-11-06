@@ -44,6 +44,14 @@ namespace Microsoft.OData.Mcp.Core.Models
         public string? LongDescription { get; set; }
 
         /// <summary>
+        /// Gets or sets the compact form elicited before invoke.
+        /// </summary>
+        /// <value>
+        /// The declared <c>Microsoft.OData.Mcp.V1.ElicitForm</c> island, or <c>null</c> when the term is omitted.
+        /// </value>
+        public EdmElicitForm? ElicitForm { get; set; }
+
+        /// <summary>
         /// Gets or sets JSON property names on the action result that are URLs to elicit.
         /// </summary>
         /// <value>

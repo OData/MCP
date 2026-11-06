@@ -43,6 +43,25 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         #region Internal Methods
 
         /// <summary>
+        /// Stashes the <c>tools/call</c> on the MCP HTTP context so the OData operation can
+        /// call <c>RequireForm</c>. Form elicitation is the operation, not this hook.
+        /// </summary>
+        /// <param name="request">The call request.</param>
+        /// <param name="cancellationToken">Timeout, <c>tasks/cancel</c>, and process shutdown.</param>
+        /// <returns>
+        /// Always <see langword="null"/>; call params are unchanged.
+        /// </returns>
+        internal static ValueTask<CallToolRequestParams?> BeforeInvokeAsync(
+            RequestContext<CallToolRequestParams> request,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+            cancellationToken.ThrowIfCancellationRequested();
+            request.Services?.GetService<McpHttpContextAccessor>()?.SetCallTool(request);
+            return default;
+        }
+
+        /// <summary>
         /// After a catalog <c>tools/call</c>, elicits an annotated-action URL when the client
         /// advertised URL elicitation, then waits for the host callback when a waiter is registered.
         /// </summary>
@@ -531,16 +550,24 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
         /// </summary>
         /// <param name="context">The call request.</param>
         /// <returns>
+        /// <see cref="McpTaskExecutionMode.Synchronous"/> when the tool elicits a form.
         /// <see cref="McpTaskExecutionMode.Optional"/> when the tool is a tasked action and this
-        /// request advertised the Tasks extension; otherwise <see cref="McpTaskExecutionMode.Synchronous"/>.
+        /// request advertised the Tasks extension. Everything else is
+        /// <see cref="McpTaskExecutionMode.Synchronous"/>.
         /// </returns>
         /// <remarks>
-        /// Claude Code omits the Tasks extension on a <c>tools/call</c> that cannot become a task.
-        /// Returning Optional without that key yields <c>Unsupported result type 'task'</c>.
+        /// Form MRTR cannot run inside a task. Claude Code omits the Tasks extension on a
+        /// <c>tools/call</c> that cannot become a task. Returning Optional without that key
+        /// yields <c>Unsupported result type 'task'</c>.
         /// </remarks>
         internal static McpTaskExecutionMode SelectExecutionMode(RequestContext<CallToolRequestParams> context)
         {
             ArgumentNullException.ThrowIfNull(context);
+
+            if (TryGetElicitFormAction(context, out _))
+            {
+                return McpTaskExecutionMode.Synchronous;
+            }
 
             return IsTaskedCall(context) && HasTasksExtension(context.Params?.Meta)
                 ? McpTaskExecutionMode.Optional
@@ -602,6 +629,41 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
 
             json = default;
             return false;
+        }
+
+        /// <summary>
+        /// Resolves the form-elicited EDM action for this call.
+        /// </summary>
+        /// <param name="context">The call request.</param>
+        /// <param name="action">The action when found.</param>
+        /// <returns>
+        /// <c>true</c> when the catalog tool is an action with <c>ElicitForm</c>.
+        /// </returns>
+        internal static bool TryGetElicitFormAction(RequestContext<CallToolRequestParams> context, [NotNullWhen(true)] out Microsoft.OData.Mcp.Core.Models.EdmAction? action)
+        {
+            action = null;
+            var parameters = context.Params;
+            if (parameters is null || string.IsNullOrWhiteSpace(parameters.Name) || context.Services is null)
+            {
+                return false;
+            }
+
+            var factory = context.Services.GetService<ODataMcpSessionFactory>();
+            if (factory is null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var http = context.Services.GetService<IHttpContextAccessor>()?.HttpContext;
+                var session = factory.Resolve(http);
+                return session.Catalog.TryGetElicitFormAction(parameters.Name, AsReadOnly(parameters.Arguments), out action);
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

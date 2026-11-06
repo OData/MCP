@@ -54,6 +54,24 @@ McpTaskAnnotations.EnsureReferenced(edmModel);
 `FindTerm` only sees terms on referenced models.
 `SetEdmReferences` is merged so ModelBuilder's Core/Capabilities references stay on the model.
 
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StampElicitForm
+
+Stamps `Microsoft.OData.Mcp.V1.ElicitForm` and the compact `Form` island.
+
+#### Syntax
+
+```csharp
+public static void StampElicitForm(Microsoft.OData.Edm.EdmModel model, Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable target, string islandXml)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `model` | `Microsoft.OData.Edm.EdmModel` | The service model. |
+| `target` | `Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable` | The action to annotate. |
+| `islandXml` | `string` | The compact form island, including the vocab `xmlns`. |
+
 ### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StampTask
 
 Stamps `Microsoft.OData.Mcp.V1.Task` on an action, attaching the vocabulary if needed.
@@ -61,7 +79,7 @@ Stamps `Microsoft.OData.Mcp.V1.Task` on an action, attaching the vocabulary if n
 #### Syntax
 
 ```csharp
-public static void StampTask(Microsoft.OData.Edm.EdmModel model, Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable target, System.Collections.Generic.IReadOnlyList<string> elicitUrlProperties = null)
+public static void StampTask(Microsoft.OData.Edm.EdmModel model, Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable target, System.Collections.Generic.IReadOnlyList<string> elicitUrlProperties = null, string description = null)
 ```
 
 #### Parameters
@@ -71,6 +89,7 @@ public static void StampTask(Microsoft.OData.Edm.EdmModel model, Microsoft.OData
 | `model` | `Microsoft.OData.Edm.EdmModel` | The service model. |
 | `target` | `Microsoft.OData.Edm.Vocabularies.IEdmVocabularyAnnotatable` | The action to annotate. |
 | `elicitUrlProperties` | `System.Collections.Generic.IReadOnlyList<string>?` | Optional JSON property names for `ElicitUrlProperties`. |
+| `description` | `string?` | Optional `Org.OData.Core.V1.Description` on the action. |
 
 #### Examples
 

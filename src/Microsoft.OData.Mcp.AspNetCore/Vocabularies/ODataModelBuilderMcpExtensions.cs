@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.OData.Mcp.AspNetCore.Vocabularies;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 
@@ -101,6 +102,63 @@ namespace Microsoft.OData.ModelBuilder
             action.VocabularyTermConfigurations[typeof(McpElicitUrlTermConfiguration)] = new McpElicitUrlTermConfiguration
             {
                 PropertyNames = [.. propertyNames.Where(name => !string.IsNullOrWhiteSpace(name))]
+            };
+
+            return action;
+        }
+
+        /// <summary>
+        /// Marks this action to elicit <paramref name="form"/> before invoke.
+        /// <c>GetEdmModel</c> stamps <c>Microsoft.OData.Mcp.V1.ElicitForm</c> and the compact island.
+        /// </summary>
+        /// <param name="action">The action to annotate.</param>
+        /// <param name="form">The live form instance.</param>
+        /// <returns>
+        /// <paramref name="action"/> so further configuration can chain.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="action"/> or <paramref name="form"/> is <see langword="null"/>.</exception>
+        /// <example>
+        /// <code>
+        /// builder.EntityType&lt;Order&gt;().Action("Ship")
+        ///     .HasMcpTask()
+        ///     .HasMcpElicitForm(FormElicitationBuilder.Create("Ship this order").String("trackingNumber").Required());
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// A second call replaces the previous form configuration.
+        /// </remarks>
+        public static ActionConfiguration HasMcpElicitForm(this ActionConfiguration action, IFormElicitationSource form)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentNullException.ThrowIfNull(form);
+
+            action.VocabularyTermConfigurations[typeof(McpElicitFormTermConfiguration)] = new McpElicitFormTermConfiguration
+            {
+                Form = form
+            };
+
+            return action;
+        }
+
+        /// <summary>
+        /// Marks this action to elicit the keyed form named <paramref name="name"/> before invoke.
+        /// Rebuild resolves <c>IFormElicitationSource</c> and stamps the island.
+        /// </summary>
+        /// <param name="action">The action to annotate.</param>
+        /// <param name="name">The keyed-DI name from <c>AddFormElicitation</c>.</param>
+        /// <returns>
+        /// <paramref name="action"/> so further configuration can chain.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="action"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is empty.</exception>
+        public static ActionConfiguration HasMcpElicitForm(this ActionConfiguration action, string name)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            action.VocabularyTermConfigurations[typeof(McpElicitFormTermConfiguration)] = new McpElicitFormTermConfiguration
+            {
+                Name = name
             };
 
             return action;

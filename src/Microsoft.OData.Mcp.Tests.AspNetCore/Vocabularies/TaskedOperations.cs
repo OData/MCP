@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.OData.Mcp.Core.Vocabularies;
 using Microsoft.OData.Mcp.Tests.Shared.Entities;
 
@@ -59,6 +60,15 @@ namespace Microsoft.OData.Mcp.Tests.AspNetCore.Vocabularies
         /// Unbound one-shot action.
         /// </summary>
         public void Reset()
+        {
+        }
+
+        /// <summary>
+        /// Bound action that elicits a keyed form.
+        /// </summary>
+        /// <param name="customer">The bound customer.</param>
+        [McpElicitForm("ship")]
+        public void Ship(Customer customer)
         {
         }
 

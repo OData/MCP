@@ -291,7 +291,9 @@ namespace Microsoft.OData.Mcp.Tools.Hosting
                                 services.GetRequiredService<ToolsMcpSessionHolder>(),
                                 services.GetRequiredService<OutboundOAuthClient>(),
                                 requestCancellationToken);
-                        });
+                        },
+                        beforeInvoke: (request, requestCancellationToken) =>
+                            ToolsMcpFormElicitation.BeforeInvokeAsync(request, requestCancellationToken));
             }
 
             configureServices?.Invoke(builder.Services);

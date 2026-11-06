@@ -1,0 +1,30 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License.  See License.txt in the project root for license information.
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.OData.Mcp.Core.Execution;
+
+namespace Microsoft.OData.Mcp.Tests.Tools
+{
+
+    /// <summary>
+    /// Executor that must not be called for catalog-only form elicitation tests.
+    /// </summary>
+    internal sealed class UnusedToolsODataExecutor : IODataExecutor
+    {
+
+        #region Public Methods
+
+        /// <inheritdoc />
+        public Task<ODataExecuteResult> ExecuteAsync(ODataExecuteRequest request, CancellationToken cancellationToken)
+        {
+            throw new InvalidOperationException("Form elicitation tests must not call the executor.");
+        }
+
+        #endregion
+
+    }
+
+}

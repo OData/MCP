@@ -14,6 +14,11 @@
       <Term Name="ElicitUrlProperties" Type="Collection(Edm.String)" Nullable="false" AppliesTo="Action">
         <Annotation Term="Core.Description" String="JSON property names on the action result that are URLs to elicit." />
       </Term>
+
+      <Term Name="ElicitForm" Type="Core.Tag" Nullable="false" DefaultValue="true" AppliesTo="Action">
+        <Annotation Term="Core.Description"
+          String="The action elicits an MCP form before invoke. The compact Form element on this annotation is the request schema." />
+      </Term>
     </Schema>
   </edmx:DataServices>
 </edmx:Edmx>

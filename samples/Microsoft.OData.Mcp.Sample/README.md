@@ -22,7 +22,7 @@ Paste `https://localhost:59982/odata/mcp` into Claude Desktop, Cursor, Claude Co
 
 Each OData prefix gets its own MCP endpoint. Named tools come from the model: `list_customers`, `get_customer`, `create_order`, `action_order_ship`, `function_gettopcustomers`. Generic `odata_*` tools cover everything else.
 
-`Ship` is marked `[HasMcpTask]`, so a harness that opted into Tasks waits instead of treating the call as done the instant the action returns.
+`Ship` is marked `[McpElicitForm("ship")]` and `HasMcpElicitForm("ship")`. MCP injects the `tools/call` via `[FromServices]` and calls `RequireForm("ship")`. `POST /odata/Orders(1)/Ship` is the same method with the tracking number in the body.
 
 OData at `/odata` is unchanged.
 

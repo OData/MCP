@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -478,6 +479,83 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         }
 
         /// <summary>
+        /// Resolves an EDM action that elicits a form for a named <c>action_*</c> tool or
+        /// <c>odata_call</c> of the same action.
+        /// </summary>
+        /// <param name="toolName">The MCP tool name.</param>
+        /// <param name="arguments">The call arguments, used to read <c>name</c> on <c>odata_call</c>.</param>
+        /// <param name="action">The form-elicited action when found.</param>
+        /// <returns>
+        /// <c>true</c> when the resolved tool is an action with <c>ElicitForm</c>.
+        /// </returns>
+        /// <remarks>
+        /// CRUD tools, functions, and actions without the term return <c>false</c>. Named
+        /// <c>action_*</c> and <c>odata_call</c> of the same annotated action share this path.
+        /// Task annotation is not required.
+        /// </remarks>
+        public bool TryGetElicitFormAction(string toolName, IReadOnlyDictionary<string, JsonElement>? arguments, [NotNullWhen(true)] out EdmAction? action)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(toolName);
+
+            action = null;
+            if (TryGetTool(toolName, out var tool) && tool.OperationKind == ODataOperationKind.Action && tool.ElicitForm is not null)
+            {
+                action = FindFormAction(tool.OperationName!, tool.BindingParameterType, StringComparison.Ordinal, matchBinding: true);
+                return action is not null;
+            }
+
+            if (!string.Equals(toolName, ODataCall, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (arguments is null
+                || !arguments.TryGetValue(Name, out var nameValue)
+                || nameValue.ValueKind != JsonValueKind.String
+                || string.IsNullOrWhiteSpace(nameValue.GetString()))
+            {
+                return false;
+            }
+
+            action = FindFormAction(nameValue.GetString()!, bindingParameterType: null, StringComparison.OrdinalIgnoreCase, matchBinding: false);
+            return action is not null;
+        }
+
+        /// <summary>
+        /// Finds a form-elicited action by operation name and optional binding type.
+        /// </summary>
+        /// <param name="operationName">The EDM action name.</param>
+        /// <param name="bindingParameterType">The bound parameter type when <paramref name="matchBinding"/> is set.</param>
+        /// <param name="comparison">Name comparison.</param>
+        /// <param name="matchBinding">
+        /// When <see langword="true"/>, <paramref name="bindingParameterType"/> must match the candidate.
+        /// </param>
+        /// <returns>The action, or <see langword="null"/>.</returns>
+        private EdmAction? FindFormAction(string operationName, string? bindingParameterType, StringComparison comparison, bool matchBinding)
+        {
+            var actions = _model.Actions;
+            for (var i = 0; i < actions.Count; i++)
+            {
+                var candidate = actions[i];
+                if (candidate.ElicitForm is null
+                    || !string.Equals(candidate.Name, operationName, comparison))
+                {
+                    continue;
+                }
+
+                if (matchBinding
+                    && !string.Equals(candidate.BindingParameterType, bindingParameterType, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                return candidate;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Finds a catalog tool by exact name.
         /// </summary>
         /// <param name="name">The tool name.</param>
@@ -485,7 +563,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <returns>
         /// <c>true</c> when the catalog advertises <paramref name="name"/>.
         /// </returns>
-        internal bool TryGetTool(string name, out ODataToolDescriptor? tool)
+        internal bool TryGetTool(string name, [NotNullWhen(true)] out ODataToolDescriptor? tool)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -1217,6 +1295,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 BindingParameterType = operation.BindingParameterType,
                 Description = ComposeToolDescription(sentence, documented, suffix),
                 DestructiveHint = operation.IsAction,
+                ElicitForm = operation.ElicitForm,
                 ElicitUrlProperties = operation.ElicitUrlProperties,
                 EntitySetName = set?.Name,
                 IdempotentHint = !operation.IsAction,

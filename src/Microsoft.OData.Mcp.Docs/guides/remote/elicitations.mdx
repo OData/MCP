@@ -1,18 +1,261 @@
 ---
-title: "Ask the operator to open a URL"
-description: "When an action returns a connect URL, the harness shows it. After they finish in the browser, your waiter sends the real result."
-keywords: ["Remote MCP", "McpElicitUrl", "HasMcpElicitUrl", "waiter"]
+title: "Ask the operator"
+description: "Call RequireForm on an MCP tools/call, or show a connect URL after the action starts."
+keywords: ["Remote MCP", "McpElicitForm", "HasMcpElicitForm", "AddFormElicitation", "RequireForm", "FromServices", "McpElicitUrl", "HasMcpElicitUrl", "waiter"]
 ---
 
-Connected Accounts, device login, any hop that belongs in a **browser**: your action returns a Started ticket with a URL. The harness should show that URL, then wait until *your* callback says the grant finished.
+Some actions need a human in the loop. A tracking number. A confirmation. A login page that belongs in a browser.
+
+Mark the action. Register the form. Call `RequireForm` when the invoke came from MCP. `POST /odata/Orders(1)/Ship` is the same method with the fields in the body.
+
+<CardGroup cols={2}>
+  <Card title="Fill a form" icon="clipboard-list">
+    `[McpElicitForm]` / `HasMcpElicitForm`, then `call.RequireForm("ship")` on an MCP invoke.
+  </Card>
+  <Card title="Open a URL after" icon="arrow-up-right-from-square">
+    `[McpElicitUrl]` / `HasMcpElicitUrl` plus a waiter. Tokens stay out of the chat.
+  </Card>
+</CardGroup>
+
+Forms collect ordinary fields: tracking numbers, dates, choices, a yes/no confirm. Login pages and tokens belong on a URL elicitation. Entity-set CRUD and functions never elicit.
+
+## Fill a form
+
+The harness calls `action_order_ship` (or `odata_call` of `Ship`). Your action runs. `RequireForm("ship")` asks for the form on the first visit and returns the answers on the retry. Direct OData never sees a form.
+
+Named tools and `odata_call` of the same annotated action share this path.
+
+### Register the form
+
+`Microsoft.OData.Mcp.AspNetCore` brings `McpEssentials.Core`. `[McpElicitForm]`, `[McpElicitUrl]`, `FormElicitationBuilder`, and `RequireForm` live in `CloudNimble.McpEssentials.Core.Tasks.Elicitations`. Field names camelCase on the wire (`TrackingNumber` → `trackingNumber`).
+
+```csharp
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+
+builder.Services.AddFormElicitation("ship",
+    FormElicitationBuilder.Create("Ship this order")
+        .String("trackingNumber").Required());
+
+builder.Services.AddODataMcp();
+```
+
+A missing keyed name fails when the host stamps the model, with `InvalidOperationException` that names the action and the key. Duplicate `AddFormElicitation` names throw; the same instance may register under two names.
+
+### Mark the action and call RequireForm
+
+<Tabs>
+  <Tab title="Controllers">
+    Put `[McpElicitForm]` on the method. Inject the MCP call with `[FromServices]` so it stays out of `$metadata`. It is null on a normal OData POST.
+
+    ```csharp
+    using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+    using ModelContextProtocol.Protocol;
+    using ModelContextProtocol.Server;
+
+    [HttpPost]
+    [McpElicitForm("ship")]
+    public IActionResult Ship(
+        [FromODataUri] int key,
+        [FromBody] ODataActionParameters parameters,
+        [FromServices] RequestContext<CallToolRequestParams>? call = null)
+    {
+        string trackingNumber;
+        if (call is not null)
+        {
+            var form = call.RequireForm("ship");
+            if (!form.IsAccepted)
+            {
+                return BadRequest("Shipping cancelled.");
+            }
+
+            trackingNumber = form.Content!["trackingNumber"].GetString() ?? "";
+        }
+        else if (!TryReadTrackingNumber(parameters, out trackingNumber))
+        {
+            return BadRequest("Tracking number is required");
+        }
+
+        // ship the order
+        return Ok(true);
+    }
+    ```
+  </Tab>
+  <Tab title="Restier">
+    Put `[McpElicitForm]` on the operation. Resolve the call from the API's service provider so it is not an EDM parameter.
+
+    ```csharp
+    using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+    using Microsoft.OData.Mcp.Core.Vocabularies;
+    using ModelContextProtocol.Protocol;
+    using ModelContextProtocol.Server;
+
+    public sealed class OrderApi : EntityFrameworkApi<Db>
+    {
+        readonly RequestContext<CallToolRequestParams>? _call;
+
+        public OrderApi(IServiceProvider services) : base(services)
+        {
+            _call = services.GetService<RequestContext<CallToolRequestParams>>();
+        }
+
+        [BoundOperation(OperationType = OperationType.Action)]
+        [McpElicitForm("ship")]
+        public Order Ship(Order order)
+        {
+            if (_call is not null)
+            {
+                var form = _call.RequireForm("ship");
+                if (!form.IsAccepted)
+                {
+                    return order;
+                }
+
+                order.TrackingNumber = form.Content!["trackingNumber"].GetString();
+            }
+
+            return order;
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="ModelBuilder">
+    Stamp the CSDL island with `HasMcpElicitForm`. The CLR method still calls `RequireForm` as in the controller or Restier tab.
+
+    ```csharp
+    using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
+
+    builder.EntityType<Order>().Action("Ship")
+        .HasMcpTask()
+        .HasMcpElicitForm("ship")
+        .Parameter<string>("trackingNumber")
+        .Returns<bool>();
+    ```
+
+    Pass a live form instead of a name when you are not using keyed DI:
+
+    ```csharp
+    builder.EntityType<Order>().Action("Ship")
+        .HasMcpElicitForm(
+            FormElicitationBuilder.Create("Ship this order")
+                .String("trackingNumber").Required());
+    ```
+
+    A second `HasMcpElicitForm` on the same action replaces the previous form.
+  </Tab>
+</Tabs>
+
+<Tip>
+`AddODataMcp` registers the scoped `tools/call` so `[FromServices]` can inject it. `[McpElicitForm("ship")]` keeps that tool on `tools/call` when Tasks is on. `RequireForm("ship")` is what asks the operator.
+</Tip>
+
+### Build the form
+
+<Tabs>
+  <Tab title="Field by field">
+    ```csharp
+    var form = FormElicitationBuilder.Create("Ship this order")
+        .String("trackingNumber").Required().MinLength(8)
+        .Choice("carrier")
+            .Option("ups", "UPS")
+            .Option("fedex", "FedEx")
+            .Required()
+        .Boolean("notifyCustomer").Default(true);
+    ```
+  </Tab>
+  <Tab title="From a type">
+    Public instance properties seed the fields. Unmappable properties are skipped. Chain after `From` to set titles, bounds, and required.
+
+    ```csharp
+    public class ShipForm
+    {
+        public string TrackingNumber { get; set; } = "";
+        public string? Carrier { get; set; }
+        public bool NotifyCustomer { get; set; } = true;
+    }
+
+    var form = FormElicitationBuilder.From<ShipForm>("Ship this order")
+        .String(x => x.TrackingNumber).Required().MinLength(8)
+        .Choice(x => x.Carrier)
+            .Option("ups", "UPS")
+            .Option("fedex", "FedEx");
+    ```
+  </Tab>
+</Tabs>
+
+A form with only a message is a confirm dialog: the harness shows the prompt and accept / decline.
+
+<AccordionGroup>
+  <Accordion title="String, email, URI, date">
+    ```csharp
+    form.String("notes").Title("Notes").Description("Shown on the packing slip").MaxLength(400);
+    form.Email("notifyEmail").Required();
+    form.Uri("labelUrl");
+    form.Date("shipBy");
+    form.DateTime("pickupAt");
+    ```
+
+    Every field takes `.Required()` / `.Optional()`, `.Title(...)`, `.Description(...)`, and `.Default(...)`.
+  </Accordion>
+  <Accordion title="Integer and number">
+    ```csharp
+    form.Integer("packages").Min(1).Max(99).Default(1);
+    form.Number("weightKg").Between(0.1, 70);
+    ```
+  </Accordion>
+  <Accordion title="Boolean">
+    ```csharp
+    form.Boolean("notifyCustomer").Default(true);
+    ```
+  </Accordion>
+  <Accordion title="Single-select and multi-select">
+    ```csharp
+    form.Choice("carrier")
+        .Option("ups", "UPS")
+        .Option("fedex", "FedEx")
+        .Default("ups");
+
+    form.MultiChoice("labels")
+        .Option("fragile")
+        .Option("thisSideUp", "This side up");
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### What the harness sees
+
+<Steps>
+  <Step title="The tool is called">
+    `action_order_ship` or `odata_call` of `Ship`. Your action runs. `call` is the current `tools/call`.
+  </Step>
+  <Step title="RequireForm asks">
+    On the first visit, `RequireForm("ship")` throws `InputRequiredException`. The harness shows the form.
+  </Step>
+  <Step title="The retry returns answers">
+    The same action runs again. `RequireForm("ship")` returns `ElicitResult`. `IsAccepted` is false when the operator declined or cancelled.
+  </Step>
+  <Step title="Direct OData">
+    `POST /odata/Orders(1)/Ship` with `{"trackingNumber":"1Z..."}`. `call` is null. Read the body.
+  </Step>
+</Steps>
+
+If the harness omitted form elicitation, `RequireForm` fails with missing capability (`-32021`).
+
+`$metadata` shows `Term="Mcp.ElicitForm"` and a compact `<Form>` island on that action. `[FromServices] RequestContext<CallToolRequestParams>?` is not an EDM parameter.
+
+Pair with `[McpTask]` / `HasMcpTask()` when the work after the form still takes a while. The form stays on `tools/call`; the task starts after the retry. See [long-running actions](/guides/remote/tasks).
+
+## Ask the operator to open a URL
+
+Connected Accounts, device login, any hop that belongs in a **browser**: your action returns a Started ticket with a URL. The harness shows that URL, then waits until *your* callback says the grant finished.
 
 Mark the action. Register a waiter. Tokens never go through the chat.
 
-## Mark the URL
+### Mark the URL
 
 <Tabs>
   <Tab title="Restier / controllers">
     ```csharp
+    using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
     using Microsoft.OData.Mcp.Core.Vocabularies;
 
     [BoundOperation(OperationType = OperationType.Action)]
@@ -46,11 +289,11 @@ Keep returning one JSON ticket, for example:
 }
 ```
 
-If you omit `[McpElicitUrl]`, the host looks for `connectUri`, `url`, `authorizationUrl`, or `verificationUri` on that JSON. Names that look like secrets (`token`, `password`, `code`) are ignored on purpose.
+If you omit `[McpElicitUrl]`, the host looks for `connectUri`, `url`, `authorizationUrl`, or `verificationUri` on that JSON. Names that contain `token`, `secret`, `password`, or `code` are skipped.
 
 Pair it with `[McpTask]` / `HasMcpTask()` so the harness waits while the operator is in the browser.
 
-## Wait until your callback fires
+### Wait until your callback fires
 
 ```csharp
 builder.Services.AddODataMcp(options => { }, mcp =>
@@ -79,12 +322,14 @@ public sealed class AuthorizeWaiter : IMcpAnnotatedActionWaiter
 }
 ```
 
-`context` has the action name, the entity key, and the Started JSON. Return `null` to keep that Started payload.
+`context` has the action name, the entity key, the Started JSON, and the task id. Return `null` to keep that Started payload.
 
 Without a waiter, the harness still shows the URL, then the call ends. The operator finishing in the browser never comes back on MCP.
+
+Decline returns `The operator declined to open the URL.` and skips the waiter.
 
 If the harness cannot show a URL, they get the Started ticket and the human says when they are done.
 
 <Accordion title="If you also enabled Tasks">
-  The same elicitation is nested on the task. The operator accepts or declines; accept runs the waiter; decline skips it. Pair `WithTasks` and `WaitForAnnotatedAction` in the same `AddODataMcp` callback.
+  `[McpElicitForm]` keeps the form on `tools/call`. After the retry, POST runs, then URL elicitation and the waiter can use a task. Pair `WithTasks` and `WaitForAnnotatedAction` in the same `AddODataMcp` callback.
 </Accordion>

@@ -1,0 +1,61 @@
+---
+title: ElicitFormMapper
+description: "Projects a Core [EdmElicitForm](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitForm) onto SDK `ElicitRequestParams`."
+icon: bolt
+tag: "STATIC"
+keywords: ['ElicitFormMapper', 'Microsoft.OData.Mcp.Core.Catalog.ElicitFormMapper', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ElicitFormMapper
+```
+
+## Summary
+
+Projects a Core [EdmElicitForm](/api-reference/Microsoft/OData/Mcp/Core/Models/EdmElicitForm) onto SDK `ElicitRequestParams`.
+
+## Remarks
+
+Tools uses this mapper so remote `$metadata` can elicit without a McpEssentials
+package reference. Field mapping matches McpEssentials `ElicitationField.ToSchema`.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToRequestParams
+
+Builds an MCP form elicitation request from a catalog snapshot.
+
+#### Syntax
+
+```csharp
+public static ModelContextProtocol.Protocol.ElicitRequestParams ToRequestParams(Microsoft.OData.Mcp.Core.Models.EdmElicitForm form)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `form` | `Microsoft.OData.Mcp.Core.Models.EdmElicitForm` | The compact form from CSDL. |
+
+#### Returns
+
+Type: `ModelContextProtocol.Protocol.ElicitRequestParams`
+The SDK request params with `mode: form`.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *form* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InvalidOperationException` | Thrown when the form message is empty or a field is invalid. |
+

@@ -268,7 +268,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Catalog
             var result = await runtime.InvokeAsync("odata_describe_model", ToolArguments.Of("detail", "complete"), CancellationToken.None);
 
             result.IsError.Should().BeFalse(result.Text);
-            result.Text.Should().Contain("\n    Authorize() -> ConnectionAuthorizationTicket // writes, task, elicit; YouTube opens Google's Brand Account picker; one grant is one channel.");
+            result.Text.Should().Contain("\n    Authorize() -> ConnectionAuthorizationTicket // writes, task, elicit_url; YouTube opens Google's Brand Account picker; one grant is one channel.");
             result.Text.Should().Contain("\n\nPodOverlord.Business.ConnectionAuthorizationTicket  (complex)\n");
         }
 

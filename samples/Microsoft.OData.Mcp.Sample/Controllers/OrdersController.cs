@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Deltas;
 using Microsoft.AspNetCore.OData.Formatter;
@@ -11,6 +12,8 @@ using Microsoft.AspNetCore.OData.Results;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Microsoft.OData.Mcp.Sample.Data;
 using Microsoft.OData.Mcp.Sample.Models;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 
 namespace Microsoft.OData.Mcp.Sample.Controllers
 {
@@ -266,13 +269,24 @@ namespace Microsoft.OData.Mcp.Sample.Controllers
         }
 
         /// <summary>
-        /// Ships an order.
+        /// Ships an order. Same method for <c>POST /odata/Orders({key})/Ship</c> and MCP
+        /// <c>action_order_ship</c>.
         /// </summary>
         /// <param name="key">The order ID.</param>
-        /// <param name="parameters">The action parameters.</param>
+        /// <param name="parameters">The action parameters, including <c>trackingNumber</c>.</param>
+        /// <param name="call">The MCP <c>tools/call</c> when this invoke came from a tool; otherwise <see langword="null"/>.</param>
         /// <returns>True if successful.</returns>
+        /// <remarks>
+        /// Direct OData: the client POSTs <c>{"trackingNumber":"1Z..."}</c>.
+        /// MCP: <paramref name="call"/> is injected and <c>RequireForm("ship")</c> collects
+        /// the tracking number. <paramref name="call"/> is not an EDM parameter.
+        /// </remarks>
         [HttpPost]
-        public IActionResult Ship([FromODataUri] int key, [FromBody] ODataActionParameters parameters)
+        [McpElicitForm("ship")]
+        public IActionResult Ship(
+            [FromODataUri] int key,
+            [FromBody] ODataActionParameters parameters,
+            [FromServices] RequestContext<CallToolRequestParams>? call = null)
         {
             if (!ModelState.IsValid)
             {
@@ -280,7 +294,7 @@ namespace Microsoft.OData.Mcp.Sample.Controllers
             }
 
             var order = _dataStore.GetOrder(key);
-            if (order == null)
+            if (order is null)
             {
                 return NotFound();
             }
@@ -290,23 +304,57 @@ namespace Microsoft.OData.Mcp.Sample.Controllers
                 return BadRequest("Can only ship orders in Processing status");
             }
 
-            if (parameters.TryGetValue("trackingNumber", out var trackingValue) && trackingValue is string trackingNumber)
+            string trackingNumber;
+            if (call is not null)
             {
+                var form = call.RequireForm("ship");
+                if (!form.IsAccepted)
+                {
+                    return BadRequest("Shipping cancelled.");
+                }
+
+                trackingNumber = form.Content!["trackingNumber"].GetString() ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(trackingNumber))
                 {
                     return BadRequest("Tracking number is required");
                 }
-
-                order.Status = OrderStatus.Shipped;
-                order.ShipDate = DateTimeOffset.UtcNow;
-                
-                if (_dataStore.UpdateOrder(order))
-                {
-                    return Ok(true);
-                }
+            }
+            else if (!TryReadTrackingNumber(parameters, out trackingNumber))
+            {
+                return BadRequest("Tracking number is required");
             }
 
-            return BadRequest("Invalid parameters");
+            order.Status = OrderStatus.Shipped;
+            order.ShipDate = DateTimeOffset.UtcNow;
+            if (_dataStore.UpdateOrder(order))
+            {
+                return Ok(true);
+            }
+
+            return StatusCode(500, "Shipping failed");
+        }
+
+        /// <summary>
+        /// Reads <c>trackingNumber</c> from OData action parameters.
+        /// </summary>
+        /// <param name="parameters">The action body.</param>
+        /// <param name="trackingNumber">The tracking number when present.</param>
+        /// <returns>
+        /// <see langword="true"/> when a non-blank tracking number was supplied.
+        /// </returns>
+        internal static bool TryReadTrackingNumber(ODataActionParameters? parameters, out string trackingNumber)
+        {
+            trackingNumber = string.Empty;
+            if (parameters is null
+                || !parameters.TryGetValue("trackingNumber", out var value)
+                || value is not string text
+                || string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            trackingNumber = text;
+            return true;
         }
     }
 }

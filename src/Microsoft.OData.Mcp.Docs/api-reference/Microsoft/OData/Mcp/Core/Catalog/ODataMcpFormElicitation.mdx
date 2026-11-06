@@ -1,0 +1,71 @@
+---
+title: ODataMcpFormElicitation
+description: "Before-invoke form elicitation: client gate, MRTR, merge, decline."
+icon: bolt
+tag: "STATIC"
+keywords: ['ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+---
+
+## Definition
+
+**Assembly:** Microsoft.OData.Mcp.Core.dll
+
+**Namespace:** Microsoft.OData.Mcp.Core.Catalog
+
+**Inheritance:** System.Object
+
+## Syntax
+
+```csharp
+Microsoft.OData.Mcp.Core.Catalog.ODataMcpFormElicitation
+```
+
+## Summary
+
+Before-invoke form elicitation: client gate, MRTR, merge, decline.
+
+## Remarks
+
+AspNetCore prefers a live `IFormElicitationSource.Build`. Tools uses
+[ElicitFormMapper](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ElicitFormMapper). Schema `default` is the form author's; the harness
+may pre-fill the widget from tool arguments.
+
+## Methods
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> BeforeInvokeAsync
+
+Collects operator fields before OData invoke when the action has
+`Microsoft.OData.Mcp.V1.ElicitForm` and the client advertised form elicitation.
+
+#### Syntax
+
+```csharp
+public static System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolRequestParams> BeforeInvokeAsync(ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams> request, Microsoft.OData.Mcp.Core.Models.EdmElicitForm form, System.Func<ModelContextProtocol.Protocol.ElicitRequestParams> buildLive, System.Threading.CancellationToken cancellationToken, System.Func<ModelContextProtocol.Protocol.InputRequest> toInputRequest = null)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `request` | `ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>` | The call request. |
+| `form` | `Microsoft.OData.Mcp.Core.Models.EdmElicitForm?` | The catalog form, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the term is omitted. |
+| `buildLive` | `System.Func<ModelContextProtocol.Protocol.ElicitRequestParams>?` | Optional live schema factory for session `ElicitAsync`. When omitted,
+[ElicitFormMapper](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ElicitFormMapper) projects *form*. |
+| `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
+| `toInputRequest` | `System.Func<ModelContextProtocol.Protocol.InputRequest>?` | Optional cached MRTR payload. When omitted, the schema is serialized with
+`ElicitRequestParams)`. |
+
+#### Returns
+
+Type: `System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolRequestParams?>`
+Merged call params after accept; [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when elicitation does not apply.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *request* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `InputRequiredException` | Thrown for MRTR on stateless Streamable HTTP. |
+| `ODataFormElicitationDeclinedException` | Thrown when the operator declines or cancels. |
+| `InvalidOperationException` | Thrown when the form message is empty. |
+

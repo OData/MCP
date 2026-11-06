@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OData.Mcp.AspNetCore.Authentication;
@@ -147,6 +148,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ODataMcpPipelineStartupFilter>());
 
             services.TryAddSingleton<ODataMcpSessionFactory>();
+            services.AddScoped(sp =>
+                sp.GetRequiredService<McpHttpContextAccessor>().CallTool!);
+            services.Configure<MvcOptions>(options => options.Filters.Add<McpInputRequiredExceptionFilter>());
 
             var server = services.AddMcpServer()
                 .WithHttpTransport(options =>
@@ -164,7 +168,9 @@ namespace Microsoft.Extensions.DependencyInjection
                     return factory.Resolve(http);
                 },
                 afterInvoke: (request, result, cancellationToken) =>
-                    odata.AfterInvoke(request, result, cancellationToken));
+                    odata.AfterInvoke(request, result, cancellationToken),
+                beforeInvoke: (request, cancellationToken) =>
+                    odata.BeforeInvoke(request, cancellationToken));
 
             configureServer?.Invoke(odata);
 

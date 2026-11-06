@@ -34,7 +34,7 @@ Stamps `Microsoft.OData.Mcp.V1.Task` on each EDM action whose CLR method on
 #### Syntax
 
 ```csharp
-public static void Apply(Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IEnumerable<System.Type> sourceTypes)
+public static void Apply(Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IEnumerable<System.Type> sourceTypes, System.IServiceProvider services = null)
 ```
 
 #### Parameters
@@ -43,11 +43,13 @@ public static void Apply(Microsoft.OData.Edm.IEdmModel model, System.Collections
 |------|------|-------------|
 | `model` | `Microsoft.OData.Edm.IEdmModel` | The finished service model from route discovery. |
 | `sourceTypes` | `System.Collections.Generic.IEnumerable<System.Type>` | Restier API types and/or MVC controllers. |
+| `services` | `System.IServiceProvider?` | Optional application services used to resolve keyed `IFormElicitationSource`
+registrations for `McpElicitFormAttribute`. |
 
 #### Examples
 
 ```csharp
-McpTaskAttributeAnnotations.Apply(edmModel, [typeof(MyApi)]);
+McpTaskAttributeAnnotations.Apply(edmModel, [typeof(MyApi)], services);
 ```
 
 #### Remarks

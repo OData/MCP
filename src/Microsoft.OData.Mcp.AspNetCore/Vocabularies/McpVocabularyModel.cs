@@ -32,6 +32,13 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         #region Properties
 
         /// <summary>
+        /// Gets the <c>ElicitForm</c> term.
+        /// </summary>
+        public static IEdmTerm ElicitFormTerm =>
+            Instance.FindDeclaredTerm(McpVocabulary.ElicitFormTerm)
+            ?? throw new InvalidOperationException($"Term '{McpVocabulary.ElicitFormTerm}' was not found in the MCP vocabulary model.");
+
+        /// <summary>
         /// Gets the <c>ElicitUrlProperties</c> term.
         /// </summary>
         public static IEdmTerm ElicitUrlPropertiesTerm =>

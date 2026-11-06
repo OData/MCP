@@ -27,6 +27,81 @@ See [Microsoft documentation](https://learn.microsoft.com/dotnet/api/microsoft.o
 
 ## Methods
 
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpElicitForm <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
+
+Marks this action to elicit *form* before invoke.
+`GetEdmModel` stamps `Microsoft.OData.Mcp.V1.ElicitForm` and the compact island.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.ModelBuilder.ActionConfiguration HasMcpElicitForm(Microsoft.OData.ModelBuilder.ActionConfiguration action, CloudNimble.McpEssentials.Core.Tasks.Elicitations.IFormElicitationSource form)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `action` | `Microsoft.OData.ModelBuilder.ActionConfiguration` | The action to annotate. |
+| `form` | `CloudNimble.McpEssentials.Core.Tasks.Elicitations.IFormElicitationSource` | The live form instance. |
+
+#### Returns
+
+Type: `Microsoft.OData.ModelBuilder.ActionConfiguration`
+*action* so further configuration can chain.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *action* or *form* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+
+#### Examples
+
+```csharp
+builder.EntityType&lt;Order&gt;().Action("Ship")
+    .HasMcpTask()
+    .HasMcpElicitForm(FormElicitationBuilder.Create("Ship this order").String("trackingNumber").Required());
+```
+
+#### Remarks
+
+A second call replaces the previous form configuration.
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpElicitForm <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
+
+Marks this action to elicit the keyed form named *name* before invoke.
+Rebuild resolves `IFormElicitationSource` and stamps the island.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.ModelBuilder.ActionConfiguration HasMcpElicitForm(Microsoft.OData.ModelBuilder.ActionConfiguration action, string name)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `action` | `Microsoft.OData.ModelBuilder.ActionConfiguration` | The action to annotate. |
+| `name` | `string` | The keyed-DI name from `AddFormElicitation`. |
+
+#### Returns
+
+Type: `Microsoft.OData.ModelBuilder.ActionConfiguration`
+*action* so further configuration can chain.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *action* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *name* is empty. |
+
 ### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasMcpElicitUrl <Badge color="green">Extension</Badge>
 
 <Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
@@ -111,4 +186,36 @@ builder.EntityType&lt;Order&gt;().Action("Ship").HasMcpTask().Returns&lt;bool&gt
 
 The host does not wrap `GetEdmModel`. The vocabulary is referenced the first time this
 configuration is applied.
+
+### <Icon icon="puzzle-piece" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithDescription <Badge color="green">Extension</Badge>
+
+<Note>Extension method from `Microsoft.OData.ModelBuilder.ODataModelBuilderMcpExtensions`</Note>
+
+Sets `Org.OData.Core.V1.Description` on this tasked action. Named tools and
+`odata_describe_*` use this text.
+
+#### Syntax
+
+```csharp
+public static Microsoft.OData.ModelBuilder.ActionConfiguration WithDescription(Microsoft.OData.ModelBuilder.ActionConfiguration action, string description)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `action` | `Microsoft.OData.ModelBuilder.ActionConfiguration` | The action to annotate. |
+| `description` | `string` | Operator-facing description. |
+
+#### Returns
+
+Type: `Microsoft.OData.ModelBuilder.ActionConfiguration`
+*action* so further configuration can chain.
+
+#### Exceptions
+
+| Exception | Description |
+|-----------|-------------|
+| `ArgumentNullException` | Thrown when *action* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
+| `ArgumentException` | Thrown when *description* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) or whitespace. |
 

@@ -107,7 +107,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                 var taskSources = McpTaskAttributeAnnotations.CollectSourceTypes(_services);
                 foreach (var binding in ODataMcpRouteDiscovery.Discover(_services, _hostOptions.Value, additionalSources))
                 {
-                    McpTaskAttributeAnnotations.Apply(binding.Model, taskSources);
+                    McpTaskAttributeAnnotations.Apply(binding.Model, taskSources, _services);
                     var catalogOptions = CopyCatalogOptions(_hostOptions.Value.Catalog, binding.Prefix);
                     var catalog = new ODataMcpCatalog(EdmModelAdapter.ToCoreModel(binding.Model), catalogOptions);
                     var executor = new InProcessODataExecutor(
@@ -115,7 +115,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Hosting
                         _httpContextAccessor,
                         _services.GetRequiredService<IServiceScopeFactory>(),
                         binding.Prefix);
-                    sessions[binding.Prefix] = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
+                    var session = new ODataMcpSession(catalog, new ODataToolRuntime(catalog, executor), EdmModelAdapter.ToCsdlXml(binding.Model));
+                    sessions[binding.Prefix] = session;
                 }
 
                 _sessions = sessions;

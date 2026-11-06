@@ -29,14 +29,14 @@ Marks a CLR operation as an MCP task. After OData routes are mapped, the host st
 
 Pair with Restier `[BoundOperation]` / `[UnboundOperation]` or an OData controller action.
 Convention ModelBuilder hosts use `HasMcpTask()` instead. Pair
-[McpElicitUrlAttribute](/api-reference/Microsoft/OData/Mcp/Core/Vocabularies/McpElicitUrlAttribute) to name elicit URL properties without relying on the
+`[McpElicitUrl]` (McpEssentials) to name elicit URL properties without relying on the
 constructor convenience arguments. Functions are not tasked.
 
 ## Examples
 
 ```csharp
 [BoundOperation(OperationType = OperationType.Action)]
-[McpTask]
+[McpTask(Description = "Ships the order.")]
 public Order Ship(Order order)
 {
     return order;
@@ -62,6 +62,21 @@ public McpTaskAttribute(params string[] elicitUrlProperties)
 | `elicitUrlProperties` | `string[]` | Optional JSON property names for `ElicitUrlProperties`. |
 
 ## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Description
+
+Gets or sets operator-facing text stamped as `Org.OData.Core.V1.Description`
+on the action. The named tool and `odata_describe_*` surfaces use this.
+
+#### Syntax
+
+```csharp
+public string Description { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ElicitUrlProperties
 

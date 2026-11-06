@@ -5,7 +5,7 @@
 **Applies to:** Core catalog + runtime; `Microsoft.OData.Mcp.AspNetCore` Streamable HTTP (`{prefix}/mcp`); Tools host for remote one-shot calls  
 **Host example:** Restier `[McpTask]` on a bound action; convention `HasMcpTask()` on `ActionConfiguration`
 
-Companion docs: [TOOL-SURFACE.md](./TOOL-SURFACE.md), [PROTOCOL.md](./PROTOCOL.md), [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md), [OPTIMIZATION.md](./OPTIMIZATION.md), [TYPE-SHAPES.md](./TYPE-SHAPES.md), [AUTHENTICATION.md](./AUTHENTICATION.md).
+Companion docs: [TOOL-SURFACE.md](./TOOL-SURFACE.md), [PROTOCOL.md](./PROTOCOL.md), [IN-PROCESS-ODATA-EXECUTION.md](./IN-PROCESS-ODATA-EXECUTION.md), [OPTIMIZATION.md](./OPTIMIZATION.md), [TYPE-SHAPES.md](./TYPE-SHAPES.md), [AUTHENTICATION.md](./AUTHENTICATION.md), [ELICIT-FORM.md](./ELICIT-FORM.md) (form elicitation before invoke).
 
 The catalog already emits named `action_*` / `function_*` tools (PR 1, §4) plus generic `odata_call`. This document keeps that catalog contract and replaces the old “hold `tools/call` open and stream `IAsyncEnumerable`” plan with **MCP Tasks + URL elicitation** for a small set of annotated actions.
 

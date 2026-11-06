@@ -226,12 +226,13 @@ namespace Microsoft.OData.Mcp.Core.Catalog
         /// <param name="writes">Whether the operation mutates (an EDM action).</param>
         /// <param name="description">CSDL documentation, or <c>null</c>.</param>
         /// <param name="isTask">Whether the action is annotated <c>Mcp.Task</c>.</param>
-        /// <param name="elicits">Whether the action declares <c>ElicitUrlProperties</c>.</param>
+        /// <param name="elicitForm">Whether the action declares <c>ElicitForm</c>.</param>
+        /// <param name="elicitUrl">Whether the action declares <c>ElicitUrlProperties</c>.</param>
         /// <returns>
         /// For example <c>ShareTrip(userName: string, tripId: int) // writes</c> or <c>(count: int) -> Person[] // collection</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="parameters"/> is null.</exception>
-        public static string RenderOperation(EdmModel model, string? name, IReadOnlyList<EdmParameter> parameters, string? returnType, bool isBound, string? bindingParameterType, bool writes, string? description, bool isTask = false, bool elicits = false)
+        public static string RenderOperation(EdmModel model, string? name, IReadOnlyList<EdmParameter> parameters, string? returnType, bool isBound, string? bindingParameterType, bool writes, string? description, bool isTask = false, bool elicitForm = false, bool elicitUrl = false)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(parameters);
@@ -262,14 +263,47 @@ namespace Microsoft.OData.Mcp.Core.Catalog
                 markers.Add("task");
             }
 
-            if (elicits)
+            if (elicitForm)
             {
-                markers.Add("elicit");
+                markers.Add("elicit_form");
+            }
+
+            if (elicitUrl)
+            {
+                markers.Add("elicit_url");
             }
 
             AppendComment(builder, markers, DocumentationFor(description, null, name));
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Renders an action signature, including task and elicitation markers from the EDM action.
+        /// </summary>
+        /// <param name="model">The Core EDM.</param>
+        /// <param name="name">The operation name, or <see langword="null"/> to render only the parenthesized part (compact JSON).</param>
+        /// <param name="action">The action.</param>
+        /// <returns>
+        /// The shape-grammar signature.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="action"/> is null.</exception>
+        public static string RenderOperation(EdmModel model, string? name, EdmAction action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            return RenderOperation(
+                model,
+                name,
+                action.Parameters,
+                action.ReturnType,
+                action.IsBound,
+                action.BindingParameterType,
+                writes: true,
+                action.Description,
+                action.IsTask,
+                action.ElicitForm is not null,
+                action.ElicitUrlProperties is { Count: > 0 });
         }
 
         /// <summary>
@@ -461,7 +495,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             foreach (var action in BoundActions)
             {
-                ops[action.Name] = RenderOperation(_model, null, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 });
+                ops[action.Name] = RenderOperation(_model, null, action);
             }
 
             if (ops.Count > 0)
@@ -733,7 +767,7 @@ namespace Microsoft.OData.Mcp.Core.Catalog
 
             var lines = new List<string> { "  operations" };
             lines.AddRange(BoundFunctions.Select(function => $"    {RenderOperation(_model, function.Name, function.Parameters, function.ReturnType, function.IsBound, function.BindingParameterType, writes: false, function.Description)}"));
-            lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action.Parameters, action.ReturnType, action.IsBound, action.BindingParameterType, writes: true, action.Description, action.IsTask, action.ElicitUrlProperties is { Count: > 0 })}"));
+            lines.AddRange(BoundActions.Select(action => $"    {RenderOperation(_model, action.Name, action)}"));
 
             return lines;
         }

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CloudNimble.McpEssentials.Core.Tasks.Elicitations;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,9 +39,13 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         /// </summary>
         /// <param name="model">The finished service model from route discovery.</param>
         /// <param name="sourceTypes">Restier API types and/or MVC controllers.</param>
+        /// <param name="services">
+        /// Optional application services used to resolve keyed <see cref="IFormElicitationSource"/>
+        /// registrations for <see cref="McpElicitFormAttribute"/>.
+        /// </param>
         /// <example>
         /// <code>
-        /// McpTaskAttributeAnnotations.Apply(edmModel, [typeof(MyApi)]);
+        /// McpTaskAttributeAnnotations.Apply(edmModel, [typeof(MyApi)], services);
         /// </code>
         /// </example>
         /// <remarks>
@@ -48,7 +53,7 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         /// Methods are matched to <see cref="IEdmAction"/> by name and bound/unbound shape.
         /// Functions are never stamped.
         /// </remarks>
-        public static void Apply(IEdmModel model, IEnumerable<Type> sourceTypes)
+        public static void Apply(IEdmModel model, IEnumerable<Type> sourceTypes, IServiceProvider? services = null)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(sourceTypes);
@@ -60,7 +65,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
 
             foreach (var type in sourceTypes)
             {
-                StampType(edm, type);
+                StampType(edm, type, services);
+            }
+
+            if (services is not null)
+            {
+                McpTaskAnnotations.ApplyNamedElicitForms(edm, services);
             }
         }
 
@@ -199,11 +209,12 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
         }
 
         /// <summary>
-        /// Stamps each <c>[McpTask]</c> method on <paramref name="type"/> that matches an action.
+        /// Stamps each <c>[McpTask]</c> / <c>[McpElicitForm]</c> method on <paramref name="type"/> that matches an action.
         /// </summary>
         /// <param name="model">The mutable service model.</param>
         /// <param name="type">A Restier API or controller type.</param>
-        internal static void StampType(EdmModel model, Type type)
+        /// <param name="services">Optional services used to resolve keyed forms.</param>
+        internal static void StampType(EdmModel model, Type type, IServiceProvider? services = null)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(type);
@@ -217,7 +228,8 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
 
                 var task = method.GetCustomAttribute<McpTaskAttribute>(true);
                 var elicit = method.GetCustomAttribute<McpElicitUrlAttribute>(true);
-                if (task is null && elicit is null)
+                var form = method.GetCustomAttribute<McpElicitFormAttribute>(true);
+                if (task is null && elicit is null && form is null)
                 {
                     continue;
                 }
@@ -240,7 +252,47 @@ namespace Microsoft.OData.Mcp.AspNetCore.Vocabularies
                     McpTaskAnnotations.EnsureReferenced(model);
                     McpTaskAnnotations.StampElicitUrlProperties(model, action, elicitNames);
                 }
+
+                if (form is not null)
+                {
+                    StampElicitForm(model, action, form.Name, services);
+                }
             }
+        }
+
+        /// <summary>
+        /// Resolves the keyed form and stamps <c>ElicitForm</c> on <paramref name="action"/>.
+        /// </summary>
+        /// <param name="model">The mutable service model.</param>
+        /// <param name="action">The matching EDM action.</param>
+        /// <param name="name">The keyed-DI form name.</param>
+        /// <param name="services">The application services.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the form is not registered.</exception>
+        internal static void StampElicitForm(EdmModel model, IEdmAction action, string name, IServiceProvider? services)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(action);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            if (services is null)
+            {
+                McpTaskAnnotations.StampElicitFormName(model, action, name);
+                return;
+            }
+
+            IFormElicitationSource form;
+            try
+            {
+                form = services.GetRequiredKeyedService<IFormElicitationSource>(name);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Action '{action.Name}' elicits form '{name}', but no IFormElicitationSource is registered under that name.",
+                    ex);
+            }
+
+            McpTaskAnnotations.StampElicitForm(model, action, form);
         }
 
         /// <summary>

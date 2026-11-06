@@ -28,8 +28,11 @@ namespace Microsoft.OData.Mcp.Tests.Core.Vocabularies
             McpVocabulary.Namespace.Should().Be("Microsoft.OData.Mcp.V1");
             McpVocabulary.TaskTermName.Should().Be("Task");
             McpVocabulary.ElicitUrlPropertiesTermName.Should().Be("ElicitUrlProperties");
+            McpVocabulary.ElicitFormTermName.Should().Be("ElicitForm");
+            McpVocabulary.FormElementName.Should().Be("Form");
             McpVocabulary.TaskTerm.Should().Be("Microsoft.OData.Mcp.V1.Task");
             McpVocabulary.ElicitUrlPropertiesTerm.Should().Be("Microsoft.OData.Mcp.V1.ElicitUrlProperties");
+            McpVocabulary.ElicitFormTerm.Should().Be("Microsoft.OData.Mcp.V1.ElicitForm");
             McpVocabulary.ReferenceUri.Should().Be("https://github.com/odata/mcp/vocabularies/Microsoft.OData.Mcp.V1.xml");
             McpVocabulary.TaskToolDescription.Should().Be("May run as an MCP task when the client opts in.");
             McpVocabulary.DefaultElicitUrlProperties.Should().Equal("connectUri", "url", "authorizationUrl", "verificationUri");
@@ -49,6 +52,7 @@ namespace Microsoft.OData.Mcp.Tests.Core.Vocabularies
             xml.Should().Contain("Name=\"Task\"");
             xml.Should().Contain("AppliesTo=\"Action\"");
             xml.Should().Contain("Name=\"ElicitUrlProperties\"");
+            xml.Should().Contain("Name=\"ElicitForm\"");
             xml.Should().Contain("Type=\"Core.Tag\"");
             xml.Should().Contain("Type=\"Collection(Edm.String)\"");
         }
