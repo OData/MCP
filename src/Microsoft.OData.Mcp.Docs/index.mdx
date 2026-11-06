@@ -1,9 +1,12 @@
 ---
-title: "Microsoft OData for AI"
-description: "Assistants talk to live OData data through a compact catalog. Local MCP on your machine; Remote MCP on the API you ship."
+title: "Microsoft OData for SuperIntelligenmce"
+sidebarTitle: "Microsoft OData for SI"
+description: "Supercharge your Agents & Bots by making it easier for them to call OData APIs."
 ---
 
-Ask an assistant about live business data — customers, orders, projects — and get answers from the OData APIs you already run. Microsoft OData for AI connects that assistant through [Model Context Protocol 2.0](https://modelcontextprotocol.io). It looks up a record, filters a list, follows a relationship, and makes a change, without anyone pasting a spreadsheet into the chat.
+Ask an assistant about live business data — customers, orders, projects — and get answers from the OData APIs you already run. Microsoft OData 
+for SuperIntelligence connects that assistant through [Model Context Protocol 2.0](https://modelcontextprotocol.io). It looks up a record, filters 
+a list, follows a relationship, and makes a change, without anyone pasting a spreadsheet into the chat.
 
 The assistant is steered toward the right call the first time. It spends tokens on the question, not on chewing through `$metadata`.
 
@@ -19,7 +22,8 @@ Once it is connected, questions like these go against **your** data:
 
 ## How the system works
 
-An OData MCP **catalog** is built from the service `$metadata`. That catalog is what the assistant sees: named tools (`list_customers`, `get_order`, `action_order_ship`), compact type cards, and a short list of rules (parameter names omit `$`, prefer named tools, and so on).
+An OData MCP **catalog** is built from the service `$metadata`. That catalog is what the assistant sees: named tools (`list_customers`, `get_order`, 
+`action_order_ship`), compact type cards, and a short list of rules (parameter names omit `$`, prefer named tools, and so on).
 
 The OData API itself stays OData HTTP. MCP is how the assistant talks.
 
@@ -47,7 +51,8 @@ Two products share that catalog idea.
 | Package | `Microsoft.OData.Mcp` (`dotnet odata-mcp`) | `Microsoft.OData.Mcp.AspNetCore` |
 | How the assistant connects | Your harness starts Local MCP over stdio | Customers point their harness at `{prefix}/mcp` |
 
-**Local MCP** reads an ordinary OData v4 service — a public sample, Microsoft Graph, a vendor ERP — and builds the catalog on your box. The service stays OData HTTP.
+**Local MCP** reads an ordinary OData v4 service — a public sample, Microsoft Graph, a vendor ERP — and builds the catalog on your box. The service 
+stays OData HTTP.
 
 **Remote MCP** is what you offer **your customers**. They stay in their harness, pointed at your `/mcp` URL, and ask about *their* data on *your* API.
 

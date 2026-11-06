@@ -23,10 +23,10 @@
                         <Group Name="Getting Started" Icon="stars">
                             <Pages>index</Pages>
                         </Group>
-                        <Group Name="Guides" Icon="dog-leashed" Root="guides/index">
+                        <Group Name="Guides" Icon="dog-leashed">
                             <Pages>guides/index</Pages>
                             <Groups>
-                                <Group Name="Local MCP" Root="guides/local/index">
+                                <Group Name="Local MCP">
                                     <Pages>
                                         guides/local/index;
                                         guides/local/get-started;
