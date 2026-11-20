@@ -3,7 +3,7 @@ title: OutboundOAuthOptions
 description: "Operator-supplied and discovered outbound OAuth settings for a single remote OData service — the options CLI hop 2 (`ODataOutboundAuthHandler`, `OutboundOAut..."
 icon: lock
 tag: "SEALED"
-keywords: ['OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OutboundOAuthOptions', 'Microsoft.OData.Mcp.Authentication.Outbound.
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -127,7 +125,7 @@ public System.TimeSpan AuthTimeout { get; set; }
 
 #### Property Value
 
-Type: `System.TimeSpan?`
+Type: `System.TimeSpan`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
 
@@ -220,7 +218,7 @@ Type: `string?`
 
 #### Remarks
 
-[OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)) binds this from
+[OutboundOAuthOptions.FromEnvironment](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#fromenvironment) binds this from
 [ODataMcpAuthConstants.ClientSecretEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#clientsecretenvironmentvariable) when it is unset. Never logged or
 printed.
 
@@ -238,7 +236,7 @@ public System.Func<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRe
 
 #### Property Value
 
-Type: `System.Func<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task>`
+Type: `System.Func<Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task>?`
 
 #### Remarks
 
@@ -254,17 +252,17 @@ Gets or sets the operator's `--grant` selection, or [`null`](https://learn.micro
 #### Syntax
 
 ```csharp
-public System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind> Grant { get; set; }
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind? Grant { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?>?`
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasEnvironmentIdToken
 
 Gets or sets whether [ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) was present when
-[OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)) last ran.
+[OutboundOAuthOptions.FromEnvironment](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#fromenvironment) last ran.
 
 #### Syntax
 
@@ -278,9 +276,9 @@ Type: `bool`
 
 #### Remarks
 
-Set by [OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)), never by an operator flag, so
+Set by [OutboundOAuthOptions.FromEnvironment](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#fromenvironment), never by an operator flag, so
 [OutboundOAuthOptions.Validate](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#validate) can treat the environment variable as a valid identity assertion id-token
-source without reading [String)](https://learn.microsoft.com/dotnet/api/system.environment.getenvironmentvariable(system.string)) itself.
+source without reading [GetEnvironmentVariable](https://learn.microsoft.com/dotnet/api/system.environment.getenvironmentvariable) itself.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HasExplicitCredentials
 
@@ -344,7 +342,7 @@ Type: `string?`
 #### Remarks
 
 [ODataMcpAuthConstants.IdTokenEnvironmentVariable](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#idtokenenvironmentvariable) is the other id-token source; see
-[OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) and [OutboundOAuthOptions)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthoptions.fromenvironment(microsoft.odata.mcp.authentication.outbound.outboundoauthoptions)). The token
+[OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) and [OutboundOAuthOptions.FromEnvironment](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#fromenvironment). The token
 is never passed on argv.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IdpScope
@@ -657,7 +655,7 @@ public void Validate()
 | `ArgumentException` | Thrown when [OutboundOAuthOptions.ApiKey](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikey) is set without [OutboundOAuthOptions.ApiKeyHeader](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#apikeyheader); when [OutboundOAuthOptions.BasicUser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicuser)
 is set without [OutboundOAuthOptions.BasicPassword](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#basicpassword); when [OutboundOAuthOptions.AuthTimeout](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtimeout) is not greater than zero;
 when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is set to an undefined [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) value; or when
-[OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.IdentityAssertion](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#identityassertion) and neither
+[OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.IdentityAssertion](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) and neither
 [OutboundOAuthOptions.IdpUrl](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpurl) nor [OutboundOAuthOptions.IdpTokenEndpoint](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idptokenendpoint) is set, neither [OutboundOAuthOptions.IdpIdTokenFile](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpidtokenfile)
 nor [OutboundOAuthOptions.HasEnvironmentIdToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#hasenvironmentidtoken) supplies an id token, or either [OutboundOAuthOptions.IdpClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#idpclientid) or
 [OutboundOAuthOptions.ClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#clientid) is unset. |

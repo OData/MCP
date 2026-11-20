@@ -3,7 +3,7 @@ title: ODataMcpCatalog
 description: "Builds MCP resources and tools from a Core EDM. Only declared model members are serialized into catalogs, schemas, and completions."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataMcpCatalog', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalog'
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -304,7 +302,7 @@ public bool TryGetElicitFormAction(string toolName, System.Collections.Generic.I
 | Name | Type | Description |
 |------|------|-------------|
 | `toolName` | `string` | The MCP tool name. |
-| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>` | The call arguments, used to read `name` on `odata_call`. |
+| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>?` | The call arguments, used to read `name` on `odata_call`. |
 | `action` | `Microsoft.OData.Mcp.Core.Models.EdmAction?` | The form-elicited action when found. |
 
 #### Returns
@@ -333,7 +331,7 @@ public bool TryGetTaskedAction(string toolName, System.Collections.Generic.IRead
 | Name | Type | Description |
 |------|------|-------------|
 | `toolName` | `string` | The MCP tool name. |
-| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>` | The call arguments, used to read `name` on `odata_call`. |
+| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>?` | The call arguments, used to read `name` on `odata_call`. |
 | `action` | `Microsoft.OData.Mcp.Core.Models.EdmAction?` | The tasked action when found. |
 
 #### Returns

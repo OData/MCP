@@ -2,7 +2,7 @@
 title: OAuthChallenge
 description: "One parsed `WWW-Authenticate` challenge: the authentication scheme, the OAuth-relevant auth-params promoted to typed properties, and the complete, case-insen..."
 icon: file-brackets-curly
-keywords: ['OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -10,8 +10,6 @@ keywords: ['OAuthChallenge', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthC
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -37,7 +35,7 @@ must never be copied onto an outbound OAuth client id; that is why no member of 
 
 ```csharp
 var challenge = WwwAuthenticateParser.SelectBearer(WwwAuthenticateParser.ParseAll(result.WwwAuthenticate));
-if (challenge is not null &amp;&amp; challenge.ResourceMetadata is not null)
+if (challenge is not null && challenge.ResourceMetadata is not null)
 {
     // Fetch RFC 9728 protected resource metadata from challenge.ResourceMetadata.
 }
@@ -201,7 +199,7 @@ Type: `string`
 #### Remarks
 
 Schemes are case-insensitive; compare with [OrdinalIgnoreCase](https://learn.microsoft.com/dotnet/api/system.stringcomparison.ordinalignorecase) or use
-[OAuthChallenge})](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.wwwauthenticateparser.selectbearer(system.collections.generic.ireadonlylist{microsoft.odata.mcp.authentication.outbound.oauthchallenge})).
+[WwwAuthenticateParser.SelectBearer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/WwwAuthenticateParser#selectbearer).
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scope
 

@@ -4,7 +4,7 @@ description: "Validates [ProtectedResourceMetadataOptions](/api-reference/Micros
 icon: lock
 sidebarTitle: ProtectedResourceMetadataStartupFilter
 tag: "SEALED"
-keywords: ['ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object', 'Microsoft.AspNetCore.Hosting.IStartupFilter']
+keywords: ['ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'Microsoft.AspNetCore.Hosting.IStartupFilter']
 ---
 
 ## Definition
@@ -12,8 +12,6 @@ keywords: ['ProtectedResourceMetadataStartupFilter', 'Microsoft.OData.Mcp.AspNet
 **Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
 
 **Namespace:** Microsoft.OData.Mcp.AspNetCore.Authentication
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -39,7 +37,7 @@ failing whichever client happens to arrive first.
 ## Examples
 
 ```csharp
-services.TryAddEnumerable(ServiceDescriptor.Transient&lt;IStartupFilter, ProtectedResourceMetadataStartupFilter&gt;());
+services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, ProtectedResourceMetadataStartupFilter>());
 ```
 
 ## Constructors

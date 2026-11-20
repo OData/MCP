@@ -3,7 +3,7 @@ title: ODataMcpHostOptions
 description: "Host options for `AddODataMcp`."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+keywords: ['ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataMcpHostOptions', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataM
 **Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
 
 **Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -108,7 +106,7 @@ Type: `System.Collections.Generic.List<string>`
 #### Examples
 
 ```csharp
-builder.Services.AddODataMcp(options =&gt;
+builder.Services.AddODataMcp(options =>
 {
     options.IncludePrefixes.Add("odata");
 });
@@ -132,15 +130,15 @@ Type: `string?`
 #### Examples
 
 ```csharp
-builder.Services.AddRateLimiter(options =&gt;
+builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("mcp", limiter =&gt;
+    options.AddFixedWindowLimiter("mcp", limiter =>
     {
         limiter.PermitLimit = 30;
         limiter.Window = TimeSpan.FromMinutes(1);
     });
 });
-builder.Services.AddODataMcp(options =&gt;
+builder.Services.AddODataMcp(options =>
 {
     options.RateLimitingPolicyName = "mcp";
 });
@@ -190,7 +188,7 @@ The same options instance.
 #### Examples
 
 ```csharp
-builder.Services.AddODataMcp(options =&gt;
+builder.Services.AddODataMcp(options =>
 {
     options.AddRoute("odata", GetEdmModel());
 });

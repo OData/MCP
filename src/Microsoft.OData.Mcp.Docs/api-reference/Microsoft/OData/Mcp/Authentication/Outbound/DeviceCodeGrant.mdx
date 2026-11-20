@@ -3,7 +3,7 @@ title: DeviceCodeGrant
 description: "Runs the RFC 8628 device authorization grant: start the grant at the device authorization endpoint, then poll the token endpoint honoring `interval`, `slow_d..."
 icon: lock
 tag: "SEALED"
-keywords: ['DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['DeviceCodeGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.Devic
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -184,7 +182,7 @@ public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.T
 | Name | Type | Description |
 |------|------|-------------|
 | `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `token_endpoint` is polled. |
-| `device` | `Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse` | The device authorization response [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.devicecodegrant.startasync(microsoft.odata.mcp.authentication.outbound.authorizationservermetadata,system.string,system.string,system.uri,system.threading.cancellationtoken)) returned. |
+| `device` | `Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse` | The device authorization response [DeviceCodeGrant.StartAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/DeviceCodeGrant#startasync) returned. |
 | `clientId` | `string` | The public client identifier the grant was started with. |
 | `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the grant sends none. |
 | `cancellationToken` | `System.Threading.CancellationToken` | The token that cancels both the poll requests and the waits between them. |

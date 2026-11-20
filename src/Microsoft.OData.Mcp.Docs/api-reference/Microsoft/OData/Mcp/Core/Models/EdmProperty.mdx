@@ -3,7 +3,7 @@ title: EdmProperty
 description: "Represents a property in an OData entity type or complex type."
 icon: lock
 tag: "SEALED"
-keywords: ['EdmProperty', 'Microsoft.OData.Mcp.Core.Models.EdmProperty', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
+keywords: ['EdmProperty', 'Microsoft.OData.Mcp.Core.Models.EdmProperty', 'Microsoft.OData.Mcp.Core.Models', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['EdmProperty', 'Microsoft.OData.Mcp.Core.Models.EdmProperty', 'Micros
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Models
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -248,12 +246,12 @@ Gets or sets the maximum length of the property value.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> MaxLength { get; set; }
+public int? MaxLength { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 The maximum length, or `null` if not specified.
 
 #### Remarks
@@ -303,12 +301,12 @@ Gets or sets the precision of the property value.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> Precision { get; set; }
+public int? Precision { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 The precision, or `null` if not specified.
 
 #### Remarks
@@ -322,12 +320,12 @@ Gets or sets the scale of the property value.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> Scale { get; set; }
+public int? Scale { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 The scale, or `null` if not specified.
 
 #### Remarks
@@ -391,12 +389,12 @@ Gets or sets a value indicating whether the property uses Unicode encoding.
 #### Syntax
 
 ```csharp
-public System.Nullable<bool> Unicode { get; set; }
+public bool? Unicode { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<bool>?`
+Type: `bool?`
 `true` if Unicode is enabled; `false` if disabled; `null` if not specified.
 
 #### Remarks

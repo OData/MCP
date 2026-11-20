@@ -4,7 +4,7 @@ description: "What an API publishes about how to sign in to it: the RFC 8414 aut
 icon: lock
 sidebarTitle: ProtectedResourceMetadataOptions
 tag: "SEALED"
-keywords: ['ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class', 'System.Object']
+keywords: ['ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication.ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.Authentication', 'class']
 ---
 
 ## Definition
@@ -12,8 +12,6 @@ keywords: ['ProtectedResourceMetadataOptions', 'Microsoft.OData.Mcp.AspNetCore.A
 **Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
 
 **Namespace:** Microsoft.OData.Mcp.AspNetCore.Authentication
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -36,7 +34,7 @@ a host with MVC.
 ## Examples
 
 ```csharp
-builder.Services.AddProtectedResourceMetadata(options =&gt;
+builder.Services.AddProtectedResourceMetadata(options =>
 {
     options.AuthorizationServers.Add(new Uri("https://login.microsoftonline.com/contoso.com/v2.0"));
     options.ScopesSupported.Add("api://contoso-odata/Data.Read");

@@ -3,7 +3,7 @@ title: TokenEndpointResponse
 description: "The RFC 6749 section 5.1 successful token response returned from a token endpoint."
 icon: lock
 tag: "SEALED"
-keywords: ['TokenEndpointResponse', 'Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['TokenEndpointResponse', 'Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointResponse', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['TokenEndpointResponse', 'Microsoft.OData.Mcp.Authentication.Outbound
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -29,7 +27,7 @@ The RFC 6749 section 5.1 successful token response returned from a token endpoin
 Deserialized exclusively through [OutboundOAuthJsonContext](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthjsoncontext) (AOT: JSON source-gen; no
 reflection). This is the RFC 6749 wire shape only; it is &lt;em&gt;not&lt;/em&gt; the SDK `TokenContainer`
 cache/runtime format, which is PascalCase and additionally carries `ObtainedAt`.
-[String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.tokenendpointresponse.totokencontainer(system.string,system.string,system.string,system.string,system.string)) is the single place that
+[TokenEndpointResponse.ToTokenContainer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointResponse#totokencontainer) is the single place that
 conversion happens.
 
 ## Examples
@@ -88,12 +86,12 @@ the server did not advertise one.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> ExpiresIn { get; set; }
+public int? ExpiresIn { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> RefreshToken
 

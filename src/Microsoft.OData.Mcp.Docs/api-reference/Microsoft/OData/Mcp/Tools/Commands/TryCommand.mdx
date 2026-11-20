@@ -1,8 +1,8 @@
 ---
 title: TryCommand
-description: "`dotnet odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row from the first entity set, says which of the ..."
+description: "`dotnet odata-mcp try <url>`: probe a service before committing to it. Fetches `$metadata`, reads one row from the first entity set, says which of the two is..."
 icon: file-brackets-curly
-keywords: ['TryCommand', 'Microsoft.OData.Mcp.Tools.Commands.TryCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
+keywords: ['TryCommand', 'Microsoft.OData.Mcp.Tools.Commands.TryCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class']
 ---
 
 ## Definition
@@ -10,8 +10,6 @@ keywords: ['TryCommand', 'Microsoft.OData.Mcp.Tools.Commands.TryCommand', 'Micro
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Commands
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -21,7 +19,7 @@ Microsoft.OData.Mcp.Tools.Commands.TryCommand
 
 ## Summary
 
-`dotnet odata-mcp try &lt;url&gt;`: probe a service before committing to it. Fetches `$metadata`, reads one row
+`dotnet odata-mcp try <url>`: probe a service before committing to it. Fetches `$metadata`, reads one row
 from the first entity set, says which of the two is secured, checks the row against the model, and prints a
 verdict. With auth flags it probes again through the authenticating client; without them, on a 401 it runs
 OAuth discovery and prints what it found.
@@ -104,12 +102,12 @@ Gets or sets how long, in seconds, an interactive grant may run before it is aba
 #### Syntax
 
 ```csharp
-public System.Nullable<int> AuthTimeout { get; set; }
+public int? AuthTimeout { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
 

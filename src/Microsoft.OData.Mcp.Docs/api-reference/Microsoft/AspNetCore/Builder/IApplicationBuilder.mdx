@@ -56,7 +56,7 @@ The application builder.
 
 ```csharp
 builder.Services.AddControllers()
-    .AddOData(options =&gt; options.AddRouteComponents("odata", GetEdmModel()));
+    .AddOData(options => options.AddRouteComponents("odata", GetEdmModel()));
 builder.Services.AddODataMcp();
 
 var app = builder.Build();

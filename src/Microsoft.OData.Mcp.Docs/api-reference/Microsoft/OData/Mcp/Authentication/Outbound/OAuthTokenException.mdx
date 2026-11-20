@@ -2,7 +2,7 @@
 title: OAuthTokenException
 description: "The single exception type an outbound token, device authorization, or polling request throws when the authorization server answers with an RFC 6749 section 5..."
 icon: file-brackets-curly
-keywords: ['OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Exception']
+keywords: ['OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthTokenException', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Exception', 'System.Runtime.Serialization.ISerializable']
 ---
 
 ## Definition
@@ -29,7 +29,7 @@ reached one.
 
 Per `AUTH-12` no member of this type ever carries an access token, refresh token, device code, or
 client secret: [OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) and [OAuthTokenException.ErrorDescription](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#errordescription) are copied straight from the
-server's error payload, and the composed [Message](https://learn.microsoft.com/dotnet/api/system.exception.message) repeats only those two values
+server's error payload, and the composed [Exception.Message](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundDiscoveryException#message) repeats only those two values
 and the HTTP status. RFC 8628 device code polling reuses this type for its `authorization_pending`,
 `slow_down`, `expired_token`, and `access_denied` answers, which is why
 [OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) is exposed as a value a caller can branch on rather than only formatted into the
@@ -124,7 +124,91 @@ public OAuthTokenException(string message, System.Exception inner)
 [OAuthTokenException.Error](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#error) reads as [Empty](https://learn.microsoft.com/dotnet/api/system.string.empty) and [OAuthTokenException.StatusCode](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthTokenException#statuscode) as `0` for
 an instance built this way, because neither an error code nor a response status is known.
 
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public Exception()
+```
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public Exception(string message)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string?` | - |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public Exception(string message, System.Exception innerException)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string?` | - |
+| `innerException` | `System.Exception?` | - |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+protected Exception(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `info` | `System.Runtime.Serialization.SerializationInfo` | - |
+| `context` | `System.Runtime.Serialization.StreamingContext` | - |
+
+### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public Object()
+```
+
 ## Properties
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Data <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual System.Collections.IDictionary Data { get; }
+```
+
+#### Property Value
+
+Type: `System.Collections.IDictionary`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Error
 
@@ -158,6 +242,90 @@ public string ErrorDescription { get; }
 
 Type: `string?`
 
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HelpLink <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string HelpLink { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> HResult <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public int HResult { get; set; }
+```
+
+#### Property Value
+
+Type: `int`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> InnerException <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public System.Exception InnerException { get; }
+```
+
+#### Property Value
+
+Type: `System.Exception?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Message <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string Message { get; }
+```
+
+#### Property Value
+
+Type: `string`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Source <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string Source { get; set; }
+```
+
+#### Property Value
+
+Type: `string?`
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StackTrace <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string StackTrace { get; }
+```
+
+#### Property Value
+
+Type: `string?`
+
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> StatusCode
 
 Gets the HTTP status code the failing request returned.
@@ -172,4 +340,213 @@ public int StatusCode { get; }
 
 Type: `int`
 `0` when the request never produced a response, such as a transport failure.
+
+### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> TargetSite <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public System.Reflection.MethodBase TargetSite { get; }
+```
+
+#### Property Value
+
+Type: `System.Reflection.MethodBase?`
+
+## Methods
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual bool Equals(object obj)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `obj` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Equals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool Equals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetBaseException <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual System.Exception GetBaseException()
+```
+
+#### Returns
+
+Type: `System.Exception`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetHashCode <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual int GetHashCode()
+```
+
+#### Returns
+
+Type: `int`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetObjectData <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public virtual void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `info` | `System.Runtime.Serialization.SerializationInfo` | - |
+| `context` | `System.Runtime.Serialization.StreamingContext` | - |
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> GetType <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public System.Type GetType()
+```
+
+#### Returns
+
+Type: `System.Type`
+
+### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+protected internal object MemberwiseClone()
+```
+
+#### Returns
+
+Type: `object`
+
+### <Icon icon="thumbtack" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ReferenceEquals <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public static bool ReferenceEquals(object objA, object objB)
+```
+
+#### Parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| `objA` | `object?` | - |
+| `objB` | `object?` | - |
+
+#### Returns
+
+Type: `bool`
+
+### <Icon icon="code-merge" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="blue">Override</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+public override string ToString()
+```
+
+#### Returns
+
+Type: `string`
+
+### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>
+
+<Note>Inherited from `object`</Note>
+
+#### Syntax
+
+```csharp
+public virtual string ToString()
+```
+
+#### Returns
+
+Type: `string?`
+
+## Events
+
+### <Icon icon="bell" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> SerializeObjectState <Badge color="gray">Inherited</Badge>
+
+<Note>Inherited from `System.Exception`</Note>
+
+#### Syntax
+
+```csharp
+protected event System.EventHandler<System.Runtime.Serialization.SafeSerializationEventArgs> SerializeObjectState
+```
+
+## Related APIs
+
+- System.Runtime.Serialization.ISerializable
 

@@ -3,7 +3,7 @@ title: RefreshTokenGrant
 description: "Runs the RFC 6749 section 6 refresh token grant: exchange the refresh token on a cached `TokenContainer` for a fresh access token, preserving rotation and th..."
 icon: lock
 tag: "SEALED"
-keywords: ['RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['RefreshTokenGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.Ref
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -31,10 +29,10 @@ server identity the container already carried.
 Per `specs/v3/AUTHENTICATION.md` "Grants → Refresh": a response that carries a new
 `refresh_token` replaces the old one, and a response that omits it leaves the previous one in force
 — that rule lives in
-[String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.tokenendpointresponse.totokencontainer(system.string,system.string,system.string,system.string,system.string)), which
+[TokenEndpointResponse.ToTokenContainer](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/TokenEndpointResponse#totokencontainer), which
 this class calls with the container's current refresh token. The caller owns persistence; this class
 never touches the cache. Per `AUTH-12` the only thing logged is the redacted shape from
-[TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)).
+[OutboundAuthLogRedactor.DescribeToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundAuthLogRedactor#describetoken).
 
 ## Examples
 

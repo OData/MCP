@@ -3,7 +3,7 @@ title: ODataOperationKind
 description: "Distinguishes CRUD/generic catalog tools from named OData operations."
 icon: list-ol
 tag: "ENUM"
-keywords: ['ODataOperationKind', 'Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Enum']
+keywords: ['ODataOperationKind', 'Microsoft.OData.Mcp.Core.Catalog.ODataOperationKind', 'Microsoft.OData.Mcp.Core.Catalog', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -28,7 +28,14 @@ Distinguishes CRUD/generic catalog tools from named OData operations.
 
 | Name | Value | Description |
 |------|-------|-------------|
-| `None` | 0 | A generic <c>odata_*</c> tool or a named CRUD family member. |
-| `Action` | 1 | A named <c>action_*</c> tool. |
-| `Function` | 2 | A named <c>function_*</c> tool. |
+| `None` | 0 | A generic `odata_*` tool or a named CRUD family member. |
+| `Action` | 1 | A named `action_*` tool. |
+| `Function` | 2 | A named `function_*` tool. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

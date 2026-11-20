@@ -3,7 +3,7 @@ title: ODataMcpServerBuilder
 description: "Configures OData MCP Tasks on `AddODataMcp`. Hosts call [ODataMcpServerBuilder.WithTasks](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServe..."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class', 'System.Object']
+keywords: ['ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataMcpServerBuilder', 'Microsoft.OData.Mcp.AspNetCore.Hosting.ODat
 **Assembly:** Microsoft.OData.Mcp.AspNetCore.dll
 
 **Namespace:** Microsoft.OData.Mcp.AspNetCore.Hosting
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -23,16 +21,16 @@ Microsoft.OData.Mcp.AspNetCore.Hosting.ODataMcpServerBuilder
 ## Summary
 
 Configures OData MCP Tasks on `AddODataMcp`. Hosts call
-[ODataMcpServerBuilder.WithTasks](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder#withtasks) and [WaitForAnnotatedAction``1](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.odatamcpserverbuilder.waitforannotatedaction`-1) here, not on
+[ODataMcpServerBuilder.WithTasks](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder#withtasks) and [ODataMcpServerBuilder.WaitForAnnotatedAction](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/ODataMcpServerBuilder#waitforannotatedaction) here, not on
 `UseODataMcp` and not via SDK `WithTasks` from app code.
 
 ## Examples
 
 ```csharp
-builder.Services.AddODataMcp(options =&gt; { }, mcp =&gt;
+builder.Services.AddODataMcp(options => { }, mcp =>
 {
     mcp.WithTasks();
-    mcp.WaitForAnnotatedAction&lt;HostAuthorizeWaiter&gt;();
+    mcp.WaitForAnnotatedAction<HostAuthorizeWaiter>();
 });
 ```
 
@@ -257,9 +255,9 @@ This builder.
 #### Examples
 
 ```csharp
-mcp.WithTasks(tasks =&gt; tasks.UseInMemory("local-user"));
-mcp.WithTasks(tasks =&gt; tasks.UseEntityFramework&lt;AppDbContext&gt;(
-    sp =&gt; sp.GetRequiredService&lt;IHttpContextAccessor&gt;().HttpContext?.User));
+mcp.WithTasks(tasks => tasks.UseInMemory("local-user"));
+mcp.WithTasks(tasks => tasks.UseEntityFramework<AppDbContext>(
+    sp => sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.User));
 ```
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> WithTasks

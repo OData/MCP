@@ -3,7 +3,7 @@ title: ODataToolRuntime
 description: "Executes catalog tools against an [IODataExecutor](/api-reference/Microsoft/OData/Mcp/Core/Execution/IODataExecutor)."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataToolRuntime', 'Microsoft.OData.Mcp.Core.Catalog.ODataToolRuntime', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['ODataToolRuntime', 'Microsoft.OData.Mcp.Core.Catalog.ODataToolRuntime', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataToolRuntime', 'Microsoft.OData.Mcp.Core.Catalog.ODataToolRuntim
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -139,7 +137,7 @@ public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Core.Catalog.ODataToolInv
 | Name | Type | Description |
 |------|------|-------------|
 | `name` | `string` | The tool name. |
-| `arguments` | `System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, System.Text.Json.JsonElement>>` | Tool arguments. |
+| `arguments` | `System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, System.Text.Json.JsonElement>>?` | Tool arguments. |
 | `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
 
 #### Returns

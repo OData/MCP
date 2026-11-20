@@ -4,7 +4,7 @@ description: "Fetches an RFC 9728 protected resource metadata document over the 
 icon: lock
 sidebarTitle: ProtectedResourceMetadataClient
 tag: "SEALED"
-keywords: ['ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -12,8 +12,6 @@ keywords: ['ProtectedResourceMetadataClient', 'Microsoft.OData.Mcp.Authenticatio
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -38,7 +36,7 @@ carries no delegating handler and is safe to create per request. Response bodies
 ```csharp
 var client = new ProtectedResourceMetadataClient(httpClientFactory, logger);
 var metadata = await client.TryGetAsync(new Uri("https://api.example.com/.well-known/oauth-protected-resource"), cancellationToken);
-if (metadata is not null &amp;&amp; metadata.AuthorizationServers?.Count &gt; 0)
+if (metadata is not null && metadata.AuthorizationServers?.Count > 0)
 {
     // Continue discovery against metadata.AuthorizationServers[0].
 }

@@ -3,7 +3,7 @@ title: LatchkeyTokenCache
 description: "The durable, single-slot SDK `ITokenCache` for outbound OAuth, backed by the operating system credential store through [Latchkey](https://www.nuget.org/packa..."
 icon: lock
 tag: "SEALED"
-keywords: ['LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object', 'ModelContextProtocol.Authentication.ITokenCache']
+keywords: ['LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound.LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'ModelContextProtocol.Authentication.ITokenCache']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['LatchkeyTokenCache', 'Microsoft.OData.Mcp.Authentication.Outbound.La
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -31,7 +29,7 @@ so a restart of the same service root and client id does not re-prompt the opera
 Per `AUTH-7` this implements the SDK interface directly; it is never wrapped in a new
 `ICredentialStore` or `IOutboundTokenCache` abstraction. Per `AUTH-12` no access token,
 refresh token, or client secret ever reaches a log sink: every log line that mentions a token routes
-through [TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)).
+through [OutboundAuthLogRedactor.DescribeToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundAuthLogRedactor#describetoken).
 
 The backend map is pinned rather than left at `Auto`'s native seed, because
 Windows Credential Manager caps a value at 2560 bytes — smaller than a typical
@@ -79,18 +77,18 @@ public LatchkeyTokenCache(System.Uri serviceRoot, string clientId, string tokenC
 #### Examples
 
 ```csharp
-services.AddSingleton(sp =&gt; new LatchkeyTokenCache(
+services.AddSingleton(sp => new LatchkeyTokenCache(
     new Uri("https://api.example.com/odata/"),
     "client-a",
     options.TokenCachePath,
-    sp.GetRequiredService&lt;ILogger&lt;LatchkeyTokenCache&gt;&gt;()));
-services.AddSingleton&lt;ITokenCache&gt;(sp =&gt; sp.GetRequiredService&lt;LatchkeyTokenCache&gt;());
+    sp.GetRequiredService<ILogger<LatchkeyTokenCache>>()));
+services.AddSingleton<ITokenCache>(sp => sp.GetRequiredService<LatchkeyTokenCache>());
 ```
 
 #### Remarks
 
 The backing store is created eagerly, so an unusable credential store surfaces at construction rather
-than on the first OData request. Call [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.latchkeytokencache.verifypersistence(system.string)) before constructing to
+than on the first OData request. Call [LatchkeyTokenCache.VerifyPersistence](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/LatchkeyTokenCache#verifypersistence) before constructing to
 fail first with an actionable message instead.
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>

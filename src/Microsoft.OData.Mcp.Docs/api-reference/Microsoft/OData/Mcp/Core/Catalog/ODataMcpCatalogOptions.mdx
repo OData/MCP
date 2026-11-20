@@ -3,7 +3,7 @@ title: ODataMcpCatalogOptions
 description: "Options that control how an [ODataMcpCatalog](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpCatalog) is built from an EDM."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataMcpCatalogOptions', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpC
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -82,7 +80,7 @@ Type: `Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat`
 
 #### Remarks
 
-Defaults to [ODataEnumJsonFormat.Auto](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat#auto): member names are advertised and JSON numbers are
+Defaults to [ODataEnumJsonFormat.Auto](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat): member names are advertised and JSON numbers are
 also accepted. The advertised schema never changes during a catalog's lifetime.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ExcludeEntitySets
@@ -208,7 +206,7 @@ Type: `string?`
 #### Remarks
 
 The default text in [ODataMcpInstructions.Default](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#default) is always included; this only prepends.
-See [String)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.core.catalog.odatamcpinstructions.compose(system.string)).
+See [ODataMcpInstructions.Compose](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpInstructions#compose).
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> IsDynamicModel
 

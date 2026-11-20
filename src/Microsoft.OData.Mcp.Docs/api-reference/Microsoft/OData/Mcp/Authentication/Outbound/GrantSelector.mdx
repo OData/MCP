@@ -3,7 +3,7 @@ title: GrantSelector
 description: "Selects the [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) outbound OAuth runs for a remote OData service,..."
 icon: bolt
 tag: "STATIC"
-keywords: ['GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound.GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound.GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['GrantSelector', 'Microsoft.OData.Mcp.Authentication.Outbound.GrantSe
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -97,7 +95,7 @@ The selected grant kind.
 | Exception | Description |
 |-----------|-------------|
 | `ArgumentNullException` | Thrown when *discovery* or *options* is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |
-| `ArgumentException` | Thrown when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#refreshtoken),
+| `ArgumentException` | Thrown when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is [OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind),
 which is never an operator-selectable grant. |
 | `OutboundDiscoveryException` | Thrown when [OutboundOAuthOptions.Grant](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#grant) is set to a grant the authorization server does
 not advertise, when identity assertion is configured but the authorization server does not advertise

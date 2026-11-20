@@ -3,7 +3,7 @@ title: EdmPayloadValidator
 description: "Validates tool payloads against the declared EDM before any OData HTTP is sent, and formats values for the wire."
 icon: bolt
 tag: "STATIC"
-keywords: ['EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog.EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog.EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['EdmPayloadValidator', 'Microsoft.OData.Mcp.Core.Catalog.EdmPayloadVa
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -164,7 +162,7 @@ Validates the `parameters` object of an `odata_call` against the operation's dec
 #### Syntax
 
 ```csharp
-public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, bool isBound, System.Nullable<System.Text.Json.JsonElement> arguments, string signature, out System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>> values)
+public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter> parameters, bool isBound, System.Text.Json.JsonElement? arguments, string signature, out System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>> values)
 ```
 
 #### Parameters
@@ -175,7 +173,7 @@ public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.
 | `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
 | `parameters` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter>` | The declared parameters, including the binding parameter when bound. |
 | `isBound` | `bool` | Whether the first declared parameter is the binding parameter. |
-| `arguments` | `System.Nullable<System.Text.Json.JsonElement>` | The caller's `parameters` object, or `null` when omitted. |
+| `arguments` | `System.Text.Json.JsonElement?` | The caller's `parameters` object, or `null` when omitted. |
 | `signature` | `string` | The rendered signature, appended to errors. |
 | `values` | `System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>>` | Receives the accepted arguments keyed by declared parameter name, in declaration order. |
 
@@ -212,7 +210,7 @@ public static string ValidateOperationArguments(Microsoft.OData.Mcp.Core.Models.
 | `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
 | `parameters` | `System.Collections.Generic.IReadOnlyList<Microsoft.OData.Mcp.Core.Models.EdmParameter>` | The declared parameters, including the binding parameter when bound. |
 | `isBound` | `bool` | Whether the first declared parameter is the binding parameter. |
-| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>` | The caller arguments keyed by declared parameter name, or `null` when omitted. |
+| `arguments` | `System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement>?` | The caller arguments keyed by declared parameter name, or `null` when omitted. |
 | `signature` | `string` | The rendered signature, appended to errors. |
 | `values` | `System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<Microsoft.OData.Mcp.Core.Models.EdmParameter, System.Text.Json.JsonElement>>` | Receives the accepted arguments keyed by declared parameter name, in declaration order. |
 
@@ -238,7 +236,7 @@ Validates one JSON value against an EDM type.
 #### Syntax
 
 ```csharp
-public static string ValidateValue(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, string edmType, bool nullable, System.Nullable<int> maxLength, System.Text.Json.JsonElement value, string label)
+public static string ValidateValue(Microsoft.OData.Mcp.Core.Models.EdmModel model, Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions options, string edmType, bool nullable, int? maxLength, System.Text.Json.JsonElement value, string label)
 ```
 
 #### Parameters
@@ -249,7 +247,7 @@ public static string ValidateValue(Microsoft.OData.Mcp.Core.Models.EdmModel mode
 | `options` | `Microsoft.OData.Mcp.Core.Catalog.ODataMcpCatalogOptions` | Catalog options (enum wire format). |
 | `edmType` | `string` | The EDM type name, possibly `Collection(...)`. |
 | `nullable` | `bool` | Whether JSON `null` is acceptable. |
-| `maxLength` | `System.Nullable<int>` | The declared `MaxLength` for strings, or `null`. |
+| `maxLength` | `int?` | The declared `MaxLength` for strings, or `null`. |
 | `value` | `System.Text.Json.JsonElement` | The JSON value. |
 | `label` | `string` | How to name the value in errors, for example `Parameter 'lat'` or `Property 'Age' on Person`. |
 

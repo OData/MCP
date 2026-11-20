@@ -3,7 +3,7 @@ title: ToolsMcpSessionHolder
 description: "A mutable slot for the one [ODataMcpSession](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataMcpSession) a Tools host serves, registered before the host..."
 icon: lock
 tag: "SEALED"
-keywords: ['ToolsMcpSessionHolder', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpSessionHolder', 'Microsoft.OData.Mcp.Tools.Hosting', 'class', 'System.Object']
+keywords: ['ToolsMcpSessionHolder', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpSessionHolder', 'Microsoft.OData.Mcp.Tools.Hosting', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ToolsMcpSessionHolder', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpS
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Hosting
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -35,10 +33,10 @@ frozen from that moment on. This holder is what lets one host serve both sides o
 ## Examples
 
 ```csharp
-builder.Services.AddSingleton&lt;ToolsMcpSessionHolder&gt;();
-builder.Services.AddMcpServer().WithODataCatalogHandlers(sp =&gt;
+builder.Services.AddSingleton<ToolsMcpSessionHolder>();
+builder.Services.AddMcpServer().WithODataCatalogHandlers(sp =>
 {
-    var session = sp.GetRequiredService&lt;ToolsMcpSessionHolder&gt;().Session;
+    var session = sp.GetRequiredService<ToolsMcpSessionHolder>().Session;
     ArgumentNullException.ThrowIfNull(session);
 
     return session;

@@ -42,10 +42,10 @@ public static Microsoft.Extensions.DependencyInjection.IMcpServerBuilder WithODa
 | `builder` | `Microsoft.Extensions.DependencyInjection.IMcpServerBuilder` | The MCP server builder. |
 | `resolveSession` | `System.Func<System.IServiceProvider, Microsoft.OData.Mcp.Core.Catalog.ODataMcpSession>` | Resolves the session for the current request. |
 | `listExtraTools` | `System.Func<System.IServiceProvider, System.Collections.Generic.IReadOnlyList<ModelContextProtocol.Protocol.Tool>>?` | Optional extra tools (for example, `shutdown_server`). |
-| `tryHandleExtra` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>` | Optional extra call handler that runs before catalog tools. |
-| `tryHandleCallException` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Exception, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>` | Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself. |
-| `afterInvoke` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, ModelContextProtocol.Protocol.CallToolResult, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>` | Optional hook that sees the catalog `tools/call` result. AspNetCore uses this for URL elicitation (MRTR or Tasks). |
-| `beforeInvoke` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolRequestParams>>` | Optional hook that runs before OData invoke. AspNetCore and Tools use this for form
+| `tryHandleExtra` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult?>>?` | Optional extra call handler that runs before catalog tools. |
+| `tryHandleCallException` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Exception, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult?>>?` | Optional recovery handler that sees an exception a catalog tool threw and may answer the call itself. |
+| `afterInvoke` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, ModelContextProtocol.Protocol.CallToolResult, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolResult>>?` | Optional hook that sees the catalog `tools/call` result. AspNetCore uses this for URL elicitation (MRTR or Tasks). |
+| `beforeInvoke` | `System.Func<ModelContextProtocol.Server.RequestContext<ModelContextProtocol.Protocol.CallToolRequestParams>, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.CallToolRequestParams?>>?` | Optional hook that runs before OData invoke. AspNetCore and Tools use this for form
 elicitation. A non-null return replaces call params; `InputRequiredException` is MRTR. |
 
 #### Returns
@@ -63,7 +63,7 @@ The builder.
 
 ```csharp
 services.AddMcpServer()
-    .WithODataCatalogHandlers(provider =&gt; provider.GetRequiredService&lt;ODataMcpSession&gt;());
+    .WithODataCatalogHandlers(provider => provider.GetRequiredService<ODataMcpSession>());
 ```
 
 #### Remarks

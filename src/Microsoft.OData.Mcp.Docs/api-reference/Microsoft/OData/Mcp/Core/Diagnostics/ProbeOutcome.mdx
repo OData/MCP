@@ -3,7 +3,7 @@ title: ProbeOutcome
 description: "How one step of a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) ended."
 icon: list-ol
 tag: "ENUM"
-keywords: ['ProbeOutcome', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Enum']
+keywords: ['ProbeOutcome', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome', 'Microsoft.OData.Mcp.Core.Diagnostics', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -30,10 +30,17 @@ How one step of a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnos
 |------|-------|-------------|
 | `Skipped` | 0 | The step was not attempted because an earlier step ruled it out. |
 | `Passed` | 1 | The step succeeded. |
-| `Unauthorized` | 2 | The service answered <c>401 Unauthorized</c>; the challenge is on the step. |
-| `Forbidden` | 3 | The service answered <c>403 Forbidden</c>. |
-| `NotFound` | 4 | The service answered <c>404 Not Found</c>. |
+| `Unauthorized` | 2 | The service answered `401 Unauthorized`; the challenge is on the step. |
+| `Forbidden` | 3 | The service answered `403 Forbidden`. |
+| `NotFound` | 4 | The service answered `404 Not Found`. |
 | `Unreadable` | 5 | The service answered, but not with something the catalog can use: HTML instead of CSDL, a body that is
-            not JSON, or a row whose properties do not match the model. |
+not JSON, or a row whose properties do not match the model. |
 | `Failed` | 6 | The request failed for another reason: a 5xx, a transport error, or a timeout. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

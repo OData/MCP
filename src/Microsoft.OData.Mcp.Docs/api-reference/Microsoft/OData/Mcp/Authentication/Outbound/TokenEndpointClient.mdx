@@ -3,7 +3,7 @@ title: TokenEndpointClient
 description: "Posts an RFC 6749 token request on the handler-free `'OAuth'` named [HttpClient](https://learn.microsoft.com/dotnet/api/system.net.http.httpclient) and turns..."
 icon: lock
 tag: "SEALED"
-keywords: ['TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound.TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['TokenEndpointClient', 'Microsoft.OData.Mcp.Authentication.Outbound.T
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -39,7 +37,7 @@ POST is not idempotent and a failed grant is a decision for the caller, not a tr
 ## Examples
 
 ```csharp
-var form = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal)
+var form = new Dictionary<string, string>(StringComparer.Ordinal)
 {
     [ODataMcpAuthConstants.GrantTypeParameter] = ODataMcpAuthConstants.GrantTypeRefreshToken,
     [ODataMcpAuthConstants.RefreshTokenProperty] = refreshToken

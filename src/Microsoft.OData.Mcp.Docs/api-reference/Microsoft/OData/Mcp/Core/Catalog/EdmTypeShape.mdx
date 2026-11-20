@@ -3,7 +3,7 @@ title: EdmTypeShape
 description: "The shape of one entity type as the calling AI reads it: the declaration-grammar text, the compact JSON, the exposed properties, the required-on-create names..."
 icon: lock
 tag: "SEALED"
-keywords: ['EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['EdmTypeShape', 'Microsoft.OData.Mcp.Core.Catalog.EdmTypeShape', 'Mic
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -38,7 +36,7 @@ declared EDM members; CLR entity types are never walked. The grammar is specifie
 Customer  (set: Customers, key: CustomerID)
   CustomerID: string // key
   CompanyName?: string
-  Orders -&gt; Order[]
+  Orders -> Order[]
   operations
     Discount(percentage: int) // writes
 ```
@@ -352,7 +350,7 @@ Maps an EDM type name to the shape grammar's type token.
 #### Syntax
 
 ```csharp
-public static string MapShapeType(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType, System.Nullable<int> maxLength = null)
+public static string MapShapeType(Microsoft.OData.Mcp.Core.Models.EdmModel model, string edmType, int? maxLength = null)
 ```
 
 #### Parameters
@@ -361,7 +359,7 @@ public static string MapShapeType(Microsoft.OData.Mcp.Core.Models.EdmModel model
 |------|------|-------------|
 | `model` | `Microsoft.OData.Mcp.Core.Models.EdmModel` | The Core EDM, used to resolve enumeration members. |
 | `edmType` | `string?` | The EDM type name, for example `Edm.String`, `NS.Color`, or `Collection(NS.Order)`. |
-| `maxLength` | `System.Nullable<int>` | The declared `MaxLength`, inlined as `string(n)` only when at most 16. |
+| `maxLength` | `int?` | The declared `MaxLength`, inlined as `string(n)` only when at most 16. |
 
 #### Returns
 
@@ -431,7 +429,7 @@ public static string RenderNavigation(Microsoft.OData.Mcp.Core.Models.EdmModel m
 #### Returns
 
 Type: `string`
-`Orders -&gt; Order[]` for collections, `BestFriend? -&gt; Person` for optional single targets.
+`Orders -> Order[]` for collections, `BestFriend? -> Person` for optional single targets.
 
 #### Exceptions
 
@@ -468,7 +466,7 @@ public static string RenderOperation(Microsoft.OData.Mcp.Core.Models.EdmModel mo
 #### Returns
 
 Type: `string`
-For example `ShareTrip(userName: string, tripId: int) // writes` or `(count: int) -&gt; Person[] // collection`.
+For example `ShareTrip(userName: string, tripId: int) // writes` or `(count: int) -> Person[] // collection`.
 
 #### Exceptions
 

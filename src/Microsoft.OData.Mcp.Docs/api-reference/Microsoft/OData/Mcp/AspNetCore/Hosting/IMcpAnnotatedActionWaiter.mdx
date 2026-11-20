@@ -23,10 +23,10 @@ Host completion source for an annotated action after URL elicitation is accepted
 
 ## Remarks
 
-Register with `WaitForAnnotatedAction&lt;TWaiter&gt;`. Without a waiter, the task
+Register with `WaitForAnnotatedAction<TWaiter>`. Without a waiter, the task
 completes with the Started payload after elicitation (the URL was shown; the grant still
 finishes only in the browser). Decline, timeout, and `tasks/cancel` do not call
-[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.aspnetcore.hosting.imcpannotatedactionwaiter.waitasync(microsoft.odata.mcp.aspnetcore.hosting.mcpannotatedactioncontext,system.threading.cancellationtoken)).
+[IMcpAnnotatedActionWaiter.WaitAsync](/api-reference/Microsoft/OData/Mcp/AspNetCore/Hosting/IMcpAnnotatedActionWaiter#waitasync).
 
 ## Methods
 

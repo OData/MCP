@@ -3,7 +3,7 @@ title: ServiceProbeResult
 description: "Everything a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) learned about one service: the three steps, the parsed model wh..."
 icon: lock
 tag: "SEALED"
-keywords: ['ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Object']
+keywords: ['ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ServiceProbeResult', 'Microsoft.OData.Mcp.Core.Diagnostics.ServicePr
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -166,12 +164,12 @@ The HTTP status of the step that refused access, when one did. Used to drive OAu
 #### Syntax
 
 ```csharp
-public System.Nullable<int> SecuredStatusCode { get; }
+public int? SecuredStatusCode { get; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ServiceRoot
 

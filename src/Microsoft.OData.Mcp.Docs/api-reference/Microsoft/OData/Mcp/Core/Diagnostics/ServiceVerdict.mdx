@@ -3,7 +3,7 @@ title: ServiceVerdict
 description: "What a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe) concluded about a service as a whole."
 icon: list-ol
 tag: "ENUM"
-keywords: ['ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Enum']
+keywords: ['ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics.ServiceVerdict', 'Microsoft.OData.Mcp.Core.Diagnostics', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -33,5 +33,12 @@ What a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/Servic
 | `MetadataSecured` | 2 | The metadata document itself answered 401 or 403. Sign-in is needed before the catalog can be built. |
 | `Unreachable` | 3 | The metadata document or the first entity set could not be fetched: 404, 5xx, or a transport failure. |
 | `Unreadable` | 4 | The service answered but not in a form the catalog understands: non-CSDL metadata, non-JSON data, or a
-            row whose properties do not match the model. |
+row whose properties do not match the model. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

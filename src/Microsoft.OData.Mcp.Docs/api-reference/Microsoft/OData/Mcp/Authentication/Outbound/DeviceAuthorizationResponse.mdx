@@ -3,7 +3,7 @@ title: DeviceAuthorizationResponse
 description: "The RFC 8628 section 3.2 device authorization response returned from a device authorization endpoint."
 icon: lock
 tag: "SEALED"
-keywords: ['DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound.DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['DeviceAuthorizationResponse', 'Microsoft.OData.Mcp.Authentication.Ou
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -96,12 +94,12 @@ Gets or sets the minimum number of seconds the client must wait between token en
 #### Syntax
 
 ```csharp
-public System.Nullable<int> Interval { get; set; }
+public int? Interval { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 
 #### Remarks
 

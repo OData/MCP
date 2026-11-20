@@ -3,7 +3,7 @@ title: OAuthDiscoveryResult
 description: "Everything the outbound OAuth discovery algorithm learned about a protected OData service: the `WWW-Authenticate` challenge it started from, the RFC 9728 pro..."
 icon: lock
 tag: "SEALED"
-keywords: ['OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OAuthDiscoveryResult', 'Microsoft.OData.Mcp.Authentication.Outbound.
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -28,7 +26,7 @@ any), the authorization server it selected, and the grants, scope, and RFC 8707 
 
 ## Remarks
 
-Produced exclusively by [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.discoverasync(system.uri,system.collections.generic.ireadonlylist{system.string},system.int32,system.uri,system.uri,system.threading.cancellationtoken)),
+Produced exclusively by [OAuthDiscovery.DiscoverAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscovery#discoverasync),
 which never returns an instance without an authorization server: discovery fails first rather than
 handing a caller a half-populated result. Per `AUTH-13` the challenge `client_id` is reachable
 only as [OAuthChallenge.ResourceClientId](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthChallenge#resourceclientid) through [OAuthDiscoveryResult.Challenge](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscoveryResult#challenge), so nothing on this

@@ -3,7 +3,7 @@ title: ODataToolInvocationResult
 description: "The result of invoking a catalog tool."
 icon: lock
 tag: "SEALED"
-keywords: ['ODataToolInvocationResult', 'Microsoft.OData.Mcp.Core.Catalog.ODataToolInvocationResult', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['ODataToolInvocationResult', 'Microsoft.OData.Mcp.Core.Catalog.ODataToolInvocationResult', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataToolInvocationResult', 'Microsoft.OData.Mcp.Core.Catalog.ODataT
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -231,11 +229,11 @@ Returns structured JSON for `CallToolResult.StructuredContent`. Prefers the ODat
 #### Syntax
 
 ```csharp
-public System.Nullable<System.Text.Json.JsonElement> ToStructuredContent()
+public System.Text.Json.JsonElement? ToStructuredContent()
 ```
 
 #### Returns
 
-Type: `System.Nullable<System.Text.Json.JsonElement?>?`
+Type: `System.Text.Json.JsonElement?`
 The JSON element, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when there is no structured payload.
 

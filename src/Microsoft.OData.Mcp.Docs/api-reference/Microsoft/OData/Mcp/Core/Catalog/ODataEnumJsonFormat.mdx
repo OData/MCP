@@ -3,7 +3,7 @@ title: ODataEnumJsonFormat
 description: "Controls how enumeration values are advertised in JSON Schema and accepted on input."
 icon: list-ol
 tag: "ENUM"
-keywords: ['ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Enum']
+keywords: ['ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat', 'Microsoft.OData.Mcp.Core.Catalog', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -34,7 +34,14 @@ rewrites what `tools/list` already returned.
 
 | Name | Value | Description |
 |------|-------|-------------|
-| `Auto` | 0 | Advertise member names, the same as <see cref="F:Microsoft.OData.Mcp.Core.Catalog.ODataEnumJsonFormat.String" />, but also accept a JSON number on input. |
-| `String` | 1 | Advertise and accept member names such as <c>"Red"</c> or the OData literal <c>NS.Color'Red'</c>. |
+| `Auto` | 0 | Advertise member names, the same as [ODataEnumJsonFormat.String](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ODataEnumJsonFormat), but also accept a JSON number on input. |
+| `String` | 1 | Advertise and accept member names such as `"Red"` or the OData literal `NS.Color'Red'`. |
 | `Integer` | 2 | Advertise integral member values and accept a JSON number or numeric string. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

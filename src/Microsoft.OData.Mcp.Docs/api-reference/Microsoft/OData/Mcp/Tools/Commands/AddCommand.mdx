@@ -2,7 +2,7 @@
 title: AddCommand
 description: "Interactive wizard command that generates the `claude mcp add` registration line for a remote OData service, including the outbound OAuth flags `odata-mcp st..."
 icon: file-brackets-curly
-keywords: ['AddCommand', 'Microsoft.OData.Mcp.Tools.Commands.AddCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
+keywords: ['AddCommand', 'Microsoft.OData.Mcp.Tools.Commands.AddCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class']
 ---
 
 ## Definition
@@ -10,8 +10,6 @@ keywords: ['AddCommand', 'Microsoft.OData.Mcp.Tools.Commands.AddCommand', 'Micro
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Commands
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -29,9 +27,9 @@ service, including the outbound OAuth flags `odata-mcp start` needs to sign in.
 This command provides an interactive experience for users to configure their OData
 service connection and generates the appropriate `claude mcp add` command for Claude Code.
 Tests must assign [Input](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.tools.commands.addcommand.input) and [Output](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.tools.commands.addcommand.output) instead of calling
-[TextReader)](https://learn.microsoft.com/dotnet/api/system.console.setin(system.io.textreader)). Windows testhost wraps `SetIn` in
+[SetIn](https://learn.microsoft.com/dotnet/api/system.console.setin). Windows testhost wraps `SetIn` in
 `SyncTextReader` and leaves [IsInputRedirected](https://learn.microsoft.com/dotnet/api/system.console.isinputredirected) false, so
-[Boolean)](https://learn.microsoft.com/dotnet/api/system.console.readkey(system.boolean)) blocks the Visual Studio Test Explorer.
+[ReadKey](https://learn.microsoft.com/dotnet/api/system.console.readkey) blocks the Visual Studio Test Explorer.
 
 Per `specs/v3/AUTHENTICATION.md` "CLI UX → `odata-mcp add`" the generated command never
 carries an access or refresh token, and never carries `--env`: `claude mcp add --env` takes

@@ -2,7 +2,7 @@
 title: StartCommand
 description: "Command to start the OData MCP server over stdio."
 icon: file-brackets-curly
-keywords: ['StartCommand', 'Microsoft.OData.Mcp.Tools.Commands.StartCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
+keywords: ['StartCommand', 'Microsoft.OData.Mcp.Tools.Commands.StartCommand', 'Microsoft.OData.Mcp.Tools.Commands', 'class']
 ---
 
 ## Definition
@@ -10,8 +10,6 @@ keywords: ['StartCommand', 'Microsoft.OData.Mcp.Tools.Commands.StartCommand', 'M
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Commands
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -94,12 +92,12 @@ Gets or sets how long, in seconds, an interactive grant may run before it is aba
 #### Syntax
 
 ```csharp
-public System.Nullable<int> AuthTimeout { get; set; }
+public int? AuthTimeout { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>?`
+Type: `int?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> AuthToken
 

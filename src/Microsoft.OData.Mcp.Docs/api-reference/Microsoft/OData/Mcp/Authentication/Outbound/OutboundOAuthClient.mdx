@@ -3,7 +3,7 @@ title: OutboundOAuthClient
 description: "The outbound OAuth state machine: it owns one OData service root's cached token, decides whether that token can still be attached, refreshes it exactly once ..."
 icon: lock
 tag: "SEALED"
-keywords: ['OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OutboundOAuthClient', 'Microsoft.OData.Mcp.Authentication.Outbound.O
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -30,13 +28,13 @@ grant when there is nothing left to refresh.
 
 Nothing here ever logs an access token, a refresh token, a device code, an authorization code, or a PKCE
 code verifier: every token that reaches a log goes through
-[TokenContainer)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundauthlogredactor.describetoken(modelcontextprotocol.authentication.tokencontainer)) first. There is
+[OutboundAuthLogRedactor.DescribeToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundAuthLogRedactor#describetoken) first. There is
 no background refresh — an idle process sends no token requests at all — because the send path checks
 remaining lifetime against [ODataMcpAuthConstants.TokenRefreshSkew](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#tokenrefreshskew) and a
 `401 invalid_token` remains the fallback for a token whose lifetime the client cannot compute.
 
 The credential store is proved usable inside
-[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.acquireasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.boolean,system.threading.cancellationtoken)) rather than at host
+[OutboundOAuthClient.AcquireAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient#acquireasync) rather than at host
 construction, and only when no explicit credential was configured, so a service that needs no sign-in at
 all never touches the operating system keyring.
 
@@ -139,14 +137,14 @@ The acquired token, already written to the cache.
 when the authorization server advertises no grant this build can run. |
 | `OAuthConsentRequiredException` | Thrown when the selected grant needs a human and [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#consentpresenter)
 is [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). The grant stays pending so a caller that elicits the URL can finish it
-with [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.completeinteractivegrantasync(system.threading.cancellationtoken)). |
+with [OutboundOAuthClient.CompleteInteractiveGrantAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient#completeinteractivegrantasync). |
 | `OAuthTokenException` | Thrown when the grant fails, including when it outlives [OutboundOAuthOptions.AuthTimeout](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions#authtimeout). |
 | `NotSupportedException` | Thrown when the selected grant is not implemented in this build. |
 
 #### Examples
 
 ```csharp
-var challenges = response.Headers.WwwAuthenticate.Select(x =&gt; x.ToString()).ToList();
+var challenges = response.Headers.WwwAuthenticate.Select(x => x.ToString()).ToList();
 
 var token = await client.AcquireAsync(challenges, (int)response.StatusCode, interactiveAllowed: true, cancellationToken);
 ```
@@ -168,7 +166,7 @@ that keeps the pending state, because a caller that elicits the URL finishes tha
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CompleteInteractiveGrantAsync
 
 Finishes the interactive grant a previous
-[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.startinteractivegrantasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.threading.cancellationtoken)) left pending:
+[OutboundOAuthClient.StartInteractiveGrantAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient#startinteractivegrantasync) left pending:
 polls the token endpoint or waits on the loopback redirect, persists the result, and clears the
 pending state.
 
@@ -334,7 +332,7 @@ public System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenCont
 Type: `System.Threading.Tasks.Task<ModelContextProtocol.Authentication.TokenContainer?>`
 The token to attach, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when nothing is cached, nothing can be refreshed, or
 the refresh failed — in which case the caller runs
-[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.acquireasync(system.collections.generic.ireadonlylist{system.string},system.int32,system.boolean,system.threading.cancellationtoken)) off the resulting
+[OutboundOAuthClient.AcquireAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient#acquireasync) off the resulting
 challenge.
 
 #### Examples
@@ -425,7 +423,7 @@ fresh `D`-format GUID [OutboundConsentRequest.ElicitationId](/api-reference/Micr
 
 #### Remarks
 
-Split from [CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundoauthclient.completeinteractivegrantasync(system.threading.cancellationtoken)) so an MCP host never polls
+Split from [OutboundOAuthClient.CompleteInteractiveGrantAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthClient#completeinteractivegrantasync) so an MCP host never polls
 a token endpoint — or blocks on a loopback socket — on the thread that is servicing an OData request.
 
 ### <Icon icon="code-fork" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ToString <Badge color="gray">Inherited</Badge> <Badge color="orange">Virtual</Badge>

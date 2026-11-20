@@ -3,7 +3,7 @@ title: OutboundGrantKind
 description: "The OAuth 2.0 grant kinds outbound OAuth can select for a remote OData service."
 icon: list-ol
 tag: "ENUM"
-keywords: ['OutboundGrantKind', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Enum']
+keywords: ['OutboundGrantKind', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind', 'Microsoft.OData.Mcp.Authentication.Outbound', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -27,7 +27,7 @@ The OAuth 2.0 grant kinds outbound OAuth can select for a remote OData service.
 ## Remarks
 
 Per `AUTH-5` this is a top-level type; wire DTOs and grant-kind enums are never nested inside
-another type. [OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#refreshtoken) is not one of the four values `--grant` accepts on the
+another type. [OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) is not one of the four values `--grant` accepts on the
 command line (see [OutboundGrantKindParser](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKindParser)) — it is only ever selected internally, once the
 outbound auth handler already holds a cached refresh token.
 
@@ -39,6 +39,13 @@ outbound auth handler already holds a cached refresh token.
 | `AuthorizationCode` | 1 | RFC 6749 authorization code grant with RFC 7636 PKCE, completed through a loopback redirect. |
 | `ClientCredentials` | 2 | RFC 6749 client credentials grant, for a confidential client acting as itself. |
 | `IdentityAssertion` | 3 | SDK identity assertion grant (RFC 7523 JWT bearer), exchanging an enterprise IdP id token for an
-            access token. |
+access token. |
 | `RefreshToken` | 4 | RFC 6749 refresh token grant, used internally to renew an access token without re-prompting. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

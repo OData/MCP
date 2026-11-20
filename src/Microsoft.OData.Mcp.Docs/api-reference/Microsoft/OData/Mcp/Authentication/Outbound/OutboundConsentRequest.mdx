@@ -3,7 +3,7 @@ title: OutboundConsentRequest
 description: "The consent-request payload passed to [OutboundOAuthOptions.ConsentPresenter](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundOAuthOptions..."
 icon: lock
 tag: "SEALED"
-keywords: ['OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OutboundConsentRequest', 'Microsoft.OData.Mcp.Authentication.Outboun
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -66,7 +64,7 @@ public OutboundConsentRequest(Microsoft.OData.Mcp.Authentication.Outbound.Outbou
 
 | Name | Type | Description |
 |------|------|-------------|
-| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?` | The grant kind this consent request is completing. |
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind` | The grant kind this consent request is completing. |
 | `url` | `System.Uri` | The absolute URL to open to complete sign-in. |
 | `message` | `string` | The human-readable message describing what to do. |
 | `userCode` | `string?` | The short code a human types at *verificationUri*, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null). |

@@ -3,7 +3,7 @@ title: ProbeStep
 description: "One step of a [ServiceProbe](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ServiceProbe): what was tried, how it ended, and what the service said."
 icon: lock
 tag: "SEALED"
-keywords: ['ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class', 'System.Object']
+keywords: ['ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ProbeStep', 'Microsoft.OData.Mcp.Core.Diagnostics.ProbeStep', 'Micro
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Diagnostics
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -33,7 +31,7 @@ Initializes a new instance of the [ProbeStep](/api-reference/Microsoft/OData/Mcp
 #### Syntax
 
 ```csharp
-public ProbeStep(Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome outcome, string detail, System.Nullable<int> statusCode = null, System.Collections.Generic.IReadOnlyList<string> challenges = null)
+public ProbeStep(Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome outcome, string detail, int? statusCode = null, System.Collections.Generic.IReadOnlyList<string> challenges = null)
 ```
 
 #### Parameters
@@ -42,7 +40,7 @@ public ProbeStep(Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome outcome, stri
 |------|------|-------------|
 | `outcome` | `Microsoft.OData.Mcp.Core.Diagnostics.ProbeOutcome` | The outcome. |
 | `detail` | `string` | One readable line. |
-| `statusCode` | `System.Nullable<int>` | The HTTP status code, if any. |
+| `statusCode` | `int?` | The HTTP status code, if any. |
 | `challenges` | `System.Collections.Generic.IReadOnlyList<string>?` | The `WWW-Authenticate` values, if any. |
 
 ### <Icon icon="hammer" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> .ctor <Badge color="gray">Inherited</Badge>
@@ -60,7 +58,7 @@ public Object()
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Challenges
 
 Every `WWW-Authenticate` value the response carried. Empty unless the outcome is
-[ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#unauthorized) or [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#forbidden).
+[ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome) or [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome).
 
 #### Syntax
 
@@ -107,12 +105,12 @@ The HTTP status code when a response was received, otherwise `null`.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> StatusCode { get; }
+public int? StatusCode { get; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 
 ## Methods
 
@@ -198,7 +196,7 @@ public bool IsSecured()
 #### Returns
 
 Type: `bool`
-`true` for [ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#unauthorized) and [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome#forbidden).
+`true` for [ProbeOutcome.Unauthorized](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome) and [ProbeOutcome.Forbidden](/api-reference/Microsoft/OData/Mcp/Core/Diagnostics/ProbeOutcome).
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> MemberwiseClone <Badge color="gray">Inherited</Badge>
 

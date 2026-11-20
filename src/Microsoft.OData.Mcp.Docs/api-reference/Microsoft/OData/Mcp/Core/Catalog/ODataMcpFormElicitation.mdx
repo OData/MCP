@@ -3,7 +3,7 @@ title: ODataMcpFormElicitation
 description: "Before-invoke form elicitation: client gate, MRTR, merge, decline."
 icon: bolt
 tag: "STATIC"
-keywords: ['ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog', 'class', 'System.Object']
+keywords: ['ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ODataMcpFormElicitation', 'Microsoft.OData.Mcp.Core.Catalog.ODataMcp
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Catalog
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -53,7 +51,7 @@ public static System.Threading.Tasks.ValueTask<ModelContextProtocol.Protocol.Cal
 [ElicitFormMapper](/api-reference/Microsoft/OData/Mcp/Core/Catalog/ElicitFormMapper) projects *form*. |
 | `cancellationToken` | `System.Threading.CancellationToken` | The cancellation token. |
 | `toInputRequest` | `System.Func<ModelContextProtocol.Protocol.InputRequest>?` | Optional cached MRTR payload. When omitted, the schema is serialized with
-`ElicitRequestParams)`. |
+`ForElicitation`. |
 
 #### Returns
 

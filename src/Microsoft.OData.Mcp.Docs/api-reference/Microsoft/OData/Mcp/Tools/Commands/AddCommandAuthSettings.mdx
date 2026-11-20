@@ -3,7 +3,7 @@ title: AddCommandAuthSettings
 description: "Everything the `odata-mcp add` wizard collected about how the generated `start` command should authenticate."
 icon: lock
 tag: "SEALED"
-keywords: ['AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands.AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Object']
+keywords: ['AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands.AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['AddCommandAuthSettings', 'Microsoft.OData.Mcp.Tools.Commands.AddComm
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Commands
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -179,12 +177,12 @@ Gets or sets the grant the generated command pins, or [`null`](https://learn.mic
 #### Syntax
 
 ```csharp
-public System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind> Grant { get; set; }
+public Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind? Grant { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?>?`
+Type: `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind??`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scopes
 

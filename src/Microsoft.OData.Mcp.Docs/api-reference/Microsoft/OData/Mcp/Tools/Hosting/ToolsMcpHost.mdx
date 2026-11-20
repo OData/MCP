@@ -3,7 +3,7 @@ title: ToolsMcpHost
 description: "The local MCP host for a remote OData service: one generic host that owns the authenticating `'OData'` client, the unauthenticated `'OAuth'` client, the toke..."
 icon: lock
 tag: "SEALED"
-keywords: ['ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting', 'class', 'System.Object', 'System.IDisposable']
+keywords: ['ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting', 'class', 'System.IDisposable']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['ToolsMcpHost', 'Microsoft.OData.Mcp.Tools.Hosting.ToolsMcpHost', 'Mi
 **Assembly:** Microsoft.OData.Mcp.Tools.dll
 
 **Namespace:** Microsoft.OData.Mcp.Tools.Hosting
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -194,10 +192,10 @@ using var toolsHost = await ToolsMcpHost.CreateAsync(
     verbose: false,
     lifetime: null,
     cancellationToken,
-    services =&gt;
+    services =>
     {
         services.AddHttpClient(ODataMcpAuthConstants.ODataHttpClientName)
-            .ConfigurePrimaryHttpMessageHandler(() =&gt; resource.Server.CreateHandler());
+            .ConfigurePrimaryHttpMessageHandler(() => resource.Server.CreateHandler());
     });
 ```
 

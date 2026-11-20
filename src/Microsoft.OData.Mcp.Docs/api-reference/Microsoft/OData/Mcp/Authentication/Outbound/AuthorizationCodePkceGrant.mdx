@@ -3,7 +3,7 @@ title: AuthorizationCodePkceGrant
 description: "Runs the RFC 6749 authorization code grant with RFC 7636 PKCE over an RFC 8252 loopback redirect: build the authorization URL with an `S256` challenge and a ..."
 icon: lock
 tag: "SEALED"
-keywords: ['AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['AuthorizationCodePkceGrant', 'Microsoft.OData.Mcp.Authentication.Out
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -90,7 +88,7 @@ verifier the response is validated and exchanged against.
 #### Syntax
 
 ```csharp
-public (System.Uri, string, string) Begin(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, string clientId, string scope, System.Uri resource, System.Uri redirectUri)
+public (System.Uri AuthorizationUri, string State, string CodeVerifier) Begin(Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata metadata, string clientId, string scope, System.Uri resource, System.Uri redirectUri)
 ```
 
 #### Parameters
@@ -105,7 +103,7 @@ public (System.Uri, string, string) Begin(Microsoft.OData.Mcp.Authentication.Out
 
 #### Returns
 
-Type: `(System.Uri, string, string)`
+Type: `(System.Uri AuthorizationUri, string State, string CodeVerifier)`
 The absolute authorization URI, the freshly generated `state`, and the code verifier.
 
 #### Exceptions
@@ -193,7 +191,7 @@ public System.Threading.Tasks.Task<Microsoft.OData.Mcp.Authentication.Outbound.T
 |------|------|-------------|
 | `metadata` | `Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata` | The authorization server metadata whose `token_endpoint` is posted to and whose issuer the RFC 9207 `iss` is matched against. |
 | `result` | `ModelContextProtocol.Authentication.AuthorizationResult` | The authorization response the loopback callback captured. |
-| `codeVerifier` | `string` | The code verifier [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationcodepkcegrant.begin(microsoft.odata.mcp.authentication.outbound.authorizationservermetadata,system.string,system.string,system.uri,system.uri)) produced. |
+| `codeVerifier` | `string` | The code verifier [AuthorizationCodePkceGrant.Begin](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationCodePkceGrant#begin) produced. |
 | `clientId` | `string` | The public client identifier the grant runs as. |
 | `redirectUri` | `System.Uri` | The redirect URI the authorization request carried, echoed back per RFC 6749 section 4.1.3. |
 | `resource` | `System.Uri?` | The RFC 8707 resource indicator, sent exactly as it was published or configured, or [`null`](https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null) when the request sends none. |

@@ -4,7 +4,7 @@ description: "Discovers an RFC 8414 authorization server metadata document (or i
 icon: lock
 sidebarTitle: AuthorizationServerMetadataClient
 tag: "SEALED"
-keywords: ['AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -12,8 +12,6 @@ keywords: ['AuthorizationServerMetadataClient', 'Microsoft.OData.Mcp.Authenticat
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -33,7 +31,7 @@ v1 counterpart.
 A new `"OAuth"` client is requested from [IHttpClientFactory](https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory) on every call rather than
 cached, matching the "Two named HttpClients" table in `specs/v3/AUTHENTICATION.md`. Per `AUTH-14`,
 an Entra-style authorization server publishes both a v1 (OpenID Connect only) and a v2 (RFC 8414 and OpenID
-Connect) document at the same base URI; [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationservermetadataclient.candidatedocuments(system.uri)) orders the v2 candidates
+Connect) document at the same base URI; [AuthorizationServerMetadataClient.CandidateDocuments](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadataClient#candidatedocuments) orders the v2 candidates
 first so discovery never selects the v1 issuer when a v2 one is available. Response bodies are never
 logged.
 
@@ -127,7 +125,7 @@ through its v2 issuer.
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DiscoverAsync
 
-Probes [Uri)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.authorizationservermetadataclient.candidatedocuments(system.uri)) in order and returns the first candidate that resolves to
+Probes [AuthorizationServerMetadataClient.CandidateDocuments](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/AuthorizationServerMetadataClient#candidatedocuments) in order and returns the first candidate that resolves to
 a usable metadata document.
 
 #### Syntax

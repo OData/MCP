@@ -3,7 +3,7 @@ title: AddAuthChoice
 description: "The authentication paths the `odata-mcp add` wizard offers an operator."
 icon: list-ol
 tag: "ENUM"
-keywords: ['AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands.AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands', 'class', 'System.Enum']
+keywords: ['AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands.AddAuthChoice', 'Microsoft.OData.Mcp.Tools.Commands', 'enum', 'System.Enum', 'System.IComparable', 'System.ISpanFormattable', 'System.IFormattable', 'System.IConvertible']
 ---
 
 ## Definition
@@ -35,11 +35,18 @@ escape hatch, because the warning text the wizard prints for the last three refe
 | Name | Value | Description |
 |------|-------|-------------|
 | `None` | 0 | The service needs no credential at all. |
-| `Discover` | 1 | Probe the service's <c>$metadata</c>, read the challenge, run OAuth discovery, and recommend a grant. |
+| `Discover` | 1 | Probe the service's `$metadata`, read the challenge, run OAuth discovery, and recommend a grant. |
 | `DeviceCode` | 2 | RFC 8628 device authorization grant. |
 | `AuthorizationCode` | 3 | RFC 6749 authorization code grant with PKCE over a loopback redirect. |
 | `ClientCredentials` | 4 | RFC 6749 client credentials grant, for a daemon acting as itself. |
 | `ApiKey` | 5 | A raw API key sent in an operator-named header. |
 | `Basic` | 6 | HTTP Basic authentication. |
 | `PasteToken` | 7 | A bearer token the operator already holds, written into the generated command. |
+
+## Related APIs
+
+- System.IComparable
+- System.ISpanFormattable
+- System.IFormattable
+- System.IConvertible
 

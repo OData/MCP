@@ -3,7 +3,7 @@ title: EdmParameter
 description: "Represents a parameter in the Entity Data Model."
 icon: lock
 tag: "SEALED"
-keywords: ['EdmParameter', 'Microsoft.OData.Mcp.Core.Models.EdmParameter', 'Microsoft.OData.Mcp.Core.Models', 'class', 'System.Object']
+keywords: ['EdmParameter', 'Microsoft.OData.Mcp.Core.Models.EdmParameter', 'Microsoft.OData.Mcp.Core.Models', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['EdmParameter', 'Microsoft.OData.Mcp.Core.Models.EdmParameter', 'Micr
 **Assembly:** Microsoft.OData.Mcp.Core.dll
 
 **Namespace:** Microsoft.OData.Mcp.Core.Models
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -106,12 +104,12 @@ Gets or sets the maximum length for string parameters.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> MaxLength { get; set; }
+public int? MaxLength { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 The maximum length, or null if not specified.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Name
@@ -151,12 +149,12 @@ Gets or sets the precision for numeric parameters.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> Precision { get; set; }
+public int? Precision { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 The precision, or null if not specified.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Scale
@@ -166,12 +164,12 @@ Gets or sets the scale for decimal parameters.
 #### Syntax
 
 ```csharp
-public System.Nullable<int> Scale { get; set; }
+public int? Scale { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<int>`
+Type: `int?`
 The scale, or null if not specified.
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> Type

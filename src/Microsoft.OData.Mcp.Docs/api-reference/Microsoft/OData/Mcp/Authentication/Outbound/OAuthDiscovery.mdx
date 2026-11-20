@@ -3,7 +3,7 @@ title: OAuthDiscovery
 description: "Runs steps 3 through 5 and 8b of the outbound OAuth discovery algorithm: parse the `WWW-Authenticate` challenge, fetch RFC 9728 protected resource metadata, ..."
 icon: lock
 tag: "SEALED"
-keywords: ['OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OAuthDiscovery', 'Microsoft.OData.Mcp.Authentication.Outbound.OAuthD
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -42,7 +40,7 @@ client id. Tokens and response bodies are never logged.
 var discovery = new OAuthDiscovery(protectedResourceMetadataClient, authorizationServerMetadataClient, logger);
 var result = await discovery.DiscoverAsync(
     new Uri("https://graph.microsoft.com/v1.0/"),
-    response.Headers.WwwAuthenticate.Select(x =&gt; x.ToString()).ToList(),
+    response.Headers.WwwAuthenticate.Select(x => x.ToString()).ToList(),
     401,
     authorizationServerOverride: null,
     resourceOverride: null,
@@ -134,7 +132,7 @@ A single `authorization_uri` can imply more than one base because a suffix later
 [ODataMcpAuthConstants.AuthorizeSuffixes](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/ODataMcpAuthConstants#authorizesuffixes) may also match; both remainders are probed so a
 server that publishes its metadata under either one is found. Non-absolute
 `authorization_servers` entries are skipped silently here;
-[CancellationToken)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.discoverasync(system.uri,system.collections.generic.ireadonlylist{system.string},system.int32,system.uri,system.uri,system.threading.cancellationtoken)) logs them.
+[OAuthDiscovery.DiscoverAsync](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscovery#discoverasync) logs them.
 
 ### <Icon icon="function" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> DiscoverAsync
 
@@ -193,7 +191,7 @@ Console.WriteLine(result.Resource);                             // http://localh
 #### Remarks
 
 Protected resource metadata candidates are probed in the order
-[OAuthChallenge)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.oauthdiscovery.prmcandidates(system.uri,microsoft.odata.mcp.authentication.outbound.oauthchallenge)) returns them and probing stops at the first
+[OAuthDiscovery.PrmCandidates](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OAuthDiscovery#prmcandidates) returns them and probing stops at the first
 document, so the Graph trap costs exactly one GET when the challenge named a
 `resource_metadata` URL. Authorization server bases are probed the same way. An
 *authorizationServerOverride* also suppresses the "401 with no

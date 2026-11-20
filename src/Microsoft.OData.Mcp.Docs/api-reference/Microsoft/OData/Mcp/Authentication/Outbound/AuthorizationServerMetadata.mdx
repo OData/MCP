@@ -3,7 +3,7 @@ title: AuthorizationServerMetadata
 description: "The RFC 8414 authorization server metadata document, or its OpenID Connect discovery document counterpart, restricted to the endpoints, advertised grants and..."
 icon: lock
 tag: "SEALED"
-keywords: ['AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound.AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['AuthorizationServerMetadata', 'Microsoft.OData.Mcp.Authentication.Ou
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -38,7 +36,7 @@ not modeled here per `specs/v3/AUTHENTICATION.md` "Authentication outbound" type
 ```csharp
 var json = await client.GetStringAsync(wellKnownUri);
 var metadata = JsonSerializer.Deserialize(json, OutboundOAuthJsonContext.Default.AuthorizationServerMetadata);
-if (metadata is not null &amp;&amp; metadata.AdvertisesGrant(ODataMcpAuthConstants.DeviceCodeGrantType))
+if (metadata is not null && metadata.AdvertisesGrant(ODataMcpAuthConstants.DeviceCodeGrantType))
 {
     // Start a device code grant.
 }
@@ -87,12 +85,12 @@ Gets or sets whether the authorization response carries the RFC 9207 `iss` param
 #### Syntax
 
 ```csharp
-public System.Nullable<bool> AuthorizationResponseIssParameterSupported { get; set; }
+public bool? AuthorizationResponseIssParameterSupported { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<bool>?`
+Type: `bool?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> ClientIdMetadataDocumentSupported
 
@@ -102,12 +100,12 @@ pre-registered client id.
 #### Syntax
 
 ```csharp
-public System.Nullable<bool> ClientIdMetadataDocumentSupported { get; set; }
+public bool? ClientIdMetadataDocumentSupported { get; set; }
 ```
 
 #### Property Value
 
-Type: `System.Nullable<bool>?`
+Type: `bool?`
 
 ### <Icon icon="tag" iconType="duotone" color="#419AC5" size={24} className="mr-2" /> CodeChallengeMethodsSupported
 

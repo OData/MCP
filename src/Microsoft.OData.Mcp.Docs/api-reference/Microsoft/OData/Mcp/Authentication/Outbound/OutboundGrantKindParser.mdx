@@ -3,7 +3,7 @@ title: OutboundGrantKindParser
 description: "Parses and formats the CLI `--grant` wire names for [OutboundGrantKind](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind)."
 icon: bolt
 tag: "STATIC"
-keywords: ['OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class', 'System.Object']
+keywords: ['OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbound', 'class']
 ---
 
 ## Definition
@@ -11,8 +11,6 @@ keywords: ['OutboundGrantKindParser', 'Microsoft.OData.Mcp.Authentication.Outbou
 **Assembly:** Microsoft.OData.Mcp.Authentication.dll
 
 **Namespace:** Microsoft.OData.Mcp.Authentication.Outbound
-
-**Inheritance:** System.Object
 
 ## Syntax
 
@@ -26,10 +24,10 @@ Parses and formats the CLI `--grant` wire names for [OutboundGrantKind](/api-ref
 
 ## Remarks
 
-[OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind#refreshtoken) is intentionally excluded from
-[OutboundGrantKind@)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundgrantkindparser.tryparse(system.string,microsoft.odata.mcp.authentication.outbound.outboundgrantkind@)): it is never a value an operator passes on the
+[OutboundGrantKind.RefreshToken](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKind) is intentionally excluded from
+[OutboundGrantKindParser.TryParse](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKindParser#tryparse): it is never a value an operator passes on the
 command line, only a kind the outbound auth handler selects internally once a refresh token is cached.
-[OutboundGrantKind)](https://learn.microsoft.com/dotnet/api/microsoft.odata.mcp.authentication.outbound.outboundgrantkindparser.towirename(microsoft.odata.mcp.authentication.outbound.outboundgrantkind)) still formats it, because log lines and cache diagnostics
+[OutboundGrantKindParser.ToWireName](/api-reference/Microsoft/OData/Mcp/Authentication/Outbound/OutboundGrantKindParser#towirename) still formats it, because log lines and cache diagnostics
 need a name for every defined value.
 
 ## Methods
@@ -83,7 +81,7 @@ public static bool TryParse(string value, out Microsoft.OData.Mcp.Authentication
 | Name | Type | Description |
 |------|------|-------------|
 | `value` | `string?` | The wire name to parse; matched case-insensitively after trimming surrounding white space. |
-| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind?` | The parsed grant kind when parsing succeeds; otherwise the default enum value. |
+| `kind` | `Microsoft.OData.Mcp.Authentication.Outbound.OutboundGrantKind` | The parsed grant kind when parsing succeeds; otherwise the default enum value. |
 
 #### Returns
 
