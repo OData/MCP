@@ -1,31 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);NU1608</NoWarn>
     </PropertyGroup>
 
+    <!--
+        Microsoft.Restier.Breakdance / .EntityFrameworkCore 1.2.2 cap Breakdance below 9, EasyAF below 5, and
+        EF Core / Microsoft.Extensions below 11. The direct references below override those caps; NU1608 is suppressed above.
+    -->
     <ItemGroup>
-        <PackageReference Include="Breakdance.AspNetCore" Version="8.*-*" />
+        <PackageReference Include="Breakdance.AspNetCore" Version="9.*" />
+        <PackageReference Include="EasyAF.Core" Version="5.*" />
+        <PackageReference Include="EasyAF.Http" Version="5.*" />
+        <PackageReference Include="EasyAF.Http.SystemTextJson" Version="5.*" />
         <PackageReference Include="Microsoft.Restier.Breakdance" Version="1.*" />
         <PackageReference Include="Microsoft.Restier.EntityFrameworkCore" Version="1.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.*-*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="11.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.*" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.*" />
     </ItemGroup>
 
     <ItemGroup>

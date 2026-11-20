@@ -3,14 +3,15 @@
 
     <!-- Folder layout -->
     <PropertyGroup>
+        <IsAnalyzerProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.analyzers'))">true</IsAnalyzerProject>
         <IsBenchmarkProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.benchmarks'))">true</IsBenchmarkProject>
         <IsTestProject Condition="$(MSBuildProjectName.ToLower().Contains('.tests.'))">true</IsTestProject>
         <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
         <IsSampleProject Condition="$(MSBuildProjectName.ToLower().Contains('.samples.'))">true</IsSampleProject>
         <IsTemplateProject Condition="$(MSBuildProjectName.ToLower().Contains('.templates.'))">true</IsTemplateProject>
         <IsToolsProject Condition="$(MSBuildProjectName.ToLower().EndsWith('.tools'))">true</IsToolsProject>
-        <IsNetCore Condition=" '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0' OR '$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == 'net11.0' ">true</IsNetCore>
-        <IsPrimaryProject Condition=" '$(IsBenchmarkProject)' != 'true' And '$(IsTestProject)' != 'true' And '$(IsTestAssetProject)' != 'true' And '$(IsSampleProject)' != 'true' And '$(IsTemplateProject)' != 'true' And '$(IsDocumentationProject)' != 'true' ">true</IsPrimaryProject>
+        <IsNetCore Condition=" '$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == 'net11.0' ">true</IsNetCore>
+        <IsPrimaryProject Condition=" '$(IsAnalyzerProject)' != 'true' And '$(IsBenchmarkProject)' != 'true' And'$(IsTestProject)' != 'true' And '$(IsTestAssetProject)' != 'true' And '$(IsSampleProject)' != 'true' And '$(IsTemplateProject)' != 'true' And '$(IsDocumentationProject)' != 'true' ">true</IsPrimaryProject>
         <IncludeReadmeFile Condition="Exists('$(MSBuildProjectDirectory)\readme.md')">true</IncludeReadmeFile>
 
         <IncludeSource>false</IncludeSource>
@@ -102,11 +103,17 @@
     <PropertyGroup Condition=" '$(IsPrimaryProject)' == 'true' ">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(IsPrimaryProject)' == 'true' ">
         <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <!-- Roslyn analyzers ship inside the package that consumes them, never as a standalone library. -->
+    <PropertyGroup Condition=" '$(IsAnalyzerProject)' == 'true' ">
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsPackable>false</IsPackable>
+        <IsRoslynComponent>true</IsRoslynComponent>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(IsTemplateProject)' == 'true' And '$(IsTemplatePackageProject)' != 'true' ">
@@ -118,7 +125,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <StandardTestTfms>net11.0;net10.0;net9.0;net8.0;</StandardTestTfms>
+        <StandardTestTfms>net11.0;net10.0</StandardTestTfms>
     </PropertyGroup>
 
     <ItemGroup Condition=" $(IsTestProject) != 'true' and $(IsSampleProject) != 'true' and $(IsTemplateProject) != 'true' ">
@@ -130,7 +137,7 @@
         <PackageReference Include="FluentAssertions" Version="6.*" PrivateAssets="All" />
         <PackageReference Include="FluentAssertions.Analyzers" Version="0.*" PrivateAssets="All" />
         <PackageReference Include="MSTest" Version="4.*" />
-        <PackageReference Include="Breakdance.Extensions.MSTest2" Version="8.*-*" />
+        <PackageReference Include="Breakdance.Extensions.MSTest2" Version="9.*" />
         <PackageReference Include="coverlet.msbuild" Version="6.*" PrivateAssets="All" />
 
         <!-- Class-level: methods in one class stay serial (shared Breakdance hosts). Workers=0 is processor count. -->

@@ -52,7 +52,7 @@ Local MCP runs on Windows, macOS, and Linux.
 dotnet add package Microsoft.OData.Mcp.AspNetCore
 ```
 
-Target frameworks: `net8.0`, `net9.0`, `net10.0`, `net11.0`.
+Target frameworks: `net10.0`, `net11.0`.
 
 This package does **not** `PackageReference` `Microsoft.AspNetCore.OData`. Your app already brings OData 7 (`MapODataRoute` / Restier `MapApiRoute`) or OData 8 (`AddRouteComponents`). We discover prefix + `IEdmModel` from endpoint routing.
 

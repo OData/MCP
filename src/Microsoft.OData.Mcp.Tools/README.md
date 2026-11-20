@@ -45,7 +45,7 @@ Your assistant looks the records up, filters them, follows related data, and can
 
 ## Get started
 
-You need [.NET 8](https://dotnet.microsoft.com/download) or later on Windows, macOS, or Linux, and an assistant that can use MCP (Claude Code, Claude Desktop, Cursor, and others).
+You need [.NET 10](https://dotnet.microsoft.com/download) or later on Windows, macOS, or Linux, and an assistant that can use MCP (Claude Code, Claude Desktop, Cursor, and others).
 
 **1. Install**
 
