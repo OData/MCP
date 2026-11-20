@@ -1,4 +1,4 @@
-# Microsoft OData for AI
+# Microsoft OData for AI - Research Preview
 
 [![License](https://img.shields.io/github/license/odata/mcp.svg)](LICENSE)
 
@@ -15,7 +15,14 @@ Two products, one idea:
 | Where | Windows, macOS, and Linux | Your ASP.NET Core host |
 | Package | `Microsoft.OData.Mcp` (`dotnet odata-mcp`) | `Microsoft.OData.Mcp.AspNetCore` |
 
-Namespaces and project names stay `Microsoft.OData.Mcp.*`.
+## What we're releasing
+
+This is a research preview designed to gather feedback about using OData in an AI world.
+- How easy is it to use?
+- Does it have the capabilities necessary to make AI efficient with OData services?
+- What else is needed to make it amazing?
+
+Along the lines of how the Semantic Kernel evolved, we're putting these capabilities into the world so you can play with it and tell us if it's ready to be a v1 release.
 
 ## What you can ask
 
